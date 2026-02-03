@@ -33,14 +33,39 @@ const Checkout = () => {
   const shippingCost = totalPrice >= 999 ? 0 : 99;
   const finalTotal = totalPrice + shippingCost;
 
+  // Generate order ID
+  const generateOrderId = () => `ORD${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+
+  // Navigate to order confirmation
+  const navigateToConfirmation = (paymentId?: string) => {
+    const orderDetails = {
+      orderId: generateOrderId(),
+      paymentId,
+      items: items.map(item => ({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color,
+        image: item.image,
+      })),
+      total: finalTotal,
+      shippingCost,
+      address: addressForm,
+      paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment (Razorpay)',
+    };
+    clearCart();
+    navigate('/order-confirmation', { state: orderDetails });
+  };
+
   // Razorpay integration
   const { initiatePayment, isLoading: isPaymentLoading } = useRazorpay({
     onSuccess: (response: RazorpayResponse) => {
       toast.success('Payment successful!', {
         description: `Payment ID: ${response.razorpay_payment_id}`,
       });
-      clearCart();
-      navigate('/track-order');
+      navigateToConfirmation(response.razorpay_payment_id);
     },
     onError: (error) => {
       toast.error('Payment failed', {
@@ -55,22 +80,20 @@ const Checkout = () => {
   const handlePlaceOrder = async () => {
     if (paymentMethod === 'online') {
       // Initiate Razorpay payment
-      // Note: In production, you would create an order on your backend first
-      // and pass the order_id here. For now, we'll use demo mode.
+      // Note: Replace 'YOUR_RAZORPAY_KEY_ID' with your actual Razorpay Key ID
       await initiatePayment({
         amount: finalTotal,
         customerName: `${addressForm.firstName} ${addressForm.lastName}`,
         customerPhone: addressForm.phone,
         description: `Order of ${items.length} item(s) from MUFFI`,
-        // razorpayKey will be added later - currently runs in demo mode
+        // razorpayKey: 'YOUR_RAZORPAY_KEY_ID', // Uncomment and add your key for live payments
       });
     } else {
       // Cash on Delivery
       toast.success('Order placed successfully!', {
         description: 'You will receive a confirmation email shortly.',
       });
-      clearCart();
-      navigate('/track-order');
+      navigateToConfirmation();
     }
   };
 

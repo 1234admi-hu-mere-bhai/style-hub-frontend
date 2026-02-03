@@ -5,6 +5,12 @@ import product4 from '@/assets/product-4.jpg';
 import product5 from '@/assets/product-5.jpg';
 import product6 from '@/assets/product-6.jpg';
 
+export interface ProductColor {
+  name: string;
+  hex: string;
+  image?: string; // Optional image for this color variant
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -14,7 +20,7 @@ export interface Product {
   discount?: number;
   images: string[];
   sizes: string[];
-  colors: { name: string; hex: string }[];
+  colors: ProductColor[];
   rating: number;
   reviews: number;
   description: string;

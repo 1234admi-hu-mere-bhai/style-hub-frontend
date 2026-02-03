@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Heart, Minus, Plus, Star, Truck, RefreshCw, Shield, Ruler } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const product = getProductById(id || '');
   const { addToCart } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
@@ -24,6 +25,18 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
+
+  // Get current display image based on selected color
+  const currentImage = useMemo(() => {
+    if (!product) return '';
+    if (selectedColor) {
+      const colorOption = product.colors.find(c => c.name === selectedColor);
+      if (colorOption?.image) {
+        return colorOption.image;
+      }
+    }
+    return product.images[0];
+  }, [product, selectedColor]);
 
   if (!product) {
     return (
@@ -78,7 +91,7 @@ const ProductDetail = () => {
       return;
     }
     handleAddToCart();
-    window.location.href = '/checkout';
+    navigate('/checkout');
   };
 
   const handleWishlist = () => {
@@ -127,9 +140,9 @@ const ProductDetail = () => {
           <div className="relative">
             <div className="aspect-[3/4] rounded-lg overflow-hidden bg-secondary">
               <img
-                src={product.images[0]}
-                alt={product.name}
-                className="w-full h-full object-cover"
+                src={currentImage}
+                alt={`${product.name}${selectedColor ? ` - ${selectedColor}` : ''}`}
+                className="w-full h-full object-cover transition-all duration-300"
               />
             </div>
             {/* Badges */}
