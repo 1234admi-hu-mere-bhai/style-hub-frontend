@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Mail, CheckCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -8,18 +8,22 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-const emailSchema = z.string().email('Please enter a valid email address');
-const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
+const emailSchema = z.string().trim().min(1, 'Email is required').email('Please enter a valid email address');
+const passwordSchema = z.string().min(1, 'Password is required').min(6, 'Password must be at least 6 characters');
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { user, signIn, signUp, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
+  const [showVerificationMessage, setShowVerificationMessage] = useState(false);
+  const [signupEmail, setSignupEmail] = useState('');
+  const [resendingEmail, setResendingEmail] = useState(false);
   
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [signupForm, setSignupForm] = useState({ email: '', password: '', confirmPassword: '' });
@@ -57,14 +61,19 @@ const Auth = () => {
     }
     
     setIsLoading(true);
-    const { error } = await signIn(loginForm.email, loginForm.password);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: loginForm.email,
+      password: loginForm.password,
+    });
     setIsLoading(false);
     
     if (error) {
       if (error.message.includes('Invalid login credentials')) {
         toast.error('Invalid email or password');
       } else if (error.message.includes('Email not confirmed')) {
-        toast.error('Please verify your email before signing in');
+        setSignupEmail(loginForm.email);
+        setShowVerificationMessage(true);
+        toast.error('Please verify your email before signing in. Check your inbox!');
       } else {
         toast.error(error.message);
       }
@@ -95,18 +104,52 @@ const Auth = () => {
     }
     
     setIsLoading(true);
-    const { error } = await signUp(signupForm.email, signupForm.password);
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { error } = await supabase.auth.signUp({
+      email: signupForm.email,
+      password: signupForm.password,
+      options: {
+        emailRedirectTo: redirectUrl
+      }
+    });
     setIsLoading(false);
     
     if (error) {
       if (error.message.includes('already registered')) {
         toast.error('This email is already registered. Please sign in instead.');
+        setActiveTab('login');
+        setLoginForm({ ...loginForm, email: signupForm.email });
       } else {
         toast.error(error.message);
       }
     } else {
+      setSignupEmail(signupForm.email);
+      setShowVerificationMessage(true);
       toast.success('Account created! Please check your email to verify your account.');
-      setActiveTab('login');
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!signupEmail) {
+      toast.error('Please enter your email address first');
+      return;
+    }
+    
+    setResendingEmail(true);
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: signupEmail,
+      options: {
+        emailRedirectTo: `${window.location.origin}/`
+      }
+    });
+    setResendingEmail(false);
+    
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success('Verification email sent! Please check your inbox.');
     }
   };
 
@@ -114,6 +157,65 @@ const Auth = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (showVerificationMessage) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        
+        <main className="container mx-auto px-4 py-16">
+          <div className="max-w-md mx-auto text-center">
+            <div className="bg-card p-8 rounded-lg border border-border">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Mail className="h-8 w-8 text-primary" />
+              </div>
+              
+              <h1 className="font-serif text-2xl font-bold mb-4">Check Your Email</h1>
+              
+              <p className="text-muted-foreground mb-6">
+                We've sent a verification link to <strong className="text-foreground">{signupEmail}</strong>. 
+                Please click the link in the email to verify your account before signing in.
+              </p>
+              
+              <div className="space-y-4">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handleResendVerification}
+                  disabled={resendingEmail}
+                >
+                  {resendingEmail ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    'Resend Verification Email'
+                  )}
+                </Button>
+                
+                <Button 
+                  className="w-full"
+                  onClick={() => {
+                    setShowVerificationMessage(false);
+                    setActiveTab('login');
+                  }}
+                >
+                  Back to Sign In
+                </Button>
+              </div>
+              
+              <p className="text-sm text-muted-foreground mt-6">
+                Didn't receive the email? Check your spam folder or try resending.
+              </p>
+            </div>
+          </div>
+        </main>
+        
+        <Footer />
       </div>
     );
   }
