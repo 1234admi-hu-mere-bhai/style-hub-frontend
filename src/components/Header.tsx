@@ -64,6 +64,11 @@ const Header = () => {
 
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2">
+              <img 
+                src="/assets/logo.jpg" 
+                alt="MUFFI GOUT APPAREL HUB" 
+                className="h-10 lg:h-12 w-auto"
+              />
               <h1 className="font-serif text-lg lg:text-xl font-bold tracking-tight leading-tight">
                 <span className="block lg:inline">MUFFI GOUT</span>
                 <span className="block lg:inline lg:ml-1 text-xs lg:text-sm font-medium text-muted-foreground">APPAREL HUB</span>

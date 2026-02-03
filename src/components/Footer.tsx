@@ -8,7 +8,14 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
           <div>
-            <h2 className="font-serif text-2xl font-bold mb-4">MUFFI GOUT APPAREL HUB</h2>
+            <div className="flex items-center gap-3 mb-4">
+              <img 
+                src="/assets/logo.jpg" 
+                alt="MUFFI GOUT APPAREL HUB" 
+                className="h-12 w-auto"
+              />
+              <h2 className="font-serif text-xl font-bold">MUFFI GOUT APPAREL HUB</h2>
+            </div>
             <p className="text-cream/70 mb-6">
               Your destination for stylish clothing for Men,
               Women & Kids. Quality fashion at affordable prices.
