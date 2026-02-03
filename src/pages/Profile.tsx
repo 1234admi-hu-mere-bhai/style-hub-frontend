@@ -1,0 +1,592 @@
+import { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import {
+  User,
+  MapPin,
+  Package,
+  Heart,
+  Settings,
+  LogOut,
+  Plus,
+  Edit2,
+  Trash2,
+  ChevronRight,
+} from 'lucide-react';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
+import { mockAddresses, mockOrders, mockUserProfile, Address } from '@/data/user';
+import { addressSchema } from '@/lib/validations';
+
+const Profile = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') || 'profile';
+  const [profile, setProfile] = useState(mockUserProfile);
+  const [addresses, setAddresses] = useState(mockAddresses);
+  const [orders] = useState(mockOrders);
+  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
+
+  const tabs = [
+    { id: 'profile', label: 'Personal Info', icon: User },
+    { id: 'addresses', label: 'Address Book', icon: MapPin },
+    { id: 'orders', label: 'Order History', icon: Package },
+    { id: 'wishlist', label: 'My Wishlist', icon: Heart, href: '/wishlist' },
+  ];
+
+  const setActiveTab = (tab: string) => {
+    setSearchParams({ tab });
+  };
+
+  const handleSaveProfile = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    toast.success('Profile updated successfully!');
+  };
+
+  const handleSaveAddress = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      fullName: formData.get('fullName') as string,
+      phone: formData.get('phone') as string,
+      address: formData.get('address') as string,
+      city: formData.get('city') as string,
+      state: formData.get('state') as string,
+      pincode: formData.get('pincode') as string,
+      landmark: formData.get('landmark') as string || undefined,
+    };
+
+    const result = addressSchema.safeParse(data);
+    if (!result.success) {
+      const errors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          errors[err.path[0] as string] = err.message;
+        }
+      });
+      setAddressErrors(errors);
+      return;
+    }
+
+    setAddressErrors({});
+
+    if (editingAddress) {
+      setAddresses((prev) =>
+        prev.map((a) =>
+          a.id === editingAddress.id
+            ? { ...a, ...data }
+            : a
+        )
+      );
+      toast.success('Address updated successfully!');
+    } else {
+      const newAddress: Address = {
+        id: Date.now().toString(),
+        ...data,
+        isDefault: addresses.length === 0,
+      };
+      setAddresses((prev) => [...prev, newAddress]);
+      toast.success('Address added successfully!');
+    }
+    setIsAddressModalOpen(false);
+    setEditingAddress(null);
+  };
+
+  const handleDeleteAddress = (id: string) => {
+    setAddresses((prev) => prev.filter((a) => a.id !== id));
+    toast.success('Address deleted successfully!');
+  };
+
+  const handleSetDefaultAddress = (id: string) => {
+    setAddresses((prev) =>
+      prev.map((a) => ({ ...a, isDefault: a.id === id }))
+    );
+    toast.success('Default address updated!');
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'delivered':
+        return 'text-success bg-success/10';
+      case 'shipped':
+      case 'out_for_delivery':
+        return 'text-primary bg-primary/10';
+      case 'cancelled':
+        return 'text-destructive bg-destructive/10';
+      default:
+        return 'text-muted-foreground bg-secondary';
+    }
+  };
+
+  const formatStatus = (status: string) => {
+    return status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+
+      <main className="container mx-auto px-4 py-8">
+        <h1 className="font-serif text-3xl font-bold mb-8">My Account</h1>
+
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar */}
+          <aside className="lg:w-64 flex-shrink-0">
+            <nav className="space-y-1">
+              {tabs.map((tab) =>
+                tab.href ? (
+                  <Link
+                    key={tab.id}
+                    to={tab.href}
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                  >
+                    <tab.icon size={20} />
+                    <span>{tab.label}</span>
+                  </Link>
+                ) : (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                      activeTab === tab.id
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                    }`}
+                  >
+                    <tab.icon size={20} />
+                    <span>{tab.label}</span>
+                  </button>
+                )
+              )}
+              <Separator className="my-4" />
+              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
+                <Settings size={20} />
+                <span>Settings</span>
+              </button>
+              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-destructive hover:bg-destructive/10 transition-colors">
+                <LogOut size={20} />
+                <span>Logout</span>
+              </button>
+            </nav>
+          </aside>
+
+          {/* Content */}
+          <div className="flex-1">
+            {/* Profile Tab */}
+            {activeTab === 'profile' && (
+              <div className="bg-card p-6 rounded-lg border border-border">
+                <h2 className="font-semibold text-xl mb-6">Personal Information</h2>
+                <form onSubmit={handleSaveProfile} className="space-y-6">
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="firstName">First Name</Label>
+                      <Input
+                        id="firstName"
+                        value={profile.firstName}
+                        onChange={(e) =>
+                          setProfile({ ...profile, firstName: e.target.value })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lastName">Last Name</Label>
+                      <Input
+                        id="lastName"
+                        value={profile.lastName}
+                        onChange={(e) =>
+                          setProfile({ ...profile, lastName: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={profile.email}
+                      onChange={(e) =>
+                        setProfile({ ...profile, email: e.target.value })
+                      }
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      You'll need to verify your email if you change it
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={profile.phone}
+                      onChange={(e) =>
+                        setProfile({ ...profile, phone: e.target.value })
+                      }
+                    />
+                  </div>
+                  <Button type="submit">Save Changes</Button>
+                </form>
+
+                <Separator className="my-8" />
+
+                <div>
+                  <h3 className="font-semibold mb-4">Change Password</h3>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="currentPassword">Current Password</Label>
+                      <Input id="currentPassword" type="password" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="newPassword">New Password</Label>
+                      <Input id="newPassword" type="password" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                      <Input id="confirmPassword" type="password" />
+                    </div>
+                    <Button variant="outline">Update Password</Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Addresses Tab */}
+            {activeTab === 'addresses' && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="font-semibold text-xl">Saved Addresses</h2>
+                  <Dialog open={isAddressModalOpen} onOpenChange={setIsAddressModalOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        onClick={() => {
+                          setEditingAddress(null);
+                          setAddressErrors({});
+                        }}
+                      >
+                        <Plus size={18} className="mr-2" />
+                        Add Address
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>
+                          {editingAddress ? 'Edit Address' : 'Add New Address'}
+                        </DialogTitle>
+                      </DialogHeader>
+                      <form onSubmit={handleSaveAddress} className="space-y-4 mt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="fullName">Full Name</Label>
+                          <Input
+                            id="fullName"
+                            name="fullName"
+                            defaultValue={editingAddress?.fullName}
+                          />
+                          {addressErrors.fullName && (
+                            <p className="text-xs text-destructive">{addressErrors.fullName}</p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="phone">Phone Number</Label>
+                          <Input
+                            id="phone"
+                            name="phone"
+                            defaultValue={editingAddress?.phone}
+                          />
+                          {addressErrors.phone && (
+                            <p className="text-xs text-destructive">{addressErrors.phone}</p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="address">Address</Label>
+                          <Input
+                            id="address"
+                            name="address"
+                            defaultValue={editingAddress?.address}
+                          />
+                          {addressErrors.address && (
+                            <p className="text-xs text-destructive">{addressErrors.address}</p>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="city">City</Label>
+                            <Input
+                              id="city"
+                              name="city"
+                              defaultValue={editingAddress?.city}
+                            />
+                            {addressErrors.city && (
+                              <p className="text-xs text-destructive">{addressErrors.city}</p>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="state">State</Label>
+                            <Input
+                              id="state"
+                              name="state"
+                              defaultValue={editingAddress?.state}
+                            />
+                            {addressErrors.state && (
+                              <p className="text-xs text-destructive">{addressErrors.state}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="pincode">PIN Code</Label>
+                            <Input
+                              id="pincode"
+                              name="pincode"
+                              defaultValue={editingAddress?.pincode}
+                            />
+                            {addressErrors.pincode && (
+                              <p className="text-xs text-destructive">{addressErrors.pincode}</p>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="landmark">Landmark (Optional)</Label>
+                            <Input
+                              id="landmark"
+                              name="landmark"
+                              defaultValue={editingAddress?.landmark}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-4 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="flex-1"
+                            onClick={() => setIsAddressModalOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button type="submit" className="flex-1">
+                            Save Address
+                          </Button>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+
+                {addresses.length === 0 ? (
+                  <div className="text-center py-12 bg-card rounded-lg border border-border">
+                    <MapPin size={48} className="mx-auto text-muted-foreground mb-4" />
+                    <h3 className="font-semibold text-lg mb-2">No addresses saved</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Add an address for faster checkout
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {addresses.map((address) => (
+                      <div
+                        key={address.id}
+                        className={`p-4 rounded-lg border ${
+                          address.isDefault
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border bg-card'
+                        }`}
+                      >
+                        {address.isDefault && (
+                          <span className="inline-block px-2 py-0.5 bg-primary text-primary-foreground text-xs font-medium rounded mb-2">
+                            Default
+                          </span>
+                        )}
+                        <h3 className="font-semibold">{address.fullName}</h3>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {address.address}
+                          {address.landmark && `, ${address.landmark}`}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {address.city}, {address.state} - {address.pincode}
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {address.phone}
+                        </p>
+                        <div className="flex gap-2 mt-4">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setEditingAddress(address);
+                              setAddressErrors({});
+                              setIsAddressModalOpen(true);
+                            }}
+                          >
+                            <Edit2 size={14} className="mr-1" />
+                            Edit
+                          </Button>
+                          {!address.isDefault && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleSetDefaultAddress(address.id)}
+                              >
+                                Set Default
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button size="sm" variant="outline">
+                                    <Trash2 size={14} />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Address?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      This action cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleDeleteAddress(address.id)}
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Orders Tab */}
+            {activeTab === 'orders' && (
+              <div className="space-y-4">
+                <h2 className="font-semibold text-xl mb-6">Order History</h2>
+
+                {orders.length === 0 ? (
+                  <div className="text-center py-12 bg-card rounded-lg border border-border">
+                    <Package size={48} className="mx-auto text-muted-foreground mb-4" />
+                    <h3 className="font-semibold text-lg mb-2">No orders yet</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Start shopping to see your orders here
+                    </p>
+                    <Button asChild>
+                      <Link to="/products">Start Shopping</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  orders.map((order) => (
+                    <div
+                      key={order.id}
+                      className="bg-card rounded-lg border border-border overflow-hidden"
+                    >
+                      <div className="p-4 bg-secondary/30 flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                          <p className="text-sm text-muted-foreground">
+                            Order #{order.orderNumber}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Placed on{' '}
+                            {new Date(order.date).toLocaleDateString('en-IN', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                            })}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                              order.status
+                            )}`}
+                          >
+                            {formatStatus(order.status)}
+                          </span>
+                          <Link
+                            to={`/track-order?id=${order.orderNumber}`}
+                            className="text-sm text-primary hover:underline flex items-center"
+                          >
+                            Track Order
+                            <ChevronRight size={16} />
+                          </Link>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        {order.items.map((item, index) => (
+                          <div
+                            key={index}
+                            className={`flex gap-4 ${
+                              index > 0 ? 'mt-4 pt-4 border-t border-border' : ''
+                            }`}
+                          >
+                            <div className="w-16 h-20 bg-secondary rounded overflow-hidden">
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.src = '/placeholder.svg';
+                                }}
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-medium">{item.name}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Size: {item.size} | Color: {item.color} | Qty:{' '}
+                                {item.quantity}
+                              </p>
+                              <p className="font-semibold mt-1">
+                                ₹{item.price.toLocaleString()}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="p-4 bg-secondary/30 flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground">
+                          {order.items.length} item(s)
+                        </span>
+                        <span className="font-semibold">
+                          Total: ₹{order.total.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default Profile;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Mail, Phone, Eye, EyeOff } from 'lucide-react';
+import { Mail, Phone, Eye, EyeOff } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import {
+  loginEmailSchema,
+  loginPhoneSchema,
+  signupSchema,
+} from '@/lib/validations';
 
 interface AuthModalProps {
   open: boolean;
@@ -20,16 +25,81 @@ interface AuthModalProps {
 const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast.success('Login feature coming soon!');
+    const formData = new FormData(e.currentTarget);
+
+    if (loginMethod === 'email') {
+      const data = {
+        email: formData.get('email') as string,
+        password: formData.get('password') as string,
+      };
+      const result = loginEmailSchema.safeParse(data);
+      if (!result.success) {
+        const newErrors: Record<string, string> = {};
+        result.error.errors.forEach((err) => {
+          if (err.path[0]) {
+            newErrors[err.path[0] as string] = err.message;
+          }
+        });
+        setErrors(newErrors);
+        return;
+      }
+    } else {
+      const data = {
+        phone: formData.get('phone') as string,
+        password: formData.get('password') as string,
+      };
+      const result = loginPhoneSchema.safeParse(data);
+      if (!result.success) {
+        const newErrors: Record<string, string> = {};
+        result.error.errors.forEach((err) => {
+          if (err.path[0]) {
+            newErrors[err.path[0] as string] = err.message;
+          }
+        });
+        setErrors(newErrors);
+        return;
+      }
+    }
+
+    setErrors({});
+    toast.success('Login successful! (Demo)');
+    onOpenChange(false);
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast.success('Account created! (Demo)');
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      firstName: formData.get('firstName') as string,
+      lastName: formData.get('lastName') as string,
+      email: formData.get('signupEmail') as string,
+      phone: formData.get('signupPhone') as string,
+      password: formData.get('signupPassword') as string,
+    };
+
+    const result = signupSchema.safeParse(data);
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          newErrors[err.path[0] as string] = err.message;
+        }
+      });
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
+    toast.success('Account created successfully! (Demo)');
     onOpenChange(false);
+  };
+
+  const handleTabChange = () => {
+    setErrors({});
   };
 
   return (
@@ -41,7 +111,7 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="login" className="mt-4">
+        <Tabs defaultValue="login" className="mt-4" onValueChange={handleTabChange}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Login</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -54,7 +124,10 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                 type="button"
                 variant={loginMethod === 'email' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setLoginMethod('email')}
+                onClick={() => {
+                  setLoginMethod('email');
+                  setErrors({});
+                }}
                 className="flex-1"
               >
                 <Mail size={16} className="mr-2" />
@@ -64,7 +137,10 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                 type="button"
                 variant={loginMethod === 'phone' ? 'default' : 'outline'}
                 size="sm"
-                onClick={() => setLoginMethod('phone')}
+                onClick={() => {
+                  setLoginMethod('phone');
+                  setErrors({});
+                }}
                 className="flex-1"
               >
                 <Phone size={16} className="mr-2" />
@@ -78,20 +154,28 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                   <Label htmlFor="email">Email Address</Label>
                   <Input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="you@example.com"
-                    required
+                    className={errors.email ? 'border-destructive' : ''}
                   />
+                  {errors.email && (
+                    <p className="text-xs text-destructive">{errors.email}</p>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-2">
                   <Label htmlFor="phone">Mobile Number</Label>
                   <Input
                     id="phone"
+                    name="phone"
                     type="tel"
                     placeholder="+91 98765 43210"
-                    required
+                    className={errors.phone ? 'border-destructive' : ''}
                   />
+                  {errors.phone && (
+                    <p className="text-xs text-destructive">{errors.phone}</p>
+                  )}
                 </div>
               )}
 
@@ -100,9 +184,10 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                 <div className="relative">
                   <Input
                     id="password"
+                    name="password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
-                    required
+                    className={errors.password ? 'border-destructive' : ''}
                   />
                   <button
                     type="button"
@@ -112,6 +197,9 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="text-xs text-destructive">{errors.password}</p>
+                )}
               </div>
 
               <div className="flex justify-end">
@@ -146,11 +234,27 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
-                  <Input id="firstName" placeholder="John" required />
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    placeholder="John"
+                    className={errors.firstName ? 'border-destructive' : ''}
+                  />
+                  {errors.firstName && (
+                    <p className="text-xs text-destructive">{errors.firstName}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" placeholder="Doe" required />
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    placeholder="Doe"
+                    className={errors.lastName ? 'border-destructive' : ''}
+                  />
+                  {errors.lastName && (
+                    <p className="text-xs text-destructive">{errors.lastName}</p>
+                  )}
                 </div>
               </div>
 
@@ -158,20 +262,28 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                 <Label htmlFor="signupEmail">Email Address</Label>
                 <Input
                   id="signupEmail"
+                  name="signupEmail"
                   type="email"
                   placeholder="you@example.com"
-                  required
+                  className={errors.email ? 'border-destructive' : ''}
                 />
+                {errors.email && (
+                  <p className="text-xs text-destructive">{errors.email}</p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="signupPhone">Mobile Number</Label>
                 <Input
                   id="signupPhone"
+                  name="signupPhone"
                   type="tel"
                   placeholder="+91 98765 43210"
-                  required
+                  className={errors.phone ? 'border-destructive' : ''}
                 />
+                {errors.phone && (
+                  <p className="text-xs text-destructive">{errors.phone}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -179,9 +291,10 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                 <div className="relative">
                   <Input
                     id="signupPassword"
+                    name="signupPassword"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
-                    required
+                    className={errors.password ? 'border-destructive' : ''}
                   />
                   <button
                     type="button"
@@ -191,6 +304,12 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="text-xs text-destructive">{errors.password}</p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Min 8 chars with uppercase, lowercase, and number
+                </p>
               </div>
 
               <Button type="submit" className="w-full">
