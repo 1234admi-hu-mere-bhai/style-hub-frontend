@@ -8,9 +8,9 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
           <div>
-            <h2 className="font-serif text-2xl font-bold mb-4">MUFFI</h2>
+            <h2 className="font-serif text-2xl font-bold mb-4">MUFFI GOUT APPAREL HUB</h2>
             <p className="text-cream/70 mb-6">
-              Gauth Apparel Hub - Your destination for stylish clothing for Men,
+              Your destination for stylish clothing for Men,
               Women & Kids. Quality fashion at affordable prices.
             </p>
             <div className="flex space-x-4">
@@ -101,7 +101,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-cream/20 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-cream/50">
-          <p>© 2024 Muffi - Gauth Apparel Hub. All rights reserved.</p>
+          <p>© 2024 MUFFI GOUT APPAREL HUB. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link to="/privacy" className="hover:text-cream transition-colors">
               Privacy Policy

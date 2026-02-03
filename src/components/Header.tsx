@@ -49,7 +49,7 @@ const Header = () => {
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
         {/* Announcement bar */}
         <div className="bg-primary text-primary-foreground text-center py-2 text-sm font-medium">
-          Free Shipping on orders above ₹999 | Use code MUFFI20 for 20% off
+          Free Shipping on orders above ₹999 | Use code MUFFIGOUT20 for 20% off
         </div>
 
         <div className="container mx-auto px-4">
@@ -63,9 +63,10 @@ const Header = () => {
             </button>
 
             {/* Logo */}
-            <Link to="/" className="flex items-center">
-              <h1 className="font-serif text-xl lg:text-2xl font-bold tracking-tight">
-                MUFFI
+            <Link to="/" className="flex items-center gap-2">
+              <h1 className="font-serif text-lg lg:text-xl font-bold tracking-tight leading-tight">
+                <span className="block lg:inline">MUFFI GOUT</span>
+                <span className="block lg:inline lg:ml-1 text-xs lg:text-sm font-medium text-muted-foreground">APPAREL HUB</span>
               </h1>
             </Link>
 

@@ -128,7 +128,7 @@ export const useRazorpay = ({ onSuccess, onError, onDismiss }: UseRazorpayProps)
         key,
         amount: details.amount * 100, // Convert to paise
         currency: 'INR',
-        name: 'MUFFI',
+        name: 'MUFFI GOUT APPAREL HUB',
         description: details.description || 'Order Payment',
         handler: (response) => {
           setIsLoading(false);

@@ -126,7 +126,7 @@ const Checkout = () => {
         amount: finalTotal,
         customerName: `${addressForm.firstName} ${addressForm.lastName}`,
         customerPhone: addressForm.phone,
-        description: `Order of ${items.length} item(s) from MUFFI`,
+        description: `Order of ${items.length} item(s) from MUFFI GOUT APPAREL HUB`,
         // razorpayKey: 'YOUR_RAZORPAY_KEY_ID', // Uncomment and add your key for live payments
       });
     } else {
