@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { CreditCard, Truck, MapPin, ChevronRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { CreditCard, Truck, MapPin, ChevronRight, Loader2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCart } from '@/contexts/CartContext';
@@ -10,20 +10,72 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { useRazorpay, RazorpayResponse } from '@/hooks/useRazorpay';
 
 const Checkout = () => {
+  const navigate = useNavigate();
   const { items, totalPrice, clearCart } = useCart();
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [step, setStep] = useState<'address' | 'payment' | 'summary'>('address');
+  
+  // Form state for address
+  const [addressForm, setAddressForm] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    pincode: '',
+    landmark: '',
+  });
 
   const shippingCost = totalPrice >= 999 ? 0 : 99;
   const finalTotal = totalPrice + shippingCost;
 
-  const handlePlaceOrder = () => {
-    toast.success('Order placed successfully! (Demo)', {
-      description: 'You will receive a confirmation email shortly.',
-    });
-    clearCart();
+  // Razorpay integration
+  const { initiatePayment, isLoading: isPaymentLoading } = useRazorpay({
+    onSuccess: (response: RazorpayResponse) => {
+      toast.success('Payment successful!', {
+        description: `Payment ID: ${response.razorpay_payment_id}`,
+      });
+      clearCart();
+      navigate('/track-order');
+    },
+    onError: (error) => {
+      toast.error('Payment failed', {
+        description: error.message,
+      });
+    },
+    onDismiss: () => {
+      toast.info('Payment cancelled');
+    },
+  });
+
+  const handlePlaceOrder = async () => {
+    if (paymentMethod === 'online') {
+      // Initiate Razorpay payment
+      // Note: In production, you would create an order on your backend first
+      // and pass the order_id here. For now, we'll use demo mode.
+      await initiatePayment({
+        amount: finalTotal,
+        customerName: `${addressForm.firstName} ${addressForm.lastName}`,
+        customerPhone: addressForm.phone,
+        description: `Order of ${items.length} item(s) from MUFFI`,
+        // razorpayKey will be added later - currently runs in demo mode
+      });
+    } else {
+      // Cash on Delivery
+      toast.success('Order placed successfully!', {
+        description: 'You will receive a confirmation email shortly.',
+      });
+      clearCart();
+      navigate('/track-order');
+    }
+  };
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAddressForm({ ...addressForm, [e.target.id]: e.target.value });
   };
 
   if (items.length === 0) {
@@ -92,39 +144,87 @@ const Checkout = () => {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" placeholder="John" required />
+                      <Input 
+                        id="firstName" 
+                        placeholder="John" 
+                        value={addressForm.firstName}
+                        onChange={handleAddressChange}
+                        required 
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" placeholder="Doe" required />
+                      <Input 
+                        id="lastName" 
+                        placeholder="Doe" 
+                        value={addressForm.lastName}
+                        onChange={handleAddressChange}
+                        required 
+                      />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number</Label>
-                    <Input id="phone" type="tel" placeholder="+91 98765 43210" required />
+                    <Input 
+                      id="phone" 
+                      type="tel" 
+                      placeholder="+91 98765 43210" 
+                      value={addressForm.phone}
+                      onChange={handleAddressChange}
+                      required 
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="address">Address</Label>
-                    <Input id="address" placeholder="House No, Street Name" required />
+                    <Input 
+                      id="address" 
+                      placeholder="House No, Street Name" 
+                      value={addressForm.address}
+                      onChange={handleAddressChange}
+                      required 
+                    />
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="city">City</Label>
-                      <Input id="city" placeholder="Mumbai" required />
+                      <Input 
+                        id="city" 
+                        placeholder="Mumbai" 
+                        value={addressForm.city}
+                        onChange={handleAddressChange}
+                        required 
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="state">State</Label>
-                      <Input id="state" placeholder="Maharashtra" required />
+                      <Input 
+                        id="state" 
+                        placeholder="Maharashtra" 
+                        value={addressForm.state}
+                        onChange={handleAddressChange}
+                        required 
+                      />
                     </div>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="pincode">PIN Code</Label>
-                      <Input id="pincode" placeholder="400001" required />
+                      <Input 
+                        id="pincode" 
+                        placeholder="400001" 
+                        value={addressForm.pincode}
+                        onChange={handleAddressChange}
+                        required 
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="landmark">Landmark (Optional)</Label>
-                      <Input id="landmark" placeholder="Near..." />
+                      <Input 
+                        id="landmark" 
+                        placeholder="Near..." 
+                        value={addressForm.landmark}
+                        onChange={handleAddressChange}
+                      />
                     </div>
                   </div>
                   <Button
@@ -182,21 +282,18 @@ const Checkout = () => {
                 </RadioGroup>
 
                 {paymentMethod === 'online' && (
-                  <div className="mt-6 space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="cardNumber">Card Number</Label>
-                      <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
+                  <div className="mt-6 p-4 bg-secondary/50 rounded-lg">
+                    <div className="flex items-center gap-3 mb-2">
+                      <img 
+                        src="https://razorpay.com/assets/razorpay-logo.svg" 
+                        alt="Razorpay" 
+                        className="h-6 dark:invert"
+                      />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="expiry">Expiry Date</Label>
-                        <Input id="expiry" placeholder="MM/YY" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="cvv">CVV</Label>
-                        <Input id="cvv" placeholder="123" />
-                      </div>
-                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      You will be redirected to Razorpay's secure payment gateway to complete your payment.
+                      Supports UPI, Credit/Debit Cards, Net Banking, and Wallets.
+                    </p>
                   </div>
                 )}
 
@@ -247,12 +344,15 @@ const Checkout = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Delivery Address</span>
-                    <span>Mumbai, Maharashtra - 400001</span>
+                    <span className="text-right">
+                      {addressForm.address ? `${addressForm.address}, ${addressForm.city}` : 'Not provided'}, 
+                      {addressForm.state} - {addressForm.pincode}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Payment Method</span>
                     <span>
-                      {paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment'}
+                      {paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment (Razorpay)'}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -266,11 +366,25 @@ const Checkout = () => {
                     variant="outline"
                     className="flex-1"
                     onClick={() => setStep('payment')}
+                    disabled={isPaymentLoading}
                   >
                     Back
                   </Button>
-                  <Button className="flex-1" onClick={handlePlaceOrder}>
-                    Place Order
+                  <Button 
+                    className="flex-1" 
+                    onClick={handlePlaceOrder}
+                    disabled={isPaymentLoading}
+                  >
+                    {isPaymentLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : paymentMethod === 'online' ? (
+                      `Pay ₹${finalTotal.toLocaleString()}`
+                    ) : (
+                      'Place Order'
+                    )}
                   </Button>
                 </div>
               </div>

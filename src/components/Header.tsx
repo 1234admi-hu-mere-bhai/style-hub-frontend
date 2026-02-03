@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import CartDrawer from './CartDrawer';
 import AuthModal from './AuthModal';
+import SearchCommand from './SearchCommand';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -142,23 +143,6 @@ const Header = () => {
             </div>
           </div>
 
-          {/* Search bar */}
-          {searchOpen && (
-            <div className="pb-4 animate-slide-down">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search for products..."
-                  className="w-full input-field rounded-full pl-12"
-                  autoFocus
-                />
-                <Search
-                  size={20}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
-                />
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Mobile menu */}
@@ -180,6 +164,7 @@ const Header = () => {
         )}
       </header>
 
+      <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
       <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
     </>
   );

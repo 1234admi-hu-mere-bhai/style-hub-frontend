@@ -5,7 +5,9 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import SizeChartModal from '@/components/SizeChartModal';
+import ReviewSection from '@/components/ReviewSection';
 import { getProductById, products } from '@/data/products';
+import { getProductReviews } from '@/data/reviews';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { Button } from '@/components/ui/button';
@@ -42,6 +44,7 @@ const ProductDetail = () => {
   }
 
   const inWishlist = isInWishlist(product.id);
+  const reviews = getProductReviews(product.id);
   const relatedProducts = products
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
@@ -333,11 +336,12 @@ const ProductDetail = () => {
             </TabsContent>
 
             <TabsContent value="reviews" className="mt-6">
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">
-                  Reviews feature coming soon!
-                </p>
-              </div>
+              <ReviewSection
+                productId={product.id}
+                reviews={reviews}
+                averageRating={product.rating}
+                totalReviews={product.reviews}
+              />
             </TabsContent>
 
             <TabsContent value="shipping" className="mt-6">
