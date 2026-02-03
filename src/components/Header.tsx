@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Search, Heart, ShoppingBag, User, Menu, X } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
-import { Button } from '@/components/ui/button';
 import {
   Sheet,
   SheetContent,
@@ -11,6 +10,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import CartDrawer from './CartDrawer';
 import AuthModal from './AuthModal';
 
@@ -77,12 +83,31 @@ const Header = () => {
                 <Search size={20} />
               </button>
 
-              <button
-                className="p-2 hover:bg-secondary rounded-full transition-colors relative"
-                onClick={() => setAuthModalOpen(true)}
-              >
-                <User size={20} />
-              </button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="p-2 hover:bg-secondary rounded-full transition-colors relative">
+                    <User size={20} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => setAuthModalOpen(true)}>
+                    Login / Sign Up
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile">My Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile?tab=orders">My Orders</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile?tab=addresses">Address Book</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/track-order">Track Order</Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               <button
                 className="p-2 hover:bg-secondary rounded-full transition-colors relative"
