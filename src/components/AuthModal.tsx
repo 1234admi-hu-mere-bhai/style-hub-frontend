@@ -107,7 +107,7 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-serif text-2xl text-center">
-            Welcome to MUFFI
+            Welcome to MUFFI GOUT
           </DialogTitle>
         </DialogHeader>
 
