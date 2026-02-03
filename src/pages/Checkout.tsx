@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CreditCard, Truck, MapPin, ChevronRight, Loader2 } from 'lucide-react';
+import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { createOrder } from '@/hooks/useOrders';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,8 +17,10 @@ import { useRazorpay, RazorpayResponse } from '@/hooks/useRazorpay';
 const Checkout = () => {
   const navigate = useNavigate();
   const { items, totalPrice, clearCart } = useCart();
+  const { user, isLoading: authLoading } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [step, setStep] = useState<'address' | 'payment' | 'summary'>('address');
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   
   // Form state for address
   const [addressForm, setAddressForm] = useState({
@@ -33,13 +37,17 @@ const Checkout = () => {
   const shippingCost = totalPrice >= 999 ? 0 : 99;
   const finalTotal = totalPrice + shippingCost;
 
-  // Generate order ID
-  const generateOrderId = () => `ORD${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !user && items.length > 0) {
+      // Don't auto-redirect, show login prompt instead
+    }
+  }, [user, authLoading, items.length]);
 
   // Navigate to order confirmation
-  const navigateToConfirmation = (paymentId?: string) => {
+  const navigateToConfirmation = (orderNumber: string, paymentId?: string) => {
     const orderDetails = {
-      orderId: generateOrderId(),
+      orderId: orderNumber,
       paymentId,
       items: items.map(item => ({
         id: item.id,
@@ -61,11 +69,38 @@ const Checkout = () => {
 
   // Razorpay integration
   const { initiatePayment, isLoading: isPaymentLoading } = useRazorpay({
-    onSuccess: (response: RazorpayResponse) => {
+    onSuccess: async (response: RazorpayResponse) => {
       toast.success('Payment successful!', {
         description: `Payment ID: ${response.razorpay_payment_id}`,
       });
-      navigateToConfirmation(response.razorpay_payment_id);
+      
+      try {
+        setIsPlacingOrder(true);
+        const order = await createOrder({
+          userId: user!.id,
+          items: items.map(item => ({
+            product_id: item.id,
+            product_name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            size: item.size,
+            color: item.color,
+            image: item.image,
+          })),
+          subtotal: totalPrice,
+          shippingCost,
+          total: finalTotal,
+          shippingAddress: addressForm,
+          paymentMethod: 'Online Payment (Razorpay)',
+          paymentId: response.razorpay_payment_id,
+        });
+        navigateToConfirmation(order.order_number, response.razorpay_payment_id);
+      } catch (error) {
+        console.error('Failed to create order:', error);
+        toast.error('Failed to create order. Please contact support.');
+      } finally {
+        setIsPlacingOrder(false);
+      }
     },
     onError: (error) => {
       toast.error('Payment failed', {
@@ -78,6 +113,12 @@ const Checkout = () => {
   });
 
   const handlePlaceOrder = async () => {
+    if (!user) {
+      toast.error('Please log in to place an order');
+      navigate('/auth');
+      return;
+    }
+
     if (paymentMethod === 'online') {
       // Initiate Razorpay payment
       // Note: Replace 'YOUR_RAZORPAY_KEY_ID' with your actual Razorpay Key ID
@@ -90,16 +131,50 @@ const Checkout = () => {
       });
     } else {
       // Cash on Delivery
-      toast.success('Order placed successfully!', {
-        description: 'You will receive a confirmation email shortly.',
-      });
-      navigateToConfirmation();
+      try {
+        setIsPlacingOrder(true);
+        const order = await createOrder({
+          userId: user.id,
+          items: items.map(item => ({
+            product_id: item.id,
+            product_name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            size: item.size,
+            color: item.color,
+            image: item.image,
+          })),
+          subtotal: totalPrice,
+          shippingCost,
+          total: finalTotal,
+          shippingAddress: addressForm,
+          paymentMethod: 'Cash on Delivery',
+        });
+        
+        toast.success('Order placed successfully!', {
+          description: 'You will receive a confirmation email shortly.',
+        });
+        navigateToConfirmation(order.order_number);
+      } catch (error) {
+        console.error('Failed to create order:', error);
+        toast.error('Failed to place order. Please try again.');
+      } finally {
+        setIsPlacingOrder(false);
+      }
     }
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAddressForm({ ...addressForm, [e.target.id]: e.target.value });
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -113,6 +188,33 @@ const Checkout = () => {
           <Button asChild>
             <Link to="/products">Continue Shopping</Link>
           </Button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Show login prompt if not logged in
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="container mx-auto px-4 py-16">
+          <div className="max-w-md mx-auto text-center">
+            <LogIn size={48} className="mx-auto text-muted-foreground mb-4" />
+            <h1 className="font-serif text-3xl font-bold mb-4">Sign In Required</h1>
+            <p className="text-muted-foreground mb-8">
+              Please sign in to your account to proceed with checkout. Your cart items will be saved.
+            </p>
+            <div className="flex flex-col gap-4">
+              <Button asChild size="lg">
+                <Link to="/auth">Sign In / Create Account</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/products">Continue Shopping</Link>
+              </Button>
+            </div>
+          </div>
         </div>
         <Footer />
       </div>
@@ -389,16 +491,16 @@ const Checkout = () => {
                     variant="outline"
                     className="flex-1"
                     onClick={() => setStep('payment')}
-                    disabled={isPaymentLoading}
+                    disabled={isPaymentLoading || isPlacingOrder}
                   >
                     Back
                   </Button>
                   <Button 
                     className="flex-1" 
                     onClick={handlePlaceOrder}
-                    disabled={isPaymentLoading}
+                    disabled={isPaymentLoading || isPlacingOrder}
                   >
-                    {isPaymentLoading ? (
+                    {isPaymentLoading || isPlacingOrder ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Processing...

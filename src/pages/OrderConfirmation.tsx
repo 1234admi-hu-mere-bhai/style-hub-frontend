@@ -1,43 +1,46 @@
 import { useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { CheckCircle2, Package, Truck, MapPin } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { CheckCircle2, Package, FileText, ArrowRight, Truck, MapPin } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
+interface OrderItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  size: string;
+  color: string;
+  image: string;
+}
+
 interface OrderDetails {
   orderId: string;
   paymentId?: string;
-  items: {
-    id: string;
-    name: string;
-    price: number;
-    quantity: number;
-    size: string;
-    color: string;
-    image: string;
-  }[];
+  items: OrderItem[];
   total: number;
   shippingCost: number;
   address: {
     firstName: string;
     lastName: string;
+    phone: string;
     address: string;
     city: string;
     state: string;
     pincode: string;
+    landmark?: string;
   };
   paymentMethod: string;
 }
 
 const OrderConfirmation = () => {
-  const navigate = useNavigate();
   const location = useLocation();
+  const navigate = useNavigate();
   const orderDetails = location.state as OrderDetails | null;
 
   useEffect(() => {
-    // Redirect if no order details
     if (!orderDetails) {
       navigate('/');
     }
@@ -47,41 +50,56 @@ const OrderConfirmation = () => {
     return null;
   }
 
+  const estimatedDelivery = new Date();
+  estimatedDelivery.setDate(estimatedDelivery.getDate() + 5);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
       <main className="container mx-auto px-4 py-8">
-        {/* Success Banner */}
-        <div className="text-center mb-12">
-          <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-12 h-12 text-success" />
+        <div className="max-w-2xl mx-auto">
+          {/* Success Header */}
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="w-10 h-10 text-success" />
+            </div>
+            <h1 className="font-serif text-3xl font-bold mb-2">Order Confirmed!</h1>
+            <p className="text-muted-foreground">
+              Thank you for your order. We'll send you a confirmation email shortly.
+            </p>
           </div>
-          <h1 className="font-serif text-3xl lg:text-4xl font-bold mb-3">
-            Order Confirmed!
-          </h1>
-          <p className="text-muted-foreground text-lg">
-            Thank you for your purchase. Your order has been placed successfully.
-          </p>
-        </div>
 
-        <div className="max-w-3xl mx-auto">
           {/* Order Info Card */}
-          <div className="bg-card border border-border rounded-lg p-6 mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div className="bg-card p-6 rounded-lg border border-border mb-6">
+            <div className="grid sm:grid-cols-2 gap-4 mb-6">
               <div>
-                <p className="text-sm text-muted-foreground">Order ID</p>
-                <p className="font-mono font-semibold text-lg">{orderDetails.orderId}</p>
+                <p className="text-sm text-muted-foreground">Order Number</p>
+                <p className="font-semibold font-mono text-lg">{orderDetails.orderId}</p>
               </div>
               {orderDetails.paymentId && (
-                <div className="sm:text-right">
+                <div>
                   <p className="text-sm text-muted-foreground">Payment ID</p>
-                  <p className="font-mono text-sm">{orderDetails.paymentId}</p>
+                  <p className="font-semibold font-mono">{orderDetails.paymentId}</p>
                 </div>
               )}
+              <div>
+                <p className="text-sm text-muted-foreground">Payment Method</p>
+                <p className="font-semibold">{orderDetails.paymentMethod}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Estimated Delivery</p>
+                <p className="font-semibold">
+                  {estimatedDelivery.toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}
+                </p>
+              </div>
             </div>
 
-            <Separator className="my-4" />
+            <Separator className="my-6" />
 
             {/* Order Items */}
             <h3 className="font-semibold mb-4 flex items-center gap-2">
@@ -89,8 +107,11 @@ const OrderConfirmation = () => {
               Order Items
             </h3>
             <div className="space-y-4">
-              {orderDetails.items.map((item, index) => (
-                <div key={index} className="flex gap-4">
+              {orderDetails.items.map((item) => (
+                <div
+                  key={`${item.id}-${item.size}-${item.color}`}
+                  className="flex gap-4"
+                >
                   <img
                     src={item.image}
                     alt={item.name}
@@ -109,7 +130,7 @@ const OrderConfirmation = () => {
               ))}
             </div>
 
-            <Separator className="my-4" />
+            <Separator className="my-6" />
 
             {/* Delivery Address */}
             <h3 className="font-semibold mb-3 flex items-center gap-2">
@@ -117,16 +138,16 @@ const OrderConfirmation = () => {
               Delivery Address
             </h3>
             <p className="text-muted-foreground">
-              {orderDetails.address.firstName} {orderDetails.address.lastName}
-              <br />
+              {orderDetails.address.firstName} {orderDetails.address.lastName}<br />
               {orderDetails.address.address}
-              <br />
-              {orderDetails.address.city}, {orderDetails.address.state} - {orderDetails.address.pincode}
+              {orderDetails.address.landmark && `, ${orderDetails.address.landmark}`}<br />
+              {orderDetails.address.city}, {orderDetails.address.state} - {orderDetails.address.pincode}<br />
+              {orderDetails.address.phone && `Phone: ${orderDetails.address.phone}`}
             </p>
 
-            <Separator className="my-4" />
+            <Separator className="my-6" />
 
-            {/* Payment Summary */}
+            {/* Pricing */}
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
@@ -138,20 +159,16 @@ const OrderConfirmation = () => {
                   {orderDetails.shippingCost === 0 ? 'FREE' : `₹${orderDetails.shippingCost}`}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Payment Method</span>
-                <span>{orderDetails.paymentMethod}</span>
-              </div>
               <Separator className="my-2" />
               <div className="flex justify-between font-semibold text-lg">
-                <span>Total Paid</span>
+                <span>Total</span>
                 <span>₹{orderDetails.total.toLocaleString()}</span>
               </div>
             </div>
           </div>
 
           {/* Delivery Info */}
-          <div className="bg-secondary/50 rounded-lg p-6 mb-8">
+          <div className="bg-secondary/50 rounded-lg p-6 mb-6">
             <div className="flex items-center gap-3 mb-2">
               <Truck className="w-6 h-6 text-primary" />
               <h3 className="font-semibold">Estimated Delivery</h3>
@@ -161,21 +178,41 @@ const OrderConfirmation = () => {
             </p>
           </div>
 
+          {/* Invoice Note */}
+          <div className="bg-secondary/50 p-4 rounded-lg mb-6">
+            <div className="flex items-start gap-3">
+              <FileText size={20} className="text-primary mt-0.5" />
+              <div>
+                <p className="font-medium">Invoice</p>
+                <p className="text-sm text-muted-foreground">
+                  {orderDetails.paymentId 
+                    ? 'Your invoice will be generated shortly and available in your order history.'
+                    : 'Your invoice will be generated after your order is delivered.'}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4">
-            <Button
-              className="flex-1"
-              onClick={() => navigate('/track-order')}
-            >
-              Track Your Order
+            <Button asChild className="flex-1">
+              <Link to={`/track-order?id=${orderDetails.orderId}`}>
+                <Package size={18} className="mr-2" />
+                Track Order
+              </Link>
             </Button>
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => navigate('/products')}
-            >
+            <Button variant="outline" asChild className="flex-1">
+              <Link to="/orders">
+                View All Orders
+                <ArrowRight size={18} className="ml-2" />
+              </Link>
+            </Button>
+          </div>
+
+          <div className="text-center mt-8">
+            <Link to="/products" className="text-primary hover:underline">
               Continue Shopping
-            </Button>
+            </Link>
           </div>
         </div>
       </main>
