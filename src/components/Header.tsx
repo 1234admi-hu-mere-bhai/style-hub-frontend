@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Heart, ShoppingBag, User, Menu, X } from 'lucide-react';
+import { Search, Heart, ShoppingBag, User, Menu, X, LogOut, Package, History } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   Sheet,
   SheetContent,
@@ -18,16 +19,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import CartDrawer from './CartDrawer';
-import AuthModal from './AuthModal';
 import SearchCommand from './SearchCommand';
+import { toast } from 'sonner';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const { totalItems } = useCart();
   const { items: wishlistItems } = useWishlist();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
   const categories = [
@@ -36,6 +37,12 @@ const Header = () => {
     { name: 'Kids', href: '/products?category=kids' },
     { name: 'Sale', href: '/products?sale=true' },
   ];
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success('Signed out successfully');
+    navigate('/');
+  };
 
   return (
     <>
@@ -88,25 +95,60 @@ const Header = () => {
                 <DropdownMenuTrigger asChild>
                   <button className="p-2 hover:bg-secondary rounded-full transition-colors relative">
                     <User size={20} />
+                    {user && (
+                      <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-success rounded-full border-2 border-background" />
+                    )}
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => setAuthModalOpen(true)}>
-                    Login / Sign Up
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile">My Profile</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile?tab=orders">My Orders</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/profile?tab=addresses">Address Book</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/track-order">Track Order</Link>
-                  </DropdownMenuItem>
+                  {user ? (
+                    <>
+                      <div className="px-2 py-1.5">
+                        <p className="text-sm font-medium truncate">{user.email}</p>
+                        <p className="text-xs text-muted-foreground">Signed in</p>
+                      </div>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to="/profile" className="flex items-center gap-2">
+                          <User size={16} />
+                          My Profile
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/orders" className="flex items-center gap-2">
+                          <History size={16} />
+                          Order History
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/track-order" className="flex items-center gap-2">
+                          <Package size={16} />
+                          Track Order
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={handleSignOut}
+                        className="text-destructive focus:text-destructive flex items-center gap-2"
+                      >
+                        <LogOut size={16} />
+                        Sign Out
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/auth">Login / Sign Up</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to="/track-order" className="flex items-center gap-2">
+                          <Package size={16} />
+                          Track Order
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -165,7 +207,6 @@ const Header = () => {
       </header>
 
       <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
-      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
     </>
   );
 };

@@ -1,14 +1,36 @@
 import product1 from '@/assets/product-1.jpg';
+import product1Beige from '@/assets/product-1-beige.jpg';
+import product1Black from '@/assets/product-1-black.jpg';
+import product1Navy from '@/assets/product-1-navy.jpg';
+
 import product2 from '@/assets/product-2.jpg';
+import product2Navy from '@/assets/product-2-navy.jpg';
+import product2Black from '@/assets/product-2-black.jpg';
+import product2Olive from '@/assets/product-2-olive.jpg';
+
 import product3 from '@/assets/product-3.jpg';
+import product3Terracotta from '@/assets/product-3-terracotta.jpg';
+import product3Sage from '@/assets/product-3-sage.jpg';
+import product3Black from '@/assets/product-3-black.jpg';
+
 import product4 from '@/assets/product-4.jpg';
+import product4WhiteTan from '@/assets/product-4-white-tan.jpg';
+import product4BlackGrey from '@/assets/product-4-black-grey.jpg';
+import product4NavyBeige from '@/assets/product-4-navy-beige.jpg';
+
 import product5 from '@/assets/product-5.jpg';
+import product5Multicolor from '@/assets/product-5-multicolor.jpg';
+import product5Blue from '@/assets/product-5-blue.jpg';
+
 import product6 from '@/assets/product-6.jpg';
+import product6Cream from '@/assets/product-6-cream.jpg';
+import product6Camel from '@/assets/product-6-camel.jpg';
+import product6Grey from '@/assets/product-6-grey.jpg';
 
 export interface ProductColor {
   name: string;
   hex: string;
-  image?: string; // Optional image for this color variant
+  image?: string;
 }
 
 export interface Product {
@@ -39,9 +61,9 @@ export const products: Product[] = [
     images: [product1],
     sizes: ['S', 'M', 'L', 'XL'],
     colors: [
-      { name: 'Beige', hex: '#E8DCC8' },
-      { name: 'Black', hex: '#1a1a1a' },
-      { name: 'Navy', hex: '#1e3a5f' },
+      { name: 'Beige', hex: '#E8DCC8', image: product1Beige },
+      { name: 'Black', hex: '#1a1a1a', image: product1Black },
+      { name: 'Navy', hex: '#1e3a5f', image: product1Navy },
     ],
     rating: 4.5,
     reviews: 128,
@@ -59,9 +81,9 @@ export const products: Product[] = [
     images: [product2],
     sizes: ['M', 'L', 'XL', 'XXL'],
     colors: [
-      { name: 'Navy', hex: '#1e3a5f' },
-      { name: 'Black', hex: '#1a1a1a' },
-      { name: 'Olive', hex: '#4a5d23' },
+      { name: 'Navy', hex: '#1e3a5f', image: product2Navy },
+      { name: 'Black', hex: '#1a1a1a', image: product2Black },
+      { name: 'Olive', hex: '#4a5d23', image: product2Olive },
     ],
     rating: 4.7,
     reviews: 95,
@@ -78,9 +100,9 @@ export const products: Product[] = [
     images: [product3],
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
     colors: [
-      { name: 'Terracotta', hex: '#C65D3B' },
-      { name: 'Sage', hex: '#9CAF88' },
-      { name: 'Black', hex: '#1a1a1a' },
+      { name: 'Terracotta', hex: '#C65D3B', image: product3Terracotta },
+      { name: 'Sage', hex: '#9CAF88', image: product3Sage },
+      { name: 'Black', hex: '#1a1a1a', image: product3Black },
     ],
     rating: 4.8,
     reviews: 214,
@@ -96,9 +118,9 @@ export const products: Product[] = [
     images: [product4],
     sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: [
-      { name: 'White/Tan', hex: '#D4A574' },
-      { name: 'Black/Grey', hex: '#4a4a4a' },
-      { name: 'Navy/Beige', hex: '#1e3a5f' },
+      { name: 'White/Tan', hex: '#D4A574', image: product4WhiteTan },
+      { name: 'Black/Grey', hex: '#4a4a4a', image: product4BlackGrey },
+      { name: 'Navy/Beige', hex: '#1e3a5f', image: product4NavyBeige },
     ],
     rating: 4.3,
     reviews: 67,
@@ -115,8 +137,8 @@ export const products: Product[] = [
     images: [product5],
     sizes: ['2-3Y', '4-5Y', '6-7Y', '8-9Y', '10-11Y'],
     colors: [
-      { name: 'Multicolor', hex: '#FFB347' },
-      { name: 'Blue Mix', hex: '#6B93D6' },
+      { name: 'Multicolor', hex: '#FFB347', image: product5Multicolor },
+      { name: 'Blue Mix', hex: '#6B93D6', image: product5Blue },
     ],
     rating: 4.9,
     reviews: 342,
@@ -132,9 +154,9 @@ export const products: Product[] = [
     images: [product6],
     sizes: ['XS', 'S', 'M', 'L'],
     colors: [
-      { name: 'Cream', hex: '#F5F5DC' },
-      { name: 'Camel', hex: '#C19A6B' },
-      { name: 'Grey', hex: '#808080' },
+      { name: 'Cream', hex: '#F5F5DC', image: product6Cream },
+      { name: 'Camel', hex: '#C19A6B', image: product6Camel },
+      { name: 'Grey', hex: '#808080', image: product6Grey },
     ],
     rating: 4.6,
     reviews: 156,

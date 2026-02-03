@@ -14,13 +14,146 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      order_items: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          image: string | null
+          order_id: string
+          price: number
+          product_id: string
+          product_name: string
+          quantity: number
+          size: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          image?: string | null
+          order_id: string
+          price: number
+          product_id: string
+          product_name: string
+          quantity: number
+          size?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          image?: string | null
+          order_id?: string
+          price?: number
+          product_id?: string
+          product_name?: string
+          quantity?: number
+          size?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          delivered_at: string | null
+          id: string
+          invoice_generated_at: string | null
+          invoice_url: string | null
+          order_number: string
+          payment_id: string | null
+          payment_method: string
+          payment_status: string
+          shipping_address: Json
+          shipping_cost: number
+          status: string
+          subtotal: number
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          invoice_generated_at?: string | null
+          invoice_url?: string | null
+          order_number: string
+          payment_id?: string | null
+          payment_method: string
+          payment_status?: string
+          shipping_address: Json
+          shipping_cost?: number
+          status?: string
+          subtotal: number
+          total: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delivered_at?: string | null
+          id?: string
+          invoice_generated_at?: string | null
+          invoice_url?: string | null
+          order_number?: string
+          payment_id?: string | null
+          payment_method?: string
+          payment_status?: string
+          shipping_address?: Json
+          shipping_cost?: number
+          status?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_owner_of_order: { Args: { order_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
