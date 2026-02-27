@@ -6,7 +6,7 @@ const corsHeaders = {
 }
 
 // Add your admin email(s) here
-const ADMIN_EMAILS = ['muffigout@gmail.com']
+const ADMIN_EMAILS = ['muffigout@gmail.com', 'otw2003@gmail.com', 'kaliasgar776@gmail.com']
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
