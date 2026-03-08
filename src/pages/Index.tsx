@@ -21,7 +21,7 @@ const Index = () => {
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
 
-  const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL'];
   const colors = [
     { name: 'Black', hex: '#1a1a1a' },
     { name: 'White', hex: '#ffffff' },
@@ -29,6 +29,30 @@ const Index = () => {
     { name: 'Beige', hex: '#E8DCC8' },
     { name: 'Terracotta', hex: '#C65D3B' },
     { name: 'Grey', hex: '#808080' },
+    { name: 'Olive', hex: '#556B2F' },
+    { name: 'Maroon', hex: '#800000' },
+    { name: 'Sky Blue', hex: '#87CEEB' },
+    { name: 'Brown', hex: '#8B4513' },
+    { name: 'Cream', hex: '#FFFDD0' },
+    { name: 'Charcoal', hex: '#36454F' },
+    { name: 'Sage', hex: '#B2AC88' },
+    { name: 'Camel', hex: '#C19A6B' },
+    { name: 'Mustard', hex: '#FFDB58' },
+    { name: 'Burgundy', hex: '#800020' },
+    { name: 'Teal', hex: '#008080' },
+    { name: 'Coral', hex: '#FF7F50' },
+    { name: 'Lavender', hex: '#E6E6FA' },
+    { name: 'Peach', hex: '#FFDAB9' },
+    { name: 'Rust', hex: '#B7410E' },
+    { name: 'Tan', hex: '#D2B48C' },
+    { name: 'Mint', hex: '#98FF98' },
+    { name: 'Pink', hex: '#FFC0CB' },
+    { name: 'Red', hex: '#DC2626' },
+    { name: 'Blue', hex: '#2563EB' },
+    { name: 'Green', hex: '#16A34A' },
+    { name: 'Yellow', hex: '#FACC15' },
+    { name: 'Orange', hex: '#EA580C' },
+    { name: 'Purple', hex: '#9333EA' },
   ];
 
   const toggleSize = (size: string) => setSelectedSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
