@@ -118,7 +118,7 @@ const AdminProducts = () => {
     setSizesInput((product.sizes || []).join(', '));
     setColorsInput(
       (product.colors || []).map((c: any) =>
-        typeof c === 'string' ? c : `${c.name}:${c.hex}`
+        typeof c === 'string' ? c : `${c.name}:${c.hex}${c.image ? ':' + c.image : ''}`
       ).join(', ')
     );
     setTagsInput((product.tags || []).join(', '));
