@@ -41,18 +41,8 @@ const Footer = () => {
             <h3 className="font-semibold text-lg mb-4">Shop</h3>
             <ul className="space-y-3 text-cream/70">
               <li>
-                <Link to="/products?category=men" className="hover:text-primary transition-colors">
+                <Link to="/products" className="hover:text-primary transition-colors">
                   Men's Collection
-                </Link>
-              </li>
-              <li>
-                <Link to="/products?category=women" className="hover:text-primary transition-colors">
-                  Women's Collection
-                </Link>
-              </li>
-              <li>
-                <Link to="/products?category=kids" className="hover:text-primary transition-colors">
-                  Kids' Collection
                 </Link>
               </li>
               <li>
