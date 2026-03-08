@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { Filter, SlidersHorizontal, Grid, LayoutGrid, X, Loader2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -130,6 +130,27 @@ const Products = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto px-4 py-8">
+        {/* Breadcrumb Navigation */}
+        <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6">
+          <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
+          <span>/</span>
+          {categoryParam ? (
+            <>
+              <Link to="/products" className="hover:text-foreground transition-colors">Products</Link>
+              <span>/</span>
+              <span className="text-foreground capitalize">{categoryParam}'s Collection</span>
+            </>
+          ) : saleParam ? (
+            <>
+              <Link to="/products" className="hover:text-foreground transition-colors">Products</Link>
+              <span>/</span>
+              <span className="text-foreground">Sale</span>
+            </>
+          ) : (
+            <span className="text-foreground">All Products</span>
+          )}
+        </nav>
+
         <div className="mb-8">
           <h1 className="font-serif text-3xl lg:text-4xl font-bold mb-2">
             {saleParam ? 'Sale' : categoryParam ? `${categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1)}'s Collection` : 'All Products'}
