@@ -65,7 +65,7 @@ const Header = () => {
               <img 
                 src="/assets/logo-new.png" 
                 alt="MUFFI GOUT APPAREL HUB" 
-                className="h-12 lg:h-14 w-auto rounded-full shadow-sm"
+                className="h-16 lg:h-20 w-auto rounded-full shadow-sm"
               />
               <div className="flex flex-col items-start leading-none">
                 <span className="font-serif text-lg lg:text-xl font-bold tracking-tight text-foreground">MUFFI GOUT</span>
