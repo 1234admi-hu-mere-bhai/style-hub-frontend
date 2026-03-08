@@ -78,7 +78,7 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/returns" className="hover:text-primary transition-colors">
+                <Link to="/return-exchange" className="hover:text-primary transition-colors">
                   Returns & Exchange
                 </Link>
               </li>
