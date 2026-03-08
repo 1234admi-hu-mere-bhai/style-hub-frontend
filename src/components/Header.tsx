@@ -32,6 +32,7 @@ const Header = () => {
   const navigate = useNavigate();
 
   const categories = [
+    { name: 'Home', href: '/' },
     { name: 'Men', href: '/products?category=men' },
     { name: 'Sale', href: '/products?sale=true' },
   ];
