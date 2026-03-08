@@ -47,8 +47,8 @@ const Index = () => {
                 <span className="text-primary">Collection 2024</span>
               </h1>
               <p className="text-lg text-muted-foreground mb-8 max-w-md">
-                Discover our latest arrivals featuring premium fabrics and timeless
-                designs for the whole family.
+                Discover our latest men's arrivals featuring premium fabrics and timeless
+                designs.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button size="lg" asChild className="group">

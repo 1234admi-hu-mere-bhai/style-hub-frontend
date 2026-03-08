@@ -46,7 +46,7 @@ const Products = () => {
     { name: 'Terracotta', hex: '#C65D3B' },
     { name: 'Grey', hex: '#808080' },
   ];
-  const categories = ['men', 'women', 'kids'];
+  const categories = ['men'];
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
