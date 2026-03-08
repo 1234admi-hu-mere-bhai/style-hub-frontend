@@ -179,11 +179,47 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
               maxLength={1000}
             />
           </div>
+          {/* Photo Upload */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">Add Photos (optional, max 4)</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+            <div className="flex gap-3 flex-wrap items-center">
+              {previewUrls.map((url, idx) => (
+                <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border">
+                  <img src={url} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => removeImage(idx)}
+                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+              {reviewImages.length < 4 && (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-20 h-20 rounded-lg border-2 border-dashed border-border hover:border-primary flex flex-col items-center justify-center gap-1 transition-colors"
+                >
+                  <Camera size={20} className="text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">Add</span>
+                </button>
+              )}
+            </div>
+          </div>
           <div className="flex gap-3">
             <Button onClick={handleSubmitReview} disabled={submitting}>
-              {submitting ? 'Submitting...' : 'Submit Review'}
+              {submitting ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</>
+              ) : 'Submit Review'}
             </Button>
-            <Button variant="outline" onClick={() => setShowWriteReview(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => { setShowWriteReview(false); setReviewImages([]); setPreviewUrls([]); }}>Cancel</Button>
           </div>
         </div>
       )}
