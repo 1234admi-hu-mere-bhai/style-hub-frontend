@@ -113,12 +113,14 @@ const ProductCard = ({ product }: ProductCardProps) => {
       </div>
 
       <div className="mt-4 space-y-1">
-        <div className="flex items-center gap-1">
-          <Star size={14} className="fill-gold text-gold" />
-          <span className="text-sm text-muted-foreground">
-            {product.rating} ({product.reviews})
-          </span>
-        </div>
+        {product.reviews > 0 && (
+          <div className="flex items-center gap-1">
+            <Star size={14} className="fill-gold text-gold" />
+            <span className="text-sm text-muted-foreground">
+              {product.rating} ({product.reviews})
+            </span>
+          </div>
+        )}
 
         <h3 className="font-medium text-foreground group-hover:text-primary transition-colors">
           {product.name}
