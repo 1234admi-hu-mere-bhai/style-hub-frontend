@@ -222,7 +222,7 @@ const ProductDetail = () => {
           <Tabs defaultValue="description">
             <TabsList>
               <TabsTrigger value="description">Description</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews ({product.reviews})</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews ({totalReviews})</TabsTrigger>
               <TabsTrigger value="shipping">Shipping</TabsTrigger>
             </TabsList>
             <TabsContent value="description" className="mt-6">
