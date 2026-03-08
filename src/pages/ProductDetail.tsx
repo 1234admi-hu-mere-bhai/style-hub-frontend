@@ -223,7 +223,7 @@ const ProductDetail = () => {
               </div>
             </TabsContent>
             <TabsContent value="reviews" className="mt-6">
-              <ReviewSection productId={product.id} reviews={reviews} averageRating={product.rating} totalReviews={product.reviews} />
+              <ReviewSection productId={product.id} />
             </TabsContent>
             <TabsContent value="shipping" className="mt-6">
               <div className="space-y-4">

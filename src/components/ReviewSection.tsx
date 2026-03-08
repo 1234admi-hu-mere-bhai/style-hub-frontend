@@ -45,7 +45,7 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
       await submitReview({
         product_id: productId,
         user_id: user.id,
-        user_name: profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : user.email?.split('@')[0] || 'Customer',
+        user_name: user.email?.split('@')[0] || 'Customer',
         rating: newReview.rating,
         title: newReview.title,
         comment: newReview.comment,
