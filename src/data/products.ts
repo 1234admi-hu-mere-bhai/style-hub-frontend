@@ -36,7 +36,7 @@ export interface ProductColor {
 export interface Product {
   id: string;
   name: string;
-  category: 'men' | 'women' | 'kids';
+  category: 'men';
   price: number;
   originalPrice?: number;
   discount?: number;
