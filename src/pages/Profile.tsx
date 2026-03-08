@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import {
   User,
   MapPin,
@@ -11,6 +11,7 @@ import {
   Edit2,
   Trash2,
   ChevronRight,
+  Loader2,
 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -37,18 +38,88 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { mockAddresses, mockOrders, mockUserProfile, Address } from '@/data/user';
+import { Address } from '@/data/user';
 import { addressSchema } from '@/lib/validations';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const Profile = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const activeTab = searchParams.get('tab') || 'profile';
-  const [profile, setProfile] = useState(mockUserProfile);
-  const [addresses, setAddresses] = useState(mockAddresses);
-  const [orders] = useState(mockOrders);
+  const { user, isLoading: authLoading, signOut } = useAuth();
+
+  const [profile, setProfile] = useState({ firstName: '', lastName: '', email: '', phone: '' });
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
+
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [authLoading, user, navigate]);
+
+  // Load profile data from Supabase
+  useEffect(() => {
+    if (!user) return;
+    const loadProfile = async () => {
+      setLoading(true);
+      try {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (profileData) {
+          setProfile({
+            firstName: profileData.first_name || '',
+            lastName: profileData.last_name || '',
+            email: user.email || '',
+            phone: profileData.phone || '',
+          });
+        } else {
+          setProfile({ firstName: '', lastName: '', email: user.email || '', phone: '' });
+        }
+
+        // Load orders
+        const { data: ordersData } = await supabase
+          .from('orders')
+          .select('*, order_items(*)')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (ordersData) {
+          setOrders(ordersData.map((order: any) => ({
+            id: order.id,
+            orderNumber: order.order_number,
+            date: order.created_at,
+            status: order.status,
+            items: (order.order_items || []).map((item: any) => ({
+              id: item.product_id,
+              name: item.product_name,
+              image: item.image || '/placeholder.svg',
+              size: item.size || '-',
+              color: item.color || '-',
+              quantity: item.quantity,
+              price: item.price,
+            })),
+            total: order.total,
+          })));
+        }
+      } catch (error) {
+        console.error('Failed to load profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadProfile();
+  }, [user]);
 
   const tabs = [
     { id: 'profile', label: 'Personal Info', icon: User },
