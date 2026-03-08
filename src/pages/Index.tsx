@@ -270,9 +270,11 @@ const Index = () => {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+            <div key={`${activeFilter}-${selectedSizes.join()}-${selectedColors.join()}-${priceRange.join()}`} className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              {featuredProducts.map((product, index) => (
+                <div key={product.id} className="animate-fade-in" style={{ animationDelay: `${index * 60}ms`, animationFillMode: 'backwards' }}>
+                  <ProductCard product={product} />
+                </div>
               ))}
             </div>
           ) : (
