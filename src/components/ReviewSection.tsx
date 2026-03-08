@@ -12,7 +12,7 @@ interface ReviewSectionProps {
 }
 
 const ReviewSection = ({ productId }: ReviewSectionProps) => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { reviews, loading, submitReview, averageRating, totalReviews } = useProductReviews(productId);
   const [showWriteReview, setShowWriteReview] = useState(false);
   const [submitting, setSubmitting] = useState(false);
