@@ -138,13 +138,17 @@ Deno.serve(async (req) => {
     // Recent orders (last 10)
     const recentOrders = allOrdersList.slice(0, 10)
 
-    // Customers with order counts - only include those with orders
+    // Customers with order counts
     const customerOrderCounts: Record<string, number> = {}
     const customerSpend: Record<string, number> = {}
+    const customerLastOrder: Record<string, string> = {}
     const customerOrders: Record<string, any[]> = {}
     allOrders.forEach((o: any) => {
       customerOrderCounts[o.user_id] = (customerOrderCounts[o.user_id] || 0) + 1
       customerSpend[o.user_id] = (customerSpend[o.user_id] || 0) + Number(o.total || 0)
+      if (!customerLastOrder[o.user_id] || o.created_at > customerLastOrder[o.user_id]) {
+        customerLastOrder[o.user_id] = o.created_at
+      }
       if (!customerOrders[o.user_id]) customerOrders[o.user_id] = []
       customerOrders[o.user_id].push({
         id: o.id,
@@ -163,27 +167,29 @@ Deno.serve(async (req) => {
       })
     })
 
-    // Fetch user emails via admin API
+    // Fetch user emails and registration dates via admin API
     const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers()
     const emailMap: Record<string, string> = {}
-    ;(authUsers || []).forEach((u: any) => { emailMap[u.id] = u.email || '' })
+    const registeredAtMap: Record<string, string> = {}
+    ;(authUsers || []).forEach((u: any) => {
+      emailMap[u.id] = u.email || ''
+      registeredAtMap[u.id] = u.created_at || ''
+    })
 
-    // Only return customers who have placed at least one order
-    const customerIdsWithOrders = Object.keys(customerOrderCounts)
-    const customers = allProfiles
-      .filter((p: any) => customerIdsWithOrders.includes(p.id))
-      .map((p: any) => ({
-        id: p.id,
-        first_name: p.first_name,
-        last_name: p.last_name,
-        email: emailMap[p.id] || '',
-        phone: p.phone,
-        avatar_url: p.avatar_url,
-        created_at: p.created_at,
-        total_orders: customerOrderCounts[p.id] || 0,
-        total_spent: customerSpend[p.id] || 0,
-        orders: customerOrders[p.id] || [],
-      }))
+    // Return ALL registered customers
+    const customers = allProfiles.map((p: any) => ({
+      id: p.id,
+      first_name: p.first_name,
+      last_name: p.last_name,
+      email: emailMap[p.id] || '',
+      phone: p.phone,
+      avatar_url: p.avatar_url,
+      created_at: registeredAtMap[p.id] || p.created_at,
+      total_orders: customerOrderCounts[p.id] || 0,
+      total_spent: customerSpend[p.id] || 0,
+      last_order_at: customerLastOrder[p.id] || null,
+      orders: customerOrders[p.id] || [],
+    }))
 
     return new Response(
       JSON.stringify({
