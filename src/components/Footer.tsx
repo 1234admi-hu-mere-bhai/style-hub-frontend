@@ -10,11 +10,14 @@ const Footer = () => {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <img 
-                src="/assets/logo.jpg" 
+                src="/assets/logo-new.png" 
                 alt="MUFFI GOUT APPAREL HUB" 
-                className="h-12 w-auto"
+                className="h-14 w-auto rounded-full"
               />
-              <h2 className="font-serif text-xl font-bold">MUFFI GOUT APPAREL HUB</h2>
+              <div className="flex flex-col leading-none">
+                <span className="font-serif text-xl font-bold">MUFFI GOUT</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary mt-1">Apparel Hub</span>
+              </div>
             </div>
             <p className="text-cream/70 mb-6">
               Your destination for stylish clothing for Men,

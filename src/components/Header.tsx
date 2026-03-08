@@ -63,16 +63,16 @@ const Header = () => {
             </button>
 
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2">
+            <Link to="/" className="flex items-center gap-3">
               <img 
-                src="/assets/logo.jpg" 
+                src="/assets/logo-new.png" 
                 alt="MUFFI GOUT APPAREL HUB" 
-                className="h-10 lg:h-12 w-auto"
+                className="h-12 lg:h-14 w-auto rounded-full shadow-sm"
               />
-              <h1 className="font-serif text-lg lg:text-xl font-bold tracking-tight leading-tight">
-                <span className="block lg:inline">MUFFI GOUT</span>
-                <span className="block lg:inline lg:ml-1 text-xs lg:text-sm font-medium text-muted-foreground">APPAREL HUB</span>
-              </h1>
+              <div className="flex flex-col items-start leading-none">
+                <span className="font-serif text-lg lg:text-xl font-bold tracking-tight text-foreground">MUFFI GOUT</span>
+                <span className="text-[10px] lg:text-xs font-semibold uppercase tracking-[0.25em] text-primary mt-0.5">Apparel Hub</span>
+              </div>
             </Link>
 
             {/* Desktop Navigation */}
