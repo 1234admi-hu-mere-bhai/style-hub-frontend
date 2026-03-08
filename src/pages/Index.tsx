@@ -1,12 +1,16 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Truck, RefreshCw, Shield, Headphones, Loader2 } from 'lucide-react';
+import { ArrowRight, Truck, RefreshCw, Shield, Headphones, Loader2, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import HeroProductCarousel from '@/components/HeroProductCarousel';
 import { useDbProducts } from '@/hooks/useDbProducts';
+import {
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
+} from '@/components/ui/sheet';
+import { Slider } from '@/components/ui/slider';
 
 import categoryMen from '@/assets/category-men.jpg';
 
