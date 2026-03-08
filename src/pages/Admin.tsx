@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   Loader2, ShieldAlert, LayoutDashboard, ShoppingCart, Users,
   CreditCard, BarChart3, LogOut, Package, Warehouse,
-  Tag, Bell, FileText, Menu, X, ChevronRight, Store
+  Tag, Bell, FileText, Menu, X, ChevronRight, Store, MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import logoNew from '@/assets/logo-new.png';
@@ -19,6 +19,7 @@ import AdminAnalytics from '@/components/admin/AdminAnalytics';
 import AdminCoupons from '@/components/admin/AdminCoupons';
 import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminBlog from '@/components/admin/AdminBlog';
+import AdminReviews from '@/components/admin/AdminReviews';
 
 interface Analytics {
   totalOrders: number;
@@ -45,6 +46,7 @@ const TABS = [
   { key: 'inventory', label: 'Inventory', icon: Warehouse },
   { key: 'analytics', label: 'Analytics', icon: BarChart3 },
   { key: 'coupons', label: 'Coupons', icon: Tag },
+  { key: 'reviews', label: 'Reviews', icon: MessageSquare },
   { key: 'notifications', label: 'Notifications', icon: Bell },
   { key: 'blog', label: 'Blog', icon: FileText },
 ] as const;
@@ -319,6 +321,7 @@ const Admin = () => {
             />
           )}
           {activeTab === 'coupons' && <AdminCoupons />}
+          {activeTab === 'reviews' && <AdminReviews />}
           {activeTab === 'notifications' && <AdminNotifications />}
           {activeTab === 'blog' && <AdminBlog />}
         </main>
