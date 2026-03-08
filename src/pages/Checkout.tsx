@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn } from 'lucide-react';
+import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn, Clock } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCart } from '@/contexts/CartContext';
@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useRazorpay, RazorpayResponse } from '@/hooks/useRazorpay';
+import PincodeChecker from '@/components/PincodeChecker';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -37,6 +38,8 @@ const Checkout = () => {
     pincode: '',
     landmark: '',
   });
+
+  const [deliveryInfo, setDeliveryInfo] = useState<{ estimatedDays: string; zone: string; codAvailable: boolean } | null>(null);
 
   const shippingCost = totalPrice >= 999 ? 0 : 99;
   const finalTotal = totalPrice + shippingCost;
@@ -356,6 +359,19 @@ const Checkout = () => {
                       />
                     </div>
                   </div>
+
+                  {/* Pincode Delivery Checker */}
+                  <div className="bg-secondary/30 p-4 rounded-lg space-y-2">
+                    <h3 className="text-sm font-medium flex items-center gap-2">
+                      <Clock size={16} className="text-primary" />
+                      Check Delivery Availability
+                    </h3>
+                    <PincodeChecker
+                      pincode={addressForm.pincode}
+                      onDeliveryInfo={setDeliveryInfo}
+                    />
+                  </div>
+
                   <Button
                     type="button"
                     className="w-full mt-4"
@@ -486,7 +502,7 @@ const Checkout = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Estimated Delivery</span>
-                    <span>3-5 Business Days</span>
+                    <span>{deliveryInfo ? `${deliveryInfo.estimatedDays} Business Days` : '3-5 Business Days'}</span>
                   </div>
                 </div>
 
@@ -569,7 +585,7 @@ const Checkout = () => {
               <div className="mt-6 p-4 bg-secondary/50 rounded-lg">
                 <div className="flex items-center gap-2 text-sm">
                   <Truck size={16} className="text-primary" />
-                  <span>Estimated delivery: 3-5 business days</span>
+                  <span>Estimated delivery: {deliveryInfo ? `${deliveryInfo.estimatedDays} business days (${deliveryInfo.zone})` : 'Enter pincode for estimate'}</span>
                 </div>
               </div>
             </div>

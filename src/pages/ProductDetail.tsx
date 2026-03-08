@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import SizeChartModal from '@/components/SizeChartModal';
 import ReviewSection from '@/components/ReviewSection';
+import PincodeChecker from '@/components/PincodeChecker';
 import { useDbProducts, useDbProduct } from '@/hooks/useDbProducts';
 import { getProductReviews } from '@/data/reviews';
 import { useCart } from '@/contexts/CartContext';
@@ -193,6 +194,12 @@ const ProductDetail = () => {
               <Button size="lg" variant="outline" className="px-4" onClick={handleWishlist}>
                 <Heart size={20} className={inWishlist ? 'fill-primary text-primary' : ''} />
               </Button>
+            </div>
+
+            {/* Pincode Checker */}
+            <div className="pt-6 border-t border-border">
+              <h3 className="font-semibold mb-3 text-sm">Check Delivery Availability</h3>
+              <PincodeChecker />
             </div>
 
             <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border">
