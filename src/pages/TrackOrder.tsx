@@ -57,11 +57,20 @@ interface Order {
 }
 
 const TrackOrder = () => {
+  const { user, isLoading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get('id');
   const [searchQuery, setSearchQuery] = useState(orderId || '');
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
 
   const fetchOrder = async (orderNumber: string) => {
     setIsLoading(true);
