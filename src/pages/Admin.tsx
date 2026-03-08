@@ -31,6 +31,7 @@ interface Analytics {
 const TABS = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'orders', label: 'Orders', icon: ShoppingCart },
+  { key: 'products', label: 'Products', icon: Package },
   { key: 'customers', label: 'Customers', icon: Users },
   { key: 'payments', label: 'Payments', icon: CreditCard },
   { key: 'analytics', label: 'Analytics', icon: BarChart3 },
