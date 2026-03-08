@@ -4,37 +4,24 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-
-export interface Review {
-  id: string;
-  userId: string;
-  userName: string;
-  userAvatar?: string;
-  rating: number;
-  title: string;
-  comment: string;
-  date: string;
-  helpful: number;
-  images?: string[];
-  verified: boolean;
-}
+import { useAuth } from '@/contexts/AuthContext';
+import { useProductReviews, DbReview } from '@/hooks/useProductReviews';
 
 interface ReviewSectionProps {
   productId: string;
-  reviews: Review[];
-  averageRating: number;
-  totalReviews: number;
 }
 
-const ReviewSection = ({ productId, reviews, averageRating, totalReviews }: ReviewSectionProps) => {
+const ReviewSection = ({ productId }: ReviewSectionProps) => {
+  const { user, profile } = useAuth();
+  const { reviews, loading, submitReview, averageRating, totalReviews } = useProductReviews(productId);
   const [showWriteReview, setShowWriteReview] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [newReview, setNewReview] = useState({
     rating: 5,
     title: '',
     comment: '',
   });
 
-  // Calculate rating distribution
   const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => {
     const count = reviews.filter((r) => Math.floor(r.rating) === rating).length;
     return {
@@ -44,14 +31,33 @@ const ReviewSection = ({ productId, reviews, averageRating, totalReviews }: Revi
     };
   });
 
-  const handleSubmitReview = () => {
+  const handleSubmitReview = async () => {
+    if (!user) {
+      toast.error('Please log in to write a review');
+      return;
+    }
     if (!newReview.title.trim() || !newReview.comment.trim()) {
       toast.error('Please fill in all fields');
       return;
     }
-    toast.success('Review submitted! (Demo - will appear after moderation)');
-    setShowWriteReview(false);
-    setNewReview({ rating: 5, title: '', comment: '' });
+    setSubmitting(true);
+    try {
+      await submitReview({
+        product_id: productId,
+        user_id: user.id,
+        user_name: profile?.first_name ? `${profile.first_name} ${profile.last_name || ''}`.trim() : user.email?.split('@')[0] || 'Customer',
+        rating: newReview.rating,
+        title: newReview.title,
+        comment: newReview.comment,
+      });
+      toast.success('Review submitted successfully!');
+      setShowWriteReview(false);
+      setNewReview({ rating: 5, title: '', comment: '' });
+    } catch {
+      toast.error('Failed to submit review. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleHelpful = (reviewId: string) => {
@@ -68,15 +74,7 @@ const ReviewSection = ({ productId, reviews, averageRating, totalReviews }: Revi
             <div>
               <div className="flex items-center gap-1 mb-1">
                 {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={20}
-                    className={
-                      i < Math.floor(averageRating)
-                        ? 'fill-gold text-gold'
-                        : 'text-border'
-                    }
-                  />
+                  <Star key={i} size={20} className={i < Math.floor(averageRating) ? 'fill-gold text-gold' : 'text-border'} />
                 ))}
               </div>
               <p className="text-sm text-muted-foreground">
@@ -84,7 +82,10 @@ const ReviewSection = ({ productId, reviews, averageRating, totalReviews }: Revi
               </p>
             </div>
           </div>
-          <Button onClick={() => setShowWriteReview(!showWriteReview)}>
+          <Button onClick={() => {
+            if (!user) { toast.error('Please log in to write a review'); return; }
+            setShowWriteReview(!showWriteReview);
+          }}>
             Write a Review
           </Button>
         </div>
@@ -94,9 +95,7 @@ const ReviewSection = ({ productId, reviews, averageRating, totalReviews }: Revi
             <div key={item.rating} className="flex items-center gap-3">
               <span className="text-sm w-8">{item.rating} ★</span>
               <Progress value={item.percentage} className="flex-1 h-2" />
-              <span className="text-sm text-muted-foreground w-8">
-                {item.count}
-              </span>
+              <span className="text-sm text-muted-foreground w-8">{item.count}</span>
             </div>
           ))}
         </div>
@@ -106,31 +105,16 @@ const ReviewSection = ({ productId, reviews, averageRating, totalReviews }: Revi
       {showWriteReview && (
         <div className="bg-secondary/30 p-6 rounded-lg space-y-4">
           <h3 className="font-semibold">Write Your Review</h3>
-          
-          {/* Rating Selection */}
           <div>
             <label className="text-sm font-medium mb-2 block">Your Rating</label>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  onClick={() => setNewReview({ ...newReview, rating: star })}
-                  className="p-1"
-                >
-                  <Star
-                    size={24}
-                    className={
-                      star <= newReview.rating
-                        ? 'fill-gold text-gold'
-                        : 'text-border hover:text-gold transition-colors'
-                    }
-                  />
+                <button key={star} onClick={() => setNewReview({ ...newReview, rating: star })} className="p-1">
+                  <Star size={24} className={star <= newReview.rating ? 'fill-gold text-gold' : 'text-border hover:text-gold transition-colors'} />
                 </button>
               ))}
             </div>
           </div>
-
-          {/* Title */}
           <div>
             <label className="text-sm font-medium mb-2 block">Review Title</label>
             <input
@@ -142,8 +126,6 @@ const ReviewSection = ({ productId, reviews, averageRating, totalReviews }: Revi
               maxLength={100}
             />
           </div>
-
-          {/* Comment */}
           <div>
             <label className="text-sm font-medium mb-2 block">Your Review</label>
             <Textarea
@@ -154,31 +136,26 @@ const ReviewSection = ({ productId, reviews, averageRating, totalReviews }: Revi
               maxLength={1000}
             />
           </div>
-
-          {/* Add Photos */}
-          <div>
-            <label className="text-sm font-medium mb-2 block">Add Photos (Optional)</label>
-            <button className="flex items-center gap-2 px-4 py-2 border border-dashed border-border rounded-md text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors">
-              <Camera size={18} />
-              Upload Photos
-            </button>
-          </div>
-
           <div className="flex gap-3">
-            <Button onClick={handleSubmitReview}>Submit Review</Button>
-            <Button variant="outline" onClick={() => setShowWriteReview(false)}>
-              Cancel
+            <Button onClick={handleSubmitReview} disabled={submitting}>
+              {submitting ? 'Submitting...' : 'Submit Review'}
             </Button>
+            <Button variant="outline" onClick={() => setShowWriteReview(false)}>Cancel</Button>
           </div>
         </div>
       )}
 
       {/* Reviews List */}
       <div className="space-y-6">
-        {reviews.length === 0 ? (
+        {loading ? (
+          <p className="text-center text-muted-foreground py-8">Loading reviews...</p>
+        ) : reviews.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-4">No reviews yet. Be the first to review!</p>
-            <Button variant="outline" onClick={() => setShowWriteReview(true)}>
+            <Button variant="outline" onClick={() => {
+              if (!user) { toast.error('Please log in to write a review'); return; }
+              setShowWriteReview(true);
+            }}>
               Write a Review
             </Button>
           </div>
@@ -187,68 +164,36 @@ const ReviewSection = ({ productId, reviews, averageRating, totalReviews }: Revi
             <div key={review.id} className="border-b border-border pb-6 last:border-0">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                  {review.userAvatar ? (
-                    <img
-                      src={review.userAvatar}
-                      alt={review.userName}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <User size={20} className="text-muted-foreground" />
-                  )}
+                  <User size={20} className="text-muted-foreground" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium">{review.userName}</span>
+                    <span className="font-medium">{review.user_name}</span>
                     {review.verified && (
-                      <span className="text-xs bg-success/10 text-success px-2 py-0.5 rounded">
-                        Verified Purchase
-                      </span>
+                      <span className="text-xs bg-success/10 text-success px-2 py-0.5 rounded">Verified Purchase</span>
                     )}
                   </div>
                   <div className="flex items-center gap-2 mb-2">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          size={14}
-                          className={
-                            i < review.rating ? 'fill-gold text-gold' : 'text-border'
-                          }
-                        />
+                        <Star key={i} size={14} className={i < review.rating ? 'fill-gold text-gold' : 'text-border'} />
                       ))}
                     </div>
                     <span className="text-sm text-muted-foreground">
-                      {new Date(review.date).toLocaleDateString('en-IN', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
+                      {new Date(review.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
                     </span>
                   </div>
                   <h4 className="font-medium mb-1">{review.title}</h4>
                   <p className="text-muted-foreground text-sm">{review.comment}</p>
-
-                  {/* Review Images */}
                   {review.images && review.images.length > 0 && (
                     <div className="flex gap-2 mt-3">
                       {review.images.map((img, idx) => (
-                        <img
-                          key={idx}
-                          src={img}
-                          alt={`Review photo ${idx + 1}`}
-                          className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80"
-                        />
+                        <img key={idx} src={img} alt={`Review photo ${idx + 1}`} className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80" />
                       ))}
                     </div>
                   )}
-
-                  <button
-                    onClick={() => handleHelpful(review.id)}
-                    className="flex items-center gap-2 mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <ThumbsUp size={14} />
-                    Helpful ({review.helpful})
+                  <button onClick={() => handleHelpful(review.id)} className="flex items-center gap-2 mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    <ThumbsUp size={14} /> Helpful ({review.helpful})
                   </button>
                 </div>
               </div>
