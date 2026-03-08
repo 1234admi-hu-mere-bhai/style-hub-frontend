@@ -5,6 +5,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCurrency } from '@/hooks/useCurrency';
 import { createOrder } from '@/hooks/useOrders';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,7 @@ const Checkout = () => {
   const [searchParams] = useSearchParams();
   const { items: cartItems, totalPrice: cartTotalPrice, clearCart, buyNowItem, setBuyNowItem } = useCart();
   const { user, isLoading: authLoading } = useAuth();
+  const { formatPrice } = useCurrency();
   const isBuyNow = searchParams.get('buyNow') === 'true' && buyNowItem !== null;
   const items = isBuyNow ? [buyNowItem!] : cartItems;
   const totalPrice = isBuyNow ? buyNowItem!.price * buyNowItem!.quantity : cartTotalPrice;
@@ -402,7 +404,7 @@ const Checkout = () => {
                           Size: {item.size} | Color: {item.color} | Qty: {item.quantity}
                         </p>
                         <p className="font-semibold mt-1">
-                          ₹{(item.price * item.quantity).toLocaleString()}
+                          {formatPrice(item.price * item.quantity)}
                         </p>
                       </div>
                     </div>
@@ -449,7 +451,7 @@ const Checkout = () => {
                         Processing...
                       </>
                     ) : (
-                      `Pay ₹${finalTotal.toLocaleString()}`
+                      `Pay ${formatPrice(finalTotal)}`
                     )}
                   </Button>
                 </div>
@@ -470,7 +472,7 @@ const Checkout = () => {
                     <span className="text-muted-foreground">
                       {item.name} x{item.quantity}
                     </span>
-                    <span>₹{(item.price * item.quantity).toLocaleString()}</span>
+                    <span>{formatPrice(item.price * item.quantity)}</span>
                   </div>
                 ))}
               </div>
@@ -480,12 +482,12 @@ const Checkout = () => {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>₹{totalPrice.toLocaleString()}</span>
+                  <span>{formatPrice(totalPrice)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping</span>
                   <span className={shippingCost === 0 ? 'text-success' : ''}>
-                    {shippingCost === 0 ? 'FREE' : `₹${shippingCost}`}
+                    {shippingCost === 0 ? 'FREE' : formatPrice(shippingCost)}
                   </span>
                 </div>
               </div>
@@ -494,12 +496,12 @@ const Checkout = () => {
 
               <div className="flex justify-between font-semibold text-lg">
                 <span>Total</span>
-                <span>₹{finalTotal.toLocaleString()}</span>
+                <span>{formatPrice(finalTotal)}</span>
               </div>
 
               {shippingCost > 0 && (
                 <p className="text-xs text-muted-foreground mt-4">
-                  Add ₹{999 - totalPrice} more for free shipping
+                  Add {formatPrice(999 - totalPrice)} more for free shipping
                 </p>
               )}
 

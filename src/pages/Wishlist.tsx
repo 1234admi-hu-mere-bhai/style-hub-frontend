@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
+import { useCurrency } from '@/hooks/useCurrency';
 import { getProductById } from '@/data/products';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -11,6 +12,7 @@ import { toast } from 'sonner';
 const Wishlist = () => {
   const { items, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { formatPrice } = useCurrency();
 
   const handleAddToCart = (item: typeof items[0]) => {
     const product = getProductById(item.id);
@@ -96,11 +98,11 @@ const Wishlist = () => {
                 </Link>
                 <div className="flex items-center gap-2 mb-4">
                   <span className="font-semibold">
-                    ₹{item.price.toLocaleString()}
+                    {formatPrice(item.price)}
                   </span>
                   {item.originalPrice && (
                     <span className="text-sm text-muted-foreground line-through">
-                      ₹{item.originalPrice.toLocaleString()}
+                      {formatPrice(item.originalPrice)}
                     </span>
                   )}
                 </div>

@@ -12,6 +12,7 @@ import { useProductReviews } from '@/hooks/useProductReviews';
 import { getProductReviews } from '@/data/reviews';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
+import { useCurrency } from '@/hooks/useCurrency';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
@@ -24,6 +25,7 @@ const ProductDetail = () => {
   const { averageRating, totalReviews } = useProductReviews(id || '');
   const { addToCart, setBuyNowItem } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { formatPrice } = useCurrency();
 
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
@@ -241,10 +243,10 @@ const ProductDetail = () => {
             </div>
 
             <div className="flex items-baseline gap-4">
-              <span className="text-3xl font-bold">₹{product.price.toLocaleString()}</span>
+              <span className="text-3xl font-bold">{formatPrice(product.price)}</span>
               {product.originalPrice && (
                 <>
-                  <span className="text-xl text-muted-foreground line-through">₹{product.originalPrice.toLocaleString()}</span>
+                  <span className="text-xl text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
                   <span className="text-success font-semibold">{product.discount}% OFF</span>
                 </>
               )}

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
+import { useCurrency } from '@/hooks/useCurrency';
 import { toast } from 'sonner';
 
 export interface ProductCardProduct {
@@ -28,6 +29,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { formatPrice } = useCurrency();
   const inWishlist = isInWishlist(product.id);
 
   const handleWishlist = (e: React.MouseEvent) => {
@@ -127,10 +129,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </h3>
 
         <div className="flex items-center gap-2">
-          <span className="font-semibold">₹{product.price.toLocaleString()}</span>
+          <span className="font-semibold">{formatPrice(product.price)}</span>
           {product.originalPrice && (
             <span className="text-sm text-muted-foreground line-through">
-              ₹{product.originalPrice.toLocaleString()}
+              {formatPrice(product.originalPrice)}
             </span>
           )}
         </div>

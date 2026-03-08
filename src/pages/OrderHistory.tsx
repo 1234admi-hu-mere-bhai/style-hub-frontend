@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCurrency } from '@/hooks/useCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -47,6 +48,7 @@ interface Order {
 const OrderHistory = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
+  const { formatPrice } = useCurrency();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -170,7 +172,7 @@ const OrderHistory = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Total</p>
-                    <p className="font-semibold">₹{order.total.toLocaleString()}</p>
+                    <p className="font-semibold">{formatPrice(order.total)}</p>
                   </div>
                   <div>
                     <Badge variant="outline" className={getStatusColor(order.status)}>
