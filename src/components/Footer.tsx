@@ -24,10 +24,22 @@ const Footer = () => {
               ensuring every piece you wear reflects confidence, comfort, and lasting elegance.
             </p>
             <div className="flex space-x-4">
-              <a href="https://www.instagram.com/muffi_gouth_apparel_hub?igsh=MWdyZWJjMHl1bXduMw==" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+              <a 
+                href="https://www.instagram.com/muffi_gouth_apparel_hub?igsh=MWdyZWJjMHl1bXduMw==" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="hover:text-primary transition-colors cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <Instagram size={20} />
               </a>
-              <a href="https://www.facebook.com/share/1L2KedPQJv/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+              <a 
+                href="https://www.facebook.com/share/1L2KedPQJv/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="hover:text-primary transition-colors cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <Facebook size={20} />
               </a>
             </div>
