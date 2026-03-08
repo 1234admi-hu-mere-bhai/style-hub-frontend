@@ -30,6 +30,11 @@ import NotFound from "./pages/NotFound";
 import WhatsAppButton from "./components/WhatsAppButton";
 import VisitorTracker from "./components/VisitorTracker";
 
+const WhatsAppButtonWrapper = () => {
+  const location = window.location.pathname;
+  return location.startsWith('/admin') ? null : <WhatsAppButton />;
+};
+
 const queryClient = new QueryClient();
 
 const App = () => (
