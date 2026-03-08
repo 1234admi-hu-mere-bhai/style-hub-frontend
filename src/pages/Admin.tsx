@@ -2,15 +2,23 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, ShieldAlert, LayoutDashboard, ShoppingCart, Users, CreditCard, BarChart3, ArrowLeft, LogOut, Package } from 'lucide-react';
+import {
+  Loader2, ShieldAlert, LayoutDashboard, ShoppingCart, Users,
+  CreditCard, BarChart3, ArrowLeft, LogOut, Package, Warehouse,
+  Tag, Bell, FileText
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import logoNew from '@/assets/logo-new.png';
 import AdminDashboard from '@/components/admin/AdminDashboard';
 import AdminOrders from '@/components/admin/AdminOrders';
+import AdminProducts from '@/components/admin/AdminProducts';
 import AdminCustomers from '@/components/admin/AdminCustomers';
 import AdminPayments from '@/components/admin/AdminPayments';
+import AdminInventory from '@/components/admin/AdminInventory';
 import AdminAnalytics from '@/components/admin/AdminAnalytics';
-import AdminProducts from '@/components/admin/AdminProducts';
+import AdminCoupons from '@/components/admin/AdminCoupons';
+import AdminNotifications from '@/components/admin/AdminNotifications';
+import AdminBlog from '@/components/admin/AdminBlog';
 
 interface Analytics {
   totalOrders: number;
@@ -34,7 +42,11 @@ const TABS = [
   { key: 'products', label: 'Products', icon: Package },
   { key: 'customers', label: 'Customers', icon: Users },
   { key: 'payments', label: 'Payments', icon: CreditCard },
+  { key: 'inventory', label: 'Inventory', icon: Warehouse },
   { key: 'analytics', label: 'Analytics', icon: BarChart3 },
+  { key: 'coupons', label: 'Coupons', icon: Tag },
+  { key: 'notifications', label: 'Notifications', icon: Bell },
+  { key: 'blog', label: 'Blog', icon: FileText },
 ] as const;
 
 type TabKey = typeof TABS[number]['key'];
@@ -46,6 +58,7 @@ const Admin = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
+  const [dbProducts, setDbProducts] = useState<any[]>([]);
 
   useEffect(() => {
     if (!user) {
@@ -55,22 +68,34 @@ const Admin = () => {
     fetchAnalytics();
   }, [user]);
 
+  useEffect(() => {
+    if (activeTab === 'inventory' && analytics) {
+      fetchDbProducts();
+    }
+  }, [activeTab, analytics]);
+
   const fetchAnalytics = async () => {
     setLoading(true);
     setError(null);
     try {
       const { data, error: fnError } = await supabase.functions.invoke('admin-analytics');
       if (fnError) throw fnError;
-      if (data?.error) {
-        setError(data.error);
-        return;
-      }
+      if (data?.error) { setError(data.error); return; }
       setAnalytics(data);
     } catch (err: any) {
       setError(err.message || 'Failed to load analytics');
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchDbProducts = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-products', {
+        body: { action: 'list' },
+      });
+      if (!error && data?.products) setDbProducts(data.products);
+    } catch {}
   };
 
   const handleLogout = async () => {
@@ -143,18 +168,10 @@ const Admin = () => {
 
       {/* Tab Content */}
       <main className="px-4 py-6 max-w-2xl mx-auto">
-        {activeTab === 'dashboard' && (
-          <AdminDashboard analytics={analytics} />
-        )}
-        {activeTab === 'orders' && (
-          <AdminOrders orders={analytics.allOrders} onRefresh={fetchAnalytics} />
-        )}
-        {activeTab === 'products' && (
-          <AdminProducts />
-        )}
-        {activeTab === 'customers' && (
-          <AdminCustomers customers={analytics.customers} />
-        )}
+        {activeTab === 'dashboard' && <AdminDashboard analytics={analytics} />}
+        {activeTab === 'orders' && <AdminOrders orders={analytics.allOrders} onRefresh={fetchAnalytics} />}
+        {activeTab === 'products' && <AdminProducts />}
+        {activeTab === 'customers' && <AdminCustomers customers={analytics.customers} />}
         {activeTab === 'payments' && (
           <AdminPayments
             orders={analytics.allOrders}
@@ -163,6 +180,7 @@ const Admin = () => {
             paidRevenue={analytics.paidRevenue}
           />
         )}
+        {activeTab === 'inventory' && <AdminInventory products={dbProducts} />}
         {activeTab === 'analytics' && (
           <AdminAnalytics
             revenueByDay={analytics.revenueByDay}
@@ -170,6 +188,9 @@ const Admin = () => {
             totalOrders={analytics.totalOrders}
           />
         )}
+        {activeTab === 'coupons' && <AdminCoupons />}
+        {activeTab === 'notifications' && <AdminNotifications />}
+        {activeTab === 'blog' && <AdminBlog />}
       </main>
     </div>
   );
