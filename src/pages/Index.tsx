@@ -58,9 +58,11 @@ const Index = () => {
   const toggleSize = (size: string) => setSelectedSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
   const toggleColor = (color: string) => setSelectedColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
 
+  const hardcodedCategories = ['T-Shirt', 'Shirt', 'Shorts', 'Joggers', 'Hoodie', 'Blazer', 'Jacket', 'Sweater'];
   const subcategories = useMemo(() => {
-    const subs = [...new Set(products.map(p => p.subcategory))].filter(Boolean);
-    return subs;
+    const dbSubs = [...new Set(products.map(p => p.subcategory))].filter(Boolean);
+    const merged = [...new Set([...hardcodedCategories, ...dbSubs])];
+    return merged;
   }, [products]);
 
   const featuredProducts = useMemo(() => {
