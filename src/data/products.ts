@@ -142,7 +142,7 @@ export const products: Product[] = [
     ],
     rating: 4.9,
     reviews: 342,
-    description: 'A fun and colorful hoodie that kids will love! Made from soft, durable cotton blend with a kangaroo pocket and adjustable hood.',
+    description: 'A fun and colorful hoodie made from soft, durable cotton blend with a kangaroo pocket and adjustable hood.',
     isNew: true,
     isFeatured: true,
   },
