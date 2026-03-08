@@ -154,14 +154,71 @@ const ProductDetail = () => {
         </nav>
 
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
-          <div className="relative">
-            <div className="aspect-[3/4] rounded-lg overflow-hidden bg-secondary">
-              <img src={currentImage} alt={`${product.name}${selectedColor ? ` - ${selectedColor}` : ''}`} className="w-full h-full object-cover transition-all duration-300" />
+          <div className="space-y-3">
+            {/* Main image with swipe */}
+            <div
+              className="relative aspect-[3/4] rounded-lg overflow-hidden bg-secondary"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
+              <img
+                src={currentImage}
+                alt={`${product.name}${selectedColor ? ` - ${selectedColor}` : ''}`}
+                className="w-full h-full object-cover transition-all duration-300"
+              />
+              <div className="absolute top-4 left-4 flex flex-col gap-2">
+                {product.isNew && <span className="badge-new rounded">NEW</span>}
+                {product.discount && <span className="badge-sale rounded">-{product.discount}%</span>}
+              </div>
+
+              {/* Navigation arrows */}
+              {allImages.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/70 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-background/90 transition-colors"
+                  >
+                    <ChevronLeft className="w-5 h-5 text-foreground" />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/70 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-background/90 transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5 text-foreground" />
+                  </button>
+
+                  {/* Dots */}
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                    {allImages.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCurrentImageIndex(i)}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          i === currentImageIndex ? 'bg-primary w-5' : 'bg-background/60'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
-            <div className="absolute top-4 left-4 flex flex-col gap-2">
-              {product.isNew && <span className="badge-new rounded">NEW</span>}
-              {product.discount && <span className="badge-sale rounded">-{product.discount}%</span>}
-            </div>
+
+            {/* Thumbnail strip */}
+            {allImages.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {allImages.map((img, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentImageIndex(i)}
+                    className={`flex-shrink-0 w-16 h-20 rounded-md overflow-hidden border-2 transition-all ${
+                      i === currentImageIndex ? 'border-primary' : 'border-transparent hover:border-border'
+                    }`}
+                  >
+                    <img src={img} alt={`${product.name} ${i + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="space-y-6">
