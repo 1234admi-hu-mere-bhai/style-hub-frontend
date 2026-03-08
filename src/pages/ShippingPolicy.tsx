@@ -54,15 +54,15 @@ const ShippingPolicy = () => {
                   </tr>
                   <tr>
                     <td className="px-4 py-3 text-sm">Metro Cities (Delhi, Mumbai, Bangalore, etc.)</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">5–8 business days</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">7–10 business days</td>
                   </tr>
                   <tr>
                     <td className="px-4 py-3 text-sm">Rest of India</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">7–12 business days</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">10–15 business days</td>
                   </tr>
                   <tr>
                     <td className="px-4 py-3 text-sm">Remote / Rural Areas</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">10–15 business days</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">15–20 business days</td>
                   </tr>
                 </tbody>
               </table>
