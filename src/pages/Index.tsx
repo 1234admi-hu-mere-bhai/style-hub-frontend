@@ -17,6 +17,22 @@ import categoryMen from '@/assets/category-men.jpg';
 const Index = () => {
   const { products, loading } = useDbProducts();
   const [activeFilter, setActiveFilter] = useState('all');
+  const [priceRange, setPriceRange] = useState([0, 5000]);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+
+  const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const colors = [
+    { name: 'Black', hex: '#1a1a1a' },
+    { name: 'White', hex: '#ffffff' },
+    { name: 'Navy', hex: '#1e3a5f' },
+    { name: 'Beige', hex: '#E8DCC8' },
+    { name: 'Terracotta', hex: '#C65D3B' },
+    { name: 'Grey', hex: '#808080' },
+  ];
+
+  const toggleSize = (size: string) => setSelectedSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
+  const toggleColor = (color: string) => setSelectedColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
 
   const subcategories = useMemo(() => {
     const subs = [...new Set(products.map(p => p.subcategory))].filter(Boolean);
@@ -24,11 +40,30 @@ const Index = () => {
   }, [products]);
 
   const featuredProducts = useMemo(() => {
-    const filtered = activeFilter === 'all' 
+    let filtered = activeFilter === 'all' 
       ? products 
       : products.filter(p => p.subcategory === activeFilter);
+    
+    filtered = filtered.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
+    
+    if (selectedSizes.length > 0) {
+      filtered = filtered.filter(p => p.sizes.some(s => selectedSizes.includes(s)));
+    }
+    if (selectedColors.length > 0) {
+      filtered = filtered.filter(p => p.colors.some(c => selectedColors.includes(c.name)));
+    }
+    
     return filtered.slice(0, 8);
-  }, [products, activeFilter]);
+  }, [products, activeFilter, priceRange, selectedSizes, selectedColors]);
+
+  const activeFiltersCount = selectedSizes.length + selectedColors.length + (priceRange[0] > 0 || priceRange[1] < 5000 ? 1 : 0) + (activeFilter !== 'all' ? 1 : 0);
+
+  const clearAllFilters = () => {
+    setActiveFilter('all');
+    setPriceRange([0, 5000]);
+    setSelectedSizes([]);
+    setSelectedColors([]);
+  };
 
   const categories = [
     { name: 'Men', image: categoryMen, href: '/products?category=men' },
