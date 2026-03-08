@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { MapPin, CheckCircle2, XCircle, Truck, Clock, Banknote } from 'lucide-react';
+import { MapPin, CheckCircle2, XCircle, Truck, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { checkPincodeDelivery } from '@/lib/pincodeChecker';
 
 interface PincodeCheckerProps {
-  onDeliveryInfo?: (info: { estimatedDays: string; zone: string; codAvailable: boolean } | null) => void;
+  onDeliveryInfo?: (info: { estimatedDays: string; zone: string } | null) => void;
   pincode?: string;
 }
 
@@ -19,7 +19,7 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
     setResult(info);
     setChecked(true);
     if (info.available) {
-      onDeliveryInfo?.({ estimatedDays: info.estimatedDays, zone: info.zone, codAvailable: info.codAvailable });
+      onDeliveryInfo?.({ estimatedDays: info.estimatedDays, zone: info.zone });
     } else {
       onDeliveryInfo?.(null);
     }
@@ -69,10 +69,6 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
                 <div className="flex items-center gap-1.5">
                   <Clock className="h-3.5 w-3.5" />
                   <span>{result.estimatedDays} business days</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Banknote className="h-3.5 w-3.5" />
-                  <span>{result.codAvailable ? 'COD available' : 'Prepaid only'}</span>
                 </div>
               </div>
             </>
