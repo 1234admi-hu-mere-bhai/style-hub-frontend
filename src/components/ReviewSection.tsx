@@ -35,6 +35,41 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
     };
   });
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (reviewImages.length + files.length > 4) {
+      toast.error('Maximum 4 images allowed');
+      return;
+    }
+    const validFiles = files.filter(f => f.size <= 5 * 1024 * 1024);
+    if (validFiles.length < files.length) {
+      toast.error('Each image must be under 5MB');
+    }
+    setReviewImages(prev => [...prev, ...validFiles]);
+    const newUrls = validFiles.map(f => URL.createObjectURL(f));
+    setPreviewUrls(prev => [...prev, ...newUrls]);
+  };
+
+  const removeImage = (index: number) => {
+    URL.revokeObjectURL(previewUrls[index]);
+    setReviewImages(prev => prev.filter((_, i) => i !== index));
+    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadImages = async (): Promise<string[]> => {
+    const urls: string[] = [];
+    for (const file of reviewImages) {
+      const ext = file.name.split('.').pop();
+      const path = `${user!.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from('review-images').upload(path, file);
+      if (!error) {
+        const { data } = supabase.storage.from('review-images').getPublicUrl(path);
+        urls.push(data.publicUrl);
+      }
+    }
+    return urls;
+  };
+
   const handleSubmitReview = async () => {
     if (!user) {
       toast.error('Please log in to write a review');
@@ -46,6 +81,7 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
     }
     setSubmitting(true);
     try {
+      const imageUrls = reviewImages.length > 0 ? await uploadImages() : [];
       await submitReview({
         product_id: productId,
         user_id: user.id,
@@ -53,10 +89,13 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
         rating: newReview.rating,
         title: newReview.title,
         comment: newReview.comment,
+        images: imageUrls,
       });
       toast.success('Review submitted successfully!');
       setShowWriteReview(false);
       setNewReview({ rating: 5, title: '', comment: '' });
+      setReviewImages([]);
+      setPreviewUrls([]);
     } catch {
       toast.error('Failed to submit review. Please try again.');
     } finally {
