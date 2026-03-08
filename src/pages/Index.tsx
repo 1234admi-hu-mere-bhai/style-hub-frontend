@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Truck, RefreshCw, Shield, Headphones, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,19 @@ import categoryMen from '@/assets/category-men.jpg';
 
 const Index = () => {
   const { products, loading } = useDbProducts();
-  const featuredProducts = products.slice(0, 8);
+  const [activeFilter, setActiveFilter] = useState('all');
+
+  const subcategories = useMemo(() => {
+    const subs = [...new Set(products.map(p => p.subcategory))].filter(Boolean);
+    return subs;
+  }, [products]);
+
+  const featuredProducts = useMemo(() => {
+    const filtered = activeFilter === 'all' 
+      ? products 
+      : products.filter(p => p.subcategory === activeFilter);
+    return filtered.slice(0, 8);
+  }, [products, activeFilter]);
 
   const categories = [
     { name: 'Men', image: categoryMen, href: '/products?category=men' },
@@ -107,6 +120,32 @@ const Index = () => {
             </Button>
           </div>
 
+          {/* Category Filter Buttons */}
+          <div className="flex flex-wrap gap-2 mb-8">
+            <button
+              onClick={() => setActiveFilter('all')}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                activeFilter === 'all'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              All
+            </button>
+            {subcategories.map((sub) => (
+              <button
+                key={sub}
+                onClick={() => setActiveFilter(sub)}
+                className={`px-4 py-2 rounded-full text-sm font-medium capitalize transition-colors ${
+                  activeFilter === sub
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {sub}
+              </button>
+            ))}
+          </div>
           {loading ? (
             <div className="flex justify-center py-16">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />

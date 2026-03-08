@@ -38,6 +38,7 @@ export interface StoreProduct {
   description: string;
   isNew?: boolean;
   isFeatured?: boolean;
+  subcategory?: string;
 }
 
 export const dbToStoreProduct = (p: DbProduct): StoreProduct => {
@@ -61,6 +62,7 @@ export const dbToStoreProduct = (p: DbProduct): StoreProduct => {
     description: p.description || '',
     isNew: false,
     isFeatured: true,
+    subcategory: p.subcategory || '',
   };
 };
 
