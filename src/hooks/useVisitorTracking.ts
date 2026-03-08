@@ -28,6 +28,9 @@ export const useVisitorTracking = () => {
   const location = useLocation();
 
   useEffect(() => {
+    // Skip tracking for admin pages
+    if (location.pathname.startsWith('/admin')) return;
+
     const trackVisit = async () => {
       if (!shouldTrack(location.pathname)) return;
 
