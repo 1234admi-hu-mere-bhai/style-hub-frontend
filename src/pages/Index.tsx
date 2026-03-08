@@ -8,16 +8,12 @@ import { getFeaturedProducts } from '@/data/products';
 
 import heroBanner from '@/assets/hero-banner.jpg';
 import categoryMen from '@/assets/category-men.jpg';
-import categoryWomen from '@/assets/category-women.jpg';
-import categoryKids from '@/assets/category-kids.jpg';
 
 const Index = () => {
   const featuredProducts = getFeaturedProducts();
 
   const categories = [
     { name: 'Men', image: categoryMen, href: '/products?category=men' },
-    { name: 'Women', image: categoryWomen, href: '/products?category=women' },
-    { name: 'Kids', image: categoryKids, href: '/products?category=kids' },
   ];
 
   const features = [
