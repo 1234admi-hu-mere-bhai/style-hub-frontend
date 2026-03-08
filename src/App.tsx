@@ -27,6 +27,7 @@ import ShippingPolicy from "./pages/ShippingPolicy";
 import AboutUs from "./pages/AboutUs";
 import Referral from "./pages/Referral";
 import NotFound from "./pages/NotFound";
+import WhatsAppButton from "./components/WhatsAppButton";
 
 const queryClient = new QueryClient();
 
