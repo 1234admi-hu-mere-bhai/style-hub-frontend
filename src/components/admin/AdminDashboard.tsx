@@ -1,8 +1,12 @@
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
-  IndianRupee, ShoppingCart, Package, Users,
-  Clock, TrendingUp
+  IndianRupee, ShoppingCart, Users,
+  Clock, TrendingUp, Download, Loader2
 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface AdminDashboardProps {
   analytics: {
