@@ -29,15 +29,46 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
 
-  const currentImage = useMemo(() => {
-    if (!product) return '';
+  const allImages = useMemo(() => {
+    if (!product) return [];
+    // If a color is selected and has an image, show it first
     if (selectedColor) {
       const colorOption = product.colors.find(c => c.name === selectedColor);
-      if (colorOption?.image) return colorOption.image;
+      if (colorOption?.image) {
+        return [colorOption.image, ...product.images.filter(img => img !== colorOption.image)];
+      }
     }
-    return product.images[0];
+    return product.images;
   }, [product, selectedColor]);
+
+  const currentImage = allImages[currentImageIndex] || (product?.images[0] ?? '');
+
+  const nextImage = useCallback(() => {
+    if (allImages.length <= 1) return;
+    setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+  }, [allImages.length]);
+
+  const prevImage = useCallback(() => {
+    if (allImages.length <= 1) return;
+    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+  }, [allImages.length]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart === null) return;
+    const diff = touchStart - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) nextImage();
+      else prevImage();
+    }
+    setTouchStart(null);
+  };
 
   if (loading) {
     return (
