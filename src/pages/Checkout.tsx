@@ -389,58 +389,19 @@ const Checkout = () => {
                   <CreditCard size={20} />
                   Payment Method
                 </h2>
-                <RadioGroup
-                  value={paymentMethod}
-                  onValueChange={setPaymentMethod}
-                  className="space-y-4"
-                >
-                  <div
-                    className={`flex items-center space-x-4 p-4 border rounded-lg cursor-pointer ${
-                      paymentMethod === 'cod'
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border'
-                    }`}
-                  >
-                    <RadioGroupItem value="cod" id="cod" />
-                    <Label htmlFor="cod" className="flex-1 cursor-pointer">
-                      <span className="font-medium">Cash on Delivery (COD)</span>
-                      <p className="text-sm text-muted-foreground">
-                        Pay when your order arrives
-                      </p>
-                    </Label>
+                <div className="p-4 bg-secondary/50 rounded-lg">
+                  <div className="flex items-center gap-3 mb-2">
+                    <img 
+                      src="https://razorpay.com/assets/razorpay-logo.svg" 
+                      alt="Razorpay" 
+                      className="h-6 dark:invert"
+                    />
                   </div>
-                  <div
-                    className={`flex items-center space-x-4 p-4 border rounded-lg cursor-pointer ${
-                      paymentMethod === 'online'
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border'
-                    }`}
-                  >
-                    <RadioGroupItem value="online" id="online" />
-                    <Label htmlFor="online" className="flex-1 cursor-pointer">
-                      <span className="font-medium">Online Payment</span>
-                      <p className="text-sm text-muted-foreground">
-                        UPI, Cards, Net Banking
-                      </p>
-                    </Label>
-                  </div>
-                </RadioGroup>
-
-                {paymentMethod === 'online' && (
-                  <div className="mt-6 p-4 bg-secondary/50 rounded-lg">
-                    <div className="flex items-center gap-3 mb-2">
-                      <img 
-                        src="https://razorpay.com/assets/razorpay-logo.svg" 
-                        alt="Razorpay" 
-                        className="h-6 dark:invert"
-                      />
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      You will be redirected to Razorpay's secure payment gateway to complete your payment.
-                      Supports UPI, Credit/Debit Cards, Net Banking, and Wallets.
-                    </p>
-                  </div>
-                )}
+                  <p className="text-sm text-muted-foreground">
+                    You will be redirected to Razorpay's secure payment gateway to complete your payment.
+                    Supports UPI, Credit/Debit Cards, Net Banking, and Wallets.
+                  </p>
+                </div>
 
                 <div className="flex gap-4 mt-6">
                   <Button
