@@ -136,24 +136,52 @@ Deno.serve(async (req) => {
     // Recent orders (last 10)
     const recentOrders = allOrdersList.slice(0, 10)
 
-    // Customers with order counts
+    // Customers with order counts - only include those with orders
     const customerOrderCounts: Record<string, number> = {}
     const customerSpend: Record<string, number> = {}
+    const customerOrders: Record<string, any[]> = {}
     allOrders.forEach((o: any) => {
       customerOrderCounts[o.user_id] = (customerOrderCounts[o.user_id] || 0) + 1
       customerSpend[o.user_id] = (customerSpend[o.user_id] || 0) + Number(o.total || 0)
+      if (!customerOrders[o.user_id]) customerOrders[o.user_id] = []
+      customerOrders[o.user_id].push({
+        id: o.id,
+        order_number: o.order_number,
+        status: o.status,
+        total: o.total,
+        payment_status: o.payment_status,
+        created_at: o.created_at,
+        items: (o.order_items || []).map((item: any) => ({
+          product_name: item.product_name,
+          quantity: item.quantity,
+          price: item.price,
+          size: item.size,
+          color: item.color,
+        })),
+      })
     })
 
-    const customers = allProfiles.map((p: any) => ({
-      id: p.id,
-      first_name: p.first_name,
-      last_name: p.last_name,
-      phone: p.phone,
-      avatar_url: p.avatar_url,
-      created_at: p.created_at,
-      total_orders: customerOrderCounts[p.id] || 0,
-      total_spent: customerSpend[p.id] || 0,
-    }))
+    // Fetch user emails via admin API
+    const { data: { users: authUsers } } = await adminClient.auth.admin.listUsers()
+    const emailMap: Record<string, string> = {}
+    ;(authUsers || []).forEach((u: any) => { emailMap[u.id] = u.email || '' })
+
+    // Only return customers who have placed at least one order
+    const customerIdsWithOrders = Object.keys(customerOrderCounts)
+    const customers = allProfiles
+      .filter((p: any) => customerIdsWithOrders.includes(p.id))
+      .map((p: any) => ({
+        id: p.id,
+        first_name: p.first_name,
+        last_name: p.last_name,
+        email: emailMap[p.id] || '',
+        phone: p.phone,
+        avatar_url: p.avatar_url,
+        created_at: p.created_at,
+        total_orders: customerOrderCounts[p.id] || 0,
+        total_spent: customerSpend[p.id] || 0,
+        orders: customerOrders[p.id] || [],
+      }))
 
     return new Response(
       JSON.stringify({
