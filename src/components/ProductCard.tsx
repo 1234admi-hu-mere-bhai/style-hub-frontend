@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
+import { useCurrency } from '@/hooks/useCurrency';
 import { toast } from 'sonner';
 
 export interface ProductCardProduct {
