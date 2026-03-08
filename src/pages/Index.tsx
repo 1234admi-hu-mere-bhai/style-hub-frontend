@@ -21,6 +21,13 @@ const Index = () => {
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
 
+  // Temporary filter state (used inside the sheet before Apply)
+  const [tempFilter, setTempFilter] = useState('all');
+  const [tempPriceRange, setTempPriceRange] = useState([0, 5000]);
+  const [tempSizes, setTempSizes] = useState<string[]>([]);
+  const [tempColors, setTempColors] = useState<string[]>([]);
+  const [filterOpen, setFilterOpen] = useState(false);
+
   const sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL'];
   const colors = [
     { name: 'Black', hex: '#1a1a1a' },
@@ -54,6 +61,35 @@ const Index = () => {
     { name: 'Orange', hex: '#EA580C' },
     { name: 'Purple', hex: '#9333EA' },
   ];
+
+  const toggleTempSize = (size: string) => setTempSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
+  const toggleTempColor = (color: string) => setTempColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
+
+  // Sync temp state when opening the sheet
+  const handleOpenFilter = (open: boolean) => {
+    if (open) {
+      setTempFilter(activeFilter);
+      setTempPriceRange(priceRange);
+      setTempSizes(selectedSizes);
+      setTempColors(selectedColors);
+    }
+    setFilterOpen(open);
+  };
+
+  const applyFilters = () => {
+    setActiveFilter(tempFilter);
+    setPriceRange(tempPriceRange);
+    setSelectedSizes(tempSizes);
+    setSelectedColors(tempColors);
+    setFilterOpen(false);
+  };
+
+  const clearTempFilters = () => {
+    setTempFilter('all');
+    setTempPriceRange([0, 5000]);
+    setTempSizes([]);
+    setTempColors([]);
+  };
 
   const toggleSize = (size: string) => setSelectedSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
   const toggleColor = (color: string) => setSelectedColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
@@ -187,7 +223,7 @@ const Index = () => {
 
           {/* Filter Button */}
           <div className="flex flex-wrap items-center gap-3 mb-8">
-            <Sheet>
+            <Sheet open={filterOpen} onOpenChange={handleOpenFilter}>
               <SheetTrigger asChild>
                 <Button variant="outline" className="rounded-full gap-2">
                   <SlidersHorizontal size={16} />
@@ -199,34 +235,32 @@ const Index = () => {
                   )}
                 </Button>
               </SheetTrigger>
-              <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl overflow-y-auto">
+              <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl flex flex-col">
                 <SheetHeader>
                   <div className="flex items-center justify-between">
                     <SheetTitle>Filters</SheetTitle>
-                    {activeFiltersCount > 0 && (
-                      <button onClick={clearAllFilters} className="text-sm text-destructive font-medium flex items-center gap-1">
-                        <X size={14} /> Clear All
-                      </button>
-                    )}
+                    <button onClick={clearTempFilters} className="text-sm text-destructive font-medium flex items-center gap-1">
+                      <X size={14} /> Clear All
+                    </button>
                   </div>
                 </SheetHeader>
-                <div className="py-6 space-y-8">
+                <div className="py-6 space-y-8 overflow-y-auto flex-1">
                   {/* Category */}
                   <div>
                     <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Category</h3>
                     <div className="flex flex-wrap gap-2">
                       <button
-                        onClick={() => setActiveFilter('all')}
+                        onClick={() => setTempFilter('all')}
                         className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                          activeFilter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+                          tempFilter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
                         }`}
                       >All</button>
                       {subcategories.map((sub) => (
                         <button
                           key={sub}
-                          onClick={() => setActiveFilter(sub)}
+                          onClick={() => setTempFilter(sub)}
                           className={`px-4 py-2 rounded-full text-sm font-medium capitalize transition-colors ${
-                            activeFilter === sub ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+                            tempFilter === sub ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
                           }`}
                         >{sub}</button>
                       ))}
@@ -240,9 +274,9 @@ const Index = () => {
                       {sizes.map((size) => (
                         <button
                           key={size}
-                          onClick={() => toggleSize(size)}
+                          onClick={() => toggleTempSize(size)}
                           className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
-                            selectedSizes.includes(size) ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+                            tempSizes.includes(size) ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
                           }`}
                         >{size}</button>
                       ))}
@@ -256,13 +290,13 @@ const Index = () => {
                       {colors.map((color) => (
                         <button
                           key={color.name}
-                          onClick={() => toggleColor(color.name)}
+                          onClick={() => toggleTempColor(color.name)}
                           className="flex flex-col items-center gap-1"
                           title={color.name}
                         >
                           <span
                             className={`w-8 h-8 rounded-full border-2 transition-all ${
-                              selectedColors.includes(color.name) ? 'border-primary scale-110 ring-2 ring-primary/30' : 'border-border'
+                              tempColors.includes(color.name) ? 'border-primary scale-110 ring-2 ring-primary/30' : 'border-border'
                             }`}
                             style={{ backgroundColor: color.hex }}
                           />
@@ -275,12 +309,19 @@ const Index = () => {
                   {/* Price */}
                   <div>
                     <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Price Range</h3>
-                    <Slider value={priceRange} onValueChange={setPriceRange} min={0} max={5000} step={100} />
+                    <Slider value={tempPriceRange} onValueChange={setTempPriceRange} min={0} max={5000} step={100} />
                     <div className="flex justify-between text-sm text-muted-foreground mt-3">
-                      <span>₹{priceRange[0]}</span>
-                      <span>₹{priceRange[1]}</span>
+                      <span>₹{tempPriceRange[0]}</span>
+                      <span>₹{tempPriceRange[1]}</span>
                     </div>
                   </div>
+                </div>
+
+                {/* Apply Button */}
+                <div className="border-t border-border pt-4 pb-2">
+                  <Button onClick={applyFilters} className="w-full" size="lg">
+                    Apply Filters
+                  </Button>
                 </div>
               </SheetContent>
             </Sheet>
