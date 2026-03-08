@@ -80,7 +80,7 @@ const AdminReviews = () => {
   const handleToggleVerified = async (review: ReviewRow) => {
     try {
       const { error } = await supabase.functions.invoke('admin-crud', {
-        body: { action: 'update', table: 'reviews', id: review.id, data: { verified: !review.verified } },
+        body: { action: 'update', table: 'reviews', record: { id: review.id, verified: !review.verified } },
       });
       if (error) throw error;
       toast.success(review.verified ? 'Removed verification' : 'Marked as verified');
