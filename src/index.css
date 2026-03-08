@@ -39,13 +39,13 @@
     --radius: 0.625rem;
 
     /* Custom tokens */
-    --coral: 12 90% 58%;
-    --coral-light: 12 80% 72%;
-    --coral-dark: 12 85% 42%;
-    --electric-blue: 205 90% 52%;
-    --navy: 230 45% 20%;
-    --cream: 40 30% 97%;
-    --charcoal: 230 25% 12%;
+    --coral: 250 85% 60%;
+    --coral-light: 250 70% 75%;
+    --coral-dark: 250 90% 45%;
+    --electric-blue: 170 80% 45%;
+    --navy: 230 45% 15%;
+    --cream: 0 0% 97%;
+    --charcoal: 230 30% 10%;
     --warm-gray: 220 10% 55%;
     --gold: 42 85% 55%;
     --success: 155 70% 42%;
