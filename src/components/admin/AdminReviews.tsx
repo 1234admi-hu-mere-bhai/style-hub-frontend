@@ -67,7 +67,7 @@ const AdminReviews = () => {
     if (!confirm('Are you sure you want to delete this review?')) return;
     try {
       const { error } = await supabase.functions.invoke('admin-crud', {
-        body: { action: 'delete', table: 'reviews', id },
+        body: { action: 'delete', table: 'reviews', record: { id } },
       });
       if (error) throw error;
       toast.success('Review deleted');
