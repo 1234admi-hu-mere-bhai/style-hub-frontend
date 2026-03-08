@@ -46,6 +46,7 @@ const TABS = [
   { key: 'inventory', label: 'Inventory', icon: Warehouse },
   { key: 'analytics', label: 'Analytics', icon: BarChart3 },
   { key: 'coupons', label: 'Coupons', icon: Tag },
+  { key: 'reviews', label: 'Reviews', icon: MessageSquare },
   { key: 'notifications', label: 'Notifications', icon: Bell },
   { key: 'blog', label: 'Blog', icon: FileText },
 ] as const;
