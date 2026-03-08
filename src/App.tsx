@@ -17,6 +17,7 @@ import TrackOrder from "./pages/TrackOrder";
 import Auth from "./pages/Auth";
 import OrderHistory from "./pages/OrderHistory";
 import Admin from "./pages/Admin";
+import ReturnExchange from "./pages/ReturnExchange";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
