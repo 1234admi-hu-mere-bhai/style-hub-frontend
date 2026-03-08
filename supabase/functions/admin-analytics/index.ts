@@ -5,7 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
-// Add your admin email(s) here
 const ADMIN_EMAILS = ['muffigout@gmail.com', 'otw2003@gmail.com', 'kaliasgar776@gmail.com']
 
 Deno.serve(async (req) => {
@@ -18,7 +17,6 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
 
-    // Verify the requesting user is admin
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -39,26 +37,34 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Use service role to query ALL orders
     const adminClient = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Fetch all orders
+    // Fetch all orders with items
     const { data: orders, error: ordersError } = await adminClient
       .from('orders')
       .select('*, order_items(*)')
       .order('created_at', { ascending: false })
 
-    if (ordersError) {
-      throw ordersError
-    }
+    if (ordersError) throw ordersError
+
+    // Fetch all profiles (customers)
+    const { data: profiles, error: profilesError } = await adminClient
+      .from('profiles')
+      .select('id, first_name, last_name, phone, avatar_url, created_at')
+      .order('created_at', { ascending: false })
+
+    if (profilesError) throw profilesError
 
     const allOrders = orders || []
+    const allProfiles = profiles || []
 
-    // Compute analytics
+    // KPI computations
     const totalOrders = allOrders.length
     const totalRevenue = allOrders.reduce((sum: number, o: any) => sum + Number(o.total || 0), 0)
     const paidOrders = allOrders.filter((o: any) => o.payment_status === 'paid')
     const paidRevenue = paidOrders.reduce((sum: number, o: any) => sum + Number(o.total || 0), 0)
+    const pendingOrders = allOrders.filter((o: any) => o.status === 'pending' || o.status === 'placed').length
+    const totalCustomers = allProfiles.length
 
     // Status breakdown
     const statusCounts: Record<string, number> = {}
@@ -99,16 +105,54 @@ Deno.serve(async (req) => {
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 5)
 
-    // Recent orders (last 10)
-    const recentOrders = allOrders.slice(0, 10).map((o: any) => ({
+    // All orders for Orders tab (with full details)
+    const allOrdersList = allOrders.map((o: any) => ({
       id: o.id,
       order_number: o.order_number,
+      user_id: o.user_id,
       status: o.status,
       total: o.total,
+      subtotal: o.subtotal,
+      shipping_cost: o.shipping_cost,
       payment_method: o.payment_method,
       payment_status: o.payment_status,
+      payment_id: o.payment_id,
+      shipping_address: o.shipping_address,
       created_at: o.created_at,
-      items_count: (o.order_items || []).length,
+      updated_at: o.updated_at,
+      delivered_at: o.delivered_at,
+      items: (o.order_items || []).map((item: any) => ({
+        id: item.id,
+        product_name: item.product_name,
+        product_id: item.product_id,
+        price: item.price,
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color,
+        image: item.image,
+      })),
+    }))
+
+    // Recent orders (last 10)
+    const recentOrders = allOrdersList.slice(0, 10)
+
+    // Customers with order counts
+    const customerOrderCounts: Record<string, number> = {}
+    const customerSpend: Record<string, number> = {}
+    allOrders.forEach((o: any) => {
+      customerOrderCounts[o.user_id] = (customerOrderCounts[o.user_id] || 0) + 1
+      customerSpend[o.user_id] = (customerSpend[o.user_id] || 0) + Number(o.total || 0)
+    })
+
+    const customers = allProfiles.map((p: any) => ({
+      id: p.id,
+      first_name: p.first_name,
+      last_name: p.last_name,
+      phone: p.phone,
+      avatar_url: p.avatar_url,
+      created_at: p.created_at,
+      total_orders: customerOrderCounts[p.id] || 0,
+      total_spent: customerSpend[p.id] || 0,
     }))
 
     return new Response(
@@ -116,12 +160,16 @@ Deno.serve(async (req) => {
         totalOrders,
         totalRevenue,
         paidRevenue,
+        pendingOrders,
+        totalCustomers,
         averageOrderValue: totalOrders > 0 ? totalRevenue / totalOrders : 0,
         statusCounts,
         paymentMethods,
         revenueByDay,
         topProducts,
         recentOrders,
+        allOrders: allOrdersList,
+        customers,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
