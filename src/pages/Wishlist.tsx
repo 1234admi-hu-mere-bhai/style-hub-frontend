@@ -13,7 +13,6 @@ const Wishlist = () => {
   const { items, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
   const { formatPrice } = useCurrency();
-  const { addToCart } = useCart();
 
   const handleAddToCart = (item: typeof items[0]) => {
     const product = getProductById(item.id);
