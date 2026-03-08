@@ -23,6 +23,7 @@ import FAQ from "./pages/FAQ";
 import SizeGuide from "./pages/SizeGuide";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import ShippingPolicy from "./pages/ShippingPolicy";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
