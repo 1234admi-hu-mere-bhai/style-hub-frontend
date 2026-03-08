@@ -29,6 +29,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { formatPrice } = useCurrency();
   const inWishlist = isInWishlist(product.id);
 
   const handleWishlist = (e: React.MouseEvent) => {
