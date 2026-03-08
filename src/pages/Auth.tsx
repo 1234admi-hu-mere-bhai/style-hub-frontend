@@ -45,7 +45,8 @@ const Auth = () => {
     e.preventDefault();
     setErrors({});
     
-    const emailError = validateEmail(loginForm.email);
+    const trimmedEmail = loginForm.email.trim().toLowerCase();
+    const emailError = validateEmail(trimmedEmail);
     const passwordError = validatePassword(loginForm.password);
     
     if (emailError || passwordError) {
@@ -57,18 +58,19 @@ const Auth = () => {
     }
     
     setIsLoading(true);
-    const { error } = await signIn(loginForm.email, loginForm.password);
+    const { error } = await signIn(trimmedEmail, loginForm.password);
     setIsLoading(false);
     
     if (error) {
-      if (error.message.includes('Invalid login credentials')) {
-        toast.error('Invalid email or password');
+      if (error.message.includes('Invalid login credentials') || error.message.includes('invalid_credentials')) {
+        toast.error('Invalid email or password. Please check and try again.');
+      } else if (error.message.includes('Email not confirmed')) {
+        toast.error('Please verify your email before signing in.');
       } else {
         toast.error(error.message);
       }
     } else {
       toast.success('Welcome back!');
-      navigate('/');
     }
   };
 
@@ -76,7 +78,8 @@ const Auth = () => {
     e.preventDefault();
     setErrors({});
     
-    const emailError = validateEmail(signupForm.email);
+    const trimmedEmail = signupForm.email.trim().toLowerCase();
+    const emailError = validateEmail(trimmedEmail);
     const passwordError = validatePassword(signupForm.password);
     
     if (signupForm.password !== signupForm.confirmPassword) {
@@ -93,20 +96,19 @@ const Auth = () => {
     }
     
     setIsLoading(true);
-    const { error } = await signUp(signupForm.email, signupForm.password);
+    const { error } = await signUp(trimmedEmail, signupForm.password);
     setIsLoading(false);
     
     if (error) {
-      if (error.message.includes('already registered')) {
+      if (error.message.includes('already registered') || error.message.includes('already been registered')) {
         toast.error('This email is already registered. Please sign in instead.');
         setActiveTab('login');
-        setLoginForm({ ...loginForm, email: signupForm.email });
+        setLoginForm({ ...loginForm, email: trimmedEmail });
       } else {
         toast.error(error.message);
       }
     } else {
       toast.success('Account created successfully!');
-      navigate('/');
     }
   };
 
