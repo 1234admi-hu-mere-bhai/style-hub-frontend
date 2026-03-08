@@ -502,7 +502,7 @@ const Checkout = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Estimated Delivery</span>
-                    <span>3-5 Business Days</span>
+                    <span>{deliveryInfo ? `${deliveryInfo.estimatedDays} Business Days` : '3-5 Business Days'}</span>
                   </div>
                 </div>
 
