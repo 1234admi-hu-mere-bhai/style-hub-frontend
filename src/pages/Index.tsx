@@ -93,7 +93,7 @@ const Index = () => {
               Shop by Category
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Explore our curated collections for men, women, and kids
+              Explore our curated men's collection
             </p>
           </div>
 
