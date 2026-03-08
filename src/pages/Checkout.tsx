@@ -585,7 +585,7 @@ const Checkout = () => {
               <div className="mt-6 p-4 bg-secondary/50 rounded-lg">
                 <div className="flex items-center gap-2 text-sm">
                   <Truck size={16} className="text-primary" />
-                  <span>Estimated delivery: 3-5 business days</span>
+                  <span>Estimated delivery: {deliveryInfo ? `${deliveryInfo.estimatedDays} business days (${deliveryInfo.zone})` : 'Enter pincode for estimate'}</span>
                 </div>
               </div>
             </div>
