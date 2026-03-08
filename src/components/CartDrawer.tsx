@@ -87,7 +87,7 @@ const CartDrawer = ({ onClose }: CartDrawerProps) => {
                 </button>
               </div>
               <p className="font-semibold mt-2">
-                ₹{(item.price * item.quantity).toLocaleString()}
+                {formatPrice(item.price * item.quantity)}
               </p>
             </div>
           </div>
