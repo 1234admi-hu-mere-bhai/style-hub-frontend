@@ -144,13 +144,6 @@ const Header = () => {
                       <DropdownMenuItem asChild>
                         <Link to="/auth">Login / Sign Up</Link>
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link to="/track-order" className="flex items-center gap-2">
-                          <Package size={16} />
-                          Track Order
-                        </Link>
-                      </DropdownMenuItem>
                     </>
                   )}
                 </DropdownMenuContent>
