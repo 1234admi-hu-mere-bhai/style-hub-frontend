@@ -54,7 +54,7 @@ export const products: Product[] = [
   {
     id: '1',
     name: 'Elegant Beige Blazer',
-    category: 'women',
+    category: 'men',
     price: 2499,
     originalPrice: 3499,
     discount: 29,
