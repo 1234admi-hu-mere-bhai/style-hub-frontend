@@ -18,6 +18,7 @@ import Auth from "./pages/Auth";
 import OrderHistory from "./pages/OrderHistory";
 import Admin from "./pages/Admin";
 import ReturnExchange from "./pages/ReturnExchange";
+import FAQ from "./pages/FAQ";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
