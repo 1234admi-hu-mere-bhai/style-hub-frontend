@@ -77,7 +77,30 @@ export const useDbProducts = () => {
         .order('created_at', { ascending: false });
 
       if (!error && data) {
-        setProducts(data.map((p: any) => dbToStoreProduct(p as DbProduct)));
+        const storeProducts = data.map((p: any) => dbToStoreProduct(p as DbProduct));
+
+        // Fetch review stats for all products
+        const { data: reviewData } = await supabase
+          .from('reviews')
+          .select('product_id, rating');
+
+        if (reviewData) {
+          const statsMap: Record<string, { total: number; count: number }> = {};
+          (reviewData as any[]).forEach((r: any) => {
+            if (!statsMap[r.product_id]) statsMap[r.product_id] = { total: 0, count: 0 };
+            statsMap[r.product_id].total += r.rating;
+            statsMap[r.product_id].count += 1;
+          });
+          storeProducts.forEach((p) => {
+            const stats = statsMap[p.id];
+            if (stats) {
+              p.rating = Math.round((stats.total / stats.count) * 10) / 10;
+              p.reviews = stats.count;
+            }
+          });
+        }
+
+        setProducts(storeProducts);
       }
       setLoading(false);
     };
