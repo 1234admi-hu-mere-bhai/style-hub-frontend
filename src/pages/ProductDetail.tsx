@@ -19,7 +19,7 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { product, loading } = useDbProduct(id || '');
   const { products: allProducts } = useDbProducts();
-  const { addToCart } = useCart();
+  const { addToCart, setBuyNowItem } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
   const [selectedSize, setSelectedSize] = useState('');
