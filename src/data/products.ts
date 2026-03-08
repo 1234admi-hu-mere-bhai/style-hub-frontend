@@ -36,7 +36,7 @@ export interface ProductColor {
 export interface Product {
   id: string;
   name: string;
-  category: 'men' | 'women' | 'kids';
+  category: 'men';
   price: number;
   originalPrice?: number;
   discount?: number;
@@ -54,7 +54,7 @@ export const products: Product[] = [
   {
     id: '1',
     name: 'Elegant Beige Blazer',
-    category: 'women',
+    category: 'men',
     price: 2499,
     originalPrice: 3499,
     discount: 29,
@@ -93,7 +93,7 @@ export const products: Product[] = [
   {
     id: '3',
     name: 'Terracotta Midi Dress',
-    category: 'women',
+    category: 'men',
     price: 1899,
     originalPrice: 2599,
     discount: 27,
@@ -130,7 +130,7 @@ export const products: Product[] = [
   {
     id: '5',
     name: 'Rainbow Block Hoodie',
-    category: 'kids',
+    category: 'men',
     price: 999,
     originalPrice: 1299,
     discount: 23,
@@ -149,7 +149,7 @@ export const products: Product[] = [
   {
     id: '6',
     name: 'Cable Knit Sweater',
-    category: 'women',
+    category: 'men',
     price: 1599,
     images: [product6],
     sizes: ['XS', 'S', 'M', 'L'],
@@ -168,5 +168,5 @@ export const products: Product[] = [
 export const getProductById = (id: string) => products.find(p => p.id === id);
 export const getFeaturedProducts = () => products.filter(p => p.isFeatured);
 export const getNewArrivals = () => products.filter(p => p.isNew);
-export const getProductsByCategory = (category: 'men' | 'women' | 'kids') =>
+export const getProductsByCategory = (category: 'men') =>
   products.filter(p => p.category === category);

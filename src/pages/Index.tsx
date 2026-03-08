@@ -8,16 +8,12 @@ import { getFeaturedProducts } from '@/data/products';
 
 import heroBanner from '@/assets/hero-banner.jpg';
 import categoryMen from '@/assets/category-men.jpg';
-import categoryWomen from '@/assets/category-women.jpg';
-import categoryKids from '@/assets/category-kids.jpg';
 
 const Index = () => {
   const featuredProducts = getFeaturedProducts();
 
   const categories = [
     { name: 'Men', image: categoryMen, href: '/products?category=men' },
-    { name: 'Women', image: categoryWomen, href: '/products?category=women' },
-    { name: 'Kids', image: categoryKids, href: '/products?category=kids' },
   ];
 
   const features = [
@@ -51,8 +47,8 @@ const Index = () => {
                 <span className="text-primary">Collection 2024</span>
               </h1>
               <p className="text-lg text-muted-foreground mb-8 max-w-md">
-                Discover our latest arrivals featuring premium fabrics and timeless
-                designs for the whole family.
+                Discover our latest men's arrivals featuring premium fabrics and timeless
+                designs.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button size="lg" asChild className="group">
@@ -97,11 +93,11 @@ const Index = () => {
               Shop by Category
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Explore our curated collections for men, women, and kids
+              Explore our curated men's collection
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 max-w-2xl mx-auto">
             {categories.map((cat) => (
               <Link
                 key={cat.name}
