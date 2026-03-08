@@ -20,6 +20,7 @@ import OrderHistory from "./pages/OrderHistory";
 import Admin from "./pages/Admin";
 import ReturnExchange from "./pages/ReturnExchange";
 import FAQ from "./pages/FAQ";
+import SizeGuide from "./pages/SizeGuide";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
