@@ -8,6 +8,7 @@ import SizeChartModal from '@/components/SizeChartModal';
 import ReviewSection from '@/components/ReviewSection';
 import PincodeChecker from '@/components/PincodeChecker';
 import { useDbProducts, useDbProduct } from '@/hooks/useDbProducts';
+import { useProductReviews } from '@/hooks/useProductReviews';
 import { getProductReviews } from '@/data/reviews';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
@@ -20,6 +21,7 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { product, loading } = useDbProduct(id || '');
   const { products: allProducts } = useDbProducts();
+  const { averageRating, totalReviews } = useProductReviews(id || '');
   const { addToCart, setBuyNowItem } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
@@ -135,12 +137,18 @@ const ProductDetail = () => {
             <div>
               <h1 className="font-serif text-3xl lg:text-4xl font-bold mb-3">{product.name}</h1>
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={18} className={i < Math.floor(product.rating) ? 'fill-gold text-gold' : 'text-border'} />
-                  ))}
-                </div>
-                <span className="text-muted-foreground">{product.rating} ({product.reviews} reviews)</span>
+                {totalReviews > 0 ? (
+                  <>
+                    <div className="flex items-center gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} size={18} className={i < Math.floor(averageRating) ? 'fill-gold text-gold' : 'text-border'} />
+                      ))}
+                    </div>
+                    <span className="text-muted-foreground">{averageRating.toFixed(1)} ({totalReviews} reviews)</span>
+                  </>
+                ) : (
+                  <span className="text-muted-foreground">No reviews yet</span>
+                )}
               </div>
             </div>
 
@@ -214,7 +222,7 @@ const ProductDetail = () => {
           <Tabs defaultValue="description">
             <TabsList>
               <TabsTrigger value="description">Description</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews ({product.reviews})</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews ({totalReviews})</TabsTrigger>
               <TabsTrigger value="shipping">Shipping</TabsTrigger>
             </TabsList>
             <TabsContent value="description" className="mt-6">
