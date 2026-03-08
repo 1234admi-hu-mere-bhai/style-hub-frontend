@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   Loader2, ShieldAlert, LayoutDashboard, ShoppingCart, Users,
   CreditCard, BarChart3, LogOut, Package, Warehouse,
-  Tag, Bell, FileText, Menu, X, ChevronRight, Store
+  Tag, Bell, FileText, Menu, X, ChevronRight, Store, MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import logoNew from '@/assets/logo-new.png';
