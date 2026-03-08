@@ -60,6 +60,9 @@ const Products = () => {
     if (selectedCategories.length > 0) {
       result = result.filter((p) => selectedCategories.includes(p.category));
     }
+    if (selectedSubcategory) {
+      result = result.filter((p) => p.subcategory === selectedSubcategory);
+    }
     result = result.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
     if (selectedSizes.length > 0) {
       result = result.filter((p) => p.sizes.some((s) => selectedSizes.includes(s)));
