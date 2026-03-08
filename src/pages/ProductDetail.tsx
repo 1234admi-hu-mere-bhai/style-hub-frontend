@@ -196,6 +196,12 @@ const ProductDetail = () => {
               </Button>
             </div>
 
+            {/* Pincode Checker */}
+            <div className="pt-6 border-t border-border">
+              <h3 className="font-semibold mb-3 text-sm">Check Delivery Availability</h3>
+              <PincodeChecker />
+            </div>
+
             <div className="grid grid-cols-3 gap-4 pt-6 border-t border-border">
               <div className="text-center"><Truck className="w-6 h-6 mx-auto mb-2 text-primary" /><p className="text-xs text-muted-foreground">Free Shipping</p></div>
               <div className="text-center"><RefreshCw className="w-6 h-6 mx-auto mb-2 text-primary" /><p className="text-xs text-muted-foreground">7 Day Returns</p></div>
