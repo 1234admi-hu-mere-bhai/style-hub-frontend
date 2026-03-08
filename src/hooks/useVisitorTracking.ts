@@ -11,11 +11,26 @@ const getVisitorId = (): string => {
   return id;
 };
 
+const DEBOUNCE_MS = 5 * 60 * 1000; // 5 minutes
+
+const shouldTrack = (page: string): boolean => {
+  const key = `last_visit_${page}`;
+  const last = sessionStorage.getItem(key);
+  const now = Date.now();
+  if (last && now - Number(last) < DEBOUNCE_MS) {
+    return false;
+  }
+  sessionStorage.setItem(key, String(now));
+  return true;
+};
+
 export const useVisitorTracking = () => {
   const location = useLocation();
 
   useEffect(() => {
     const trackVisit = async () => {
+      if (!shouldTrack(location.pathname)) return;
+
       const visitorId = getVisitorId();
       await supabase.from('site_visits' as any).insert({
         page: location.pathname,
