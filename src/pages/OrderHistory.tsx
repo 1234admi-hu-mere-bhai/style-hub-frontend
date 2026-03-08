@@ -172,7 +172,7 @@ const OrderHistory = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Total</p>
-                    <p className="font-semibold">₹{order.total.toLocaleString()}</p>
+                    <p className="font-semibold">{formatPrice(order.total)}</p>
                   </div>
                   <div>
                     <Badge variant="outline" className={getStatusColor(order.status)}>

@@ -243,10 +243,10 @@ const ProductDetail = () => {
             </div>
 
             <div className="flex items-baseline gap-4">
-              <span className="text-3xl font-bold">₹{product.price.toLocaleString()}</span>
+              <span className="text-3xl font-bold">{formatPrice(product.price)}</span>
               {product.originalPrice && (
                 <>
-                  <span className="text-xl text-muted-foreground line-through">₹{product.originalPrice.toLocaleString()}</span>
+                  <span className="text-xl text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
                   <span className="text-success font-semibold">{product.discount}% OFF</span>
                 </>
               )}

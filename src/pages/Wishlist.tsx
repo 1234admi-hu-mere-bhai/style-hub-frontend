@@ -99,11 +99,11 @@ const Wishlist = () => {
                 </Link>
                 <div className="flex items-center gap-2 mb-4">
                   <span className="font-semibold">
-                    ₹{item.price.toLocaleString()}
+                    {formatPrice(item.price)}
                   </span>
                   {item.originalPrice && (
                     <span className="text-sm text-muted-foreground line-through">
-                      ₹{item.originalPrice.toLocaleString()}
+                      {formatPrice(item.originalPrice)}
                     </span>
                   )}
                 </div>
