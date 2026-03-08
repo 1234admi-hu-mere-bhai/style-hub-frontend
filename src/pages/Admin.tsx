@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, ShieldAlert, LayoutDashboard, ShoppingCart, Users, CreditCard, BarChart3, ArrowLeft, LogOut } from 'lucide-react';
+import { Loader2, ShieldAlert, LayoutDashboard, ShoppingCart, Users, CreditCard, BarChart3, ArrowLeft, LogOut, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import logoNew from '@/assets/logo-new.png';
 import AdminDashboard from '@/components/admin/AdminDashboard';
@@ -10,6 +10,7 @@ import AdminOrders from '@/components/admin/AdminOrders';
 import AdminCustomers from '@/components/admin/AdminCustomers';
 import AdminPayments from '@/components/admin/AdminPayments';
 import AdminAnalytics from '@/components/admin/AdminAnalytics';
+import AdminProducts from '@/components/admin/AdminProducts';
 
 interface Analytics {
   totalOrders: number;
