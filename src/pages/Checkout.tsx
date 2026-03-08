@@ -451,7 +451,7 @@ const Checkout = () => {
                         Processing...
                       </>
                     ) : (
-                      `Pay ₹${finalTotal.toLocaleString()}`
+                      `Pay ${formatPrice(finalTotal)}`
                     )}
                   </Button>
                 </div>
