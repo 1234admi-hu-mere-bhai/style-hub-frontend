@@ -183,110 +183,130 @@ const Index = () => {
             </Button>
           </div>
 
-          {/* Filter Controls */}
+          {/* Filter Button */}
           <div className="flex flex-wrap items-center gap-3 mb-8">
-            {/* Category Buttons */}
-            <button
-              onClick={() => setActiveFilter('all')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                activeFilter === 'all'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              All
-            </button>
-            {subcategories.map((sub) => (
-              <button
-                key={sub}
-                onClick={() => setActiveFilter(sub)}
-                className={`px-4 py-2 rounded-full text-sm font-medium capitalize transition-colors ${
-                  activeFilter === sub
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {sub}
-              </button>
-            ))}
-
-            {/* Divider */}
-            <div className="w-px h-6 bg-border hidden sm:block" />
-
-            {/* Size Buttons */}
-            <div className="flex flex-wrap gap-1.5">
-              {sizes.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => toggleSize(size)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                    selectedSizes.includes(size)
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-secondary text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-
-            {/* Divider */}
-            <div className="w-px h-6 bg-border hidden sm:block" />
-
-            {/* Color Swatches */}
-            <div className="flex gap-2 items-center">
-              {colors.map((color) => (
-                <button
-                  key={color.name}
-                  onClick={() => toggleColor(color.name)}
-                  className={`w-6 h-6 rounded-full border-2 transition-all ${
-                    selectedColors.includes(color.name)
-                      ? 'border-primary scale-110 ring-2 ring-primary/30'
-                      : 'border-border'
-                  }`}
-                  style={{ backgroundColor: color.hex }}
-                  title={color.name}
-                />
-              ))}
-            </div>
-
-            {/* Divider */}
-            <div className="w-px h-6 bg-border hidden sm:block" />
-
-            {/* Price Filter (Sheet for mobile-friendly) */}
             <Sheet>
               <SheetTrigger asChild>
-                <button className={`px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  priceRange[0] > 0 || priceRange[1] < 5000
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-muted-foreground hover:text-foreground'
-                }`}>
-                  <SlidersHorizontal size={14} />
-                  {priceRange[0] > 0 || priceRange[1] < 5000
-                    ? `₹${priceRange[0]} - ₹${priceRange[1]}`
-                    : 'Price'}
-                </button>
+                <Button variant="outline" className="rounded-full gap-2">
+                  <SlidersHorizontal size={16} />
+                  Filter
+                  {activeFiltersCount > 0 && (
+                    <span className="w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center">
+                      {activeFiltersCount}
+                    </span>
+                  )}
+                </Button>
               </SheetTrigger>
-              <SheetContent side="bottom" className="h-auto rounded-t-2xl">
-                <SheetHeader><SheetTitle>Price Range</SheetTitle></SheetHeader>
-                <div className="py-6 px-2">
-                  <Slider value={priceRange} onValueChange={setPriceRange} min={0} max={5000} step={100} />
-                  <div className="flex justify-between text-sm text-muted-foreground mt-3">
-                    <span>₹{priceRange[0]}</span>
-                    <span>₹{priceRange[1]}</span>
+              <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl overflow-y-auto">
+                <SheetHeader>
+                  <div className="flex items-center justify-between">
+                    <SheetTitle>Filters</SheetTitle>
+                    {activeFiltersCount > 0 && (
+                      <button onClick={clearAllFilters} className="text-sm text-destructive font-medium flex items-center gap-1">
+                        <X size={14} /> Clear All
+                      </button>
+                    )}
+                  </div>
+                </SheetHeader>
+                <div className="py-6 space-y-8">
+                  {/* Category */}
+                  <div>
+                    <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Category</h3>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => setActiveFilter('all')}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                          activeFilter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+                        }`}
+                      >All</button>
+                      {subcategories.map((sub) => (
+                        <button
+                          key={sub}
+                          onClick={() => setActiveFilter(sub)}
+                          className={`px-4 py-2 rounded-full text-sm font-medium capitalize transition-colors ${
+                            activeFilter === sub ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+                          }`}
+                        >{sub}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Size */}
+                  <div>
+                    <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Size</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {sizes.map((size) => (
+                        <button
+                          key={size}
+                          onClick={() => toggleSize(size)}
+                          className={`px-3 py-2 rounded-full text-sm font-medium transition-colors ${
+                            selectedSizes.includes(size) ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+                          }`}
+                        >{size}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Color */}
+                  <div>
+                    <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Color</h3>
+                    <div className="flex flex-wrap gap-3">
+                      {colors.map((color) => (
+                        <button
+                          key={color.name}
+                          onClick={() => toggleColor(color.name)}
+                          className="flex flex-col items-center gap-1"
+                          title={color.name}
+                        >
+                          <span
+                            className={`w-8 h-8 rounded-full border-2 transition-all ${
+                              selectedColors.includes(color.name) ? 'border-primary scale-110 ring-2 ring-primary/30' : 'border-border'
+                            }`}
+                            style={{ backgroundColor: color.hex }}
+                          />
+                          <span className="text-[10px] text-muted-foreground">{color.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Price */}
+                  <div>
+                    <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Price Range</h3>
+                    <Slider value={priceRange} onValueChange={setPriceRange} min={0} max={5000} step={100} />
+                    <div className="flex justify-between text-sm text-muted-foreground mt-3">
+                      <span>₹{priceRange[0]}</span>
+                      <span>₹{priceRange[1]}</span>
+                    </div>
                   </div>
                 </div>
               </SheetContent>
             </Sheet>
 
-            {/* Clear Filters */}
+            {/* Active filter tags */}
             {activeFiltersCount > 0 && (
-              <button
-                onClick={clearAllFilters}
-                className="px-3 py-2 rounded-full text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-1"
-              >
-                <X size={14} /> Clear
-              </button>
+              <>
+                {activeFilter !== 'all' && (
+                  <button onClick={() => setActiveFilter('all')} className="inline-flex items-center gap-1 px-3 py-1.5 bg-secondary rounded-full text-xs font-medium capitalize">
+                    {activeFilter} <X size={12} />
+                  </button>
+                )}
+                {selectedSizes.map(s => (
+                  <button key={s} onClick={() => toggleSize(s)} className="inline-flex items-center gap-1 px-3 py-1.5 bg-secondary rounded-full text-xs font-medium">
+                    {s} <X size={12} />
+                  </button>
+                ))}
+                {selectedColors.map(c => (
+                  <button key={c} onClick={() => toggleColor(c)} className="inline-flex items-center gap-1 px-3 py-1.5 bg-secondary rounded-full text-xs font-medium">
+                    {c} <X size={12} />
+                  </button>
+                ))}
+                {(priceRange[0] > 0 || priceRange[1] < 5000) && (
+                  <button onClick={() => setPriceRange([0, 5000])} className="inline-flex items-center gap-1 px-3 py-1.5 bg-secondary rounded-full text-xs font-medium">
+                    ₹{priceRange[0]}-₹{priceRange[1]} <X size={12} />
+                  </button>
+                )}
+              </>
             )}
           </div>
 
