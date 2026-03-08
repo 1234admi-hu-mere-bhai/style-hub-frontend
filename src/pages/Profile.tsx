@@ -132,9 +132,23 @@ const Profile = () => {
     setSearchParams({ tab });
   };
 
-  const handleSaveProfile = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSaveProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    toast.success('Profile updated successfully!');
+    if (!user) return;
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          first_name: profile.firstName,
+          last_name: profile.lastName,
+          phone: profile.phone,
+        })
+        .eq('id', user.id);
+      if (error) throw error;
+      toast.success('Profile updated successfully!');
+    } catch (error) {
+      toast.error('Failed to update profile');
+    }
   };
 
   const handleSaveAddress = (e: React.FormEvent<HTMLFormElement>) => {
