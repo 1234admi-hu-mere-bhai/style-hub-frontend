@@ -61,7 +61,7 @@ const ProductDetail = () => {
   }
 
   const inWishlist = isInWishlist(product.id);
-  const reviews = getProductReviews(product.id);
+  
   const relatedProducts = allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
 
   const handleAddToCart = () => {
