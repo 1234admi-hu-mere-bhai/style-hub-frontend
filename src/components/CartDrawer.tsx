@@ -97,9 +97,17 @@ const CartDrawer = ({ onClose }: CartDrawerProps) => {
           <span>Subtotal</span>
           <span>₹{totalPrice.toLocaleString()}</span>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Shipping and taxes calculated at checkout
-        </p>
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Shipping</span>
+          <span className={totalPrice >= 999 ? 'text-success font-medium' : 'text-foreground'}>
+            {totalPrice >= 999 ? 'FREE' : '₹99'}
+          </span>
+        </div>
+        {totalPrice > 0 && totalPrice < 999 && (
+          <p className="text-xs text-primary">
+            Add ₹{(999 - totalPrice).toLocaleString()} more for free shipping!
+          </p>
+        )}
         <Button className="w-full" size="lg" asChild>
           <Link to="/checkout" onClick={onClose}>
             Proceed to Checkout

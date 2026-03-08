@@ -25,7 +25,7 @@ const ShippingPolicy = () => {
                 <p className="text-muted-foreground text-sm">On orders above ₹999</p>
               </div>
               <div className="bg-background rounded-lg p-4 border">
-                <p className="font-semibold text-lg">₹79</p>
+                <p className="font-semibold text-lg">₹99</p>
                 <p className="text-muted-foreground text-sm">Standard shipping for orders below ₹999</p>
               </div>
             </div>
