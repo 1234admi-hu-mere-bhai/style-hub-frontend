@@ -9,7 +9,7 @@ import { createOrder } from '@/hooks/useOrders';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useRazorpay, RazorpayResponse } from '@/hooks/useRazorpay';
@@ -23,7 +23,7 @@ const Checkout = () => {
   const isBuyNow = searchParams.get('buyNow') === 'true' && buyNowItem !== null;
   const items = isBuyNow ? [buyNowItem!] : cartItems;
   const totalPrice = isBuyNow ? buyNowItem!.price * buyNowItem!.quantity : cartTotalPrice;
-  const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [paymentMethod, setPaymentMethod] = useState('online');
   const [step, setStep] = useState<'address' | 'payment' | 'summary'>('address');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   
@@ -68,7 +68,7 @@ const Checkout = () => {
       total: finalTotal,
       shippingCost,
       address: addressForm,
-      paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment (Razorpay)',
+      paymentMethod: 'Online Payment (Razorpay)',
     };
     if (isBuyNow) { setBuyNowItem(null); } else { clearCart(); }
     navigate('/order-confirmation', { state: orderDetails });
@@ -126,49 +126,13 @@ const Checkout = () => {
       return;
     }
 
-    if (paymentMethod === 'online') {
-      // Initiate Razorpay payment
-      // Note: Replace 'YOUR_RAZORPAY_KEY_ID' with your actual Razorpay Key ID
-      await initiatePayment({
-        amount: finalTotal,
-        customerName: `${addressForm.firstName} ${addressForm.lastName}`,
-        customerPhone: addressForm.phone,
-        description: `Order of ${items.length} item(s) from MUFFI GOUT APPAREL HUB`,
-        // razorpayKey: 'YOUR_RAZORPAY_KEY_ID', // Uncomment and add your key for live payments
-      });
-    } else {
-      // Cash on Delivery
-      try {
-        setIsPlacingOrder(true);
-        const order = await createOrder({
-          userId: user.id,
-          items: items.map(item => ({
-            product_id: item.id,
-            product_name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            size: item.size,
-            color: item.color,
-            image: item.image,
-          })),
-          subtotal: totalPrice,
-          shippingCost,
-          total: finalTotal,
-          shippingAddress: addressForm,
-          paymentMethod: 'Cash on Delivery',
-        });
-        
-        toast.success('Order placed successfully!', {
-          description: 'You will receive a confirmation email shortly.',
-        });
-        navigateToConfirmation(order.order_number);
-      } catch (error) {
-        console.error('Failed to create order:', error);
-        toast.error('Failed to place order. Please try again.');
-      } finally {
-        setIsPlacingOrder(false);
-      }
-    }
+    // Initiate Razorpay payment
+    await initiatePayment({
+      amount: finalTotal,
+      customerName: `${addressForm.firstName} ${addressForm.lastName}`,
+      customerPhone: addressForm.phone,
+      description: `Order of ${items.length} item(s) from MUFFI GOUT APPAREL HUB`,
+    });
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -389,58 +353,19 @@ const Checkout = () => {
                   <CreditCard size={20} />
                   Payment Method
                 </h2>
-                <RadioGroup
-                  value={paymentMethod}
-                  onValueChange={setPaymentMethod}
-                  className="space-y-4"
-                >
-                  <div
-                    className={`flex items-center space-x-4 p-4 border rounded-lg cursor-pointer ${
-                      paymentMethod === 'cod'
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border'
-                    }`}
-                  >
-                    <RadioGroupItem value="cod" id="cod" />
-                    <Label htmlFor="cod" className="flex-1 cursor-pointer">
-                      <span className="font-medium">Cash on Delivery (COD)</span>
-                      <p className="text-sm text-muted-foreground">
-                        Pay when your order arrives
-                      </p>
-                    </Label>
+                <div className="p-4 bg-secondary/50 rounded-lg">
+                  <div className="flex items-center gap-3 mb-2">
+                    <img 
+                      src="https://razorpay.com/assets/razorpay-logo.svg" 
+                      alt="Razorpay" 
+                      className="h-6 dark:invert"
+                    />
                   </div>
-                  <div
-                    className={`flex items-center space-x-4 p-4 border rounded-lg cursor-pointer ${
-                      paymentMethod === 'online'
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border'
-                    }`}
-                  >
-                    <RadioGroupItem value="online" id="online" />
-                    <Label htmlFor="online" className="flex-1 cursor-pointer">
-                      <span className="font-medium">Online Payment</span>
-                      <p className="text-sm text-muted-foreground">
-                        UPI, Cards, Net Banking
-                      </p>
-                    </Label>
-                  </div>
-                </RadioGroup>
-
-                {paymentMethod === 'online' && (
-                  <div className="mt-6 p-4 bg-secondary/50 rounded-lg">
-                    <div className="flex items-center gap-3 mb-2">
-                      <img 
-                        src="https://razorpay.com/assets/razorpay-logo.svg" 
-                        alt="Razorpay" 
-                        className="h-6 dark:invert"
-                      />
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      You will be redirected to Razorpay's secure payment gateway to complete your payment.
-                      Supports UPI, Credit/Debit Cards, Net Banking, and Wallets.
-                    </p>
-                  </div>
-                )}
+                  <p className="text-sm text-muted-foreground">
+                    You will be redirected to Razorpay's secure payment gateway to complete your payment.
+                    Supports UPI, Credit/Debit Cards, Net Banking, and Wallets.
+                  </p>
+                </div>
 
                 <div className="flex gap-4 mt-6">
                   <Button
@@ -496,9 +421,7 @@ const Checkout = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Payment Method</span>
-                    <span>
-                      {paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment (Razorpay)'}
-                    </span>
+                    <span>Online Payment (Razorpay)</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Estimated Delivery</span>
@@ -525,10 +448,8 @@ const Checkout = () => {
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Processing...
                       </>
-                    ) : paymentMethod === 'online' ? (
-                      `Pay ₹${finalTotal.toLocaleString()}`
                     ) : (
-                      'Place Order'
+                      `Pay ₹${finalTotal.toLocaleString()}`
                     )}
                   </Button>
                 </div>
