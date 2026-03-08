@@ -30,6 +30,8 @@ const Header = () => {
   const { items: wishlistItems } = useWishlist();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
 
   const categories = [
     { name: 'Home', href: '/' },
