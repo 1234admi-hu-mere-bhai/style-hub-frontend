@@ -30,6 +30,7 @@ import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import WhatsAppButton from "./components/WhatsAppButton";
 import VisitorTracker from "./components/VisitorTracker";
+import BottomNav from "./components/BottomNav";
 
 const WhatsAppButtonWrapper = () => {
   const { pathname } = useLocation();
