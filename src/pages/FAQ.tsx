@@ -32,6 +32,26 @@ const faqSections = [
         q: 'Do you deliver across India?',
         a: 'Yes, we deliver all across India. Delivery time varies based on your pincode and location.',
       },
+      {
+        q: 'Can I change my delivery address after placing an order?',
+        a: 'Address changes are possible only before the order is shipped. Contact us immediately on WhatsApp at +91 91363 54192 with your order number and the new address.',
+      },
+      {
+        q: 'Do you provide gift wrapping?',
+        a: 'We do not offer gift wrapping at the moment, but we ensure all products are neatly packed.',
+      },
+      {
+        q: 'Can I schedule a specific delivery date?',
+        a: 'Currently, we do not support scheduled deliveries. Orders are delivered as per the courier partner\'s timeline based on your location.',
+      },
+      {
+        q: 'What if my order is delayed beyond 15 days?',
+        a: 'If your order hasn\'t arrived within 15 days, please contact us on WhatsApp at +91 91363 54192 with your order number. We\'ll check with the courier and provide an update.',
+      },
+      {
+        q: 'Can I modify my order after placing it?',
+        a: 'Modifications (size, color, quantity) are only possible before the order is shipped. Reach out to us on WhatsApp as soon as possible.',
+      },
     ],
   },
   {
@@ -48,6 +68,18 @@ const faqSections = [
       {
         q: 'My payment failed but money was deducted. What do I do?',
         a: 'Don\'t worry — if the payment failed, the amount will be automatically refunded to your account within 5-7 business days. If not, contact us on WhatsApp at +91 91363 54192 with your order details.',
+      },
+      {
+        q: 'Do you offer EMI or installment options?',
+        a: 'EMI options depend on your bank and card. If your payment gateway supports EMI, you may see the option at checkout.',
+      },
+      {
+        q: 'Are there any hidden charges?',
+        a: 'No, there are no hidden charges. The price you see on the product page is what you pay. Shipping is free above ₹999.',
+      },
+      {
+        q: 'Do prices include GST?',
+        a: 'Yes, all prices displayed on our website are inclusive of GST.',
       },
     ],
   },
@@ -91,6 +123,22 @@ const faqSections = [
         q: 'What fabric care instructions should I follow?',
         a: 'Care instructions are mentioned on the product label and product page. Generally, we recommend washing in cold water, avoiding bleach, and air drying for best results.',
       },
+      {
+        q: 'Are your products original/branded?',
+        a: 'Yes, all products sold on Muffi Gout Apparel Hub are 100% authentic. We source directly from trusted manufacturers and brands.',
+      },
+      {
+        q: 'What if I receive a damaged or wrong product?',
+        a: 'Contact us immediately on WhatsApp at +91 91363 54192 with photos of the product and your order number. We will arrange a replacement or full refund at no extra cost.',
+      },
+      {
+        q: 'Can I request a product that\'s not listed on your website?',
+        a: 'You can share your request via WhatsApp and we\'ll try our best to source it for you, subject to availability.',
+      },
+      {
+        q: 'Do you sell customized or personalized clothing?',
+        a: 'We currently do not offer customization. However, feel free to reach out — we\'re always exploring new options for our customers.',
+      },
     ],
   },
   {
@@ -115,6 +163,22 @@ const faqSections = [
       {
         q: 'How can I contact customer support?',
         a: 'You can reach us via WhatsApp or call at +91 91363 54192 or +91 91377 94645, Monday to Saturday, 10 AM – 7 PM.',
+      },
+      {
+        q: 'How do I apply a coupon code?',
+        a: 'You can enter your coupon code at checkout in the "Apply Coupon" field. The discount will be applied to your order total instantly.',
+      },
+      {
+        q: 'Do you have a loyalty or reward program?',
+        a: 'We don\'t have a formal loyalty program yet, but we frequently run special offers and discounts for our customers. Follow us on social media to stay updated!',
+      },
+      {
+        q: 'How do I get notified about sales and new arrivals?',
+        a: 'Subscribe to our newsletter on the homepage or follow us on Instagram and Facebook to get the latest updates on sales and new collections.',
+      },
+      {
+        q: 'How do I download my invoice?',
+        a: 'You can download your invoice from the Order History page. Click on the order and use the "Download Invoice" button.',
       },
     ],
   },
