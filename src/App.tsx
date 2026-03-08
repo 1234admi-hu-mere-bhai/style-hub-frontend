@@ -31,8 +31,8 @@ import WhatsAppButton from "./components/WhatsAppButton";
 import VisitorTracker from "./components/VisitorTracker";
 
 const WhatsAppButtonWrapper = () => {
-  const location = window.location.pathname;
-  return location.startsWith('/admin') ? null : <WhatsAppButton />;
+  const { pathname } = useLocation();
+  return pathname.startsWith('/admin') ? null : <WhatsAppButton />;
 };
 
 const queryClient = new QueryClient();
