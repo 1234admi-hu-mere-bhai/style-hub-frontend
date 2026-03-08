@@ -19,7 +19,7 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
     setResult(info);
     setChecked(true);
     if (info.available) {
-      onDeliveryInfo?.({ estimatedDays: info.estimatedDays, zone: info.zone, codAvailable: info.codAvailable });
+      onDeliveryInfo?.({ estimatedDays: info.estimatedDays, zone: info.zone });
     } else {
       onDeliveryInfo?.(null);
     }
