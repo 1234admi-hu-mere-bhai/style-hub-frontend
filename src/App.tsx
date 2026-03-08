@@ -21,6 +21,8 @@ import Admin from "./pages/Admin";
 import ReturnExchange from "./pages/ReturnExchange";
 import FAQ from "./pages/FAQ";
 import SizeGuide from "./pages/SizeGuide";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
