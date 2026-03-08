@@ -27,6 +27,7 @@ import ShippingPolicy from "./pages/ShippingPolicy";
 import AboutUs from "./pages/AboutUs";
 import Referral from "./pages/Referral";
 import Contact from "./pages/Contact";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import WhatsAppButton from "./components/WhatsAppButton";
 import VisitorTracker from "./components/VisitorTracker";
@@ -71,6 +72,7 @@ const App = () => (
                 <Route path="/about" element={<AboutUs />} />
                 <Route path="/referral" element={<Referral />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/settings" element={<Settings />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
