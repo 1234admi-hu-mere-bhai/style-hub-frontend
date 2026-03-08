@@ -149,7 +149,7 @@ export const products: Product[] = [
   {
     id: '6',
     name: 'Cable Knit Sweater',
-    category: 'women',
+    category: 'men',
     price: 1599,
     images: [product6],
     sizes: ['XS', 'S', 'M', 'L'],
