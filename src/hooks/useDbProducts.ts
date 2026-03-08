@@ -38,6 +38,7 @@ export interface StoreProduct {
   description: string;
   isNew?: boolean;
   isFeatured?: boolean;
+  subcategory?: string;
 }
 
 export const dbToStoreProduct = (p: DbProduct): StoreProduct => {
