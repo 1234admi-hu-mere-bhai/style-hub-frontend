@@ -404,7 +404,7 @@ const Checkout = () => {
                           Size: {item.size} | Color: {item.color} | Qty: {item.quantity}
                         </p>
                         <p className="font-semibold mt-1">
-                          ₹{(item.price * item.quantity).toLocaleString()}
+                          {formatPrice(item.price * item.quantity)}
                         </p>
                       </div>
                     </div>
