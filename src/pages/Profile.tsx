@@ -5,6 +5,7 @@ import {
   MapPin,
   Package,
   Heart,
+  Settings,
   LogOut,
   Plus,
   Edit2,
