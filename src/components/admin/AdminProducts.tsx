@@ -138,9 +138,11 @@ const AdminProducts = () => {
       const sizes = sizesInput.split(',').map(s => s.trim()).filter(Boolean);
       const colors = colorsInput.split(',').map(c => {
         const trimmed = c.trim();
-        if (trimmed.includes(':')) {
-          const [name, hex] = trimmed.split(':');
-          return { name: name.trim(), hex: hex.trim() };
+        const parts = trimmed.split(':');
+        if (parts.length >= 3) {
+          return { name: parts[0].trim(), hex: parts[1].trim(), image: parts.slice(2).join(':').trim() };
+        } else if (parts.length === 2) {
+          return { name: parts[0].trim(), hex: parts[1].trim() };
         }
         return { name: trimmed, hex: '' };
       }).filter(c => c.name);
