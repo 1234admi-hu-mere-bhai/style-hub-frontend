@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { checkPincodeDelivery } from '@/lib/pincodeChecker';
 
 interface PincodeCheckerProps {
-  onDeliveryInfo?: (info: { estimatedDays: string; zone: string; codAvailable: boolean } | null) => void;
+  onDeliveryInfo?: (info: { estimatedDays: string; zone: string } | null) => void;
   pincode?: string;
 }
 
