@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useRazorpay, RazorpayResponse } from '@/hooks/useRazorpay';
+import PincodeChecker from '@/components/PincodeChecker';
 
 const Checkout = () => {
   const navigate = useNavigate();
