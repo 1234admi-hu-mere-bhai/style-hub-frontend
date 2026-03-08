@@ -45,7 +45,8 @@ const Auth = () => {
     e.preventDefault();
     setErrors({});
     
-    const emailError = validateEmail(loginForm.email);
+    const trimmedEmail = loginForm.email.trim().toLowerCase();
+    const emailError = validateEmail(trimmedEmail);
     const passwordError = validatePassword(loginForm.password);
     
     if (emailError || passwordError) {
@@ -57,18 +58,19 @@ const Auth = () => {
     }
     
     setIsLoading(true);
-    const { error } = await signIn(loginForm.email, loginForm.password);
+    const { error } = await signIn(trimmedEmail, loginForm.password);
     setIsLoading(false);
     
     if (error) {
-      if (error.message.includes('Invalid login credentials')) {
-        toast.error('Invalid email or password');
+      if (error.message.includes('Invalid login credentials') || error.message.includes('invalid_credentials')) {
+        toast.error('Invalid email or password. Please check and try again.');
+      } else if (error.message.includes('Email not confirmed')) {
+        toast.error('Please verify your email before signing in.');
       } else {
         toast.error(error.message);
       }
     } else {
       toast.success('Welcome back!');
-      navigate('/');
     }
   };
 
