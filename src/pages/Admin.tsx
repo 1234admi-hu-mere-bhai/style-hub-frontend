@@ -40,7 +40,7 @@ const TABS = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'orders', label: 'Orders', icon: ShoppingCart },
   { key: 'products', label: 'Products', icon: Package },
-  { key: 'customers', label: 'Customers', icon: Users },
+  { key: 'customers', label: 'Client Data', icon: Users },
   { key: 'payments', label: 'Payments', icon: CreditCard },
   { key: 'inventory', label: 'Inventory', icon: Warehouse },
   { key: 'analytics', label: 'Analytics', icon: BarChart3 },
