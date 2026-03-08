@@ -48,6 +48,7 @@ interface Order {
 const OrderHistory = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
+  const { formatPrice } = useCurrency();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
