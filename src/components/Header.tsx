@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, Heart, ShoppingBag, User, Menu, X, LogOut, Package, History, Home } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
@@ -30,6 +30,8 @@ const Header = () => {
   const { items: wishlistItems } = useWishlist();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isHomePage = location.pathname === '/';
 
   const categories = [
     { name: 'Home', href: '/' },
@@ -63,12 +65,14 @@ const Header = () => {
               >
                 {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
-              <button
-                className="lg:hidden p-2"
-                onClick={() => navigate('/')}
-              >
-                <Home size={20} />
-              </button>
+              {!isHomePage && (
+                <button
+                  className="lg:hidden p-2"
+                  onClick={() => navigate('/')}
+                >
+                  <Home size={20} />
+                </button>
+              )}
             </div>
 
             {/* Logo */}
