@@ -97,17 +97,17 @@ const CartDrawer = ({ onClose }: CartDrawerProps) => {
       <div className="border-t border-border pt-4 space-y-4">
         <div className="flex justify-between text-lg font-semibold">
           <span>Subtotal</span>
-          <span>₹{totalPrice.toLocaleString()}</span>
+          <span>{formatPrice(totalPrice)}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Shipping</span>
           <span className={totalPrice >= 999 ? 'text-success font-medium' : 'text-foreground'}>
-            {totalPrice >= 999 ? 'FREE' : '₹99'}
+            {totalPrice >= 999 ? 'FREE' : formatPrice(99)}
           </span>
         </div>
         {totalPrice > 0 && totalPrice < 999 && (
           <p className="text-xs text-primary">
-            Add ₹{(999 - totalPrice).toLocaleString()} more for free shipping!
+            Add {formatPrice(999 - totalPrice)} more for free shipping!
           </p>
         )}
         <Button className="w-full" size="lg" asChild>
