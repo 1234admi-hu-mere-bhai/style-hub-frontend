@@ -1,4 +1,17 @@
-import { Review } from '@/components/ReviewSection';
+export interface Review {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  rating: number;
+  title: string;
+  comment: string;
+  date: string;
+  helpful: number;
+  images?: string[];
+  verified: boolean;
+}
+
 
 export const productReviews: Record<string, Review[]> = {
   '1': [
