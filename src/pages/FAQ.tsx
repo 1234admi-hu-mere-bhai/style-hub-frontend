@@ -69,6 +69,18 @@ const faqSections = [
         q: 'My payment failed but money was deducted. What do I do?',
         a: 'Don\'t worry — if the payment failed, the amount will be automatically refunded to your account within 5-7 business days. If not, contact us on WhatsApp at +91 91363 54192 with your order details.',
       },
+      {
+        q: 'Do you offer EMI or installment options?',
+        a: 'EMI options depend on your bank and card. If your payment gateway supports EMI, you may see the option at checkout.',
+      },
+      {
+        q: 'Are there any hidden charges?',
+        a: 'No, there are no hidden charges. The price you see on the product page is what you pay. Shipping is free above ₹999.',
+      },
+      {
+        q: 'Do prices include GST?',
+        a: 'Yes, all prices displayed on our website are inclusive of GST.',
+      },
     ],
   },
   {
