@@ -65,12 +65,14 @@ const Header = () => {
               >
                 {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
-              <button
-                className="lg:hidden p-2"
-                onClick={() => navigate('/')}
-              >
-                <Home size={20} />
-              </button>
+              {!isHomePage && (
+                <button
+                  className="lg:hidden p-2"
+                  onClick={() => navigate('/')}
+                >
+                  <Home size={20} />
+                </button>
+              )}
             </div>
 
             {/* Logo */}
