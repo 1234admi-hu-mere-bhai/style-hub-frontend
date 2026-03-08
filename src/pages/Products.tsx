@@ -19,16 +19,25 @@ const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
   const saleParam = searchParams.get('sale');
+  const subcategoryParam = searchParams.get('subcategory');
+  const priceMinParam = searchParams.get('priceMin');
+  const priceMaxParam = searchParams.get('priceMax');
+  const sizeParams = searchParams.getAll('size');
+  const colorParams = searchParams.getAll('color');
 
   const { products: allProducts, loading } = useDbProducts();
 
   const [sortBy, setSortBy] = useState('featured');
-  const [priceRange, setPriceRange] = useState([0, 5000]);
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState([
+    priceMinParam ? Number(priceMinParam) : 0,
+    priceMaxParam ? Number(priceMaxParam) : 5000,
+  ]);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>(sizeParams);
+  const [selectedColors, setSelectedColors] = useState<string[]>(colorParams);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     categoryParam ? [categoryParam] : []
   );
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>(subcategoryParam || '');
   const [gridCols, setGridCols] = useState<2 | 3 | 4>(3);
 
   const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
