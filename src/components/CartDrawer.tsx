@@ -10,6 +10,7 @@ interface CartDrawerProps {
 
 const CartDrawer = ({ onClose }: CartDrawerProps) => {
   const { items, updateQuantity, removeFromCart, totalPrice } = useCart();
+  const { formatPrice } = useCurrency();
 
   if (items.length === 0) {
     return (
