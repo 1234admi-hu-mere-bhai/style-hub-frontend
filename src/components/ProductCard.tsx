@@ -1,13 +1,27 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
-import { Product } from '@/data/products';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 
+export interface ProductCardProduct {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  discount?: number;
+  images: string[];
+  sizes: string[];
+  colors: { name: string; hex: string; image?: string }[];
+  rating: number;
+  reviews: number;
+  isNew?: boolean;
+  isFeatured?: boolean;
+}
+
 interface ProductCardProps {
-  product: Product;
+  product: ProductCardProduct;
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
@@ -41,8 +55,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
       price: product.price,
       originalPrice: product.originalPrice,
       image: product.images[0],
-      size: product.sizes[0],
-      color: product.colors[0].name,
+      size: product.sizes[0] || '',
+      color: product.colors[0]?.name || '',
       quantity: 1,
     });
     toast.success('Added to cart');

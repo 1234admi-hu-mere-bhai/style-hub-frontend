@@ -1,16 +1,17 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Truck, RefreshCw, Shield, Headphones } from 'lucide-react';
+import { ArrowRight, Truck, RefreshCw, Shield, Headphones, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
-import { getFeaturedProducts } from '@/data/products';
+import { useDbProducts } from '@/hooks/useDbProducts';
 
 import heroBanner from '@/assets/hero-banner.jpg';
 import categoryMen from '@/assets/category-men.jpg';
 
 const Index = () => {
-  const featuredProducts = getFeaturedProducts();
+  const { products, loading } = useDbProducts();
+  const featuredProducts = products.slice(0, 8);
 
   const categories = [
     { name: 'Men', image: categoryMen, href: '/products?category=men' },
@@ -143,11 +144,19 @@ const Index = () => {
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex justify-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : featuredProducts.length > 0 ? (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              {featuredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground py-16">No products available yet.</p>
+          )}
 
           <div className="text-center mt-8 md:hidden">
             <Button variant="outline" asChild>

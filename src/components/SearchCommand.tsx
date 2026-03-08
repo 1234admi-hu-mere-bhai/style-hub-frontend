@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
-import { products, Product } from '@/data/products';
+import { useDbProducts } from '@/hooks/useDbProducts';
 import {
   Command,
   CommandEmpty,
@@ -20,6 +20,7 @@ interface SearchCommandProps {
 const SearchCommand = ({ open, onOpenChange }: SearchCommandProps) => {
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
+  const { products } = useDbProducts();
 
   const filteredProducts = query.length > 0
     ? products.filter((product) =>
