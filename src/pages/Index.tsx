@@ -1,3 +1,4 @@
+import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Truck, RefreshCw, Shield, Headphones, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
