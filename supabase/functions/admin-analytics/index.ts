@@ -64,7 +64,9 @@ Deno.serve(async (req) => {
     const paidOrders = allOrders.filter((o: any) => o.payment_status === 'paid')
     const paidRevenue = paidOrders.reduce((sum: number, o: any) => sum + Number(o.total || 0), 0)
     const pendingOrders = allOrders.filter((o: any) => o.status === 'pending' || o.status === 'placed').length
-    const totalCustomers = allProfiles.length
+    // Count only customers who have placed orders
+    const uniqueCustomerIds = new Set(allOrders.map((o: any) => o.user_id))
+    const totalCustomers = uniqueCustomerIds.size
 
     // Status breakdown
     const statusCounts: Record<string, number> = {}
