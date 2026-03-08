@@ -130,7 +130,7 @@ export const products: Product[] = [
   {
     id: '5',
     name: 'Rainbow Block Hoodie',
-    category: 'kids',
+    category: 'men',
     price: 999,
     originalPrice: 1299,
     discount: 23,
