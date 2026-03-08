@@ -19,16 +19,25 @@ const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
   const saleParam = searchParams.get('sale');
+  const subcategoryParam = searchParams.get('subcategory');
+  const priceMinParam = searchParams.get('priceMin');
+  const priceMaxParam = searchParams.get('priceMax');
+  const sizeParams = searchParams.getAll('size');
+  const colorParams = searchParams.getAll('color');
 
   const { products: allProducts, loading } = useDbProducts();
 
   const [sortBy, setSortBy] = useState('featured');
-  const [priceRange, setPriceRange] = useState([0, 5000]);
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState([
+    priceMinParam ? Number(priceMinParam) : 0,
+    priceMaxParam ? Number(priceMaxParam) : 5000,
+  ]);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>(sizeParams);
+  const [selectedColors, setSelectedColors] = useState<string[]>(colorParams);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     categoryParam ? [categoryParam] : []
   );
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>(subcategoryParam || '');
   const [gridCols, setGridCols] = useState<2 | 3 | 4>(3);
 
   const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
@@ -51,6 +60,9 @@ const Products = () => {
     if (selectedCategories.length > 0) {
       result = result.filter((p) => selectedCategories.includes(p.category));
     }
+    if (selectedSubcategory) {
+      result = result.filter((p) => p.subcategory === selectedSubcategory);
+    }
     result = result.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
     if (selectedSizes.length > 0) {
       result = result.filter((p) => p.sizes.some((s) => selectedSizes.includes(s)));
@@ -67,7 +79,7 @@ const Products = () => {
       default: result.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
     }
     return result;
-  }, [allProducts, saleParam, selectedCategories, priceRange, selectedSizes, selectedColors, sortBy]);
+  }, [allProducts, saleParam, selectedCategories, selectedSubcategory, priceRange, selectedSizes, selectedColors, sortBy]);
 
   const toggleSize = (size: string) => setSelectedSizes((prev) => prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]);
   const toggleColor = (color: string) => setSelectedColors((prev) => prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]);

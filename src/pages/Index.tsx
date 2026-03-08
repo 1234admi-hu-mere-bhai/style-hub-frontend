@@ -265,6 +265,25 @@ const Index = () => {
               </button>
             )}
           </div>
+
+          {/* View All with filters link */}
+          {activeFiltersCount > 0 && (
+            <div className="mb-6">
+              <Link
+                to={`/products?${new URLSearchParams([
+                  ...(activeFilter !== 'all' ? [['subcategory', activeFilter]] : []),
+                  ...(priceRange[0] > 0 ? [['priceMin', String(priceRange[0])]] : []),
+                  ...(priceRange[1] < 5000 ? [['priceMax', String(priceRange[1])]] : []),
+                  ...selectedSizes.map(s => ['size', s]),
+                  ...selectedColors.map(c => ['color', c]),
+                ]).toString()}`}
+                className="inline-flex items-center text-sm font-medium text-primary hover:underline gap-1"
+              >
+                View all matching products
+                <ArrowRight size={16} />
+              </Link>
+            </div>
+          )}
           {loading ? (
             <div className="flex justify-center py-16">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
