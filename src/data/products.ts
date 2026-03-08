@@ -93,7 +93,7 @@ export const products: Product[] = [
   {
     id: '3',
     name: 'Terracotta Midi Dress',
-    category: 'women',
+    category: 'men',
     price: 1899,
     originalPrice: 2599,
     discount: 27,
