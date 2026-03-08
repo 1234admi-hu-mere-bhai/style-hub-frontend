@@ -41,7 +41,6 @@ export const generateOrderNumber = () => {
 export const createOrder = async (params: CreateOrderParams) => {
   const orderNumber = generateOrderNumber();
 
-  // Create the order - cast shipping_address to any to satisfy Json type
   const orderData = {
     user_id: params.userId,
     order_number: orderNumber,
@@ -95,7 +94,6 @@ export const createOrder = async (params: CreateOrderParams) => {
       });
     } catch (error) {
       console.error('Failed to generate invoice:', error);
-      // Don't fail the order if invoice generation fails
     }
   }
 
@@ -123,39 +121,6 @@ export const getOrderByNumber = async (orderNumber: string) => {
   return data;
 };
 
-export const updateOrderStatus = async (orderId: string, status: string) => {
-  const updateData: Record<string, unknown> = { status };
-  
-  if (status === 'delivered') {
-    updateData.delivered_at = new Date().toISOString();
-  }
-
-  const { error } = await supabase
-    .from('orders')
-    .update(updateData)
-    .eq('id', orderId);
-
-  if (error) {
-    console.error('Failed to update order status:', error);
-    throw error;
-  }
-
-  // If order is delivered, generate invoice
-  if (status === 'delivered') {
-    const { data: order } = await supabase
-      .from('orders')
-      .select('payment_method, invoice_url')
-      .eq('id', orderId)
-      .single();
-
-    if (order && !order.invoice_url) {
-      try {
-        await supabase.functions.invoke('generate-invoice', {
-          body: { orderId },
-        });
-      } catch (error) {
-        console.error('Failed to generate invoice:', error);
-      }
-    }
-  }
-};
+// Removed client-side updateOrderStatus — all status updates now go through
+// the admin-update-order edge function to prevent users from self-promoting
+// order status or modifying payment fields.
