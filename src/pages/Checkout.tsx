@@ -21,6 +21,7 @@ const Checkout = () => {
   const [searchParams] = useSearchParams();
   const { items: cartItems, totalPrice: cartTotalPrice, clearCart, buyNowItem, setBuyNowItem } = useCart();
   const { user, isLoading: authLoading } = useAuth();
+  const { formatPrice } = useCurrency();
   const isBuyNow = searchParams.get('buyNow') === 'true' && buyNowItem !== null;
   const items = isBuyNow ? [buyNowItem!] : cartItems;
   const totalPrice = isBuyNow ? buyNowItem!.price * buyNowItem!.quantity : cartTotalPrice;
