@@ -126,49 +126,13 @@ const Checkout = () => {
       return;
     }
 
-    if (paymentMethod === 'online') {
-      // Initiate Razorpay payment
-      // Note: Replace 'YOUR_RAZORPAY_KEY_ID' with your actual Razorpay Key ID
-      await initiatePayment({
-        amount: finalTotal,
-        customerName: `${addressForm.firstName} ${addressForm.lastName}`,
-        customerPhone: addressForm.phone,
-        description: `Order of ${items.length} item(s) from MUFFI GOUT APPAREL HUB`,
-        // razorpayKey: 'YOUR_RAZORPAY_KEY_ID', // Uncomment and add your key for live payments
-      });
-    } else {
-      // Cash on Delivery
-      try {
-        setIsPlacingOrder(true);
-        const order = await createOrder({
-          userId: user.id,
-          items: items.map(item => ({
-            product_id: item.id,
-            product_name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            size: item.size,
-            color: item.color,
-            image: item.image,
-          })),
-          subtotal: totalPrice,
-          shippingCost,
-          total: finalTotal,
-          shippingAddress: addressForm,
-          paymentMethod: 'Cash on Delivery',
-        });
-        
-        toast.success('Order placed successfully!', {
-          description: 'You will receive a confirmation email shortly.',
-        });
-        navigateToConfirmation(order.order_number);
-      } catch (error) {
-        console.error('Failed to create order:', error);
-        toast.error('Failed to place order. Please try again.');
-      } finally {
-        setIsPlacingOrder(false);
-      }
-    }
+    // Initiate Razorpay payment
+    await initiatePayment({
+      amount: finalTotal,
+      customerName: `${addressForm.firstName} ${addressForm.lastName}`,
+      customerPhone: addressForm.phone,
+      description: `Order of ${items.length} item(s) from MUFFI GOUT APPAREL HUB`,
+    });
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
