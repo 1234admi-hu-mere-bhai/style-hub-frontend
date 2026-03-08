@@ -118,6 +118,72 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          additional_images: string[] | null
+          brand: string
+          category: string
+          colors: Json | null
+          created_at: string
+          description: string | null
+          discount: number | null
+          id: string
+          image: string
+          in_stock: boolean | null
+          low_stock_threshold: number | null
+          name: string
+          original_price: number | null
+          price: number
+          sizes: string[] | null
+          stock_quantity: number | null
+          subcategory: string
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          additional_images?: string[] | null
+          brand?: string
+          category?: string
+          colors?: Json | null
+          created_at?: string
+          description?: string | null
+          discount?: number | null
+          id?: string
+          image?: string
+          in_stock?: boolean | null
+          low_stock_threshold?: number | null
+          name: string
+          original_price?: number | null
+          price: number
+          sizes?: string[] | null
+          stock_quantity?: number | null
+          subcategory?: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          additional_images?: string[] | null
+          brand?: string
+          category?: string
+          colors?: Json | null
+          created_at?: string
+          description?: string | null
+          discount?: number | null
+          id?: string
+          image?: string
+          in_stock?: boolean | null
+          low_stock_threshold?: number | null
+          name?: string
+          original_price?: number | null
+          price?: number
+          sizes?: string[] | null
+          stock_quantity?: number | null
+          subcategory?: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
