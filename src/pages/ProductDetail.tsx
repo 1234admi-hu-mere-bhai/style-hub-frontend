@@ -82,8 +82,18 @@ const ProductDetail = () => {
 
   const handleBuyNow = () => {
     if (!selectedSize || !selectedColor) { toast.error('Please select size and color'); return; }
-    handleAddToCart();
-    navigate('/checkout');
+    const { setBuyNowItem } = cartContext;
+    setBuyNowItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.images[0],
+      size: selectedSize,
+      color: selectedColor,
+      quantity,
+    });
+    navigate('/checkout?buyNow=true');
   };
 
   const handleWishlist = () => {
