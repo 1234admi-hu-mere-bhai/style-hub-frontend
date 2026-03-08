@@ -123,6 +123,22 @@ const faqSections = [
         q: 'What fabric care instructions should I follow?',
         a: 'Care instructions are mentioned on the product label and product page. Generally, we recommend washing in cold water, avoiding bleach, and air drying for best results.',
       },
+      {
+        q: 'Are your products original/branded?',
+        a: 'Yes, all products sold on Muffi Gout Apparel Hub are 100% authentic. We source directly from trusted manufacturers and brands.',
+      },
+      {
+        q: 'What if I receive a damaged or wrong product?',
+        a: 'Contact us immediately on WhatsApp at +91 91363 54192 with photos of the product and your order number. We will arrange a replacement or full refund at no extra cost.',
+      },
+      {
+        q: 'Can I request a product that\'s not listed on your website?',
+        a: 'You can share your request via WhatsApp and we\'ll try our best to source it for you, subject to availability.',
+      },
+      {
+        q: 'Do you sell customized or personalized clothing?',
+        a: 'We currently do not offer customization. However, feel free to reach out — we\'re always exploring new options for our customers.',
+      },
     ],
   },
   {
