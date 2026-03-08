@@ -32,6 +32,26 @@ const faqSections = [
         q: 'Do you deliver across India?',
         a: 'Yes, we deliver all across India. Delivery time varies based on your pincode and location.',
       },
+      {
+        q: 'Can I change my delivery address after placing an order?',
+        a: 'Address changes are possible only before the order is shipped. Contact us immediately on WhatsApp at +91 91363 54192 with your order number and the new address.',
+      },
+      {
+        q: 'Do you provide gift wrapping?',
+        a: 'We do not offer gift wrapping at the moment, but we ensure all products are neatly packed.',
+      },
+      {
+        q: 'Can I schedule a specific delivery date?',
+        a: 'Currently, we do not support scheduled deliveries. Orders are delivered as per the courier partner\'s timeline based on your location.',
+      },
+      {
+        q: 'What if my order is delayed beyond 15 days?',
+        a: 'If your order hasn\'t arrived within 15 days, please contact us on WhatsApp at +91 91363 54192 with your order number. We\'ll check with the courier and provide an update.',
+      },
+      {
+        q: 'Can I modify my order after placing it?',
+        a: 'Modifications (size, color, quantity) are only possible before the order is shipped. Reach out to us on WhatsApp as soon as possible.',
+      },
     ],
   },
   {
