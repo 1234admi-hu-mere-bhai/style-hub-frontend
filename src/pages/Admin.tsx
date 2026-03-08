@@ -149,6 +149,9 @@ const Admin = () => {
         {activeTab === 'orders' && (
           <AdminOrders orders={analytics.allOrders} onRefresh={fetchAnalytics} />
         )}
+        {activeTab === 'products' && (
+          <AdminProducts />
+        )}
         {activeTab === 'customers' && (
           <AdminCustomers customers={analytics.customers} />
         )}
