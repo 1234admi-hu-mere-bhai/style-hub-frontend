@@ -143,14 +143,14 @@ const ProductDetail = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto px-4 py-8">
-        <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-8">
-          <Link to="/" className="hover:text-foreground">Home</Link>
-          <span>/</span>
-          <Link to="/products" className="hover:text-foreground">Products</Link>
-          <span>/</span>
-          <Link to={`/products?category=${product.category}`} className="hover:text-foreground capitalize">{product.category}</Link>
-          <span>/</span>
-          <span className="text-foreground">{product.name}</span>
+        <nav className="flex items-center space-x-1.5 text-sm text-muted-foreground mb-8">
+          <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
+          <ChevronRight size={14} />
+          <Link to="/products" className="hover:text-foreground transition-colors">Products</Link>
+          <ChevronRight size={14} />
+          <Link to={`/products?category=${product.category}`} className="hover:text-foreground transition-colors capitalize">{product.category}</Link>
+          <ChevronRight size={14} />
+          <span className="text-foreground truncate max-w-[200px]">{product.name}</span>
         </nav>
 
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
