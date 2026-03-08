@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
+import HeroProductCarousel from '@/components/HeroProductCarousel';
 import { useDbProducts } from '@/hooks/useDbProducts';
 
-import heroBanner from '@/assets/hero-banner.jpg';
 import categoryMen from '@/assets/category-men.jpg';
 
 const Index = () => {
@@ -28,45 +28,8 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* Hero Section */}
-      <section className="relative h-[70vh] lg:h-[85vh] overflow-hidden">
-        <img
-          src={heroBanner}
-          alt="New Collection"
-          className="w-full h-full object-cover object-top"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/40 to-transparent" />
-        <div className="absolute inset-0 flex items-center">
-          <div className="container mx-auto px-4">
-            <div className="max-w-xl animate-slide-up">
-              <span className="inline-block badge-new mb-4 rounded-full px-4 py-1.5">
-                NEW COLLECTION
-              </span>
-              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4">
-                Crafted with Trust,
-                <br />
-                <span className="text-primary">Worn with Pride</span>
-              </h1>
-              <p className="text-lg text-muted-foreground mb-8 max-w-md">
-                At Muffi Gout Apparel Hub, we believe every man deserves clothing that's built to last — 
-                premium fabrics, impeccable craftsmanship, and styles that speak for themselves.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <Button size="lg" asChild className="group">
-                  <Link to="/products">
-                    Shop Now
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </Button>
-                <Button size="lg" variant="outline" asChild>
-                  <Link to="/products?sale=true">View Sale</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
+      {/* Hero Product Carousel */}
+      <HeroProductCarousel />
       {/* Features Bar */}
       <section className="border-y border-border bg-secondary/30">
         <div className="container mx-auto px-4 py-6">
