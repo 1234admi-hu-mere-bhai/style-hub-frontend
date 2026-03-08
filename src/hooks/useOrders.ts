@@ -140,7 +140,7 @@ export const updateOrderStatus = async (orderId: string, status: string) => {
     throw error;
   }
 
-  // If order is delivered and was COD, generate invoice
+  // If order is delivered, generate invoice
   if (status === 'delivered') {
     const { data: order } = await supabase
       .from('orders')
@@ -148,7 +148,7 @@ export const updateOrderStatus = async (orderId: string, status: string) => {
       .eq('id', orderId)
       .single();
 
-    if (order && order.payment_method === 'Cash on Delivery' && !order.invoice_url) {
+    if (order && !order.invoice_url) {
       try {
         await supabase.functions.invoke('generate-invoice', {
           body: { orderId },

@@ -70,10 +70,6 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
                   <Clock className="h-3.5 w-3.5" />
                   <span>{result.estimatedDays} business days</span>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Banknote className="h-3.5 w-3.5" />
-                  <span>{result.codAvailable ? 'COD available' : 'Prepaid only'}</span>
-                </div>
               </div>
             </>
           ) : (

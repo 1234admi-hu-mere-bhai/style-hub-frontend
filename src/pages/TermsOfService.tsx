@@ -32,7 +32,7 @@ const TermsOfService = () => {
             <h2 className="font-serif text-xl font-semibold mb-3">3. Orders & Payment</h2>
             <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
               <li>An order is confirmed only after successful payment processing.</li>
-              <li>We accept payments via UPI, credit/debit cards, net banking, and Cash on Delivery (where available).</li>
+              <li>We accept payments via UPI, credit/debit cards, and net banking.</li>
               <li>We reserve the right to cancel orders if fraud or unauthorized activity is suspected.</li>
             </ul>
           </section>
