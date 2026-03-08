@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
-import { products, Product } from '@/data/products';
+import { useDbProducts } from '@/hooks/useDbProducts';
 import {
   Command,
   CommandEmpty,
