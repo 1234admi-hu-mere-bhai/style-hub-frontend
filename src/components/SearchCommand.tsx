@@ -20,6 +20,7 @@ interface SearchCommandProps {
 const SearchCommand = ({ open, onOpenChange }: SearchCommandProps) => {
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
+  const { products } = useDbProducts();
 
   const filteredProducts = query.length > 0
     ? products.filter((product) =>
