@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -16,8 +16,12 @@ import { useRazorpay, RazorpayResponse } from '@/hooks/useRazorpay';
 
 const Checkout = () => {
   const navigate = useNavigate();
-  const { items, totalPrice, clearCart } = useCart();
+  const [searchParams] = useSearchParams();
+  const { items: cartItems, totalPrice: cartTotalPrice, clearCart, buyNowItem, setBuyNowItem } = useCart();
   const { user, isLoading: authLoading } = useAuth();
+  const isBuyNow = searchParams.get('buyNow') === 'true' && buyNowItem !== null;
+  const items = isBuyNow ? [buyNowItem!] : cartItems;
+  const totalPrice = isBuyNow ? buyNowItem!.price * buyNowItem!.quantity : cartTotalPrice;
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [step, setStep] = useState<'address' | 'payment' | 'summary'>('address');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
@@ -63,7 +67,7 @@ const Checkout = () => {
       address: addressForm,
       paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment (Razorpay)',
     };
-    clearCart();
+    if (isBuyNow) { setBuyNowItem(null); } else { clearCart(); }
     navigate('/order-confirmation', { state: orderDetails });
   };
 

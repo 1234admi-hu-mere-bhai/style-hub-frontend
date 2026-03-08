@@ -19,7 +19,7 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { product, loading } = useDbProduct(id || '');
   const { products: allProducts } = useDbProducts();
-  const { addToCart } = useCart();
+  const { addToCart, setBuyNowItem } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
 
   const [selectedSize, setSelectedSize] = useState('');
@@ -82,8 +82,17 @@ const ProductDetail = () => {
 
   const handleBuyNow = () => {
     if (!selectedSize || !selectedColor) { toast.error('Please select size and color'); return; }
-    handleAddToCart();
-    navigate('/checkout');
+    setBuyNowItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.images[0],
+      size: selectedSize,
+      color: selectedColor,
+      quantity,
+    });
+    navigate('/checkout?buyNow=true');
   };
 
   const handleWishlist = () => {
