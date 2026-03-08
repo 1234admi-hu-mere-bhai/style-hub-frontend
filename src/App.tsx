@@ -28,6 +28,7 @@ import AboutUs from "./pages/AboutUs";
 import Referral from "./pages/Referral";
 import NotFound from "./pages/NotFound";
 import WhatsAppButton from "./components/WhatsAppButton";
+import VisitorTracker from "./components/VisitorTracker";
 
 const queryClient = new QueryClient();
 
