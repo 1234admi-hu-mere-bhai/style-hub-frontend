@@ -104,7 +104,7 @@ const AboutUs = () => {
                 {
                   icon: Heart,
                   title: 'Built on Trust',
-                  desc: 'Trust isn't just a word for us — it's the foundation of our brand. We deliver exactly what we promise.',
+                  desc: "Trust isn\u2019t just a word for us \u2014 it\u2019s the foundation of our brand. We deliver exactly what we promise.",
                 },
               ].map((value, idx) => (
                 <div key={idx} className="flex gap-4 p-5 rounded-xl border border-border bg-card">
