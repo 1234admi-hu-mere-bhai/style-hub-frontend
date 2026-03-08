@@ -12,7 +12,19 @@ import categoryMen from '@/assets/category-men.jpg';
 
 const Index = () => {
   const { products, loading } = useDbProducts();
-  const featuredProducts = products.slice(0, 8);
+  const [activeFilter, setActiveFilter] = useState('all');
+
+  const subcategories = useMemo(() => {
+    const subs = [...new Set(products.map(p => p.subcategory))].filter(Boolean);
+    return subs;
+  }, [products]);
+
+  const featuredProducts = useMemo(() => {
+    const filtered = activeFilter === 'all' 
+      ? products 
+      : products.filter(p => p.subcategory === activeFilter);
+    return filtered.slice(0, 8);
+  }, [products, activeFilter]);
 
   const categories = [
     { name: 'Men', image: categoryMen, href: '/products?category=men' },
