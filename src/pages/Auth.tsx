@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { lovable } from '@/integrations/lovable/index';
 
 const emailSchema = z.string().trim().min(1, 'Email is required').email('Please enter a valid email address');
 const passwordSchema = z.string().min(1, 'Password is required').min(6, 'Password must be at least 6 characters');
