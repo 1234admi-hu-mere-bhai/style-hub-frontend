@@ -316,12 +316,6 @@ const Auth = () => {
               </TabsContent>
             </Tabs>
           </div>
-          
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            <Link to="/" className="hover:text-foreground underline">
-              Continue shopping as guest
-            </Link>
-          </p>
         </div>
       </main>
       
