@@ -25,6 +25,7 @@ const ProductDetail = () => {
   const { averageRating, totalReviews } = useProductReviews(id || '');
   const { addToCart, setBuyNowItem } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { formatPrice } = useCurrency();
 
   const [selectedSize, setSelectedSize] = useState('');
   const [selectedColor, setSelectedColor] = useState('');
