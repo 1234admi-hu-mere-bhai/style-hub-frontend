@@ -82,7 +82,6 @@ const ProductDetail = () => {
 
   const handleBuyNow = () => {
     if (!selectedSize || !selectedColor) { toast.error('Please select size and color'); return; }
-    const { setBuyNowItem } = cartContext;
     setBuyNowItem({
       id: product.id,
       name: product.name,
