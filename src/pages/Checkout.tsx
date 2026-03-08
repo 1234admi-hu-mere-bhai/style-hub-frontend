@@ -359,6 +359,19 @@ const Checkout = () => {
                       />
                     </div>
                   </div>
+
+                  {/* Pincode Delivery Checker */}
+                  <div className="bg-secondary/30 p-4 rounded-lg space-y-2">
+                    <h3 className="text-sm font-medium flex items-center gap-2">
+                      <Clock size={16} className="text-primary" />
+                      Check Delivery Availability
+                    </h3>
+                    <PincodeChecker
+                      pincode={addressForm.pincode}
+                      onDeliveryInfo={setDeliveryInfo}
+                    />
+                  </div>
+
                   <Button
                     type="button"
                     className="w-full mt-4"
