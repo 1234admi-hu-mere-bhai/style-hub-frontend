@@ -164,6 +164,22 @@ const faqSections = [
         q: 'How can I contact customer support?',
         a: 'You can reach us via WhatsApp or call at +91 91363 54192 or +91 91377 94645, Monday to Saturday, 10 AM – 7 PM.',
       },
+      {
+        q: 'How do I apply a coupon code?',
+        a: 'You can enter your coupon code at checkout in the "Apply Coupon" field. The discount will be applied to your order total instantly.',
+      },
+      {
+        q: 'Do you have a loyalty or reward program?',
+        a: 'We don\'t have a formal loyalty program yet, but we frequently run special offers and discounts for our customers. Follow us on social media to stay updated!',
+      },
+      {
+        q: 'How do I get notified about sales and new arrivals?',
+        a: 'Subscribe to our newsletter on the homepage or follow us on Instagram and Facebook to get the latest updates on sales and new collections.',
+      },
+      {
+        q: 'How do I download my invoice?',
+        a: 'You can download your invoice from the Order History page. Click on the order and use the "Download Invoice" button.',
+      },
     ],
   },
 ];
