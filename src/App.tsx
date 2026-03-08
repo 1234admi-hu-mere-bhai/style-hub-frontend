@@ -18,6 +18,7 @@ import Auth from "./pages/Auth";
 import OrderHistory from "./pages/OrderHistory";
 import Admin from "./pages/Admin";
 import ReturnExchange from "./pages/ReturnExchange";
+import FAQ from "./pages/FAQ";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
                 <Route path="/orders" element={<OrderHistory />} />
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/return-exchange" element={<ReturnExchange />} />
+                <Route path="/faq" element={<FAQ />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
