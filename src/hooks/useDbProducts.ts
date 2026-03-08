@@ -62,6 +62,7 @@ export const dbToStoreProduct = (p: DbProduct): StoreProduct => {
     description: p.description || '',
     isNew: false,
     isFeatured: true,
+    subcategory: p.subcategory || '',
   };
 };
 
