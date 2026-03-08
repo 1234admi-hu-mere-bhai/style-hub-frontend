@@ -30,9 +30,6 @@ const Footer = () => {
               <a href="https://www.facebook.com/share/1L2KedPQJv/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
                 <Facebook size={20} />
               </a>
-              <a href="#" className="hover:text-primary transition-colors">
-                <Twitter size={20} />
-              </a>
             </div>
           </div>
 
