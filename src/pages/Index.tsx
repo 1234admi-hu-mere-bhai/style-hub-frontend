@@ -43,13 +43,13 @@ const Index = () => {
                 NEW COLLECTION
               </span>
               <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4">
-                Autumn Winter
+                Crafted with Trust,
                 <br />
-                <span className="text-primary">Collection 2024</span>
+                <span className="text-primary">Worn with Pride</span>
               </h1>
               <p className="text-lg text-muted-foreground mb-8 max-w-md">
-                Discover our latest men's arrivals featuring premium fabrics and timeless
-                designs.
+                At Muffi Gout Apparel Hub, we believe every man deserves clothing that's built to last — 
+                premium fabrics, impeccable craftsmanship, and styles that speak for themselves.
               </p>
               <div className="flex flex-wrap gap-4">
                 <Button size="lg" asChild className="group">

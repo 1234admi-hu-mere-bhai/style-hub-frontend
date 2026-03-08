@@ -20,8 +20,8 @@ const Footer = () => {
               </div>
             </div>
             <p className="text-cream/70 mb-6">
-              Your destination for stylish men's clothing.
-              Quality fashion at affordable prices.
+              Where trust meets style. We craft premium men's fashion with uncompromising quality, 
+              ensuring every piece you wear reflects confidence, comfort, and lasting elegance.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="hover:text-primary transition-colors">
