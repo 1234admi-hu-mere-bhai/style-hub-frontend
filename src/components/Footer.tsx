@@ -55,6 +55,11 @@ const Footer = () => {
                   About Us
                 </Link>
               </li>
+              <li>
+                <Link to="/referral" className="hover:text-primary transition-colors">
+                  Refer & Earn ₹100
+                </Link>
+              </li>
             </ul>
           </div>
 
