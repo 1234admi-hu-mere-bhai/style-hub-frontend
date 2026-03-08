@@ -8,6 +8,7 @@ import SizeChartModal from '@/components/SizeChartModal';
 import ReviewSection from '@/components/ReviewSection';
 import PincodeChecker from '@/components/PincodeChecker';
 import { useDbProducts, useDbProduct } from '@/hooks/useDbProducts';
+import { useProductReviews } from '@/hooks/useProductReviews';
 import { getProductReviews } from '@/data/reviews';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
