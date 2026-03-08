@@ -421,9 +421,7 @@ const Checkout = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Payment Method</span>
-                    <span>
-                      {paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment (Razorpay)'}
-                    </span>
+                    <span>Online Payment (Razorpay)</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Estimated Delivery</span>
