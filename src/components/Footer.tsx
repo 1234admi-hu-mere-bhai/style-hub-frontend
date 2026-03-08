@@ -108,7 +108,7 @@ const Footer = () => {
               </li>
               <li className="flex items-start space-x-3">
                 <MapPin size={16} className="mt-1 flex-shrink-0" />
-                <span>123 Fashion Street, Mumbai, India - 400001</span>
+                <span>Nasaratpur, Samudraghar, Purba Bardhaman, West Bengal - 713519</span>
               </li>
             </ul>
           </div>
