@@ -168,5 +168,5 @@ export const products: Product[] = [
 export const getProductById = (id: string) => products.find(p => p.id === id);
 export const getFeaturedProducts = () => products.filter(p => p.isFeatured);
 export const getNewArrivals = () => products.filter(p => p.isNew);
-export const getProductsByCategory = (category: 'men' | 'women' | 'kids') =>
+export const getProductsByCategory = (category: 'men') =>
   products.filter(p => p.category === category);
