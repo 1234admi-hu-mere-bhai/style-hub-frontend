@@ -97,7 +97,7 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 max-w-2xl mx-auto">
             {categories.map((cat) => (
               <Link
                 key={cat.name}
