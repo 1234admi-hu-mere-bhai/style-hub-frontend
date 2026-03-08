@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { Star, ThumbsUp, Camera, User } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Star, ThumbsUp, Camera, User, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProductReviews, DbReview } from '@/hooks/useProductReviews';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ReviewSectionProps {
   productId: string;
@@ -16,6 +17,9 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
   const { reviews, loading, submitReview, averageRating, totalReviews } = useProductReviews(productId);
   const [showWriteReview, setShowWriteReview] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [reviewImages, setReviewImages] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [newReview, setNewReview] = useState({
     rating: 5,
     title: '',
