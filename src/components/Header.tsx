@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Heart, ShoppingBag, User, Menu, X, LogOut, Package, History } from 'lucide-react';
+import { Search, Heart, ShoppingBag, User, Menu, X, LogOut, Package, History, Home } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -56,12 +56,20 @@ const Header = () => {
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Mobile menu button */}
-            <button
-              className="lg:hidden p-2 -ml-2"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                className="lg:hidden p-2 -ml-2"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+              <button
+                className="lg:hidden p-2"
+                onClick={() => navigate('/')}
+              >
+                <Home size={20} />
+              </button>
+            </div>
 
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3">
