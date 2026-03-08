@@ -21,6 +21,8 @@ import Admin from "./pages/Admin";
 import ReturnExchange from "./pages/ReturnExchange";
 import FAQ from "./pages/FAQ";
 import SizeGuide from "./pages/SizeGuide";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +52,8 @@ const App = () => (
                 <Route path="/return-exchange" element={<ReturnExchange />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/size-guide" element={<SizeGuide />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsOfService />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
