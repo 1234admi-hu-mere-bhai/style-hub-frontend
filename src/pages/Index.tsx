@@ -159,8 +159,9 @@ const Index = () => {
             </Button>
           </div>
 
-          {/* Category Filter Buttons */}
-          <div className="flex flex-wrap gap-2 mb-8">
+          {/* Filter Controls */}
+          <div className="flex flex-wrap items-center gap-3 mb-8">
+            {/* Category Buttons */}
             <button
               onClick={() => setActiveFilter('all')}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
@@ -184,6 +185,85 @@ const Index = () => {
                 {sub}
               </button>
             ))}
+
+            {/* Divider */}
+            <div className="w-px h-6 bg-border hidden sm:block" />
+
+            {/* Size Buttons */}
+            <div className="flex flex-wrap gap-1.5">
+              {sizes.map((size) => (
+                <button
+                  key={size}
+                  onClick={() => toggleSize(size)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    selectedSizes.includes(size)
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div className="w-px h-6 bg-border hidden sm:block" />
+
+            {/* Color Swatches */}
+            <div className="flex gap-2 items-center">
+              {colors.map((color) => (
+                <button
+                  key={color.name}
+                  onClick={() => toggleColor(color.name)}
+                  className={`w-6 h-6 rounded-full border-2 transition-all ${
+                    selectedColors.includes(color.name)
+                      ? 'border-primary scale-110 ring-2 ring-primary/30'
+                      : 'border-border'
+                  }`}
+                  style={{ backgroundColor: color.hex }}
+                  title={color.name}
+                />
+              ))}
+            </div>
+
+            {/* Divider */}
+            <div className="w-px h-6 bg-border hidden sm:block" />
+
+            {/* Price Filter (Sheet for mobile-friendly) */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <button className={`px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  priceRange[0] > 0 || priceRange[1] < 5000
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-secondary text-muted-foreground hover:text-foreground'
+                }`}>
+                  <SlidersHorizontal size={14} />
+                  {priceRange[0] > 0 || priceRange[1] < 5000
+                    ? `₹${priceRange[0]} - ₹${priceRange[1]}`
+                    : 'Price'}
+                </button>
+              </SheetTrigger>
+              <SheetContent side="bottom" className="h-auto rounded-t-2xl">
+                <SheetHeader><SheetTitle>Price Range</SheetTitle></SheetHeader>
+                <div className="py-6 px-2">
+                  <Slider value={priceRange} onValueChange={setPriceRange} min={0} max={5000} step={100} />
+                  <div className="flex justify-between text-sm text-muted-foreground mt-3">
+                    <span>₹{priceRange[0]}</span>
+                    <span>₹{priceRange[1]}</span>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            {/* Clear Filters */}
+            {activeFiltersCount > 0 && (
+              <button
+                onClick={clearAllFilters}
+                className="px-3 py-2 rounded-full text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-1"
+              >
+                <X size={14} /> Clear
+              </button>
+            )}
           </div>
           {loading ? (
             <div className="flex justify-center py-16">
