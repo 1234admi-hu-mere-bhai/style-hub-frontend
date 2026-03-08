@@ -47,7 +47,7 @@ const Header = () => {
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
         {/* Announcement bar */}
         <div className="bg-primary text-primary-foreground text-center py-2 text-sm font-medium">
-          Free Shipping on orders above ₹999 | Use code MUFFIGOUT20 for 20% off
+          Free Shipping on orders above ₹999 | Use code MUFFIGOUT20 for 20% off on Men's Collection
         </div>
 
         <div className="container mx-auto px-4">
