@@ -39,6 +39,8 @@ const Checkout = () => {
     landmark: '',
   });
 
+  const [deliveryInfo, setDeliveryInfo] = useState<{ estimatedDays: string; zone: string; codAvailable: boolean } | null>(null);
+
   const shippingCost = totalPrice >= 999 ? 0 : 99;
   const finalTotal = totalPrice + shippingCost;
 
