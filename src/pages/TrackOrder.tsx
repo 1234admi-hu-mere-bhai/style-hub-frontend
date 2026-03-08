@@ -190,6 +190,10 @@ const TrackOrder = () => {
   if (!user) return null;
 
   return (
+    <div className="min-h-screen bg-background">
+      <Header />
+
+      <main className="container mx-auto px-4 py-8">
         <h1 className="font-serif text-3xl font-bold mb-8">Track Your Order</h1>
 
         {/* Search Form */}
