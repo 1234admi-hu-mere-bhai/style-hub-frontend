@@ -230,6 +230,18 @@ const Profile = () => {
     return status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex justify-center items-center py-32">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
