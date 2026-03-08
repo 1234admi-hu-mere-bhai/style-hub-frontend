@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MapPin, CheckCircle2, XCircle, Truck, Clock, Banknote } from 'lucide-react';
+import { MapPin, CheckCircle2, XCircle, Truck, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { checkPincodeDelivery } from '@/lib/pincodeChecker';
