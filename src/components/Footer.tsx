@@ -92,17 +92,12 @@ const Footer = () => {
                   FAQs
                 </Link>
               </li>
-              <li>
-                <Link to="/contact" className="hover:text-primary transition-colors">
-                  Contact Us
-                </Link>
-              </li>
             </ul>
           </div>
 
           {/* Contact */}
           <div>
-            <h3 className="font-semibold text-lg mb-4">Contact Us</h3>
+            <Link to="/contact" className="font-semibold text-lg mb-4 block hover:text-primary transition-colors">Contact Us</Link>
             <ul className="space-y-3 text-cream/70">
               <li className="flex items-center space-x-3">
                 <Phone size={16} />
