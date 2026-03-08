@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { Star, ThumbsUp, Camera, User } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { Star, ThumbsUp, Camera, User, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProductReviews, DbReview } from '@/hooks/useProductReviews';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ReviewSectionProps {
   productId: string;
@@ -16,6 +17,9 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
   const { reviews, loading, submitReview, averageRating, totalReviews } = useProductReviews(productId);
   const [showWriteReview, setShowWriteReview] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [reviewImages, setReviewImages] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [newReview, setNewReview] = useState({
     rating: 5,
     title: '',
@@ -31,6 +35,41 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
     };
   });
 
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (reviewImages.length + files.length > 4) {
+      toast.error('Maximum 4 images allowed');
+      return;
+    }
+    const validFiles = files.filter(f => f.size <= 5 * 1024 * 1024);
+    if (validFiles.length < files.length) {
+      toast.error('Each image must be under 5MB');
+    }
+    setReviewImages(prev => [...prev, ...validFiles]);
+    const newUrls = validFiles.map(f => URL.createObjectURL(f));
+    setPreviewUrls(prev => [...prev, ...newUrls]);
+  };
+
+  const removeImage = (index: number) => {
+    URL.revokeObjectURL(previewUrls[index]);
+    setReviewImages(prev => prev.filter((_, i) => i !== index));
+    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadImages = async (): Promise<string[]> => {
+    const urls: string[] = [];
+    for (const file of reviewImages) {
+      const ext = file.name.split('.').pop();
+      const path = `${user!.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from('review-images').upload(path, file);
+      if (!error) {
+        const { data } = supabase.storage.from('review-images').getPublicUrl(path);
+        urls.push(data.publicUrl);
+      }
+    }
+    return urls;
+  };
+
   const handleSubmitReview = async () => {
     if (!user) {
       toast.error('Please log in to write a review');
@@ -42,6 +81,7 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
     }
     setSubmitting(true);
     try {
+      const imageUrls = reviewImages.length > 0 ? await uploadImages() : [];
       await submitReview({
         product_id: productId,
         user_id: user.id,
@@ -49,10 +89,13 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
         rating: newReview.rating,
         title: newReview.title,
         comment: newReview.comment,
+        images: imageUrls,
       });
       toast.success('Review submitted successfully!');
       setShowWriteReview(false);
       setNewReview({ rating: 5, title: '', comment: '' });
+      setReviewImages([]);
+      setPreviewUrls([]);
     } catch {
       toast.error('Failed to submit review. Please try again.');
     } finally {
@@ -136,11 +179,47 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
               maxLength={1000}
             />
           </div>
+          {/* Photo Upload */}
+          <div>
+            <label className="text-sm font-medium mb-2 block">Add Photos (optional, max 4)</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+            <div className="flex gap-3 flex-wrap items-center">
+              {previewUrls.map((url, idx) => (
+                <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden border border-border">
+                  <img src={url} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => removeImage(idx)}
+                    className="absolute top-1 right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+              {reviewImages.length < 4 && (
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-20 h-20 rounded-lg border-2 border-dashed border-border hover:border-primary flex flex-col items-center justify-center gap-1 transition-colors"
+                >
+                  <Camera size={20} className="text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">Add</span>
+                </button>
+              )}
+            </div>
+          </div>
           <div className="flex gap-3">
             <Button onClick={handleSubmitReview} disabled={submitting}>
-              {submitting ? 'Submitting...' : 'Submit Review'}
+              {submitting ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</>
+              ) : 'Submit Review'}
             </Button>
-            <Button variant="outline" onClick={() => setShowWriteReview(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => { setShowWriteReview(false); setReviewImages([]); setPreviewUrls([]); }}>Cancel</Button>
           </div>
         </div>
       )}

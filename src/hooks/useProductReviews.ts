@@ -44,6 +44,7 @@ export const useProductReviews = (productId: string) => {
     rating: number;
     title: string;
     comment: string;
+    images?: string[];
   }) => {
     const { error } = await supabase
       .from('reviews' as any)
