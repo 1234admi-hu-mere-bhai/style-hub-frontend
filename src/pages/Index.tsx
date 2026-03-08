@@ -21,6 +21,13 @@ const Index = () => {
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
 
+  // Temporary filter state (used inside the sheet before Apply)
+  const [tempFilter, setTempFilter] = useState('all');
+  const [tempPriceRange, setTempPriceRange] = useState([0, 5000]);
+  const [tempSizes, setTempSizes] = useState<string[]>([]);
+  const [tempColors, setTempColors] = useState<string[]>([]);
+  const [filterOpen, setFilterOpen] = useState(false);
+
   const sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL'];
   const colors = [
     { name: 'Black', hex: '#1a1a1a' },
@@ -54,6 +61,35 @@ const Index = () => {
     { name: 'Orange', hex: '#EA580C' },
     { name: 'Purple', hex: '#9333EA' },
   ];
+
+  const toggleTempSize = (size: string) => setTempSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
+  const toggleTempColor = (color: string) => setTempColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
+
+  // Sync temp state when opening the sheet
+  const handleOpenFilter = (open: boolean) => {
+    if (open) {
+      setTempFilter(activeFilter);
+      setTempPriceRange(priceRange);
+      setTempSizes(selectedSizes);
+      setTempColors(selectedColors);
+    }
+    setFilterOpen(open);
+  };
+
+  const applyFilters = () => {
+    setActiveFilter(tempFilter);
+    setPriceRange(tempPriceRange);
+    setSelectedSizes(tempSizes);
+    setSelectedColors(tempColors);
+    setFilterOpen(false);
+  };
+
+  const clearTempFilters = () => {
+    setTempFilter('all');
+    setTempPriceRange([0, 5000]);
+    setTempSizes([]);
+    setTempColors([]);
+  };
 
   const toggleSize = (size: string) => setSelectedSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
   const toggleColor = (color: string) => setSelectedColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
