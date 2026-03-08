@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Filter, SlidersHorizontal, Grid, LayoutGrid, X, Loader2 } from 'lucide-react';
+import { Filter, SlidersHorizontal, Grid, LayoutGrid, X, Loader2, ChevronRight } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
@@ -131,19 +131,19 @@ const Products = () => {
       <Header />
       <main className="container mx-auto px-4 py-8">
         {/* Breadcrumb Navigation */}
-        <nav className="flex items-center space-x-2 text-sm text-muted-foreground mb-6">
+        <nav className="flex items-center space-x-1.5 text-sm text-muted-foreground mb-6">
           <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
-          <span>/</span>
+          <ChevronRight size={14} />
           {categoryParam ? (
             <>
               <Link to="/products" className="hover:text-foreground transition-colors">Products</Link>
-              <span>/</span>
+              <ChevronRight size={14} />
               <span className="text-foreground capitalize">{categoryParam}'s Collection</span>
             </>
           ) : saleParam ? (
             <>
               <Link to="/products" className="hover:text-foreground transition-colors">Products</Link>
-              <span>/</span>
+              <ChevronRight size={14} />
               <span className="text-foreground">Sale</span>
             </>
           ) : (
