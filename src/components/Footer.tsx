@@ -12,7 +12,7 @@ const Footer = () => {
               <img 
                 src="/assets/logo-new.png" 
                 alt="MUFFI GOUT APPAREL HUB" 
-                className="h-18 w-auto rounded-full"
+                className="h-14 w-auto rounded-full"
               />
               <div className="flex flex-col leading-none">
                 <span className="font-serif text-xl font-bold">MUFFI GOUT</span>
