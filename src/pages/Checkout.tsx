@@ -67,7 +67,7 @@ const Checkout = () => {
       address: addressForm,
       paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment (Razorpay)',
     };
-    clearCart();
+    if (isBuyNow) { setBuyNowItem(null); } else { clearCart(); }
     navigate('/order-confirmation', { state: orderDetails });
   };
 
