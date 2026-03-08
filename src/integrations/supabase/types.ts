@@ -325,6 +325,45 @@ export type Database = {
         }
         Relationships: []
       }
+      referrals: {
+        Row: {
+          created_at: string
+          id: string
+          referral_code: string
+          referred_discount_applied: boolean | null
+          referred_email: string | null
+          referred_id: string | null
+          referrer_discount_applied: boolean | null
+          referrer_id: string
+          status: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referral_code: string
+          referred_discount_applied?: boolean | null
+          referred_email?: string | null
+          referred_id?: string | null
+          referrer_discount_applied?: boolean | null
+          referrer_id: string
+          status?: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referral_code?: string
+          referred_discount_applied?: boolean | null
+          referred_email?: string | null
+          referred_id?: string | null
+          referrer_discount_applied?: boolean | null
+          referrer_id?: string
+          status?: string
+          used_at?: string | null
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           comment: string
