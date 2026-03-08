@@ -252,7 +252,7 @@ const AdminProducts = () => {
               </div>
               <div>
                 <Label>Image URL *</Label>
-                <Input value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} placeholder="/images/products/..." />
+                <Input value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} placeholder="https://... or /assets/product-1.jpg" />
               </div>
               <div>
                 <Label>Stock Quantity</Label>
@@ -263,16 +263,22 @@ const AdminProducts = () => {
                 <Input type="number" value={form.low_stock_threshold || ''} onChange={e => setForm({ ...form, low_stock_threshold: Number(e.target.value) })} />
               </div>
               <div>
-                <Label>Additional Images (comma-separated)</Label>
-                <Input value={additionalImagesInput} onChange={e => setAdditionalImagesInput(e.target.value)} placeholder="/img1.png, /img2.png" />
+                <Label>Additional Images (comma-separated URLs)</Label>
+                <Input value={additionalImagesInput} onChange={e => setAdditionalImagesInput(e.target.value)} placeholder="https://img1.png, https://img2.png" />
               </div>
               <div>
                 <Label>Sizes (comma-separated) *</Label>
                 <Input value={sizesInput} onChange={e => setSizesInput(e.target.value)} placeholder="S, M, L, XL" />
               </div>
               <div>
-                <Label>Colors (Name:Hex, comma-separated)</Label>
-                <Input value={colorsInput} onChange={e => setColorsInput(e.target.value)} placeholder="Blue:#3B82F6, Black:#111111" />
+                <Label>Colors with Images (Name:Hex:ImageURL, comma-separated)</Label>
+                <p className="text-xs text-muted-foreground mb-1.5">Format: ColorName:HexCode:ImageURL — image URL is optional. Each color can have its own image that shows when selected.</p>
+                <Textarea
+                  value={colorsInput}
+                  onChange={e => setColorsInput(e.target.value)}
+                  placeholder="Blue:#3B82F6:https://img-blue.jpg, Black:#111111:https://img-black.jpg, Red:#EF4444"
+                  rows={3}
+                />
               </div>
               <div>
                 <Label>Tags (comma-separated)</Label>
