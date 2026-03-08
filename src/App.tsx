@@ -75,6 +75,7 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <WhatsAppButtonWrapper />
+              <BottomNav />
             </BrowserRouter>
           </WishlistProvider>
         </CartProvider>
