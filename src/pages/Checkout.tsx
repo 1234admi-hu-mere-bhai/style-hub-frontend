@@ -939,7 +939,7 @@ const Checkout = () => {
           </div>
 
           {/* Expandable price details */}
-          {showPriceDetails && (
+          {step !== 'address' && showPriceDetails && (
             <div className="mt-3 pt-3 border-t border-border space-y-2 text-sm animate-fade-in">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Product Price</span>
