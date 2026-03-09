@@ -29,6 +29,7 @@ const Index = () => {
   const [tempSizes, setTempSizes] = useState<string[]>([]);
   const [tempColors, setTempColors] = useState<string[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL'];
   const colors = [
