@@ -324,7 +324,7 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
 
         {/* Map */}
         <div className="flex-1 relative">
-          <div ref={mapDivRef} className="h-full w-full" />
+          <div ref={setMapEl} className="h-full w-full" />
 
           {/* Current location */}
           <button
