@@ -32,6 +32,7 @@ import Payments from "./pages/Payments";
 import NotFound from "./pages/NotFound";
 import VisitorTracker from "./components/VisitorTracker";
 import BottomNav from "./components/BottomNav";
+import LiveSupportChat from "./components/LiveSupportChat";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,7 @@ const App = () => (
               </Routes>
               
               <BottomNav />
+              <LiveSupportChat />
             </BrowserRouter>
           </WishlistProvider>
         </CartProvider>
