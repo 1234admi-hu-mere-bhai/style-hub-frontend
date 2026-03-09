@@ -102,10 +102,21 @@ const Header = () => {
             </nav>
 
             {/* Right icons */}
+            {/* Search bar - visible on desktop */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="hidden lg:flex items-center gap-2 bg-secondary/60 border border-border rounded-full px-4 py-2 min-w-[260px] hover:bg-secondary transition-colors"
+            >
+              <Search size={16} className="text-muted-foreground" />
+              <span className="text-sm text-muted-foreground flex-1 text-left">Search by Keyword or Product Name</span>
+              <kbd className="text-[10px] text-muted-foreground bg-background border border-border rounded px-1.5 py-0.5">⌘K</kbd>
+            </button>
+
             <div className="flex items-center space-x-2 lg:space-x-4">
+              {/* Mobile search icon */}
               <button
-                className="p-2 hover:bg-secondary rounded-full transition-colors"
-                onClick={() => setSearchOpen(!searchOpen)}
+                className="lg:hidden p-2 hover:bg-secondary rounded-full transition-colors"
+                onClick={() => setSearchOpen(true)}
               >
                 <Search size={20} />
               </button>
