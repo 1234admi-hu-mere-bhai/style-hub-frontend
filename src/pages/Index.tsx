@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import SearchCommand from '@/components/SearchCommand';
 import { Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Truck, RefreshCw, Shield, Headphones, Loader2, SlidersHorizontal, X } from 'lucide-react';
+import { ArrowRight, Truck, RefreshCw, Shield, Headphones, Loader2, SlidersHorizontal, X, Mic, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
