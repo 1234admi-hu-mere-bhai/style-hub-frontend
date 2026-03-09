@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, CreditCard, Wallet, Plus, Trash2, Loader2, ShieldCheck, Landmark, Smartphone } from 'lucide-react';
+import { ArrowLeft, CreditCard, Wallet, Plus, Trash2, Loader2, ShieldCheck, Landmark, Smartphone, Pencil } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -65,6 +65,7 @@ const Payments = () => {
   const [bankFormErrors, setBankFormErrors] = useState<Record<string, string>>({});
   const [upiFormErrors, setUpiFormErrors] = useState<Record<string, string>>({});
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
+  const [editingMethod, setEditingMethod] = useState<PaymentMethod | null>(null);
   const [newMethod, setNewMethod] = useState({ type: 'upi', label: '', details: '' });
 
   // Redirect if not logged in
@@ -184,20 +185,32 @@ const Payments = () => {
     if (Object.keys(errors).length > 0) return;
 
     const lastFour = bankForm.accountNumber.slice(-4);
-    const method: PaymentMethod = {
-      id: Date.now().toString(),
-      type: 'bank',
-      label: `${bankForm.holderName} (${bankForm.ifsc.toUpperCase()})`,
-      details: `A/C ending ****${lastFour}`,
-      isDefault: paymentMethods.length === 0,
-    };
 
-    savePaymentMethods([...paymentMethods, method]);
+    if (editingMethod) {
+      const updated = paymentMethods.map(m =>
+        m.id === editingMethod.id
+          ? { ...m, label: `${bankForm.holderName} (${bankForm.ifsc.toUpperCase()})`, details: `A/C ending ****${lastFour}` }
+          : m
+      );
+      savePaymentMethods(updated);
+      toast.success('Bank account updated successfully');
+    } else {
+      const method: PaymentMethod = {
+        id: Date.now().toString(),
+        type: 'bank',
+        label: `${bankForm.holderName} (${bankForm.ifsc.toUpperCase()})`,
+        details: `A/C ending ****${lastFour}`,
+        isDefault: paymentMethods.length === 0,
+      };
+      savePaymentMethods([...paymentMethods, method]);
+      toast.success('Bank account added successfully');
+    }
+
     setIsBankFormOpen(false);
     setBankForm({ ifsc: '', accountNumber: '', confirmAccount: '', holderName: '' });
     setPrivacyAgreed(false);
     setBankFormErrors({});
-    toast.success('Bank account added successfully');
+    setEditingMethod(null);
   };
 
   const handleAddUpi = () => {
@@ -211,19 +224,51 @@ const Payments = () => {
     setUpiFormErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
-    const method: PaymentMethod = {
-      id: Date.now().toString(),
-      type: 'upi',
-      label: upiForm.name,
-      details: upiForm.upiId,
-      isDefault: paymentMethods.length === 0,
-    };
+    if (editingMethod) {
+      const updated = paymentMethods.map(m =>
+        m.id === editingMethod.id
+          ? { ...m, label: upiForm.name, details: upiForm.upiId }
+          : m
+      );
+      savePaymentMethods(updated);
+      toast.success('UPI payment method updated');
+    } else {
+      const method: PaymentMethod = {
+        id: Date.now().toString(),
+        type: 'upi',
+        label: upiForm.name,
+        details: upiForm.upiId,
+        isDefault: paymentMethods.length === 0,
+      };
+      savePaymentMethods([...paymentMethods, method]);
+      toast.success('UPI payment method added');
+    }
 
-    savePaymentMethods([...paymentMethods, method]);
     setIsUpiFormOpen(false);
     setUpiForm({ upiId: '', name: '' });
     setUpiFormErrors({});
-    toast.success('UPI payment method added');
+    setEditingMethod(null);
+  };
+
+  const handleEditMethod = (method: PaymentMethod) => {
+    setEditingMethod(method);
+    if (method.type === 'upi') {
+      setUpiForm({ upiId: method.details, name: method.label });
+      setUpiFormErrors({});
+      setIsUpiFormOpen(true);
+    } else if (method.type === 'bank') {
+      // Pre-fill what we can from the saved label/details
+      const ifscMatch = method.label.match(/\(([^)]+)\)/);
+      setBankForm({
+        ifsc: ifscMatch ? ifscMatch[1] : '',
+        accountNumber: '',
+        confirmAccount: '',
+        holderName: method.label.replace(/\s*\([^)]*\)/, ''),
+      });
+      setBankFormErrors({});
+      setPrivacyAgreed(false);
+      setIsBankFormOpen(true);
+    }
   };
 
   const handleDeleteMethod = (id: string) => {
@@ -463,6 +508,13 @@ const Payments = () => {
                           Set Default
                         </Button>
                       )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEditMethod(method)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button size="sm" variant="outline">
@@ -524,10 +576,10 @@ const Payments = () => {
         </Dialog>
 
         {/* Bank Details Form — Full-screen style like reference */}
-        <Dialog open={isBankFormOpen} onOpenChange={setIsBankFormOpen}>
+        <Dialog open={isBankFormOpen} onOpenChange={(open) => { setIsBankFormOpen(open); if (!open) setEditingMethod(null); }}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-lg tracking-wide">MY BANK DETAILS</DialogTitle>
+              <DialogTitle className="text-lg tracking-wide">{editingMethod ? 'EDIT BANK DETAILS' : 'MY BANK DETAILS'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-6 mt-4">
               {/* IFSC Code */}
@@ -608,17 +660,17 @@ const Payments = () => {
 
               {/* Submit */}
               <Button className="w-full" onClick={handleAddBankAccount}>
-                Submit
+                {editingMethod ? 'Update' : 'Submit'}
               </Button>
             </div>
           </DialogContent>
         </Dialog>
 
         {/* UPI Form Dialog */}
-        <Dialog open={isUpiFormOpen} onOpenChange={setIsUpiFormOpen}>
+        <Dialog open={isUpiFormOpen} onOpenChange={(open) => { setIsUpiFormOpen(open); if (!open) setEditingMethod(null); }}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-lg tracking-wide">ADD UPI DETAILS</DialogTitle>
+              <DialogTitle className="text-lg tracking-wide">{editingMethod ? 'EDIT UPI DETAILS' : 'ADD UPI DETAILS'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-6 mt-4">
               <div className="space-y-1">
@@ -653,7 +705,7 @@ const Payments = () => {
               </div>
 
               <Button className="w-full" onClick={handleAddUpi}>
-                Submit
+                {editingMethod ? 'Update' : 'Submit'}
               </Button>
             </div>
           </DialogContent>
