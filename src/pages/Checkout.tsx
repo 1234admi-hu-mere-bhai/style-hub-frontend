@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn, Clock } from 'lucide-react';
+import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn, Clock, Tag, X } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCart } from '@/contexts/CartContext';
@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useRazorpay, RazorpayResponse } from '@/hooks/useRazorpay';
 import PincodeChecker from '@/components/PincodeChecker';
+import { supabase } from '@/integrations/supabase/client';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -28,6 +29,11 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState('online');
   const [step, setStep] = useState<'address' | 'payment' | 'summary'>('address');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+
+  // Coupon state
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_type: string; discount_value: number } | null>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
   
   // Form state for address
   const [addressForm, setAddressForm] = useState({
@@ -43,8 +49,45 @@ const Checkout = () => {
 
   const [deliveryInfo, setDeliveryInfo] = useState<{ estimatedDays: string; zone: string } | null>(null);
 
+  // Calculate discount
+  const discountAmount = useMemo(() => {
+    if (!appliedCoupon) return 0;
+    if (appliedCoupon.discount_type === 'percentage') {
+      return Math.round(totalPrice * (appliedCoupon.discount_value / 100));
+    }
+    return appliedCoupon.discount_value;
+  }, [appliedCoupon, totalPrice]);
+
   const shippingCost = totalPrice >= 999 ? 0 : 99;
-  const finalTotal = totalPrice + shippingCost;
+  const finalTotal = totalPrice - discountAmount + shippingCost;
+
+  const handleApplyCoupon = async () => {
+    const code = couponCode.trim().toUpperCase();
+    if (!code) { toast.error('Please enter a coupon code'); return; }
+    setCouponLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('coupons')
+        .select('code, discount_type, discount_value, is_active, min_order_value, max_uses, used_count, expires_at')
+        .eq('code', code)
+        .eq('is_active', true)
+        .single();
+
+      if (error || !data) { toast.error('Invalid coupon code'); setCouponLoading(false); return; }
+      if (data.expires_at && new Date(data.expires_at) < new Date()) { toast.error('This coupon has expired'); setCouponLoading(false); return; }
+      if (data.max_uses && data.used_count !== null && data.used_count >= data.max_uses) { toast.error('Coupon usage limit reached'); setCouponLoading(false); return; }
+      if (data.min_order_value && totalPrice < data.min_order_value) { toast.error(`Minimum order of ₹${data.min_order_value} required`); setCouponLoading(false); return; }
+
+      setAppliedCoupon({ code: data.code, discount_type: data.discount_type, discount_value: data.discount_value });
+      toast.success(`Coupon "${data.code}" applied! You save ₹${data.discount_type === 'percentage' ? Math.round(totalPrice * (data.discount_value / 100)) : data.discount_value}`);
+    } catch {
+      toast.error('Failed to validate coupon');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const removeCoupon = () => { setAppliedCoupon(null); setCouponCode(''); toast.info('Coupon removed'); };
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -484,12 +527,56 @@ const Checkout = () => {
                   <span className="text-muted-foreground">Subtotal</span>
                   <span>{formatPrice(totalPrice)}</span>
                 </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-success">
+                    <span className="flex items-center gap-1">
+                      Discount ({appliedCoupon.code})
+                      <button onClick={removeCoupon} className="text-destructive hover:text-destructive/80">
+                        <X size={14} />
+                      </button>
+                    </span>
+                    <span>-{formatPrice(discountAmount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping</span>
                   <span className={shippingCost === 0 ? 'text-success' : ''}>
                     {shippingCost === 0 ? 'FREE' : formatPrice(shippingCost)}
                   </span>
                 </div>
+              </div>
+
+              {/* Coupon Code Input */}
+              <Separator className="my-4" />
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-1.5">
+                  <Tag size={14} className="text-primary" />
+                  Apply Coupon
+                </label>
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between p-2 bg-success/10 rounded-lg border border-success/30">
+                    <span className="text-sm font-semibold text-success">{appliedCoupon.code} applied ✓</span>
+                    <button onClick={removeCoupon} className="text-xs text-destructive hover:underline">Remove</button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      placeholder="Enter code"
+                      className="flex-1 text-sm uppercase"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleApplyCoupon}
+                      disabled={couponLoading}
+                      className="shrink-0"
+                    >
+                      {couponLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Apply'}
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <Separator className="my-4" />
