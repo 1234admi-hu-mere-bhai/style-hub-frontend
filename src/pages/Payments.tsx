@@ -257,13 +257,11 @@ const Payments = () => {
   const getMethodIcon = (type: string) => {
     switch (type) {
       case 'upi':
-        return <Wallet className="h-5 w-5 text-primary" />;
-      case 'card':
-        return <CreditCard className="h-5 w-5 text-primary" />;
+        return <Smartphone className="h-5 w-5 text-primary" />;
       case 'bank':
-        return <Wallet className="h-5 w-5 text-primary" />;
+        return <Landmark className="h-5 w-5 text-primary" />;
       default:
-        return <CreditCard className="h-5 w-5 text-primary" />;
+        return <Wallet className="h-5 w-5 text-primary" />;
     }
   };
 
