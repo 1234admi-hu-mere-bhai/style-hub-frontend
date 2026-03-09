@@ -660,6 +660,7 @@ const Checkout = () => {
                   </>
                 )}
               </div>
+            )}
 
             {step === 'payment' && (
               <div className="bg-card p-6 rounded-lg border border-border">
