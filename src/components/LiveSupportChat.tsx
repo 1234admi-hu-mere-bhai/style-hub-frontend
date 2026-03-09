@@ -100,9 +100,27 @@ const LiveSupportChat = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [showBubble, setShowBubble] = useState(false);
+  const [bubbleDismissed, setBubbleDismissed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
+
+  // Show speech bubble after 3 seconds, auto-dismiss after 6 more
+  useEffect(() => {
+    if (open || bubbleDismissed) return;
+    const showTimer = setTimeout(() => setShowBubble(true), 3000);
+    return () => clearTimeout(showTimer);
+  }, [open, bubbleDismissed]);
+
+  useEffect(() => {
+    if (!showBubble) return;
+    const hideTimer = setTimeout(() => {
+      setShowBubble(false);
+      setBubbleDismissed(true);
+    }, 6000);
+    return () => clearTimeout(hideTimer);
+  }, [showBubble]);
 
   // Load chat history when user is available and chat opens
   const loadHistory = useCallback(async () => {
