@@ -9,6 +9,7 @@ import {
   Search,
   FileText,
   Loader2,
+  RefreshCw,
 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -126,46 +127,42 @@ const TrackOrder = () => {
     }
   };
 
-  const trackingSteps = [
-    {
-      id: 'placed',
-      label: 'Order Placed',
-      icon: Package,
-      description: 'Your order has been placed successfully',
-    },
-    {
-      id: 'confirmed',
-      label: 'Order Confirmed',
-      icon: CheckCircle2,
-      description: 'Seller has confirmed your order',
-    },
-    {
-      id: 'shipped',
-      label: 'Shipped',
-      icon: Truck,
-      description: 'Your package is on its way',
-    },
-    {
-      id: 'out_for_delivery',
-      label: 'Out for Delivery',
-      icon: MapPin,
-      description: 'Package is out for delivery',
-    },
-    {
-      id: 'delivered',
-      label: 'Delivered',
-      icon: CheckCircle2,
-      description: 'Package delivered successfully',
-    },
+  const isReplacementFlow = order?.status.startsWith('replacement');
+
+  const standardSteps = [
+    { id: 'placed', label: 'Order Placed', icon: Package, description: 'Your order has been placed successfully' },
+    { id: 'confirmed', label: 'Order Confirmed', icon: CheckCircle2, description: 'Seller has confirmed your order' },
+    { id: 'shipped', label: 'Shipped', icon: Truck, description: 'Your package is on its way' },
+    { id: 'out_for_delivery', label: 'Out for Delivery', icon: MapPin, description: 'Package is out for delivery' },
+    { id: 'delivered', label: 'Delivered', icon: CheckCircle2, description: 'Package delivered successfully' },
   ];
+
+  const replacementSteps = [
+    { id: 'delivered', label: 'Original Delivered', icon: CheckCircle2, description: 'Original order was delivered' },
+    { id: 'replacement_requested', label: 'Replacement Requested', icon: RefreshCw, description: 'You have requested a replacement' },
+    { id: 'replacement_shipped', label: 'Replacement Shipped', icon: Truck, description: 'Your replacement is on its way' },
+    { id: 'replacement_delivered', label: 'Replacement Delivered', icon: CheckCircle2, description: 'Replacement delivered successfully' },
+  ];
+
+  const trackingSteps = isReplacementFlow ? replacementSteps : standardSteps;
 
   const getStepStatus = (stepId: string) => {
     if (!order) return 'pending';
+
+    if (order.status === 'cancelled') return 'cancelled';
+
+    if (isReplacementFlow) {
+      const rOrder = ['delivered', 'replacement_requested', 'replacement_shipped', 'replacement_delivered'];
+      const currentIndex = rOrder.indexOf(order.status);
+      const stepIndex = rOrder.indexOf(stepId);
+      if (stepIndex < currentIndex) return 'completed';
+      if (stepIndex === currentIndex) return 'current';
+      return 'pending';
+    }
+
     const statusOrder = ['placed', 'confirmed', 'shipped', 'out_for_delivery', 'delivered'];
     const currentIndex = statusOrder.indexOf(order.status);
     const stepIndex = statusOrder.indexOf(stepId);
-    
-    if (order.status === 'cancelled') return 'cancelled';
     if (stepIndex < currentIndex) return 'completed';
     if (stepIndex === currentIndex) return 'current';
     return 'pending';
