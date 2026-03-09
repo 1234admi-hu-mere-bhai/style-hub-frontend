@@ -77,8 +77,8 @@ const Checkout = () => {
   const shippingCost = totalPrice >= 999 ? 0 : 99;
   const finalTotal = totalPrice - discountAmount + shippingCost;
 
-  const handleApplyCoupon = async () => {
-    const code = couponCode.trim().toUpperCase();
+  const handleApplyCoupon = useCallback(async (codeOverride?: string) => {
+    const code = (codeOverride || couponCode).trim().toUpperCase();
     if (!code) { toast.error('Please enter a coupon code'); return; }
     setCouponLoading(true);
     try {
@@ -95,15 +95,27 @@ const Checkout = () => {
       if (data.min_order_value && totalPrice < data.min_order_value) { toast.error(`Minimum order of ₹${data.min_order_value} required`); setCouponLoading(false); return; }
 
       setAppliedCoupon({ code: data.code, discount_type: data.discount_type, discount_value: data.discount_value });
+      setCouponCode(data.code);
+      setSavingsOpen(false);
       toast.success(`Coupon "${data.code}" applied! You save ₹${data.discount_type === 'percentage' ? Math.round(totalPrice * (data.discount_value / 100)) : data.discount_value}`);
     } catch {
       toast.error('Failed to validate coupon');
     } finally {
       setCouponLoading(false);
     }
-  };
+  }, [couponCode, totalPrice]);
 
   const removeCoupon = () => { setAppliedCoupon(null); setCouponCode(''); toast.info('Coupon removed'); };
+
+  const getCouponSavings = (coupon: any) => {
+    if (coupon.discount_type === 'percentage') return Math.round(totalPrice * (coupon.discount_value / 100));
+    return coupon.discount_value;
+  };
+
+  const getAmountNeeded = (coupon: any) => {
+    if (coupon.min_order_value && totalPrice < coupon.min_order_value) return coupon.min_order_value - totalPrice;
+    return 0;
+  };
 
   // Redirect to auth if not logged in
   useEffect(() => {
