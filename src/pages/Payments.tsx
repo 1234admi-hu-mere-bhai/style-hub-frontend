@@ -359,9 +359,9 @@ const Payments = () => {
           {/* Payment Methods Tab */}
           <TabsContent value="methods" className="space-y-4">
             <div className="flex justify-end mb-4">
-              <Button onClick={() => setIsAddMethodOpen(true)}>
+              <Button onClick={() => setIsBankFormOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Payment Method
+                Add Bank Details
               </Button>
             </div>
 
@@ -431,29 +431,6 @@ const Payments = () => {
               ))
             )}
 
-            {/* Bank & UPI Section */}
-            <div className="mt-6">
-              <h3 className="font-semibold mb-4">Quick Add</h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => setIsBankFormOpen(true)}
-                  className="w-full flex items-center gap-3 p-4 bg-card rounded-lg border border-border hover:bg-secondary/50 transition-colors"
-                >
-                  <Wallet className="h-5 w-5 text-primary" />
-                  <span>Bank & UPI Details</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setNewMethod({ type: 'card', label: '', details: '' });
-                    setIsAddMethodOpen(true);
-                  }}
-                  className="w-full flex items-center gap-3 p-4 bg-card rounded-lg border border-border hover:bg-secondary/50 transition-colors"
-                >
-                  <CreditCard className="h-5 w-5 text-primary" />
-                  <span>Card Details</span>
-                </button>
-              </div>
-            </div>
           </TabsContent>
         </Tabs>
 
@@ -484,64 +461,6 @@ const Payments = () => {
                 </Button>
               </div>
             )}
-          </DialogContent>
-        </Dialog>
-
-        {/* Add Card/UPI Method Modal */}
-        <Dialog open={isAddMethodOpen} onOpenChange={setIsAddMethodOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Payment Method</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label>Method Type</Label>
-                <div className="flex gap-2">
-                  {['upi', 'card'].map((type) => (
-                    <Button
-                      key={type}
-                      variant={newMethod.type === type ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setNewMethod({ ...newMethod, type })}
-                    >
-                      {type.toUpperCase()}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="methodLabel">Label</Label>
-                <Input
-                  id="methodLabel"
-                  placeholder={
-                    newMethod.type === 'upi'
-                      ? 'e.g., PhonePe, GPay'
-                      : 'e.g., HDFC Visa'
-                  }
-                  value={newMethod.label}
-                  onChange={(e) => setNewMethod({ ...newMethod, label: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="methodDetails">
-                  {newMethod.type === 'upi' ? 'UPI ID' : 'Last 4 Digits'}
-                </Label>
-                <Input
-                  id="methodDetails"
-                  placeholder={newMethod.type === 'upi' ? 'user@upi' : 'XXXX'}
-                  value={newMethod.details}
-                  onChange={(e) => setNewMethod({ ...newMethod, details: e.target.value })}
-                />
-              </div>
-              <div className="flex gap-4 pt-4">
-                <Button variant="outline" className="flex-1" onClick={() => setIsAddMethodOpen(false)}>
-                  Cancel
-                </Button>
-                <Button className="flex-1" onClick={handleAddPaymentMethod}>
-                  Save
-                </Button>
-              </div>
-            </div>
           </DialogContent>
         </Dialog>
 
