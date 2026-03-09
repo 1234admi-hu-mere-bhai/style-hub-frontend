@@ -37,6 +37,24 @@ const Index = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [voiceSearchOpen, setVoiceSearchOpen] = useState(false);
   const [imageSearchOpen, setImageSearchOpen] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [subscribing, setSubscribing] = useState(false);
+  const [discountCode, setDiscountCode] = useState('');
+
+  const handleSubscribe = useCallback(() => {
+    const email = newsletterEmail.trim();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    setSubscribing(true);
+    const code = 'WELCOME30';
+    setTimeout(() => {
+      setDiscountCode(code);
+      setSubscribing(false);
+      toast.success(`🎉 Your 30% discount code: ${code}`, { duration: 10000 });
+    }, 800);
+  }, [newsletterEmail]);
 
   const handleSearchFromVoice = useCallback((text: string) => {
     navigate(`/products?search=${encodeURIComponent(text)}`);
