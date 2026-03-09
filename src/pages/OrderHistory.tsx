@@ -60,6 +60,7 @@ const OrderHistory = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [requestingReplacement, setRequestingReplacement] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleRequestReplacement = async (orderId: string) => {
     setRequestingReplacement(orderId);
