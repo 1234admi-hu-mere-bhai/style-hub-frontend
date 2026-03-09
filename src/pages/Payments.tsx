@@ -185,20 +185,32 @@ const Payments = () => {
     if (Object.keys(errors).length > 0) return;
 
     const lastFour = bankForm.accountNumber.slice(-4);
-    const method: PaymentMethod = {
-      id: Date.now().toString(),
-      type: 'bank',
-      label: `${bankForm.holderName} (${bankForm.ifsc.toUpperCase()})`,
-      details: `A/C ending ****${lastFour}`,
-      isDefault: paymentMethods.length === 0,
-    };
 
-    savePaymentMethods([...paymentMethods, method]);
+    if (editingMethod) {
+      const updated = paymentMethods.map(m =>
+        m.id === editingMethod.id
+          ? { ...m, label: `${bankForm.holderName} (${bankForm.ifsc.toUpperCase()})`, details: `A/C ending ****${lastFour}` }
+          : m
+      );
+      savePaymentMethods(updated);
+      toast.success('Bank account updated successfully');
+    } else {
+      const method: PaymentMethod = {
+        id: Date.now().toString(),
+        type: 'bank',
+        label: `${bankForm.holderName} (${bankForm.ifsc.toUpperCase()})`,
+        details: `A/C ending ****${lastFour}`,
+        isDefault: paymentMethods.length === 0,
+      };
+      savePaymentMethods([...paymentMethods, method]);
+      toast.success('Bank account added successfully');
+    }
+
     setIsBankFormOpen(false);
     setBankForm({ ifsc: '', accountNumber: '', confirmAccount: '', holderName: '' });
     setPrivacyAgreed(false);
     setBankFormErrors({});
-    toast.success('Bank account added successfully');
+    setEditingMethod(null);
   };
 
   const handleAddUpi = () => {
