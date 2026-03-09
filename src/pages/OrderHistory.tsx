@@ -233,6 +233,22 @@ const OrderHistory = () => {
                       </a>
                     </Button>
                   )}
+                  {order.status === 'delivered' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-orange-600 border-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                      onClick={() => handleRequestReplacement(order.id)}
+                      disabled={requestingReplacement === order.id}
+                    >
+                      {requestingReplacement === order.id ? (
+                        <Loader2 size={16} className="mr-2 animate-spin" />
+                      ) : (
+                        <RefreshCw size={16} className="mr-2" />
+                      )}
+                      Request Replacement
+                    </Button>
+                  )}
                   <Button variant="ghost" size="sm" asChild className="ml-auto">
                     <Link to={`/track-order?id=${order.order_number}`}>
                       View Details
