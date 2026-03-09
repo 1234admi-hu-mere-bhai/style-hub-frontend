@@ -538,6 +538,13 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Map Picker */}
+      <MapPicker
+        open={isMapOpen}
+        onClose={() => setIsMapOpen(false)}
+        onLocationSelect={handleMapLocationSelect}
+      />
     </div>
   );
 };
