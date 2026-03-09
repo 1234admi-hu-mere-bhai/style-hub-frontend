@@ -660,7 +660,7 @@ const Payments = () => {
 
               {/* Submit */}
               <Button className="w-full" onClick={handleAddBankAccount}>
-                Submit
+                {editingMethod ? 'Update' : 'Submit'}
               </Button>
             </div>
           </DialogContent>
