@@ -32,11 +32,30 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return saved ? JSON.parse(saved) : [];
     } catch { return []; }
   });
-  const [buyNowItem, setBuyNowItem] = useState<CartItem | null>(null);
+  const [buyNowItem, setBuyNowItemState] = useState<CartItem | null>(() => {
+    try {
+      const saved = localStorage.getItem('buy-now-item');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const setBuyNowItem = (item: CartItem | null) => {
+    setBuyNowItemState(item);
+  };
 
   useEffect(() => {
     localStorage.setItem('cart-items', JSON.stringify(items));
   }, [items]);
+
+  useEffect(() => {
+    if (buyNowItem) {
+      localStorage.setItem('buy-now-item', JSON.stringify(buyNowItem));
+    } else {
+      localStorage.removeItem('buy-now-item');
+    }
+  }, [buyNowItem]);
 
   const addToCart = (item: CartItem) => {
     setItems(prev => {
