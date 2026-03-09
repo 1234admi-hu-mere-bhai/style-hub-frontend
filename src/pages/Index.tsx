@@ -173,18 +173,20 @@ const Index = () => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                // Voice search - can be implemented later
+                setVoiceSearchOpen(true);
               }}
               className="p-2 rounded-full hover:bg-secondary transition-colors"
+              title="Voice Search"
             >
               <Mic size={20} className="text-muted-foreground" />
             </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                // Camera search - can be implemented later
+                setImageSearchOpen(true);
               }}
               className="p-2 rounded-full hover:bg-secondary transition-colors"
+              title="Search by Image"
             >
               <Camera size={20} className="text-muted-foreground" />
             </button>
@@ -193,6 +195,16 @@ const Index = () => {
       </div>
 
       <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
+      <VoiceSearchModal 
+        open={voiceSearchOpen} 
+        onOpenChange={setVoiceSearchOpen} 
+        onResult={handleSearchFromVoice} 
+      />
+      <ImageSearchModal 
+        open={imageSearchOpen} 
+        onOpenChange={setImageSearchOpen} 
+        onSearch={handleSearchFromImage} 
+      />
 
       {/* Hero Product Carousel */}
       <HeroProductCarousel />
