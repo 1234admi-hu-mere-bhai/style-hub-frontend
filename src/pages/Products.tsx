@@ -55,6 +55,17 @@ const Products = () => {
   const filteredProducts = useMemo(() => {
     let result = [...allProducts];
 
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((p) =>
+        p.name.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        (p.subcategory || '').toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query)
+      );
+    }
+
     if (saleParam === 'true') {
       result = result.filter((p) => p.discount);
     }
