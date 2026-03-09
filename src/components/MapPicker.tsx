@@ -49,7 +49,7 @@ interface SearchResult {
 const DEFAULT_CENTER: [number, number] = [20.5937, 78.9629];
 
 const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
-  const mapDivRef = useRef<HTMLDivElement | null>(null);
+  const [mapEl, setMapEl] = useState<HTMLDivElement | null>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
 
