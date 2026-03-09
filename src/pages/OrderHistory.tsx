@@ -112,6 +112,7 @@ const OrderHistory = () => {
           total: Number(order.total),
           shipping_address: order.shipping_address as unknown as ShippingAddress,
           invoice_url: order.invoice_url,
+          delivered_at: order.delivered_at,
           created_at: order.created_at,
           order_items: order.order_items as unknown as OrderItem[],
         }));
