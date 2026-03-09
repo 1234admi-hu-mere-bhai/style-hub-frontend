@@ -381,10 +381,7 @@ const Payments = () => {
               <h3 className="font-semibold mb-4">Quick Add</h3>
               <div className="space-y-2">
                 <button
-                  onClick={() => {
-                    setNewMethod({ type: 'upi', label: '', details: '' });
-                    setIsAddMethodOpen(true);
-                  }}
+                  onClick={() => setIsBankFormOpen(true)}
                   className="w-full flex items-center gap-3 p-4 bg-card rounded-lg border border-border hover:bg-secondary/50 transition-colors"
                 >
                   <Wallet className="h-5 w-5 text-primary" />
