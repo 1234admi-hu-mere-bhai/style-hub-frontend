@@ -34,6 +34,22 @@ const Checkout = () => {
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_type: string; discount_value: number } | null>(null);
   const [couponLoading, setCouponLoading] = useState(false);
+  const [savingsOpen, setSavingsOpen] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState<any[]>([]);
+  const [expandedCoupon, setExpandedCoupon] = useState<string | null>(null);
+
+  // Fetch available coupons
+  useEffect(() => {
+    const fetchCoupons = async () => {
+      const { data } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('is_active', true)
+        .order('discount_value', { ascending: false });
+      if (data) setAvailableCoupons(data);
+    };
+    fetchCoupons();
+  }, []);
   
   // Form state for address
   const [addressForm, setAddressForm] = useState({
