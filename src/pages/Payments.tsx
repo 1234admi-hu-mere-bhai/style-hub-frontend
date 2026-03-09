@@ -141,6 +141,43 @@ const Payments = () => {
     toast.success('Payment method added');
   };
 
+  const handleAddBankAccount = () => {
+    const errors: Record<string, string> = {};
+    if (!bankForm.ifsc.trim() || !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(bankForm.ifsc.toUpperCase())) {
+      errors.ifsc = 'Enter a valid 11-character IFSC code';
+    }
+    if (!bankForm.accountNumber.trim() || bankForm.accountNumber.length < 8) {
+      errors.accountNumber = 'Enter a valid account number';
+    }
+    if (bankForm.accountNumber !== bankForm.confirmAccount) {
+      errors.confirmAccount = 'Account numbers do not match';
+    }
+    if (!bankForm.holderName.trim()) {
+      errors.holderName = 'Enter the account holder name';
+    }
+    if (!privacyAgreed) {
+      errors.privacy = 'Please agree to the Privacy Policy';
+    }
+    setBankFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    const lastFour = bankForm.accountNumber.slice(-4);
+    const method: PaymentMethod = {
+      id: Date.now().toString(),
+      type: 'bank',
+      label: `${bankForm.holderName} (${bankForm.ifsc.toUpperCase()})`,
+      details: `A/C ending ****${lastFour}`,
+      isDefault: paymentMethods.length === 0,
+    };
+
+    savePaymentMethods([...paymentMethods, method]);
+    setIsBankFormOpen(false);
+    setBankForm({ ifsc: '', accountNumber: '', confirmAccount: '', holderName: '' });
+    setPrivacyAgreed(false);
+    setBankFormErrors({});
+    toast.success('Bank account added successfully');
+  };
+
   const handleDeleteMethod = (id: string) => {
     const updated = paymentMethods.filter(m => m.id !== id);
     if (updated.length > 0 && !updated.some(m => m.isDefault)) {
