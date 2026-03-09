@@ -464,64 +464,6 @@ const Payments = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Add Card/UPI Method Modal */}
-        <Dialog open={isAddMethodOpen} onOpenChange={setIsAddMethodOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Payment Method</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label>Method Type</Label>
-                <div className="flex gap-2">
-                  {['upi', 'card'].map((type) => (
-                    <Button
-                      key={type}
-                      variant={newMethod.type === type ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setNewMethod({ ...newMethod, type })}
-                    >
-                      {type.toUpperCase()}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="methodLabel">Label</Label>
-                <Input
-                  id="methodLabel"
-                  placeholder={
-                    newMethod.type === 'upi'
-                      ? 'e.g., PhonePe, GPay'
-                      : 'e.g., HDFC Visa'
-                  }
-                  value={newMethod.label}
-                  onChange={(e) => setNewMethod({ ...newMethod, label: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="methodDetails">
-                  {newMethod.type === 'upi' ? 'UPI ID' : 'Last 4 Digits'}
-                </Label>
-                <Input
-                  id="methodDetails"
-                  placeholder={newMethod.type === 'upi' ? 'user@upi' : 'XXXX'}
-                  value={newMethod.details}
-                  onChange={(e) => setNewMethod({ ...newMethod, details: e.target.value })}
-                />
-              </div>
-              <div className="flex gap-4 pt-4">
-                <Button variant="outline" className="flex-1" onClick={() => setIsAddMethodOpen(false)}>
-                  Cancel
-                </Button>
-                <Button className="flex-1" onClick={handleAddPaymentMethod}>
-                  Save
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
         {/* Bank Details Form — Full-screen style like reference */}
         <Dialog open={isBankFormOpen} onOpenChange={setIsBankFormOpen}>
           <DialogContent className="sm:max-w-md">
