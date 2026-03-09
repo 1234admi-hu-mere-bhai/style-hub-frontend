@@ -292,7 +292,8 @@ const OrderHistory = () => {
               </div>
             ))}
           </div>
-        )}
+        );
+        })()}
       </main>
 
       <Footer />
