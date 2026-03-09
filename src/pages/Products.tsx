@@ -91,7 +91,7 @@ const Products = () => {
       default: result.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
     }
     return result;
-  }, [allProducts, saleParam, selectedCategories, selectedSubcategory, priceRange, selectedSizes, selectedColors, sortBy]);
+  }, [allProducts, searchQuery, saleParam, selectedCategories, selectedSubcategory, priceRange, selectedSizes, selectedColors, sortBy]);
 
   const toggleSize = (size: string) => setSelectedSizes((prev) => prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]);
   const toggleColor = (color: string) => setSelectedColors((prev) => prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]);
