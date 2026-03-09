@@ -491,7 +491,7 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
               </div>
               <div className="space-y-1">
                 <Label htmlFor="phone" className="text-xs">Phone</Label>
-                <Input id="phone" name="phone" defaultValue={editingAddress?.phone} placeholder="+91 98765 43210" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
+                <Input id="phone" name="phone" defaultValue={editingAddress?.phone} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
                 {addressErrors.phone && <p className="text-[11px] text-destructive">{addressErrors.phone}</p>}
               </div>
             </div>
