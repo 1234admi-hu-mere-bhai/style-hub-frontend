@@ -587,6 +587,51 @@ const Payments = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* UPI Form Dialog */}
+        <Dialog open={isUpiFormOpen} onOpenChange={setIsUpiFormOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-lg tracking-wide">ADD UPI DETAILS</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6 mt-4">
+              <div className="space-y-1">
+                <Label htmlFor="upiId" className="text-sm text-primary font-medium">UPI ID</Label>
+                <Input
+                  id="upiId"
+                  placeholder="e.g., yourname@upi"
+                  className="border-0 border-b-2 border-primary rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                  value={upiForm.upiId}
+                  onChange={(e) => setUpiForm({ ...upiForm, upiId: e.target.value })}
+                />
+                {upiFormErrors.upiId && <p className="text-xs text-destructive">{upiFormErrors.upiId}</p>}
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="upiName" className="text-sm text-muted-foreground">Account Holder Name</Label>
+                <Input
+                  id="upiName"
+                  placeholder="Account Holder's Name"
+                  className="border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                  value={upiForm.name}
+                  onChange={(e) => setUpiForm({ ...upiForm, name: e.target.value })}
+                />
+                {upiFormErrors.name && <p className="text-xs text-destructive">{upiFormErrors.name}</p>}
+              </div>
+
+              <div className="flex items-center gap-2 bg-secondary/50 p-3 rounded-lg">
+                <ShieldCheck className="h-5 w-5 text-primary flex-shrink-0" />
+                <p className="text-xs text-muted-foreground">
+                  Your UPI details are stored securely and are 100% safe!
+                </p>
+              </div>
+
+              <Button className="w-full" onClick={handleAddUpi}>
+                Submit
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </main>
 
       <Footer />
