@@ -432,7 +432,7 @@ const Payments = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Add Payment Method Modal */}
+        {/* Add Card/UPI Method Modal */}
         <Dialog open={isAddMethodOpen} onOpenChange={setIsAddMethodOpen}>
           <DialogContent>
             <DialogHeader>
@@ -442,7 +442,7 @@ const Payments = () => {
               <div className="space-y-2">
                 <Label>Method Type</Label>
                 <div className="flex gap-2">
-                  {['upi', 'card', 'bank'].map((type) => (
+                  {['upi', 'card'].map((type) => (
                     <Button
                       key={type}
                       variant={newMethod.type === type ? 'default' : 'outline'}
@@ -461,9 +461,7 @@ const Payments = () => {
                   placeholder={
                     newMethod.type === 'upi'
                       ? 'e.g., PhonePe, GPay'
-                      : newMethod.type === 'card'
-                      ? 'e.g., HDFC Visa'
-                      : 'e.g., SBI Account'
+                      : 'e.g., HDFC Visa'
                   }
                   value={newMethod.label}
                   onChange={(e) => setNewMethod({ ...newMethod, label: e.target.value })}
@@ -471,35 +469,114 @@ const Payments = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="methodDetails">
-                  {newMethod.type === 'upi'
-                    ? 'UPI ID'
-                    : newMethod.type === 'card'
-                    ? 'Last 4 Digits'
-                    : 'Account Number (last 4 digits)'}
+                  {newMethod.type === 'upi' ? 'UPI ID' : 'Last 4 Digits'}
                 </Label>
                 <Input
                   id="methodDetails"
-                  placeholder={
-                    newMethod.type === 'upi'
-                      ? 'user@upi'
-                      : 'XXXX'
-                  }
+                  placeholder={newMethod.type === 'upi' ? 'user@upi' : 'XXXX'}
                   value={newMethod.details}
                   onChange={(e) => setNewMethod({ ...newMethod, details: e.target.value })}
                 />
               </div>
               <div className="flex gap-4 pt-4">
-                <Button
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setIsAddMethodOpen(false)}
-                >
+                <Button variant="outline" className="flex-1" onClick={() => setIsAddMethodOpen(false)}>
                   Cancel
                 </Button>
                 <Button className="flex-1" onClick={handleAddPaymentMethod}>
                   Save
                 </Button>
               </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Bank Details Form — Full-screen style like reference */}
+        <Dialog open={isBankFormOpen} onOpenChange={setIsBankFormOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-lg tracking-wide">MY BANK DETAILS</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6 mt-4">
+              {/* IFSC Code */}
+              <div className="space-y-1">
+                <Label htmlFor="ifsc" className="text-sm text-primary font-medium">IFSC Code</Label>
+                <Input
+                  id="ifsc"
+                  placeholder="e.g., SBIN0001234"
+                  className="border-0 border-b-2 border-primary rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary uppercase"
+                  value={bankForm.ifsc}
+                  onChange={(e) => setBankForm({ ...bankForm, ifsc: e.target.value.toUpperCase() })}
+                  maxLength={11}
+                />
+                {bankFormErrors.ifsc && <p className="text-xs text-destructive">{bankFormErrors.ifsc}</p>}
+              </div>
+
+              {/* Account Number */}
+              <div className="space-y-1">
+                <Label htmlFor="accountNumber" className="text-sm text-muted-foreground">Account Number</Label>
+                <Input
+                  id="accountNumber"
+                  placeholder="Account Number"
+                  type="password"
+                  className="border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                  value={bankForm.accountNumber}
+                  onChange={(e) => setBankForm({ ...bankForm, accountNumber: e.target.value.replace(/\D/g, '') })}
+                />
+                {bankFormErrors.accountNumber && <p className="text-xs text-destructive">{bankFormErrors.accountNumber}</p>}
+              </div>
+
+              {/* Confirm Account Number */}
+              <div className="space-y-1">
+                <Label htmlFor="confirmAccount" className="text-sm text-muted-foreground">Confirm Account Number</Label>
+                <Input
+                  id="confirmAccount"
+                  placeholder="Confirm Account Number"
+                  className="border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                  value={bankForm.confirmAccount}
+                  onChange={(e) => setBankForm({ ...bankForm, confirmAccount: e.target.value.replace(/\D/g, '') })}
+                />
+                {bankFormErrors.confirmAccount && <p className="text-xs text-destructive">{bankFormErrors.confirmAccount}</p>}
+              </div>
+
+              {/* Account Holder's Name */}
+              <div className="space-y-1">
+                <Label htmlFor="holderName" className="text-sm text-muted-foreground">Account Holder's Name</Label>
+                <Input
+                  id="holderName"
+                  placeholder="Account Holder's Name"
+                  className="border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                  value={bankForm.holderName}
+                  onChange={(e) => setBankForm({ ...bankForm, holderName: e.target.value })}
+                />
+                {bankFormErrors.holderName && <p className="text-xs text-destructive">{bankFormErrors.holderName}</p>}
+              </div>
+
+              {/* Privacy Policy Checkbox */}
+              <div className="flex items-start gap-2">
+                <Checkbox
+                  id="bankPrivacy"
+                  checked={privacyAgreed}
+                  onCheckedChange={(checked) => setPrivacyAgreed(checked === true)}
+                />
+                <label htmlFor="bankPrivacy" className="text-sm leading-tight">
+                  By continuing, you agree with the handling of your data as per our{' '}
+                  <Link to="/privacy" className="text-primary hover:underline font-medium">Privacy Policy</Link>
+                </label>
+              </div>
+              {bankFormErrors.privacy && <p className="text-xs text-destructive">{bankFormErrors.privacy}</p>}
+
+              {/* Safety Note */}
+              <div className="flex items-center gap-2 bg-secondary/50 p-3 rounded-lg">
+                <ShieldCheck className="h-5 w-5 text-primary flex-shrink-0" />
+                <p className="text-xs text-muted-foreground">
+                  Please enter the bank details carefully and don't worry, it is 100% safe!
+                </p>
+              </div>
+
+              {/* Submit */}
+              <Button className="w-full" onClick={handleAddBankAccount}>
+                Submit
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
