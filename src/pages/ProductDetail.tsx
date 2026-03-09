@@ -286,7 +286,7 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-4 pb-16 md:pb-0">
               <Button size="lg" className="flex-1" onClick={handleAddToCart}>Add to Cart</Button>
               <Button size="lg" variant="outline" className="flex-1" onClick={handleBuyNow}>Buy Now</Button>
               <Button size="lg" variant="outline" className="px-4" onClick={handleWishlist}>
