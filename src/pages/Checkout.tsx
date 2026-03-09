@@ -601,45 +601,47 @@ const Checkout = () => {
               </div>
             )}
 
-            {/* Price Details Section */}
-            <div className="bg-card p-4 rounded-lg border border-border">
-              <h3 className="font-semibold text-sm mb-3">Price Details ({items.length} Item{items.length > 1 ? 's' : ''})</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Product Price</span>
-                  <span>+ {formatPrice(totalOriginalPrice)}</span>
+            {/* Price Details Section - only on summary/review step */}
+            {step === 'summary' && (
+              <div className="bg-card p-4 rounded-lg border border-border">
+                <h3 className="font-semibold text-sm mb-3">Price Details ({items.length} Item{items.length > 1 ? 's' : ''})</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Product Price</span>
+                    <span>+ {formatPrice(totalOriginalPrice)}</span>
+                  </div>
+                  {totalProductDiscount > 0 && (
+                    <div className="flex justify-between text-success">
+                      <span>Product Discount</span>
+                      <span>- {formatPrice(totalProductDiscount)}</span>
+                    </div>
+                  )}
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-success">
+                      <span>Coupon Discount ({appliedCoupon?.code})</span>
+                      <span>- {formatPrice(discountAmount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Shipping</span>
+                    <span className={shippingCost === 0 ? 'text-success' : ''}>
+                      {shippingCost === 0 ? 'FREE' : `+ ${formatPrice(shippingCost)}`}
+                    </span>
+                  </div>
+                  <Separator className="my-2" />
+                  <div className="flex justify-between font-bold text-base">
+                    <span>Order Total</span>
+                    <span>{formatPrice(finalTotal)}</span>
+                  </div>
                 </div>
-                {totalProductDiscount > 0 && (
-                  <div className="flex justify-between text-success">
-                    <span>Product Discount</span>
-                    <span>- {formatPrice(totalProductDiscount)}</span>
+                {totalSavings > 0 && (
+                  <div className="mt-3 p-3 bg-success/10 rounded-lg flex items-center gap-2 text-sm font-medium text-success">
+                    <Tag size={16} />
+                    Yay! Your total discount is {formatPrice(totalSavings)}
                   </div>
                 )}
-                {discountAmount > 0 && (
-                  <div className="flex justify-between text-success">
-                    <span>Coupon Discount ({appliedCoupon?.code})</span>
-                    <span>- {formatPrice(discountAmount)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Shipping</span>
-                  <span className={shippingCost === 0 ? 'text-success' : ''}>
-                    {shippingCost === 0 ? 'FREE' : `+ ${formatPrice(shippingCost)}`}
-                  </span>
-                </div>
-                <Separator className="my-2" />
-                <div className="flex justify-between font-bold text-base">
-                  <span>Order Total</span>
-                  <span>{formatPrice(finalTotal)}</span>
-                </div>
               </div>
-              {totalSavings > 0 && (
-                <div className="mt-3 p-3 bg-success/10 rounded-lg flex items-center gap-2 text-sm font-medium text-success">
-                  <Tag size={16} />
-                  Yay! Your total discount is {formatPrice(totalSavings)}
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
           {/* Order Summary Sidebar */}
