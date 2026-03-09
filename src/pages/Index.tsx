@@ -20,6 +20,7 @@ import { Slider } from '@/components/ui/slider';
 import categoryMen from '@/assets/category-men.jpg';
 
 const Index = () => {
+  const navigate = useNavigate();
   const { products, loading } = useDbProducts();
   const [activeFilter, setActiveFilter] = useState('all');
   const [priceRange, setPriceRange] = useState([0, 5000]);
