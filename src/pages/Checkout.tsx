@@ -974,6 +974,7 @@ const Checkout = () => {
           )}
         </div>
       </div>
+      )}
 
       <Footer />
     </div>
