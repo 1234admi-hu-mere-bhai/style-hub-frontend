@@ -499,19 +499,42 @@ const Index = () => {
                 Plus, be the first to know about new arrivals and sales.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <input
-                  type="email"
-                  placeholder=""
-                  autoComplete="off"
-                  className="flex-1 px-4 py-3 rounded-lg bg-primary-foreground/20 border border-primary-foreground/30 text-primary-foreground placeholder:text-primary-foreground/60 focus:outline-none focus:border-primary-foreground"
-                />
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-                >
-                  Subscribe
-                </Button>
+                {discountCode ? (
+                  <div className="flex-1 flex items-center gap-3">
+                    <div className="px-4 py-3 rounded-lg bg-primary-foreground/20 border border-primary-foreground/30 text-primary-foreground font-bold text-lg tracking-widest select-all">
+                      {discountCode}
+                    </div>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(discountCode);
+                        toast.success('Code copied!');
+                      }}
+                      className="px-4 py-3 rounded-lg bg-primary-foreground text-primary font-medium hover:bg-primary-foreground/90 transition-colors"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      type="email"
+                      value={newsletterEmail}
+                      onChange={(e) => setNewsletterEmail(e.target.value)}
+                      placeholder=""
+                      autoComplete="off"
+                      className="flex-1 px-4 py-3 rounded-lg bg-primary-foreground/20 border border-primary-foreground/30 text-primary-foreground placeholder:text-primary-foreground/60 focus:outline-none focus:border-primary-foreground"
+                    />
+                    <Button
+                      variant="secondary"
+                      size="lg"
+                      onClick={handleSubscribe}
+                      disabled={subscribing}
+                      className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+                    >
+                      {subscribing ? 'Subscribing...' : 'Subscribe'}
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
             <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
