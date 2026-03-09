@@ -200,6 +200,32 @@ const Payments = () => {
     toast.success('Bank account added successfully');
   };
 
+  const handleAddUpi = () => {
+    const errors: Record<string, string> = {};
+    if (!upiForm.upiId.trim() || !/^[\w.-]+@[\w]+$/.test(upiForm.upiId.trim())) {
+      errors.upiId = 'Enter a valid UPI ID (e.g., name@upi)';
+    }
+    if (!upiForm.name.trim()) {
+      errors.name = 'Enter the account holder name';
+    }
+    setUpiFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    const method: PaymentMethod = {
+      id: Date.now().toString(),
+      type: 'upi',
+      label: upiForm.name,
+      details: upiForm.upiId,
+      isDefault: paymentMethods.length === 0,
+    };
+
+    savePaymentMethods([...paymentMethods, method]);
+    setIsUpiFormOpen(false);
+    setUpiForm({ upiId: '', name: '' });
+    setUpiFormErrors({});
+    toast.success('UPI payment method added');
+  };
+
   const handleDeleteMethod = (id: string) => {
     const updated = paymentMethods.filter(m => m.id !== id);
     if (updated.length > 0 && !updated.some(m => m.isDefault)) {
