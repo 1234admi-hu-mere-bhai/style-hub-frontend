@@ -55,7 +55,6 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-  const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
   const [requestingReplacement, setRequestingReplacement] = useState<string | null>(null);
 
   const handleRequestReplacement = async (orderId: string) => {
