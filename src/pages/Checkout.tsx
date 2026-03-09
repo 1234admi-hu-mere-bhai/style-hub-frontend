@@ -29,6 +29,11 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState('online');
   const [step, setStep] = useState<'address' | 'payment' | 'summary'>('address');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+
+  // Coupon state
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_type: string; discount_value: number } | null>(null);
+  const [couponLoading, setCouponLoading] = useState(false);
   
   // Form state for address
   const [addressForm, setAddressForm] = useState({
@@ -44,8 +49,45 @@ const Checkout = () => {
 
   const [deliveryInfo, setDeliveryInfo] = useState<{ estimatedDays: string; zone: string } | null>(null);
 
+  // Calculate discount
+  const discountAmount = useMemo(() => {
+    if (!appliedCoupon) return 0;
+    if (appliedCoupon.discount_type === 'percentage') {
+      return Math.round(totalPrice * (appliedCoupon.discount_value / 100));
+    }
+    return appliedCoupon.discount_value;
+  }, [appliedCoupon, totalPrice]);
+
   const shippingCost = totalPrice >= 999 ? 0 : 99;
-  const finalTotal = totalPrice + shippingCost;
+  const finalTotal = totalPrice - discountAmount + shippingCost;
+
+  const handleApplyCoupon = async () => {
+    const code = couponCode.trim().toUpperCase();
+    if (!code) { toast.error('Please enter a coupon code'); return; }
+    setCouponLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('coupons')
+        .select('code, discount_type, discount_value, is_active, min_order_value, max_uses, used_count, expires_at')
+        .eq('code', code)
+        .eq('is_active', true)
+        .single();
+
+      if (error || !data) { toast.error('Invalid coupon code'); setCouponLoading(false); return; }
+      if (data.expires_at && new Date(data.expires_at) < new Date()) { toast.error('This coupon has expired'); setCouponLoading(false); return; }
+      if (data.max_uses && data.used_count !== null && data.used_count >= data.max_uses) { toast.error('Coupon usage limit reached'); setCouponLoading(false); return; }
+      if (data.min_order_value && totalPrice < data.min_order_value) { toast.error(`Minimum order of ₹${data.min_order_value} required`); setCouponLoading(false); return; }
+
+      setAppliedCoupon({ code: data.code, discount_type: data.discount_type, discount_value: data.discount_value });
+      toast.success(`Coupon "${data.code}" applied! You save ₹${data.discount_type === 'percentage' ? Math.round(totalPrice * (data.discount_value / 100)) : data.discount_value}`);
+    } catch {
+      toast.error('Failed to validate coupon');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const removeCoupon = () => { setAppliedCoupon(null); setCouponCode(''); toast.info('Coupon removed'); };
 
   // Redirect to auth if not logged in
   useEffect(() => {
