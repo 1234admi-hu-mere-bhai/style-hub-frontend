@@ -486,31 +486,31 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="fullName" className="text-xs">Full Name</Label>
-                <Input id="fullName" name="fullName" defaultValue={editingAddress?.fullName} placeholder="John Doe" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
+                <Input id="fullName" name="fullName" defaultValue={editingAddress?.fullName} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
                 {addressErrors.fullName && <p className="text-[11px] text-destructive">{addressErrors.fullName}</p>}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="phone" className="text-xs">Phone</Label>
-                <Input id="phone" name="phone" defaultValue={editingAddress?.phone} placeholder="+91 98765 43210" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
+                <Input id="phone" name="phone" defaultValue={editingAddress?.phone} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
                 {addressErrors.phone && <p className="text-[11px] text-destructive">{addressErrors.phone}</p>}
               </div>
             </div>
 
             <div className="space-y-1">
               <Label htmlFor="address" className="text-xs">Address</Label>
-              <Input id="address" name="address" defaultValue={editingAddress?.address} placeholder="House No, Street Name" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
+              <Input id="address" name="address" defaultValue={editingAddress?.address} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
               {addressErrors.address && <p className="text-[11px] text-destructive">{addressErrors.address}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="city" className="text-xs">City</Label>
-                <Input id="city" name="city" defaultValue={editingAddress?.city} placeholder="Mumbai" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
+                <Input id="city" name="city" defaultValue={editingAddress?.city} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
                 {addressErrors.city && <p className="text-[11px] text-destructive">{addressErrors.city}</p>}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="state" className="text-xs">State</Label>
-                <Input id="state" name="state" defaultValue={editingAddress?.state} placeholder="Maharashtra" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
+                <Input id="state" name="state" defaultValue={editingAddress?.state} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
                 {addressErrors.state && <p className="text-[11px] text-destructive">{addressErrors.state}</p>}
               </div>
             </div>
@@ -518,12 +518,12 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="pincode" className="text-xs">PIN Code</Label>
-                <Input id="pincode" name="pincode" defaultValue={editingAddress?.pincode} placeholder="400001" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
+                <Input id="pincode" name="pincode" defaultValue={editingAddress?.pincode} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
                 {addressErrors.pincode && <p className="text-[11px] text-destructive">{addressErrors.pincode}</p>}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="landmark" className="text-xs">Landmark</Label>
-                <Input id="landmark" name="landmark" defaultValue={editingAddress?.landmark} placeholder="Near..." className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
+                <Input id="landmark" name="landmark" defaultValue={editingAddress?.landmark} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
               </div>
             </div>
 
