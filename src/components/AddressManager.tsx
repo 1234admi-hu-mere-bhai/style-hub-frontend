@@ -523,7 +523,7 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
               </div>
               <div className="space-y-1">
                 <Label htmlFor="landmark" className="text-xs">Landmark</Label>
-                <Input id="landmark" name="landmark" defaultValue={editingAddress?.landmark} placeholder="Near..." className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
+                <Input id="landmark" name="landmark" defaultValue={editingAddress?.landmark} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
               </div>
             </div>
 
