@@ -912,7 +912,8 @@ const Checkout = () => {
       </main>
 
       {/* Sticky Bottom Bar (mobile & desktop) */}
-      <div className="fixed left-0 right-0 bottom-14 md:bottom-0 bg-card border-t border-border z-[60] lg:hidden shadow-lg">
+      {step !== 'address' && (
+        <div className="fixed left-0 right-0 bottom-14 md:bottom-0 bg-card border-t border-border z-[60] lg:hidden shadow-lg">
         <div className="container mx-auto px-4 py-3">
           <div className={`flex items-center ${step === 'address' ? 'justify-end' : 'justify-between'}`}>
             {step !== 'address' && (
