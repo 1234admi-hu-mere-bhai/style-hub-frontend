@@ -580,7 +580,7 @@ const Checkout = () => {
             )}
 
             {/* Mobile Coupon Section - visible on mobile only */}
-            {(step === 'address' || step === 'summary') && (
+            {step === 'summary' && (
               <div className="lg:hidden bg-card p-4 rounded-lg border border-border space-y-3">
                 {appliedCoupon ? (
                   <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg border border-success/30">
