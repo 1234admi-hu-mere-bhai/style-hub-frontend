@@ -241,7 +241,7 @@ const OrderHistory = () => {
                       </a>
                     </Button>
                   )}
-                  {order.status === 'delivered' && (
+                  {order.status === 'delivered' && isWithin7Days(order.delivered_at) && (
                     <Button
                       variant="outline"
                       size="sm"
