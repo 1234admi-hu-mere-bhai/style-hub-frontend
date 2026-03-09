@@ -147,13 +147,35 @@ const Index = () => {
 
       {/* Search Bar */}
       <div className="sticky top-[104px] lg:top-[116px] z-40 bg-primary px-3 py-3">
-        <button
-          onClick={() => setSearchOpen(true)}
-          className="w-full flex items-center gap-3 bg-background rounded-lg px-4 py-3.5 shadow-sm border border-border hover:bg-secondary/30 transition-colors"
-        >
-          <Search size={20} className="text-muted-foreground shrink-0" />
-          <span className="text-sm text-muted-foreground flex-1 text-left">Search by Keyword or Product Name</span>
-        </button>
+        <div className="flex items-center gap-2 bg-background rounded-lg px-4 py-3 shadow-sm border border-border">
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="flex-1 flex items-center gap-3 hover:bg-secondary/30 transition-colors rounded-md -mx-1 px-1"
+          >
+            <Search size={20} className="text-muted-foreground shrink-0" />
+            <span className="text-sm text-muted-foreground flex-1 text-left">Search by Keyword or Product ID</span>
+          </button>
+          <div className="flex items-center gap-1 border-l border-border pl-2">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                // Voice search - can be implemented later
+              }}
+              className="p-2 rounded-full hover:bg-secondary transition-colors"
+            >
+              <Mic size={20} className="text-muted-foreground" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                // Camera search - can be implemented later
+              }}
+              className="p-2 rounded-full hover:bg-secondary transition-colors"
+            >
+              <Camera size={20} className="text-muted-foreground" />
+            </button>
+          </div>
+        </div>
       </div>
 
       <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
