@@ -915,22 +915,20 @@ const Checkout = () => {
       {step !== 'address' && (
         <div className="fixed left-0 right-0 bottom-14 md:bottom-0 bg-card border-t border-border z-[60] lg:hidden shadow-lg">
         <div className="container mx-auto px-4 py-3">
-          <div className={`flex items-center ${step === 'address' ? 'justify-end' : 'justify-between'}`}>
-            {step !== 'address' && (
-              <div>
-                <p className="font-bold text-lg">{formatPrice(finalTotal)}</p>
-                <button
-                  onClick={() => setShowPriceDetails(!showPriceDetails)}
-                  className="text-xs font-semibold text-primary"
-                >
-                  {showPriceDetails ? 'HIDE DETAILS' : 'VIEW PRICE DETAILS'}
-                </button>
-              </div>
-            )}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-bold text-lg">{formatPrice(finalTotal)}</p>
+              <button
+                onClick={() => setShowPriceDetails(!showPriceDetails)}
+                className="text-xs font-semibold text-primary"
+              >
+                {showPriceDetails ? 'HIDE DETAILS' : 'VIEW PRICE DETAILS'}
+              </button>
+            </div>
             <Button
               onClick={handleContinue}
               disabled={isPaymentLoading || isPlacingOrder}
-              className={step === 'address' ? 'w-full' : 'px-8'}
+              className="px-8"
               size="lg"
             >
               {isPaymentLoading || isPlacingOrder ? (
@@ -947,7 +945,7 @@ const Checkout = () => {
           </div>
 
           {/* Expandable price details */}
-          {step !== 'address' && showPriceDetails && (
+          {showPriceDetails && (
             <div className="mt-3 pt-3 border-t border-border space-y-2 text-sm animate-fade-in">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Product Price</span>
