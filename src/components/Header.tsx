@@ -57,36 +57,27 @@ const Header = () => {
 
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 lg:h-20">
-            {/* Mobile menu button */}
-            <div className="flex items-center gap-1">
+            {/* Left: Menu + Logo */}
+            <div className="flex items-center gap-3">
               <button
                 className="lg:hidden p-2 -ml-2"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
-              {!isHomePage && (
-                <button
-                  className="lg:hidden p-2"
-                  onClick={() => navigate('/')}
-                >
-                  <Home size={20} />
-                </button>
-              )}
+              
+              <Link to="/" className="flex items-center gap-2">
+                <img 
+                  src="/assets/logo-new.png" 
+                  alt="MUFFI GOUT APPAREL HUB" 
+                  className="h-10 lg:h-12 w-auto rounded-full shadow-sm"
+                />
+                <div className="flex flex-col items-start leading-none">
+                  <span className="font-serif text-base lg:text-lg font-bold tracking-tight text-foreground">MUFFI GOUT</span>
+                  <span className="text-[9px] lg:text-[10px] font-semibold uppercase tracking-[0.2em] text-primary mt-0.5">Apparel Hub</span>
+                </div>
+              </Link>
             </div>
-
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-3">
-              <img 
-                src="/assets/logo-new.png" 
-                alt="MUFFI GOUT APPAREL HUB" 
-                className="h-12 lg:h-14 w-auto rounded-full shadow-sm"
-              />
-              <div className="flex flex-col items-start leading-none">
-                <span className="font-serif text-lg lg:text-xl font-bold tracking-tight text-foreground">MUFFI GOUT</span>
-                <span className="text-[10px] lg:text-xs font-semibold uppercase tracking-[0.25em] text-primary mt-0.5">Apparel Hub</span>
-              </div>
-            </Link>
 
             {/* Desktop Navigation */}
             <nav className="hidden lg:flex items-center space-x-8">
