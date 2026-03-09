@@ -5,6 +5,7 @@ import {
   MapPin,
   Package,
   Heart,
+  CreditCard,
   Settings,
   LogOut,
   Plus,
