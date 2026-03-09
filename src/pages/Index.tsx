@@ -34,6 +34,16 @@ const Index = () => {
   const [tempColors, setTempColors] = useState<string[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [voiceSearchOpen, setVoiceSearchOpen] = useState(false);
+  const [imageSearchOpen, setImageSearchOpen] = useState(false);
+
+  const handleSearchFromVoice = useCallback((text: string) => {
+    navigate(`/products?search=${encodeURIComponent(text)}`);
+  }, [navigate]);
+
+  const handleSearchFromImage = useCallback((terms: string) => {
+    navigate(`/products?search=${encodeURIComponent(terms)}`);
+  }, [navigate]);
 
   const sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL'];
   const colors = [
