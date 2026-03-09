@@ -4,7 +4,6 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Search, Navigation, Loader2, X, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
@@ -38,6 +37,13 @@ interface LocationData {
   state: string;
   pincode: string;
   displayName: string;
+}
+
+interface SearchResult {
+  place_id: string;
+  display_name: string;
+  lat: string;
+  lon: string;
 }
 
 // Component to handle map clicks and marker dragging
@@ -84,12 +90,26 @@ const RecenterMap = ({ center }: { center: [number, number] }) => {
 };
 
 const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
-  const [position, setPosition] = useState<[number, number]>([20.5937, 78.9629]); // Default: India center
+  const [position, setPosition] = useState<[number, number]>([20.5937, 78.9629]);
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowResults(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Reverse geocode when position changes
   useEffect(() => {
@@ -142,25 +162,35 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
     );
   };
 
-  // Search location
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
-    setIsSearching(true);
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=1`
-      );
-      const results = await res.json();
-      if (results.length > 0) {
-        setPosition([parseFloat(results[0].lat), parseFloat(results[0].lon)]);
-      } else {
-        toast.error('Location not found. Try a different search.');
-      }
-    } catch {
-      toast.error('Search failed. Please try again.');
-    } finally {
-      setIsSearching(false);
+  // Search with autocomplete
+  useEffect(() => {
+    if (!searchQuery.trim() || searchQuery.length < 3) {
+      setSearchResults([]);
+      return;
     }
+    const timeout = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5&countrycodes=in`
+        );
+        const results = await res.json();
+        setSearchResults(results);
+        setShowResults(true);
+      } catch {
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 400);
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
+
+  const handleSelectResult = (result: SearchResult) => {
+    setPosition([parseFloat(result.lat), parseFloat(result.lon)]);
+    setSearchQuery(result.display_name.split(',').slice(0, 2).join(', '));
+    setShowResults(false);
+    setSearchResults([]);
   };
 
   const handleConfirm = () => {
@@ -180,30 +210,61 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent className="max-w-2xl p-0 overflow-hidden h-[85vh] flex flex-col">
-        {/* Header */}
+        {/* Header with search */}
         <div className="p-4 border-b border-border bg-card">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mb-3">
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onClose}>
               <X size={18} />
             </Button>
             <h2 className="font-semibold">Select Your Location</h2>
           </div>
           
-          {/* Search bar */}
-          <div className="flex gap-2 mt-3">
-            <div className="relative flex-1">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input
+          {/* Plain search box with dropdown */}
+          <div ref={searchRef} className="relative">
+            <div className="relative">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <input
+                type="text"
                 placeholder="Search an area or address"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="pl-9 h-10"
+                onFocus={() => searchResults.length > 0 && setShowResults(true)}
+                className="w-full h-11 pl-10 pr-10 border border-border rounded-lg bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
               />
+              {isSearching && (
+                <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" />
+              )}
+              {searchQuery && !isSearching && (
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSearchResults([]);
+                    setShowResults(false);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X size={16} />
+                </button>
+              )}
             </div>
-            <Button onClick={handleSearch} disabled={isSearching} size="sm" className="h-10 px-4">
-              {isSearching ? <Loader2 size={16} className="animate-spin" /> : 'Search'}
-            </Button>
+
+            {/* Dropdown results overlaid below */}
+            {showResults && searchResults.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-[2000] max-h-60 overflow-y-auto">
+                {searchResults.map((result) => (
+                  <button
+                    key={result.place_id}
+                    onClick={() => handleSelectResult(result)}
+                    className="w-full px-4 py-3 text-left hover:bg-secondary/50 transition-colors border-b border-border last:border-b-0 flex items-start gap-3"
+                  >
+                    <MapPin size={16} className="text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-sm text-foreground line-clamp-2">
+                      {result.display_name}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -236,7 +297,7 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
             )}
           </button>
 
-          {/* Pin center indicator text */}
+          {/* Pin hint */}
           <div className="absolute top-4 left-4 right-16 z-[1000]">
             <div className="bg-card/90 backdrop-blur-sm border border-border rounded-lg px-3 py-2 text-xs text-muted-foreground">
               <MapPin size={14} className="inline mr-1.5 text-primary" />
