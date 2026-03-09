@@ -385,16 +385,37 @@ const Payments = () => {
 
           {/* Payment Methods Tab */}
           <TabsContent value="methods" className="space-y-4">
-            <div className="flex justify-end gap-2 mb-4">
-              <Button variant="outline" onClick={() => setIsUpiFormOpen(true)}>
+            <div className="flex justify-end mb-4">
+              <Button onClick={() => setIsAddMethodOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Add UPI
-              </Button>
-              <Button onClick={() => setIsBankFormOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Bank Details
+                Add New Payment Method
               </Button>
             </div>
+
+            {/* Choose Method Type Dialog */}
+            <Dialog open={isAddMethodOpen} onOpenChange={setIsAddMethodOpen}>
+              <DialogContent className="sm:max-w-sm">
+                <DialogHeader>
+                  <DialogTitle className="text-lg tracking-wide">ADD PAYMENT METHOD</DialogTitle>
+                </DialogHeader>
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <button
+                    onClick={() => { setIsAddMethodOpen(false); setIsUpiFormOpen(true); }}
+                    className="flex flex-col items-center gap-3 p-6 rounded-lg border border-border bg-card hover:border-primary hover:bg-primary/5 transition-colors"
+                  >
+                    <Smartphone className="h-8 w-8 text-primary" />
+                    <span className="font-medium text-sm">UPI</span>
+                  </button>
+                  <button
+                    onClick={() => { setIsAddMethodOpen(false); setIsBankFormOpen(true); }}
+                    className="flex flex-col items-center gap-3 p-6 rounded-lg border border-border bg-card hover:border-primary hover:bg-primary/5 transition-colors"
+                  >
+                    <Landmark className="h-8 w-8 text-primary" />
+                    <span className="font-medium text-sm">Bank Account</span>
+                  </button>
+                </div>
+              </DialogContent>
+            </Dialog>
 
             {paymentMethods.length === 0 ? (
               <div className="text-center py-12 bg-card rounded-lg border border-border">
