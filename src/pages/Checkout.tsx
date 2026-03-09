@@ -15,6 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useRazorpay, RazorpayResponse } from '@/hooks/useRazorpay';
 import PincodeChecker from '@/components/PincodeChecker';
+import { supabase } from '@/integrations/supabase/client';
 
 const Checkout = () => {
   const navigate = useNavigate();
