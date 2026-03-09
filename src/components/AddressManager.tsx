@@ -255,14 +255,14 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
           </button>
 
           <button
-            onClick={handleAddNew}
+            onClick={() => setIsMapOpen(true)}
             className="flex flex-col items-center gap-2 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors border border-border group"
           >
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-              <LocateFixed size={18} className="text-primary" />
+              <Map size={18} className="text-primary" />
             </div>
             <span className="text-xs font-medium text-center leading-tight">
-              Request Address
+              Pick on Map
             </span>
           </button>
         </div>
