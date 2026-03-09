@@ -133,7 +133,7 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
 
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, mapEl, mapAttribution, position, zoom]);
 
   // Cleanup when closing
   useEffect(() => {
