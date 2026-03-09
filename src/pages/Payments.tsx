@@ -65,6 +65,7 @@ const Payments = () => {
   const [bankFormErrors, setBankFormErrors] = useState<Record<string, string>>({});
   const [upiFormErrors, setUpiFormErrors] = useState<Record<string, string>>({});
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
+  const [editingMethod, setEditingMethod] = useState<PaymentMethod | null>(null);
   const [newMethod, setNewMethod] = useState({ type: 'upi', label: '', details: '' });
 
   // Redirect if not logged in
