@@ -12,8 +12,7 @@ import {
   Heart,
   Loader2,
   Check,
-  ChevronLeft,
-  LocateFixed,
+  Map,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +37,7 @@ import {
 import { toast } from 'sonner';
 import { Address } from '@/data/user';
 import { addressSchema } from '@/lib/validations';
+import MapPicker from '@/components/MapPicker';
 
 interface AddressManagerProps {
   addresses: Address[];
@@ -55,6 +55,7 @@ const addressTypeIcons: Record<AddressType, typeof Home> = {
 const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isMapOpen, setIsMapOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
   const [locatingUser, setLocatingUser] = useState(false);
