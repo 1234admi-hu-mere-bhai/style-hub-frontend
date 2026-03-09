@@ -5,6 +5,7 @@ import {
   MapPin,
   Package,
   Heart,
+  CreditCard,
   Settings,
   LogOut,
   Plus,
@@ -126,6 +127,7 @@ const Profile = () => {
     { id: 'addresses', label: 'Address Book', icon: MapPin },
     { id: 'orders', label: 'Order History', icon: Package },
     { id: 'wishlist', label: 'My Wishlist', icon: Heart, href: '/wishlist' },
+    { id: 'payments', label: 'Payments', icon: CreditCard, href: '/payments' },
   ];
 
   const setActiveTab = (tab: string) => {
