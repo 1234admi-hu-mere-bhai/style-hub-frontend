@@ -212,19 +212,30 @@ const Payments = () => {
     setUpiFormErrors(errors);
     if (Object.keys(errors).length > 0) return;
 
-    const method: PaymentMethod = {
-      id: Date.now().toString(),
-      type: 'upi',
-      label: upiForm.name,
-      details: upiForm.upiId,
-      isDefault: paymentMethods.length === 0,
-    };
+    if (editingMethod) {
+      const updated = paymentMethods.map(m =>
+        m.id === editingMethod.id
+          ? { ...m, label: upiForm.name, details: upiForm.upiId }
+          : m
+      );
+      savePaymentMethods(updated);
+      toast.success('UPI payment method updated');
+    } else {
+      const method: PaymentMethod = {
+        id: Date.now().toString(),
+        type: 'upi',
+        label: upiForm.name,
+        details: upiForm.upiId,
+        isDefault: paymentMethods.length === 0,
+      };
+      savePaymentMethods([...paymentMethods, method]);
+      toast.success('UPI payment method added');
+    }
 
-    savePaymentMethods([...paymentMethods, method]);
     setIsUpiFormOpen(false);
     setUpiForm({ upiId: '', name: '' });
     setUpiFormErrors({});
-    toast.success('UPI payment method added');
+    setEditingMethod(null);
   };
 
   const handleEditMethod = (method: PaymentMethod) => {
