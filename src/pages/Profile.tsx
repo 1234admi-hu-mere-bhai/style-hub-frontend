@@ -39,6 +39,7 @@ import {
 import { toast } from 'sonner';
 import { Address } from '@/data/user';
 import { addressSchema } from '@/lib/validations';
+import AddressManager from '@/components/AddressManager';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
