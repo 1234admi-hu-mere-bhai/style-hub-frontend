@@ -280,44 +280,80 @@ const Payments = () => {
 
           {/* Transactions Tab */}
           <TabsContent value="transactions" className="space-y-4">
-            {transactions.length === 0 ? (
-              <div className="text-center py-12 bg-card rounded-lg border border-border">
-                <CreditCard size={48} className="mx-auto text-muted-foreground mb-4" />
-                <h3 className="font-semibold text-lg mb-2">No transactions yet</h3>
-                <p className="text-muted-foreground">
-                  Your refund and payment history will appear here
-                </p>
-              </div>
-            ) : (
-              transactions.map((txn) => (
-                <div
-                  key={txn.id}
-                  className="bg-card p-4 rounded-lg border border-border"
+            {/* Filter Chips */}
+            <div className="flex gap-2 mb-2">
+              {(['all', 'refund', 'replacement'] as const).map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setTxnFilter(filter)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                    txnFilter === filter
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                  }`}
                 >
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="font-semibold">{formatDate(txn.date)}</span>
-                    <span className={`text-xs px-2 py-1 rounded-full ${
-                      txn.status === 'completed' 
-                        ? 'bg-success/10 text-success' 
-                        : txn.status === 'pending'
-                        ? 'bg-warning/10 text-warning'
-                        : 'bg-destructive/10 text-destructive'
-                    }`}>
-                      {txn.status.charAt(0).toUpperCase() + txn.status.slice(1)}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground line-clamp-3">
-                    {txn.description}
+                  {filter === 'all' ? 'All' : filter === 'refund' ? 'Refunds' : 'Replacements'}
+                </button>
+              ))}
+            </div>
+
+            {(() => {
+              const filtered = txnFilter === 'all'
+                ? transactions
+                : transactions.filter(t => t.type === txnFilter);
+
+              return filtered.length === 0 ? (
+                <div className="text-center py-12 bg-card rounded-lg border border-border">
+                  <CreditCard size={48} className="mx-auto text-muted-foreground mb-4" />
+                  <h3 className="font-semibold text-lg mb-2">
+                    {txnFilter === 'all' ? 'No transactions yet' : `No ${txnFilter}s yet`}
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Your {txnFilter === 'all' ? 'refund and replacement' : txnFilter} history will appear here
                   </p>
-                  <button
-                    onClick={() => setSelectedTransaction(txn)}
-                    className="text-sm text-primary font-medium mt-2 hover:underline"
-                  >
-                    VIEW MORE
-                  </button>
                 </div>
-              ))
-            )}
+              ) : (
+                filtered.map((txn) => (
+                  <div
+                    key={txn.id}
+                    className="bg-card p-4 rounded-lg border border-border"
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">{formatDate(txn.date)}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                          txn.type === 'refund'
+                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                            : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                        }`}>
+                          {txn.type === 'refund' ? 'Refund' : 'Replacement'}
+                        </span>
+                      </div>
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        txn.status === 'completed'
+                          ? 'bg-success/10 text-success'
+                          : txn.status === 'processing'
+                          ? 'bg-primary/10 text-primary'
+                          : txn.status === 'pending'
+                          ? 'bg-warning/10 text-warning'
+                          : 'bg-destructive/10 text-destructive'
+                      }`}>
+                        {txn.status.charAt(0).toUpperCase() + txn.status.slice(1)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground line-clamp-3">
+                      {txn.description}
+                    </p>
+                    <button
+                      onClick={() => setSelectedTransaction(txn)}
+                      className="text-sm text-primary font-medium mt-2 hover:underline"
+                    >
+                      VIEW MORE
+                    </button>
+                  </div>
+                ))
+              );
+            })()}
           </TabsContent>
 
           {/* Payment Methods Tab */}
