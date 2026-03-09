@@ -12,8 +12,7 @@ import {
   Heart,
   Loader2,
   Check,
-  ChevronLeft,
-  LocateFixed,
+  Map,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +37,7 @@ import {
 import { toast } from 'sonner';
 import { Address } from '@/data/user';
 import { addressSchema } from '@/lib/validations';
+import MapPicker from '@/components/MapPicker';
 
 interface AddressManagerProps {
   addresses: Address[];
@@ -55,6 +55,7 @@ const addressTypeIcons: Record<AddressType, typeof Home> = {
 const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isMapOpen, setIsMapOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
   const [locatingUser, setLocatingUser] = useState(false);
@@ -116,6 +117,31 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
+  };
+
+  const handleMapLocationSelect = (location: {
+    lat: number;
+    lng: number;
+    address: string;
+    city: string;
+    state: string;
+    pincode: string;
+    displayName: string;
+  }) => {
+    setEditingAddress({
+      id: '',
+      fullName: '',
+      phone: '',
+      address: location.address || location.displayName.split(',').slice(0, 2).join(','),
+      city: location.city,
+      state: location.state,
+      pincode: location.pincode,
+      landmark: '',
+      isDefault: addresses.length === 0,
+    });
+    setSelectedType('home');
+    setIsFormOpen(true);
+    toast.success('Location selected! Please fill in remaining details.');
   };
 
   const handleAddNew = () => {
@@ -254,14 +280,14 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
           </button>
 
           <button
-            onClick={handleAddNew}
+            onClick={() => setIsMapOpen(true)}
             className="flex flex-col items-center gap-2 p-4 rounded-xl bg-secondary/50 hover:bg-secondary transition-colors border border-border group"
           >
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-              <LocateFixed size={18} className="text-primary" />
+              <Map size={18} className="text-primary" />
             </div>
             <span className="text-xs font-medium text-center leading-tight">
-              Request Address
+              Pick on Map
             </span>
           </button>
         </div>
@@ -512,6 +538,13 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Map Picker */}
+      <MapPicker
+        open={isMapOpen}
+        onClose={() => setIsMapOpen(false)}
+        onLocationSelect={handleMapLocationSelect}
+      />
     </div>
   );
 };
