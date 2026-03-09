@@ -75,6 +75,7 @@ const App = () => (
               </Routes>
               
               <BottomNav />
+              <LiveSupportChat />
             </BrowserRouter>
           </WishlistProvider>
         </CartProvider>
