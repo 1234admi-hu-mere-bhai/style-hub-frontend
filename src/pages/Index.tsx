@@ -482,7 +482,8 @@ const Index = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <input
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder=""
+                  autoComplete="off"
                   className="flex-1 px-4 py-3 rounded-lg bg-primary-foreground/20 border border-primary-foreground/30 text-primary-foreground placeholder:text-primary-foreground/60 focus:outline-none focus:border-primary-foreground"
                 />
                 <Button
