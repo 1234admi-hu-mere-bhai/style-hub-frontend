@@ -9,9 +9,6 @@ import {
   RefreshCw,
   Settings,
   LogOut,
-  Plus,
-  Edit2,
-  Trash2,
   ChevronRight,
   Loader2,
 } from 'lucide-react';
