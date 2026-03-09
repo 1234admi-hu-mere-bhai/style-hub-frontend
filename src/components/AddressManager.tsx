@@ -518,7 +518,7 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="pincode" className="text-xs">PIN Code</Label>
-                <Input id="pincode" name="pincode" defaultValue={editingAddress?.pincode} placeholder="400001" />
+                <Input id="pincode" name="pincode" defaultValue={editingAddress?.pincode} placeholder="400001" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
                 {addressErrors.pincode && <p className="text-[11px] text-destructive">{addressErrors.pincode}</p>}
               </div>
               <div className="space-y-1">
