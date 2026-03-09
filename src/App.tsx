@@ -30,14 +30,8 @@ import Contact from "./pages/Contact";
 import Settings from "./pages/Settings";
 import Payments from "./pages/Payments";
 import NotFound from "./pages/NotFound";
-import WhatsAppButton from "./components/WhatsAppButton";
 import VisitorTracker from "./components/VisitorTracker";
 import BottomNav from "./components/BottomNav";
-
-const WhatsAppButtonWrapper = () => {
-  const { pathname } = useLocation();
-  return pathname.startsWith('/admin') ? null : <WhatsAppButton />;
-};
 
 const queryClient = new QueryClient();
 
@@ -78,7 +72,7 @@ const App = () => (
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-              <WhatsAppButtonWrapper />
+              
               <BottomNav />
             </BrowserRouter>
           </WishlistProvider>
