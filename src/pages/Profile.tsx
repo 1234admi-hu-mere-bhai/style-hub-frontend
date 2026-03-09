@@ -170,67 +170,6 @@ const Profile = () => {
     }
   };
 
-  const handleSaveAddress = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data = {
-      fullName: formData.get('fullName') as string,
-      phone: formData.get('phone') as string,
-      address: formData.get('address') as string,
-      city: formData.get('city') as string,
-      state: formData.get('state') as string,
-      pincode: formData.get('pincode') as string,
-      landmark: formData.get('landmark') as string || undefined,
-    };
-
-    const result = addressSchema.safeParse(data);
-    if (!result.success) {
-      const errors: Record<string, string> = {};
-      result.error.errors.forEach((err) => {
-        if (err.path[0]) {
-          errors[err.path[0] as string] = err.message;
-        }
-      });
-      setAddressErrors(errors);
-      return;
-    }
-
-    setAddressErrors({});
-
-    if (editingAddress) {
-      setAddresses((prev) =>
-        prev.map((a) =>
-          a.id === editingAddress.id
-            ? { ...a, ...data }
-            : a
-        )
-      );
-      toast.success('Address updated successfully!');
-    } else {
-      const newAddress: Address = {
-        id: Date.now().toString(),
-        ...data,
-        isDefault: addresses.length === 0,
-      };
-      setAddresses((prev) => [...prev, newAddress]);
-      toast.success('Address added successfully!');
-    }
-    setIsAddressModalOpen(false);
-    setEditingAddress(null);
-  };
-
-  const handleDeleteAddress = (id: string) => {
-    setAddresses((prev) => prev.filter((a) => a.id !== id));
-    toast.success('Address deleted successfully!');
-  };
-
-  const handleSetDefaultAddress = (id: string) => {
-    setAddresses((prev) =>
-      prev.map((a) => ({ ...a, isDefault: a.id === id }))
-    );
-    toast.success('Default address updated!');
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'delivered':
