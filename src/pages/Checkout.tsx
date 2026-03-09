@@ -817,7 +817,7 @@ const Checkout = () => {
       </main>
 
       {/* Sticky Bottom Bar (mobile & desktop) */}
-      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 lg:hidden">
+      <div className="fixed left-0 right-0 bottom-14 md:bottom-0 bg-card border-t border-border z-40 lg:hidden shadow-lg">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
