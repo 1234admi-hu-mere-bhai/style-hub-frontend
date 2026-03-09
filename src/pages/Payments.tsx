@@ -705,7 +705,7 @@ const Payments = () => {
               </div>
 
               <Button className="w-full" onClick={handleAddUpi}>
-                Submit
+                {editingMethod ? 'Update' : 'Submit'}
               </Button>
             </div>
           </DialogContent>
