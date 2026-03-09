@@ -33,8 +33,8 @@ interface Transaction {
   id: string;
   date: string;
   amount: number;
-  type: 'refund' | 'payment';
-  status: 'completed' | 'pending' | 'failed';
+  type: 'refund' | 'replacement' | 'payment';
+  status: 'completed' | 'pending' | 'processing' | 'failed';
   transactionId: string;
   orderId: string;
   description: string;
