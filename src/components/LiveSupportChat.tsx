@@ -100,9 +100,27 @@ const LiveSupportChat = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [historyLoaded, setHistoryLoaded] = useState(false);
+  const [showBubble, setShowBubble] = useState(false);
+  const [bubbleDismissed, setBubbleDismissed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
+
+  // Show speech bubble after 3 seconds, auto-dismiss after 6 more
+  useEffect(() => {
+    if (open || bubbleDismissed) return;
+    const showTimer = setTimeout(() => setShowBubble(true), 3000);
+    return () => clearTimeout(showTimer);
+  }, [open, bubbleDismissed]);
+
+  useEffect(() => {
+    if (!showBubble) return;
+    const hideTimer = setTimeout(() => {
+      setShowBubble(false);
+      setBubbleDismissed(true);
+    }, 6000);
+    return () => clearTimeout(hideTimer);
+  }, [showBubble]);
 
   // Load chat history when user is available and chat opens
   const loadHistory = useCallback(async () => {
@@ -217,13 +235,30 @@ const LiveSupportChat = () => {
   return (
     <>
       {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          className="fixed bottom-36 md:bottom-6 right-6 z-50 w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 overflow-hidden border-2 border-primary bg-background"
-          aria-label="Open support chat"
-        >
-          <img src={botAvatar} alt="StyleGenie" className="w-full h-full object-cover" />
-        </button>
+        <div className="fixed bottom-36 md:bottom-6 right-6 z-50 flex items-end gap-2">
+          {/* Speech bubble */}
+          {showBubble && (
+            <div
+              className="relative bg-background border border-border shadow-lg rounded-2xl rounded-br-sm px-4 py-2.5 text-sm font-medium text-foreground animate-fade-in cursor-pointer max-w-[180px]"
+              onClick={() => { setShowBubble(false); setBubbleDismissed(true); setOpen(true); }}
+            >
+              <span>Hi! 👋 How can I assist you?</span>
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowBubble(false); setBubbleDismissed(true); }}
+                className="absolute -top-2 -left-2 w-5 h-5 bg-muted rounded-full flex items-center justify-center text-muted-foreground hover:bg-accent transition-colors text-xs"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+          <button
+            onClick={() => { setOpen(true); setShowBubble(false); setBubbleDismissed(true); }}
+            className="w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 overflow-hidden border-2 border-primary bg-background"
+            aria-label="Open support chat"
+          >
+            <img src={botAvatar} alt="StyleGenie" className="w-full h-full object-cover" />
+          </button>
+        </div>
       )}
 
       {open && (
