@@ -87,12 +87,12 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
   // Init / destroy Leaflet map
   useEffect(() => {
     if (!open) return;
-    if (!mapDivRef.current) return;
+    if (!mapEl) return;
 
     // Prevent double-init
     if (mapRef.current) return;
 
-    const map = L.map(mapDivRef.current, {
+    const map = L.map(mapEl, {
       zoomControl: false,
       attributionControl: false,
     }).setView(position, zoom);
