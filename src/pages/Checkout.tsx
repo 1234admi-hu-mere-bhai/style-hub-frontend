@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn, Clock, Tag, X, ChevronDown } from 'lucide-react';
+import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn, Clock, Tag, X, ChevronDown, Heart, Check } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import { createOrder } from '@/hooks/useOrders';
@@ -17,10 +18,18 @@ import { useRazorpay, RazorpayResponse } from '@/hooks/useRazorpay';
 import PincodeChecker from '@/components/PincodeChecker';
 import { supabase } from '@/integrations/supabase/client';
 
+const getEstimatedDeliveryDate = (days?: string) => {
+  const deliveryDays = days ? parseInt(days) : 5;
+  const date = new Date();
+  date.setDate(date.getDate() + deliveryDays);
+  return date.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
+};
+
 const Checkout = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { items: cartItems, totalPrice: cartTotalPrice, clearCart, buyNowItem, setBuyNowItem } = useCart();
+  const { items: cartItems, totalPrice: cartTotalPrice, clearCart, buyNowItem, setBuyNowItem, removeFromCart } = useCart();
+  const { addToWishlist } = useWishlist();
   const { user, isLoading: authLoading } = useAuth();
   const { formatPrice } = useCurrency();
   const isBuyNow = searchParams.get('buyNow') === 'true' && buyNowItem !== null;
@@ -29,6 +38,7 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState('online');
   const [step, setStep] = useState<'address' | 'payment' | 'summary'>('address');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [showPriceDetails, setShowPriceDetails] = useState(false);
 
   // Coupon state
   const [couponCode, setCouponCode] = useState('');
@@ -74,6 +84,25 @@ const Checkout = () => {
     return appliedCoupon.discount_value;
   }, [appliedCoupon, totalPrice]);
 
+  // Calculate product-level discounts (originalPrice vs price)
+  const totalProductDiscount = useMemo(() => {
+    return items.reduce((sum, item) => {
+      if (item.originalPrice && item.originalPrice > item.price) {
+        return sum + (item.originalPrice - item.price) * item.quantity;
+      }
+      return sum;
+    }, 0);
+  }, [items]);
+
+  const totalOriginalPrice = useMemo(() => {
+    return items.reduce((sum, item) => {
+      const price = item.originalPrice || item.price;
+      return sum + price * item.quantity;
+    }, 0);
+  }, [items]);
+
+  const totalSavings = totalProductDiscount + discountAmount;
+
   const shippingCost = totalPrice >= 999 ? 0 : 99;
   const finalTotal = totalPrice - discountAmount + shippingCost;
 
@@ -115,6 +144,21 @@ const Checkout = () => {
   const getAmountNeeded = (coupon: any) => {
     if (coupon.min_order_value && totalPrice < coupon.min_order_value) return coupon.min_order_value - totalPrice;
     return 0;
+  };
+
+  const handleMoveToWishlist = (item: typeof items[0]) => {
+    addToWishlist({ id: item.id, name: item.name, price: item.price, originalPrice: item.originalPrice, image: item.image });
+    if (!isBuyNow) {
+      removeFromCart(item.id, item.size, item.color);
+    }
+    toast.success('Moved to wishlist');
+  };
+
+  const handleRemoveItem = (item: typeof items[0]) => {
+    if (!isBuyNow) {
+      removeFromCart(item.id, item.size, item.color);
+      toast.success('Item removed');
+    }
   };
 
   // Redirect to auth if not logged in
@@ -212,6 +256,24 @@ const Checkout = () => {
     setAddressForm({ ...addressForm, [e.target.id]: e.target.value });
   };
 
+  const stepLabels = ['Address', 'Review', 'Payment'];
+  const stepKeys: Array<typeof step> = ['address', 'summary', 'payment'];
+  const currentStepIndex = stepKeys.indexOf(step);
+
+  const handleContinue = () => {
+    if (step === 'address') {
+      if (!addressForm.firstName || !addressForm.phone || !addressForm.address || !addressForm.city || !addressForm.state || !addressForm.pincode) {
+        toast.error('Please fill in all required address fields');
+        return;
+      }
+      setStep('summary');
+    } else if (step === 'summary') {
+      setStep('payment');
+    } else if (step === 'payment') {
+      handlePlaceOrder();
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -266,35 +328,37 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-24 lg:pb-8">
       <Header />
 
       <main className="container mx-auto px-4 py-8">
-        <h1 className="font-serif text-3xl font-bold mb-8">Checkout</h1>
-
-        {/* Steps */}
+        {/* Steps - Updated to match reference */}
         <div className="flex items-center justify-center mb-8">
-          {['address', 'payment', 'summary'].map((s, index) => (
-            <div key={s} className="flex items-center">
+          {stepLabels.map((label, index) => (
+            <div key={label} className="flex items-center">
               <button
-                onClick={() => setStep(s as typeof step)}
-                className={`flex items-center justify-center w-10 h-10 rounded-full font-semibold ${
-                  step === s
+                onClick={() => setStep(stepKeys[index])}
+                className="flex flex-col items-center gap-1"
+              >
+                <div className={`flex items-center justify-center w-8 h-8 rounded-full font-semibold text-sm transition-colors ${
+                  index < currentStepIndex
+                    ? 'bg-success text-success-foreground'
+                    : index === currentStepIndex
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-secondary text-muted-foreground'
-                }`}
-              >
-                {index + 1}
+                }`}>
+                  {index < currentStepIndex ? <Check size={16} /> : index + 1}
+                </div>
+                <span className={`text-xs font-medium ${
+                  index === currentStepIndex ? 'text-foreground' : 'text-muted-foreground'
+                }`}>
+                  {label}
+                </span>
               </button>
-              <span
-                className={`ml-2 text-sm font-medium capitalize hidden sm:block ${
-                  step === s ? 'text-foreground' : 'text-muted-foreground'
-                }`}
-              >
-                {s}
-              </span>
               {index < 2 && (
-                <ChevronRight className="w-4 h-4 mx-4 text-muted-foreground" />
+                <div className={`w-12 sm:w-20 h-0.5 mx-2 ${
+                  index < currentStepIndex ? 'bg-success' : 'bg-border'
+                }`} />
               )}
             </div>
           ))}
@@ -302,7 +366,32 @@ const Checkout = () => {
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Form */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-4">
+
+            {/* Delivery Address Bar (visible on summary/payment) */}
+            {(step === 'summary' || step === 'payment') && addressForm.firstName && (
+              <div className="bg-card p-4 rounded-lg border border-border">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3">
+                    <MapPin size={18} className="text-primary mt-0.5 shrink-0" />
+                    <div>
+                      <h3 className="font-semibold text-sm">Delivery Address</h3>
+                      <p className="text-sm font-medium mt-1">
+                        {addressForm.firstName} {addressForm.lastName}
+                        <span className="text-muted-foreground"> • {addressForm.phone}</span>
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {addressForm.address}{addressForm.landmark ? `, ${addressForm.landmark}` : ''}, {addressForm.city}, {addressForm.state}, {addressForm.pincode}
+                      </p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setStep('address')}>
+                    Change
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {step === 'address' && (
               <div className="bg-card p-6 rounded-lg border border-border">
                 <h2 className="font-semibold text-lg mb-6 flex items-center gap-2">
@@ -408,15 +497,74 @@ const Checkout = () => {
                       onDeliveryInfo={setDeliveryInfo}
                     />
                   </div>
-
-                  <Button
-                    type="button"
-                    className="w-full mt-4"
-                    onClick={() => setStep('payment')}
-                  >
-                    Continue to Payment
-                  </Button>
                 </form>
+              </div>
+            )}
+
+            {/* Cart Items with enhanced cards */}
+            {(step === 'address' || step === 'summary') && (
+              <div className="space-y-3">
+                {items.map((item) => {
+                  const hasDiscount = item.originalPrice && item.originalPrice > item.price;
+                  const discountPercent = hasDiscount ? Math.round(((item.originalPrice! - item.price) / item.originalPrice!) * 100) : 0;
+                  return (
+                    <div key={`${item.id}-${item.size}-${item.color}`} className="bg-card rounded-lg border border-border overflow-hidden">
+                      <div className="p-4 flex gap-4">
+                        <div className="relative">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-24 h-28 object-cover rounded"
+                          />
+                          {hasDiscount && (
+                            <span className="absolute top-1 left-1 bg-destructive text-destructive-foreground text-[10px] font-bold px-1.5 py-0.5 rounded">
+                              SALE ⚡
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm line-clamp-2">{item.name}</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="font-bold">{formatPrice(item.price)}</span>
+                            {hasDiscount && (
+                              <>
+                                <span className="text-muted-foreground line-through text-xs">{formatPrice(item.originalPrice!)}</span>
+                                <span className="text-success text-xs font-semibold">{discountPercent}% Off</span>
+                              </>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-xs border border-border rounded px-2 py-1">Size: {item.size}</span>
+                            <span className="text-xs border border-border rounded px-2 py-1">Qty: {item.quantity}</span>
+                          </div>
+                          <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                            <Truck size={12} />
+                            <span>Estimated Delivery by {getEstimatedDeliveryDate(deliveryInfo?.estimatedDays)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Action buttons */}
+                      {!isBuyNow && (
+                        <div className="flex border-t border-border divide-x divide-border">
+                          <button
+                            onClick={() => handleMoveToWishlist(item)}
+                            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+                          >
+                            <Heart size={14} />
+                            Move to Wishlist
+                          </button>
+                          <button
+                            onClick={() => handleRemoveItem(item)}
+                            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors"
+                          >
+                            <X size={14} />
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
@@ -439,99 +587,52 @@ const Checkout = () => {
                     Supports UPI, Credit/Debit Cards, Net Banking, and Wallets.
                   </p>
                 </div>
-
-                <div className="flex gap-4 mt-6">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => setStep('address')}
-                  >
-                    Back
-                  </Button>
-                  <Button className="flex-1" onClick={() => setStep('summary')}>
-                    Review Order
-                  </Button>
-                </div>
               </div>
             )}
 
-            {step === 'summary' && (
-              <div className="bg-card p-6 rounded-lg border border-border">
-                <h2 className="font-semibold text-lg mb-6">Order Summary</h2>
-                <div className="space-y-4">
-                  {items.map((item) => (
-                    <div
-                      key={`${item.id}-${item.size}-${item.color}`}
-                      className="flex gap-4"
-                    >
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-16 h-20 object-cover rounded"
-                      />
-                      <div className="flex-1">
-                        <h4 className="font-medium">{item.name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Size: {item.size} | Color: {item.color} | Qty: {item.quantity}
-                        </p>
-                        <p className="font-semibold mt-1">
-                          {formatPrice(item.price * item.quantity)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+            {/* Price Details Section */}
+            <div className="bg-card p-4 rounded-lg border border-border">
+              <h3 className="font-semibold text-sm mb-3">Price Details ({items.length} Item{items.length > 1 ? 's' : ''})</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Product Price</span>
+                  <span>+ {formatPrice(totalOriginalPrice)}</span>
                 </div>
-
-                <Separator className="my-6" />
-
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Delivery Address</span>
-                    <span className="text-right">
-                      {addressForm.address ? `${addressForm.address}, ${addressForm.city}` : 'Not provided'}, 
-                      {addressForm.state} - {addressForm.pincode}
-                    </span>
+                {totalProductDiscount > 0 && (
+                  <div className="flex justify-between text-success">
+                    <span>Product Discount</span>
+                    <span>- {formatPrice(totalProductDiscount)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Payment Method</span>
-                    <span>Online Payment (Razorpay)</span>
+                )}
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-success">
+                    <span>Coupon Discount ({appliedCoupon?.code})</span>
+                    <span>- {formatPrice(discountAmount)}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Estimated Delivery</span>
-                    <span>{deliveryInfo ? `${deliveryInfo.estimatedDays} Business Days` : '3-5 Business Days'}</span>
-                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Shipping</span>
+                  <span className={shippingCost === 0 ? 'text-success' : ''}>
+                    {shippingCost === 0 ? 'FREE' : `+ ${formatPrice(shippingCost)}`}
+                  </span>
                 </div>
-
-                <div className="flex gap-4 mt-6">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => setStep('payment')}
-                    disabled={isPaymentLoading || isPlacingOrder}
-                  >
-                    Back
-                  </Button>
-                  <Button 
-                    className="flex-1" 
-                    onClick={handlePlaceOrder}
-                    disabled={isPaymentLoading || isPlacingOrder}
-                  >
-                    {isPaymentLoading || isPlacingOrder ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      `Pay ${formatPrice(finalTotal)}`
-                    )}
-                  </Button>
+                <Separator className="my-2" />
+                <div className="flex justify-between font-bold text-base">
+                  <span>Order Total</span>
+                  <span>{formatPrice(finalTotal)}</span>
                 </div>
               </div>
-            )}
+              {totalSavings > 0 && (
+                <div className="mt-3 p-3 bg-success/10 rounded-lg flex items-center gap-2 text-sm font-medium text-success">
+                  <Tag size={16} />
+                  Yay! Your total discount is {formatPrice(totalSavings)}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Order Summary Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 hidden lg:block">
             <div className="bg-card p-6 rounded-lg border border-border sticky top-28">
               <h3 className="font-semibold text-lg mb-4">Order Details</h3>
               <div className="space-y-3 mb-4">
@@ -600,7 +701,6 @@ const Checkout = () => {
 
                     {savingsOpen && (
                       <div className="space-y-3 animate-fade-in">
-                        {/* Manual Input */}
                         <div className="flex gap-2">
                           <Input
                             value={couponCode}
@@ -619,7 +719,6 @@ const Checkout = () => {
                           </Button>
                         </div>
 
-                        {/* Available Coupons */}
                         {availableCoupons.length > 0 && (
                           <div className="space-y-2">
                             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Available Offers</p>
@@ -629,13 +728,11 @@ const Checkout = () => {
                               return (
                                 <div key={coupon.id} className="border border-border rounded-lg overflow-hidden">
                                   <div className="flex">
-                                    {/* Left badge */}
                                     <div className="w-16 bg-muted flex items-center justify-center shrink-0">
                                       <span className="text-[10px] font-bold text-muted-foreground -rotate-90 whitespace-nowrap">
                                         {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% OFF` : `₹${coupon.discount_value} OFF`}
                                       </span>
                                     </div>
-                                    {/* Content */}
                                     <div className="flex-1 p-3">
                                       <div className="flex items-center justify-between">
                                         <span className="font-bold text-sm">{coupon.code}</span>
@@ -707,6 +804,67 @@ const Checkout = () => {
           </div>
         </div>
       </main>
+
+      {/* Sticky Bottom Bar (mobile & desktop) */}
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 lg:hidden">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-bold text-lg">{formatPrice(finalTotal)}</p>
+              <button
+                onClick={() => setShowPriceDetails(!showPriceDetails)}
+                className="text-xs font-semibold text-primary"
+              >
+                {showPriceDetails ? 'HIDE DETAILS' : 'VIEW PRICE DETAILS'}
+              </button>
+            </div>
+            <Button
+              onClick={handleContinue}
+              disabled={isPaymentLoading || isPlacingOrder}
+              className="px-8"
+              size="lg"
+            >
+              {isPaymentLoading || isPlacingOrder ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : step === 'payment' ? (
+                `Pay ${formatPrice(finalTotal)}`
+              ) : (
+                'Continue'
+              )}
+            </Button>
+          </div>
+
+          {/* Expandable price details */}
+          {showPriceDetails && (
+            <div className="mt-3 pt-3 border-t border-border space-y-2 text-sm animate-fade-in">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Product Price</span>
+                <span>+ {formatPrice(totalOriginalPrice)}</span>
+              </div>
+              {totalSavings > 0 && (
+                <div className="flex justify-between text-success">
+                  <span>Total Discounts</span>
+                  <span>- {formatPrice(totalSavings)}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Shipping</span>
+                <span className={shippingCost === 0 ? 'text-success' : ''}>
+                  {shippingCost === 0 ? 'FREE' : formatPrice(shippingCost)}
+                </span>
+              </div>
+              <Separator />
+              <div className="flex justify-between font-bold">
+                <span>Order Total</span>
+                <span>{formatPrice(finalTotal)}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
 
       <Footer />
     </div>
