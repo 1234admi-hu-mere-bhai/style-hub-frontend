@@ -53,8 +53,6 @@ const Profile = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [_editingAddress, _setEditingAddress] = useState<Address | null>(null);
-  const [_isAddressModalOpen, _setIsAddressModalOpen] = useState(false);
   const [requestingReplacement, setRequestingReplacement] = useState<string | null>(null);
 
   const handleRequestReplacement = async (orderId: string) => {
