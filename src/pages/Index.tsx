@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import SearchCommand from '@/components/SearchCommand';
+import { Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Truck, RefreshCw, Shield, Headphones, Loader2, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,6 +29,7 @@ const Index = () => {
   const [tempSizes, setTempSizes] = useState<string[]>([]);
   const [tempColors, setTempColors] = useState<string[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL'];
   const colors = [
@@ -141,6 +144,19 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+
+      {/* Search Bar */}
+      <div className="sticky top-[104px] lg:top-[116px] z-40 bg-primary px-3 py-3">
+        <button
+          onClick={() => setSearchOpen(true)}
+          className="w-full flex items-center gap-3 bg-background rounded-lg px-4 py-3.5 shadow-sm border border-border hover:bg-secondary/30 transition-colors"
+        >
+          <Search size={20} className="text-muted-foreground shrink-0" />
+          <span className="text-sm text-muted-foreground flex-1 text-left">Search by Keyword or Product Name</span>
+        </button>
+      </div>
+
+      <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
 
       {/* Hero Product Carousel */}
       <HeroProductCarousel />
