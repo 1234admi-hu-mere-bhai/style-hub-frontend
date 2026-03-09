@@ -337,8 +337,12 @@ const Checkout = () => {
           {stepLabels.map((label, index) => (
             <div key={label} className="flex items-center">
               <button
-                onClick={() => setStep(stepKeys[index])}
-                className="flex flex-col items-center gap-1"
+                onClick={() => {
+                  // Only allow navigating to completed steps or current step
+                  if (index <= currentStepIndex) setStep(stepKeys[index]);
+                }}
+                disabled={index > currentStepIndex}
+                className={`flex flex-col items-center gap-1 ${index > currentStepIndex ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 <div className={`flex items-center justify-center w-8 h-8 rounded-full font-semibold text-sm transition-colors ${
                   index < currentStepIndex
