@@ -59,8 +59,11 @@ const Payments = () => {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isAddMethodOpen, setIsAddMethodOpen] = useState(false);
   const [isBankFormOpen, setIsBankFormOpen] = useState(false);
+  const [isUpiFormOpen, setIsUpiFormOpen] = useState(false);
   const [bankForm, setBankForm] = useState({ ifsc: '', accountNumber: '', confirmAccount: '', holderName: '' });
+  const [upiForm, setUpiForm] = useState({ upiId: '', name: '' });
   const [bankFormErrors, setBankFormErrors] = useState<Record<string, string>>({});
+  const [upiFormErrors, setUpiFormErrors] = useState<Record<string, string>>({});
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [newMethod, setNewMethod] = useState({ type: 'upi', label: '', details: '' });
 
@@ -195,6 +198,32 @@ const Payments = () => {
     setPrivacyAgreed(false);
     setBankFormErrors({});
     toast.success('Bank account added successfully');
+  };
+
+  const handleAddUpi = () => {
+    const errors: Record<string, string> = {};
+    if (!upiForm.upiId.trim() || !/^[\w.-]+@[\w]+$/.test(upiForm.upiId.trim())) {
+      errors.upiId = 'Enter a valid UPI ID (e.g., name@upi)';
+    }
+    if (!upiForm.name.trim()) {
+      errors.name = 'Enter the account holder name';
+    }
+    setUpiFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    const method: PaymentMethod = {
+      id: Date.now().toString(),
+      type: 'upi',
+      label: upiForm.name,
+      details: upiForm.upiId,
+      isDefault: paymentMethods.length === 0,
+    };
+
+    savePaymentMethods([...paymentMethods, method]);
+    setIsUpiFormOpen(false);
+    setUpiForm({ upiId: '', name: '' });
+    setUpiFormErrors({});
+    toast.success('UPI payment method added');
   };
 
   const handleDeleteMethod = (id: string) => {
@@ -358,7 +387,11 @@ const Payments = () => {
 
           {/* Payment Methods Tab */}
           <TabsContent value="methods" className="space-y-4">
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-end gap-2 mb-4">
+              <Button variant="outline" onClick={() => setIsUpiFormOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add UPI
+              </Button>
               <Button onClick={() => setIsBankFormOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Bank Details
@@ -549,6 +582,51 @@ const Payments = () => {
 
               {/* Submit */}
               <Button className="w-full" onClick={handleAddBankAccount}>
+                Submit
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* UPI Form Dialog */}
+        <Dialog open={isUpiFormOpen} onOpenChange={setIsUpiFormOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-lg tracking-wide">ADD UPI DETAILS</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-6 mt-4">
+              <div className="space-y-1">
+                <Label htmlFor="upiId" className="text-sm text-primary font-medium">UPI ID</Label>
+                <Input
+                  id="upiId"
+                  placeholder="e.g., yourname@upi"
+                  className="border-0 border-b-2 border-primary rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                  value={upiForm.upiId}
+                  onChange={(e) => setUpiForm({ ...upiForm, upiId: e.target.value })}
+                />
+                {upiFormErrors.upiId && <p className="text-xs text-destructive">{upiFormErrors.upiId}</p>}
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="upiName" className="text-sm text-muted-foreground">Account Holder Name</Label>
+                <Input
+                  id="upiName"
+                  placeholder="Account Holder's Name"
+                  className="border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                  value={upiForm.name}
+                  onChange={(e) => setUpiForm({ ...upiForm, name: e.target.value })}
+                />
+                {upiFormErrors.name && <p className="text-xs text-destructive">{upiFormErrors.name}</p>}
+              </div>
+
+              <div className="flex items-center gap-2 bg-secondary/50 p-3 rounded-lg">
+                <ShieldCheck className="h-5 w-5 text-primary flex-shrink-0" />
+                <p className="text-xs text-muted-foreground">
+                  Your UPI details are stored securely and are 100% safe!
+                </p>
+              </div>
+
+              <Button className="w-full" onClick={handleAddUpi}>
                 Submit
               </Button>
             </div>
