@@ -52,6 +52,7 @@ const Payments = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('transactions');
+  const [txnFilter, setTxnFilter] = useState<'all' | 'refund' | 'replacement'>('all');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loading, setLoading] = useState(true);
