@@ -41,9 +41,16 @@ interface Order {
   total: number;
   shipping_address: ShippingAddress;
   invoice_url: string | null;
+  delivered_at: string | null;
   created_at: string;
   order_items: OrderItem[];
 }
+
+const isWithin7Days = (deliveredAt: string | null) => {
+  if (!deliveredAt) return true;
+  const days = (Date.now() - new Date(deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
+  return days <= 7;
+};
 
 const OrderHistory = () => {
   const navigate = useNavigate();
@@ -105,6 +112,7 @@ const OrderHistory = () => {
           total: Number(order.total),
           shipping_address: order.shipping_address as unknown as ShippingAddress,
           invoice_url: order.invoice_url,
+          delivered_at: order.delivered_at,
           created_at: order.created_at,
           order_items: order.order_items as unknown as OrderItem[],
         }));
@@ -233,7 +241,7 @@ const OrderHistory = () => {
                       </a>
                     </Button>
                   )}
-                  {order.status === 'delivered' && (
+                  {order.status === 'delivered' && isWithin7Days(order.delivered_at) && (
                     <Button
                       variant="outline"
                       size="sm"
