@@ -910,12 +910,14 @@ const Checkout = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-bold text-lg">{formatPrice(finalTotal)}</p>
-              <button
-                onClick={() => setShowPriceDetails(!showPriceDetails)}
-                className="text-xs font-semibold text-primary"
-              >
-                {showPriceDetails ? 'HIDE DETAILS' : 'VIEW PRICE DETAILS'}
-              </button>
+              {step !== 'address' && (
+                <button
+                  onClick={() => setShowPriceDetails(!showPriceDetails)}
+                  className="text-xs font-semibold text-primary"
+                >
+                  {showPriceDetails ? 'HIDE DETAILS' : 'VIEW PRICE DETAILS'}
+                </button>
+              )}
             </div>
             <Button
               onClick={handleContinue}
