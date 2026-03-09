@@ -119,6 +119,31 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
     );
   };
 
+  const handleMapLocationSelect = (location: {
+    lat: number;
+    lng: number;
+    address: string;
+    city: string;
+    state: string;
+    pincode: string;
+    displayName: string;
+  }) => {
+    setEditingAddress({
+      id: '',
+      fullName: '',
+      phone: '',
+      address: location.address || location.displayName.split(',').slice(0, 2).join(','),
+      city: location.city,
+      state: location.state,
+      pincode: location.pincode,
+      landmark: '',
+      isDefault: addresses.length === 0,
+    });
+    setSelectedType('home');
+    setIsFormOpen(true);
+    toast.success('Location selected! Please fill in remaining details.');
+  };
+
   const handleAddNew = () => {
     setEditingAddress(null);
     setAddressErrors({});
