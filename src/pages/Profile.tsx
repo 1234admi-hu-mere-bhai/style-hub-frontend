@@ -9,9 +9,6 @@ import {
   RefreshCw,
   Settings,
   LogOut,
-  Plus,
-  Edit2,
-  Trash2,
   ChevronRight,
   Loader2,
 } from 'lucide-react';
@@ -42,6 +39,7 @@ import {
 import { toast } from 'sonner';
 import { Address } from '@/data/user';
 import { addressSchema } from '@/lib/validations';
+import AddressManager from '@/components/AddressManager';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -55,9 +53,6 @@ const Profile = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editingAddress, setEditingAddress] = useState<Address | null>(null);
-  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
-  const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
   const [requestingReplacement, setRequestingReplacement] = useState<string | null>(null);
 
   const handleRequestReplacement = async (orderId: string) => {
@@ -171,67 +166,6 @@ const Profile = () => {
     } catch (error) {
       toast.error('Failed to update profile');
     }
-  };
-
-  const handleSaveAddress = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const data = {
-      fullName: formData.get('fullName') as string,
-      phone: formData.get('phone') as string,
-      address: formData.get('address') as string,
-      city: formData.get('city') as string,
-      state: formData.get('state') as string,
-      pincode: formData.get('pincode') as string,
-      landmark: formData.get('landmark') as string || undefined,
-    };
-
-    const result = addressSchema.safeParse(data);
-    if (!result.success) {
-      const errors: Record<string, string> = {};
-      result.error.errors.forEach((err) => {
-        if (err.path[0]) {
-          errors[err.path[0] as string] = err.message;
-        }
-      });
-      setAddressErrors(errors);
-      return;
-    }
-
-    setAddressErrors({});
-
-    if (editingAddress) {
-      setAddresses((prev) =>
-        prev.map((a) =>
-          a.id === editingAddress.id
-            ? { ...a, ...data }
-            : a
-        )
-      );
-      toast.success('Address updated successfully!');
-    } else {
-      const newAddress: Address = {
-        id: Date.now().toString(),
-        ...data,
-        isDefault: addresses.length === 0,
-      };
-      setAddresses((prev) => [...prev, newAddress]);
-      toast.success('Address added successfully!');
-    }
-    setIsAddressModalOpen(false);
-    setEditingAddress(null);
-  };
-
-  const handleDeleteAddress = (id: string) => {
-    setAddresses((prev) => prev.filter((a) => a.id !== id));
-    toast.success('Address deleted successfully!');
-  };
-
-  const handleSetDefaultAddress = (id: string) => {
-    setAddresses((prev) =>
-      prev.map((a) => ({ ...a, isDefault: a.id === id }))
-    );
-    toast.success('Default address updated!');
   };
 
   const getStatusColor = (status: string) => {
@@ -400,212 +334,10 @@ const Profile = () => {
 
             {/* Addresses Tab */}
             {activeTab === 'addresses' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-semibold text-xl">Saved Addresses</h2>
-                  <Dialog open={isAddressModalOpen} onOpenChange={setIsAddressModalOpen}>
-                    <DialogTrigger asChild>
-                      <Button
-                        onClick={() => {
-                          setEditingAddress(null);
-                          setAddressErrors({});
-                        }}
-                      >
-                        <Plus size={18} className="mr-2" />
-                        Add Address
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>
-                          {editingAddress ? 'Edit Address' : 'Add New Address'}
-                        </DialogTitle>
-                      </DialogHeader>
-                      <form onSubmit={handleSaveAddress} className="space-y-4 mt-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="fullName">Full Name</Label>
-                          <Input
-                            id="fullName"
-                            name="fullName"
-                            defaultValue={editingAddress?.fullName}
-                          />
-                          {addressErrors.fullName && (
-                            <p className="text-xs text-destructive">{addressErrors.fullName}</p>
-                          )}
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="phone">Phone Number</Label>
-                          <Input
-                            id="phone"
-                            name="phone"
-                            defaultValue={editingAddress?.phone}
-                          />
-                          {addressErrors.phone && (
-                            <p className="text-xs text-destructive">{addressErrors.phone}</p>
-                          )}
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="address">Address</Label>
-                          <Input
-                            id="address"
-                            name="address"
-                            defaultValue={editingAddress?.address}
-                          />
-                          {addressErrors.address && (
-                            <p className="text-xs text-destructive">{addressErrors.address}</p>
-                          )}
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="city">City</Label>
-                            <Input
-                              id="city"
-                              name="city"
-                              defaultValue={editingAddress?.city}
-                            />
-                            {addressErrors.city && (
-                              <p className="text-xs text-destructive">{addressErrors.city}</p>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="state">State</Label>
-                            <Input
-                              id="state"
-                              name="state"
-                              defaultValue={editingAddress?.state}
-                            />
-                            {addressErrors.state && (
-                              <p className="text-xs text-destructive">{addressErrors.state}</p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="pincode">PIN Code</Label>
-                            <Input
-                              id="pincode"
-                              name="pincode"
-                              defaultValue={editingAddress?.pincode}
-                            />
-                            {addressErrors.pincode && (
-                              <p className="text-xs text-destructive">{addressErrors.pincode}</p>
-                            )}
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="landmark">Landmark (Optional)</Label>
-                            <Input
-                              id="landmark"
-                              name="landmark"
-                              defaultValue={editingAddress?.landmark}
-                            />
-                          </div>
-                        </div>
-                        <div className="flex gap-4 pt-4">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="flex-1"
-                            onClick={() => setIsAddressModalOpen(false)}
-                          >
-                            Cancel
-                          </Button>
-                          <Button type="submit" className="flex-1">
-                            Save Address
-                          </Button>
-                        </div>
-                      </form>
-                    </DialogContent>
-                  </Dialog>
-                </div>
-
-                {addresses.length === 0 ? (
-                  <div className="text-center py-12 bg-card rounded-lg border border-border">
-                    <MapPin size={48} className="mx-auto text-muted-foreground mb-4" />
-                    <h3 className="font-semibold text-lg mb-2">No addresses saved</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Add an address for faster checkout
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    {addresses.map((address) => (
-                      <div
-                        key={address.id}
-                        className={`p-4 rounded-lg border ${
-                          address.isDefault
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border bg-card'
-                        }`}
-                      >
-                        {address.isDefault && (
-                          <span className="inline-block px-2 py-0.5 bg-primary text-primary-foreground text-xs font-medium rounded mb-2">
-                            Default
-                          </span>
-                        )}
-                        <h3 className="font-semibold">{address.fullName}</h3>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {address.address}
-                          {address.landmark && `, ${address.landmark}`}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {address.city}, {address.state} - {address.pincode}
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {address.phone}
-                        </p>
-                        <div className="flex gap-2 mt-4">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setEditingAddress(address);
-                              setAddressErrors({});
-                              setIsAddressModalOpen(true);
-                            }}
-                          >
-                            <Edit2 size={14} className="mr-1" />
-                            Edit
-                          </Button>
-                          {!address.isDefault && (
-                            <>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleSetDefaultAddress(address.id)}
-                              >
-                                Set Default
-                              </Button>
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button size="sm" variant="outline">
-                                    <Trash2 size={14} />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete Address?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      This action cannot be undone.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction
-                                      onClick={() => handleDeleteAddress(address.id)}
-                                    >
-                                      Delete
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <AddressManager
+                addresses={addresses}
+                onAddressesChange={setAddresses}
+              />
             )}
 
             {/* Orders Tab */}
