@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Package, FileText, Loader2, Eye, ChevronRight, RefreshCw } from 'lucide-react';
+import { Package, FileText, Loader2, Eye, ChevronRight, RefreshCw, Search } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/hooks/useCurrency';
@@ -59,6 +60,7 @@ const OrderHistory = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [requestingReplacement, setRequestingReplacement] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleRequestReplacement = async (orderId: string) => {
     setRequestingReplacement(orderId);
@@ -162,22 +164,45 @@ const OrderHistory = () => {
       <Header />
 
       <main className="container mx-auto px-4 py-8">
-        <h1 className="font-serif text-3xl font-bold mb-8">Order History</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <h1 className="font-serif text-3xl font-bold">Order History</h1>
+          <div className="relative w-full sm:w-80">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by order number, product or status..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+        </div>
 
-        {orders.length === 0 ? (
+        {(() => {
+          const query = searchQuery.toLowerCase().trim();
+          const filteredOrders = query
+            ? orders.filter(order =>
+                order.order_number.toLowerCase().includes(query) ||
+                order.status.replace(/_/g, ' ').toLowerCase().includes(query) ||
+                order.order_items.some(item => item.product_name.toLowerCase().includes(query))
+              )
+            : orders;
+
+          return filteredOrders.length === 0 ? (
           <div className="text-center py-16 bg-card rounded-lg border border-border">
             <Package size={48} className="mx-auto text-muted-foreground mb-4" />
-            <h2 className="font-semibold text-lg mb-2">No orders yet</h2>
+            <h2 className="font-semibold text-lg mb-2">{searchQuery ? 'No matching orders' : 'No orders yet'}</h2>
             <p className="text-muted-foreground mb-6">
-              Start shopping to see your orders here
+              {searchQuery ? 'Try a different search term' : 'Start shopping to see your orders here'}
             </p>
-            <Button asChild>
-              <Link to="/products">Browse Products</Link>
-            </Button>
+            {!searchQuery && (
+              <Button asChild>
+                <Link to="/products">Browse Products</Link>
+              </Button>
+            )}
           </div>
         ) : (
           <div className="space-y-4">
-            {orders.map((order) => (
+            {filteredOrders.map((order) => (
               <div
                 key={order.id}
                 className="bg-card rounded-lg border border-border p-6"
@@ -267,7 +292,8 @@ const OrderHistory = () => {
               </div>
             ))}
           </div>
-        )}
+        );
+        })()}
       </main>
 
       <Footer />
