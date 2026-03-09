@@ -431,29 +431,6 @@ const Payments = () => {
               ))
             )}
 
-            {/* Bank & UPI Section */}
-            <div className="mt-6">
-              <h3 className="font-semibold mb-4">Quick Add</h3>
-              <div className="space-y-2">
-                <button
-                  onClick={() => setIsBankFormOpen(true)}
-                  className="w-full flex items-center gap-3 p-4 bg-card rounded-lg border border-border hover:bg-secondary/50 transition-colors"
-                >
-                  <Wallet className="h-5 w-5 text-primary" />
-                  <span>Bank & UPI Details</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setNewMethod({ type: 'card', label: '', details: '' });
-                    setIsAddMethodOpen(true);
-                  }}
-                  className="w-full flex items-center gap-3 p-4 bg-card rounded-lg border border-border hover:bg-secondary/50 transition-colors"
-                >
-                  <CreditCard className="h-5 w-5 text-primary" />
-                  <span>Card Details</span>
-                </button>
-              </div>
-            </div>
           </TabsContent>
         </Tabs>
 
