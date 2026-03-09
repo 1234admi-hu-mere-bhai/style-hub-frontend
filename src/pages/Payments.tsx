@@ -581,7 +581,6 @@ const Payments = () => {
             <DialogHeader>
               <DialogTitle className="text-lg tracking-wide">{editingMethod ? 'EDIT BANK DETAILS' : 'MY BANK DETAILS'}</DialogTitle>
             </DialogHeader>
-            </DialogHeader>
             <div className="space-y-6 mt-4">
               {/* IFSC Code */}
               <div className="space-y-1">
