@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, CreditCard, Wallet, Plus, Trash2, Loader2, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, CreditCard, Wallet, Plus, Trash2, Loader2, ShieldCheck, Landmark, Smartphone } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
