@@ -57,6 +57,10 @@ const Payments = () => {
   const [loading, setLoading] = useState(true);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [isAddMethodOpen, setIsAddMethodOpen] = useState(false);
+  const [isBankFormOpen, setIsBankFormOpen] = useState(false);
+  const [bankForm, setBankForm] = useState({ ifsc: '', accountNumber: '', confirmAccount: '', holderName: '' });
+  const [bankFormErrors, setBankFormErrors] = useState<Record<string, string>>({});
+  const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [newMethod, setNewMethod] = useState({ type: 'upi', label: '', details: '' });
 
   // Redirect if not logged in
