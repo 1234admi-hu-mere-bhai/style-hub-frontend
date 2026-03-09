@@ -227,6 +227,27 @@ const Payments = () => {
     toast.success('UPI payment method added');
   };
 
+  const handleEditMethod = (method: PaymentMethod) => {
+    setEditingMethod(method);
+    if (method.type === 'upi') {
+      setUpiForm({ upiId: method.details, name: method.label });
+      setUpiFormErrors({});
+      setIsUpiFormOpen(true);
+    } else if (method.type === 'bank') {
+      // Pre-fill what we can from the saved label/details
+      const ifscMatch = method.label.match(/\(([^)]+)\)/);
+      setBankForm({
+        ifsc: ifscMatch ? ifscMatch[1] : '',
+        accountNumber: '',
+        confirmAccount: '',
+        holderName: method.label.replace(/\s*\([^)]*\)/, ''),
+      });
+      setBankFormErrors({});
+      setPrivacyAgreed(false);
+      setIsBankFormOpen(true);
+    }
+  };
+
   const handleDeleteMethod = (id: string) => {
     const updated = paymentMethods.filter(m => m.id !== id);
     if (updated.length > 0 && !updated.some(m => m.isDefault)) {
