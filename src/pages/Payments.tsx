@@ -359,9 +359,9 @@ const Payments = () => {
           {/* Payment Methods Tab */}
           <TabsContent value="methods" className="space-y-4">
             <div className="flex justify-end mb-4">
-              <Button onClick={() => setIsAddMethodOpen(true)}>
+              <Button onClick={() => setIsBankFormOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Payment Method
+                Add Bank Details
               </Button>
             </div>
 
