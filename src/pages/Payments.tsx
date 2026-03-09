@@ -667,10 +667,10 @@ const Payments = () => {
         </Dialog>
 
         {/* UPI Form Dialog */}
-        <Dialog open={isUpiFormOpen} onOpenChange={setIsUpiFormOpen}>
+        <Dialog open={isUpiFormOpen} onOpenChange={(open) => { setIsUpiFormOpen(open); if (!open) setEditingMethod(null); }}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-lg tracking-wide">ADD UPI DETAILS</DialogTitle>
+              <DialogTitle className="text-lg tracking-wide">{editingMethod ? 'EDIT UPI DETAILS' : 'ADD UPI DETAILS'}</DialogTitle>
             </DialogHeader>
             <div className="space-y-6 mt-4">
               <div className="space-y-1">
