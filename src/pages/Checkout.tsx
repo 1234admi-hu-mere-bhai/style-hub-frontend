@@ -504,6 +504,17 @@ const Checkout = () => {
             {/* Cart Items with enhanced cards */}
             {(step === 'address' || step === 'summary') && (
               <div className="space-y-3">
+                {/* Wishlist shortcut */}
+                <Link
+                  to="/wishlist"
+                  className="flex items-center justify-between bg-accent/50 border border-border rounded-lg px-4 py-3 hover:bg-accent transition-colors"
+                >
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Heart size={16} className="text-destructive" />
+                    <span>View your Wishlist</span>
+                  </div>
+                  <ChevronRight size={16} className="text-muted-foreground" />
+                </Link>
                 {items.map((item) => {
                   const hasDiscount = item.originalPrice && item.originalPrice > item.price;
                   const discountPercent = hasDiscount ? Math.round(((item.originalPrice! - item.price) / item.originalPrice!) * 100) : 0;
