@@ -51,6 +51,25 @@ const OrderHistory = () => {
   const { formatPrice } = useCurrency();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [requestingReplacement, setRequestingReplacement] = useState<string | null>(null);
+
+  const handleRequestReplacement = async (orderId: string) => {
+    setRequestingReplacement(orderId);
+    try {
+      const { data, error } = await supabase.functions.invoke('request-replacement', {
+        body: { orderId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success('Replacement request submitted successfully');
+      // Update local state
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'replacement_requested' } : o));
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to submit replacement request');
+    } finally {
+      setRequestingReplacement(null);
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
