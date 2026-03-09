@@ -183,7 +183,13 @@ const Products = () => {
 
         <div className="mb-8">
           <h1 className="font-serif text-3xl lg:text-4xl font-bold mb-2">
-            {saleParam ? 'Sale' : categoryParam ? `${categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1)}'s Collection` : 'All Products'}
+            {searchQuery 
+              ? `Results for "${searchQuery}"` 
+              : saleParam 
+                ? 'Sale' 
+                : categoryParam 
+                  ? `${categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1)}'s Collection` 
+                  : 'All Products'}
           </h1>
           <p className="text-muted-foreground">{filteredProducts.length} products found</p>
         </div>
