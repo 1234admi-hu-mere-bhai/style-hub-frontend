@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
+import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import SearchCommand from '@/components/SearchCommand';
 import VoiceSearchModal from '@/components/VoiceSearchModal';
