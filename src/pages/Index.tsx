@@ -1,5 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SearchCommand from '@/components/SearchCommand';
+import VoiceSearchModal from '@/components/VoiceSearchModal';
+import ImageSearchModal from '@/components/ImageSearchModal';
 import { Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Truck, RefreshCw, Shield, Headphones, Loader2, SlidersHorizontal, X, Mic, Camera } from 'lucide-react';
