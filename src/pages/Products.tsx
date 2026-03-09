@@ -24,6 +24,7 @@ const Products = () => {
   const priceMaxParam = searchParams.get('priceMax');
   const sizeParams = searchParams.getAll('size');
   const colorParams = searchParams.getAll('color');
+  const searchQuery = searchParams.get('search') || '';
 
   const { products: allProducts, loading } = useDbProducts();
 
