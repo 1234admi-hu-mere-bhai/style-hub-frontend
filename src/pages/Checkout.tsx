@@ -727,177 +727,180 @@ const Checkout = () => {
             )}
           </div>
 
-          {/* Order Summary Sidebar */}
-          <div className="lg:col-span-1 hidden lg:block">
-            <div className="bg-card p-6 rounded-lg border border-border sticky top-28">
-              <h3 className="font-semibold text-lg mb-4">Order Details</h3>
-              <div className="space-y-3 mb-4">
-                {items.map((item) => (
-                  <div
-                    key={`${item.id}-${item.size}-${item.color}`}
-                    className="flex justify-between text-sm"
-                  >
-                    <span className="text-muted-foreground">
-                      {item.name} x{item.quantity}
-                    </span>
-                    <span>{formatPrice(item.price * item.quantity)}</span>
-                  </div>
-                ))}
-              </div>
-
-              <Separator className="my-4" />
-
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span>{formatPrice(totalPrice)}</span>
-                </div>
-                {appliedCoupon && (
-                  <div className="flex justify-between text-success">
-                    <span className="flex items-center gap-1">
-                      Discount ({appliedCoupon.code})
-                      <button onClick={removeCoupon} className="text-destructive hover:text-destructive/80">
-                        <X size={14} />
-                      </button>
-                    </span>
-                    <span>-{formatPrice(discountAmount)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Shipping</span>
-                  <span className={shippingCost === 0 ? 'text-success' : ''}>
-                    {shippingCost === 0 ? 'FREE' : formatPrice(shippingCost)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Savings Corner */}
-              <Separator className="my-4" />
-              <div className="space-y-3">
-                {appliedCoupon ? (
-                  <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg border border-success/30">
-                    <div className="flex items-center gap-2">
-                      <Tag size={16} className="text-success" />
-                      <span className="text-sm font-semibold text-success">{appliedCoupon.code} applied ✓</span>
-                    </div>
-                    <button onClick={removeCoupon} className="text-xs text-destructive hover:underline">Remove</button>
-                  </div>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => setSavingsOpen(!savingsOpen)}
-                      className="w-full flex items-center justify-between p-3 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors"
-                    >
+          {/* Order Summary Sidebar - Review step only */}
+          {step === 'summary' && (
+            <div className="lg:col-span-1 hidden lg:block">
+              <div className="bg-card p-6 rounded-lg border border-border sticky top-28">
+                {/* Savings Corner (top) */}
+                <div className="space-y-3">
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg border border-success/30">
                       <div className="flex items-center gap-2">
-                        <Tag size={16} className="text-primary" />
-                        <span className="text-sm font-medium">Apply Coupon</span>
+                        <Tag size={16} className="text-success" />
+                        <span className="text-sm font-semibold text-success">{appliedCoupon.code} applied ✓</span>
                       </div>
-                      <ChevronDown size={16} className={`text-muted-foreground transition-transform ${savingsOpen ? 'rotate-180' : ''}`} />
-                    </button>
-
-                    {savingsOpen && (
-                      <div className="space-y-3 animate-fade-in">
-                        <div className="flex gap-2">
-                          <Input
-                            value={couponCode}
-                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                            placeholder="Enter Coupon Code"
-                            className="flex-1 text-sm uppercase"
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleApplyCoupon()}
-                            disabled={couponLoading}
-                            className="shrink-0"
-                          >
-                            {couponLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'APPLY'}
-                          </Button>
+                      <button onClick={removeCoupon} className="text-xs text-destructive hover:underline">Remove</button>
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => setSavingsOpen(!savingsOpen)}
+                        className="w-full flex items-center justify-between p-3 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Tag size={16} className="text-primary" />
+                          <span className="text-sm font-medium">Apply Coupon</span>
                         </div>
+                        <ChevronDown size={16} className={`text-muted-foreground transition-transform ${savingsOpen ? 'rotate-180' : ''}`} />
+                      </button>
 
-                        {availableCoupons.length > 0 && (
-                          <div className="space-y-2">
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Available Offers</p>
-                            {availableCoupons.map((coupon) => {
-                              const amountNeeded = getAmountNeeded(coupon);
-                              const isEligible = amountNeeded === 0;
-                              return (
-                                <div key={coupon.id} className="border border-border rounded-lg overflow-hidden">
-                                  <div className="flex">
-                                    <div className="w-16 bg-muted flex items-center justify-center shrink-0">
-                                      <span className="text-[10px] font-bold text-muted-foreground -rotate-90 whitespace-nowrap">
-                                        {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% OFF` : `₹${coupon.discount_value} OFF`}
-                                      </span>
-                                    </div>
-                                    <div className="flex-1 p-3">
-                                      <div className="flex items-center justify-between">
-                                        <span className="font-bold text-sm">{coupon.code}</span>
+                      {savingsOpen && (
+                        <div className="space-y-3 animate-fade-in">
+                          <div className="flex gap-2">
+                            <Input
+                              value={couponCode}
+                              onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                              placeholder="Enter Coupon Code"
+                              className="flex-1 text-sm uppercase"
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleApplyCoupon()}
+                              disabled={couponLoading}
+                              className="shrink-0"
+                            >
+                              {couponLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'APPLY'}
+                            </Button>
+                          </div>
+
+                          {availableCoupons.length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Available Offers</p>
+                              {availableCoupons.map((coupon) => {
+                                const amountNeeded = getAmountNeeded(coupon);
+                                const isEligible = amountNeeded === 0;
+                                return (
+                                  <div key={coupon.id} className="border border-border rounded-lg overflow-hidden">
+                                    <div className="flex">
+                                      <div className="w-16 bg-muted flex items-center justify-center shrink-0">
+                                        <span className="text-[10px] font-bold text-muted-foreground -rotate-90 whitespace-nowrap">
+                                          {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% OFF` : `₹${coupon.discount_value} OFF`}
+                                        </span>
+                                      </div>
+                                      <div className="flex-1 p-3">
+                                        <div className="flex items-center justify-between">
+                                          <span className="font-bold text-sm">{coupon.code}</span>
+                                          <button
+                                            onClick={() => isEligible ? handleApplyCoupon(coupon.code) : null}
+                                            disabled={!isEligible || couponLoading}
+                                            className={`text-xs font-semibold ${isEligible ? 'text-primary hover:underline cursor-pointer' : 'text-muted-foreground cursor-not-allowed'}`}
+                                          >
+                                            APPLY
+                                          </button>
+                                        </div>
+                                        {!isEligible && (
+                                          <p className="text-xs text-primary mt-1">Add ₹{amountNeeded} more to avail this offer</p>
+                                        )}
+                                        {isEligible && (
+                                          <p className="text-xs text-success mt-1">You save ₹{getCouponSavings(coupon)}!</p>
+                                        )}
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                          {coupon.discount_type === 'percentage'
+                                            ? `Get FLAT ${coupon.discount_value}% off on orders above ₹${coupon.min_order_value || 0}`
+                                            : `Use code ${coupon.code} & get Flat ₹${coupon.discount_value} off on orders above ₹${coupon.min_order_value || 0}`}
+                                        </p>
+                                        {expandedCoupon === coupon.id && (
+                                          <div className="mt-2 pt-2 border-t border-dashed border-border text-xs text-muted-foreground space-y-1">
+                                            <p>• Only one coupon can be applied per order</p>
+                                            {coupon.min_order_value > 0 && <p>• Minimum order value: ₹{coupon.min_order_value}</p>}
+                                            {coupon.expires_at && <p>• Valid till: {new Date(coupon.expires_at).toLocaleDateString()}</p>}
+                                          </div>
+                                        )}
                                         <button
-                                          onClick={() => isEligible ? handleApplyCoupon(coupon.code) : null}
-                                          disabled={!isEligible || couponLoading}
-                                          className={`text-xs font-semibold ${isEligible ? 'text-primary hover:underline cursor-pointer' : 'text-muted-foreground cursor-not-allowed'}`}
+                                          onClick={() => setExpandedCoupon(expandedCoupon === coupon.id ? null : coupon.id)}
+                                          className="text-xs font-semibold text-foreground mt-1 hover:underline"
                                         >
-                                          APPLY
+                                          {expandedCoupon === coupon.id ? '- LESS' : '+ MORE'}
                                         </button>
                                       </div>
-                                      {!isEligible && (
-                                        <p className="text-xs text-primary mt-1">Add ₹{amountNeeded} more to avail this offer</p>
-                                      )}
-                                      {isEligible && (
-                                        <p className="text-xs text-success mt-1">You save ₹{getCouponSavings(coupon)}!</p>
-                                      )}
-                                      <p className="text-xs text-muted-foreground mt-1">
-                                        {coupon.discount_type === 'percentage'
-                                          ? `Get FLAT ${coupon.discount_value}% off on orders above ₹${coupon.min_order_value || 0}`
-                                          : `Use code ${coupon.code} & get Flat ₹${coupon.discount_value} off on orders above ₹${coupon.min_order_value || 0}`}
-                                      </p>
-                                      {expandedCoupon === coupon.id && (
-                                        <div className="mt-2 pt-2 border-t border-dashed border-border text-xs text-muted-foreground space-y-1">
-                                          <p>• Only one coupon can be applied per order</p>
-                                          {coupon.min_order_value > 0 && <p>• Minimum order value: ₹{coupon.min_order_value}</p>}
-                                          {coupon.expires_at && <p>• Valid till: {new Date(coupon.expires_at).toLocaleDateString()}</p>}
-                                        </div>
-                                      )}
-                                      <button
-                                        onClick={() => setExpandedCoupon(expandedCoupon === coupon.id ? null : coupon.id)}
-                                        className="text-xs font-semibold text-foreground mt-1 hover:underline"
-                                      >
-                                        {expandedCoupon === coupon.id ? '- LESS' : '+ MORE'}
-                                      </button>
                                     </div>
                                   </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+
+                <Separator className="my-4" />
+
+                <h3 className="font-semibold text-lg mb-4">Order Details</h3>
+                <div className="space-y-3 mb-4">
+                  {items.map((item) => (
+                    <div
+                      key={`${item.id}-${item.size}-${item.color}`}
+                      className="flex justify-between text-sm"
+                    >
+                      <span className="text-muted-foreground">
+                        {item.name} x{item.quantity}
+                      </span>
+                      <span>{formatPrice(item.price * item.quantity)}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <Separator className="my-4" />
+
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span>{formatPrice(totalPrice)}</span>
+                  </div>
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-success">
+                      <span className="flex items-center gap-1">
+                        Discount ({appliedCoupon.code})
+                        <button onClick={removeCoupon} className="text-destructive hover:text-destructive/80">
+                          <X size={14} />
+                        </button>
+                      </span>
+                      <span>-{formatPrice(discountAmount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Shipping</span>
+                    <span className={shippingCost === 0 ? 'text-success' : ''}>
+                      {shippingCost === 0 ? 'FREE' : formatPrice(shippingCost)}
+                    </span>
+                  </div>
+                </div>
+
+                <Separator className="my-4" />
+
+                <div className="flex justify-between font-semibold text-lg">
+                  <span>Total</span>
+                  <span>{formatPrice(finalTotal)}</span>
+                </div>
+
+                {shippingCost > 0 && (
+                  <p className="text-xs text-muted-foreground mt-4">
+                    Add {formatPrice(999 - totalPrice)} more for free shipping
+                  </p>
                 )}
-              </div>
 
-              <Separator className="my-4" />
-
-              <div className="flex justify-between font-semibold text-lg">
-                <span>Total</span>
-                <span>{formatPrice(finalTotal)}</span>
-              </div>
-
-              {shippingCost > 0 && (
-                <p className="text-xs text-muted-foreground mt-4">
-                  Add {formatPrice(999 - totalPrice)} more for free shipping
-                </p>
-              )}
-
-              <div className="mt-6 p-4 bg-secondary/50 rounded-lg">
-                <div className="flex items-center gap-2 text-sm">
-                  <Truck size={16} className="text-primary" />
-                  <span>Estimated delivery: {deliveryInfo ? `${deliveryInfo.estimatedDays} business days (${deliveryInfo.zone})` : 'Enter pincode for estimate'}</span>
+                <div className="mt-6 p-4 bg-secondary/50 rounded-lg">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Truck size={16} className="text-primary" />
+                    <span>Estimated delivery: {deliveryInfo ? `${deliveryInfo.estimatedDays} business days (${deliveryInfo.zone})` : 'Enter pincode for estimate'}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
 
@@ -907,12 +910,14 @@ const Checkout = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-bold text-lg">{formatPrice(finalTotal)}</p>
-              <button
-                onClick={() => setShowPriceDetails(!showPriceDetails)}
-                className="text-xs font-semibold text-primary"
-              >
-                {showPriceDetails ? 'HIDE DETAILS' : 'VIEW PRICE DETAILS'}
-              </button>
+              {step !== 'address' && (
+                <button
+                  onClick={() => setShowPriceDetails(!showPriceDetails)}
+                  className="text-xs font-semibold text-primary"
+                >
+                  {showPriceDetails ? 'HIDE DETAILS' : 'VIEW PRICE DETAILS'}
+                </button>
+              )}
             </div>
             <Button
               onClick={handleContinue}
@@ -934,7 +939,7 @@ const Checkout = () => {
           </div>
 
           {/* Expandable price details */}
-          {showPriceDetails && (
+          {step !== 'address' && showPriceDetails && (
             <div className="mt-3 pt-3 border-t border-border space-y-2 text-sm animate-fade-in">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Product Price</span>
