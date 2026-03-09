@@ -58,6 +58,24 @@ const Profile = () => {
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
+  const [requestingReplacement, setRequestingReplacement] = useState<string | null>(null);
+
+  const handleRequestReplacement = async (orderId: string) => {
+    setRequestingReplacement(orderId);
+    try {
+      const { data, error } = await supabase.functions.invoke('request-replacement', {
+        body: { orderId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success('Replacement request submitted successfully');
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'replacement_requested' } : o));
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to submit replacement request');
+    } finally {
+      setRequestingReplacement(null);
+    }
+  };
 
   // Redirect if not logged in
   useEffect(() => {
