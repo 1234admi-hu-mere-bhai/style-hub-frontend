@@ -417,6 +417,13 @@ const Payments = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{method.label}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                          method.type === 'upi'
+                            ? 'bg-accent/20 text-accent-foreground'
+                            : 'bg-secondary text-secondary-foreground'
+                        }`}>
+                          {method.type === 'upi' ? 'UPI' : 'Bank'}
+                        </span>
                         {method.isDefault && (
                           <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
                             Default
