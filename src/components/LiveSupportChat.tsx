@@ -1,13 +1,21 @@
-import { useState, useRef, useEffect } from 'react';
-import { X, Send, MessageCircle } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { X, Send, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import ReactMarkdown from 'react-markdown';
 import botAvatar from '@/assets/bot-avatar.png';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 type Message = { role: 'user' | 'assistant'; content: string };
+
+const WELCOME_MSG: Message = {
+  role: 'assistant',
+  content: "Hey there! 👋 I'm **StyleGenie**, your personal shopping assistant at Muffi Gout Apparel Hub. How can I help you today?",
+};
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/support-chat`;
 
@@ -69,7 +77,6 @@ async function streamChat({
     }
   }
 
-  // flush
   if (buf.trim()) {
     for (let raw of buf.split('\n')) {
       if (!raw) continue;
@@ -89,13 +96,43 @@ async function streamChat({
 
 const LiveSupportChat = () => {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: "Hey there! 👋 I'm **StyleGenie**, your personal shopping assistant at Muffi Gout Apparel Hub. How can I help you today?" },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([WELCOME_MSG]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [historyLoaded, setHistoryLoaded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
+
+  // Load chat history when user is available and chat opens
+  const loadHistory = useCallback(async () => {
+    if (!user || historyLoaded) return;
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('role, content, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true })
+        .limit(100);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const loaded: Message[] = data.map(m => ({
+          role: m.role as 'user' | 'assistant',
+          content: m.content,
+        }));
+        setMessages([WELCOME_MSG, ...loaded]);
+      }
+    } catch (err) {
+      console.error('Failed to load chat history:', err);
+    }
+    setHistoryLoaded(true);
+  }, [user, historyLoaded]);
+
+  useEffect(() => {
+    if (open) loadHistory();
+  }, [open, loadHistory]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -107,6 +144,31 @@ const LiveSupportChat = () => {
     if (open && inputRef.current) inputRef.current.focus();
   }, [open]);
 
+  // Persist a message to DB
+  const saveMessage = async (role: string, content: string) => {
+    if (!user) return;
+    try {
+      await supabase.from('chat_messages').insert({
+        user_id: user.id,
+        role,
+        content,
+      });
+    } catch (err) {
+      console.error('Failed to save message:', err);
+    }
+  };
+
+  const clearHistory = async () => {
+    if (!user) return;
+    try {
+      await supabase.from('chat_messages').delete().eq('user_id', user.id);
+      setMessages([WELCOME_MSG]);
+      toast.success('Chat history cleared');
+    } catch {
+      toast.error('Failed to clear history');
+    }
+  };
+
   const send = async () => {
     const text = input.trim();
     if (!text || loading) return;
@@ -115,6 +177,9 @@ const LiveSupportChat = () => {
     setMessages(allMsgs);
     setInput('');
     setLoading(true);
+
+    // Save user message
+    saveMessage('user', text);
 
     let assistantSoFar = '';
     const upsert = (chunk: string) => {
@@ -132,9 +197,14 @@ const LiveSupportChat = () => {
       await streamChat({
         messages: allMsgs,
         onDelta: upsert,
-        onDone: () => setLoading(false),
+        onDone: () => {
+          setLoading(false);
+          // Save completed assistant message
+          if (assistantSoFar) saveMessage('assistant', assistantSoFar);
+        },
         onError: (msg) => {
-          setMessages(prev => [...prev, { role: 'assistant', content: `Sorry, I ran into an issue: ${msg}. Please try again!` }]);
+          const errContent = `Sorry, I ran into an issue: ${msg}. Please try again!`;
+          setMessages(prev => [...prev, { role: 'assistant', content: errContent }]);
           setLoading(false);
         },
       });
@@ -146,7 +216,6 @@ const LiveSupportChat = () => {
 
   return (
     <>
-      {/* Floating button */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
@@ -157,7 +226,6 @@ const LiveSupportChat = () => {
         </button>
       )}
 
-      {/* Chat panel */}
       {open && (
         <div className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 w-[calc(100vw-2rem)] max-w-[380px] h-[500px] md:h-[540px] rounded-2xl shadow-2xl border border-border bg-background flex flex-col overflow-hidden animate-scale-in">
           {/* Header */}
@@ -170,6 +238,15 @@ const LiveSupportChat = () => {
               <p className="font-semibold text-sm leading-tight">StyleGenie</p>
               <p className="text-[11px] opacity-80">Muffi Gout AI Assistant</p>
             </div>
+            {user && messages.length > 1 && (
+              <button
+                onClick={clearHistory}
+                className="p-1 rounded-full hover:bg-primary-foreground/20 transition-colors"
+                title="Clear chat history"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
             <button onClick={() => setOpen(false)} className="p-1 rounded-full hover:bg-primary-foreground/20 transition-colors">
               <X size={18} />
             </button>
@@ -231,7 +308,7 @@ const LiveSupportChat = () => {
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about products, shipping..."
+                placeholder={user ? "Ask about products, shipping..." : "Sign in to save chat history..."}
                 className="flex-1 rounded-full text-sm h-9"
                 disabled={loading}
               />
