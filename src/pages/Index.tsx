@@ -296,12 +296,6 @@ const Index = () => {
                 Handpicked styles loved by our customers
               </p>
             </div>
-            <Button variant="outline" asChild className="hidden md:flex">
-              <Link to="/products">
-                View All
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
           </div>
 
           {/* Filter Button */}
