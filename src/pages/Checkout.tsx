@@ -527,12 +527,56 @@ const Checkout = () => {
                   <span className="text-muted-foreground">Subtotal</span>
                   <span>{formatPrice(totalPrice)}</span>
                 </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-success">
+                    <span className="flex items-center gap-1">
+                      Discount ({appliedCoupon.code})
+                      <button onClick={removeCoupon} className="text-destructive hover:text-destructive/80">
+                        <X size={14} />
+                      </button>
+                    </span>
+                    <span>-{formatPrice(discountAmount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Shipping</span>
                   <span className={shippingCost === 0 ? 'text-success' : ''}>
                     {shippingCost === 0 ? 'FREE' : formatPrice(shippingCost)}
                   </span>
                 </div>
+              </div>
+
+              {/* Coupon Code Input */}
+              <Separator className="my-4" />
+              <div className="space-y-2">
+                <label className="text-sm font-medium flex items-center gap-1.5">
+                  <Tag size={14} className="text-primary" />
+                  Apply Coupon
+                </label>
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between p-2 bg-success/10 rounded-lg border border-success/30">
+                    <span className="text-sm font-semibold text-success">{appliedCoupon.code} applied ✓</span>
+                    <button onClick={removeCoupon} className="text-xs text-destructive hover:underline">Remove</button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      placeholder="Enter code"
+                      className="flex-1 text-sm uppercase"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleApplyCoupon}
+                      disabled={couponLoading}
+                      className="shrink-0"
+                    >
+                      {couponLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Apply'}
+                    </Button>
+                  </div>
+                )}
               </div>
 
               <Separator className="my-4" />
