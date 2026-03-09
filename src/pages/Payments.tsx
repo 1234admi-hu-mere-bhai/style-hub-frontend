@@ -387,7 +387,11 @@ const Payments = () => {
 
           {/* Payment Methods Tab */}
           <TabsContent value="methods" className="space-y-4">
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-end gap-2 mb-4">
+              <Button variant="outline" onClick={() => setIsUpiFormOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add UPI
+              </Button>
               <Button onClick={() => setIsBankFormOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Bank Details
