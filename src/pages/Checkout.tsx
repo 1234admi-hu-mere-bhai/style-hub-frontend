@@ -498,6 +498,13 @@ const Checkout = () => {
                     />
                   </div>
                 </form>
+                <Button
+                  onClick={handleContinue}
+                  className="w-full mt-4 lg:mt-6"
+                  size="lg"
+                >
+                  Continue to Review
+                </Button>
               </div>
             )}
 
