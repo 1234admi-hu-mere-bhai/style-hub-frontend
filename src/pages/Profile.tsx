@@ -691,13 +691,31 @@ const Profile = () => {
                           </div>
                         ))}
                       </div>
-                      <div className="p-4 bg-secondary/30 flex justify-between items-center">
+                      <div className="p-4 bg-secondary/30 flex flex-wrap justify-between items-center gap-2">
                         <span className="text-sm text-muted-foreground">
                           {order.items.length} item(s)
                         </span>
-                        <span className="font-semibold">
-                          Total: ₹{order.total.toLocaleString()}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          {order.status === 'delivered' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-orange-600 border-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                              onClick={() => handleRequestReplacement(order.id)}
+                              disabled={requestingReplacement === order.id}
+                            >
+                              {requestingReplacement === order.id ? (
+                                <Loader2 size={14} className="mr-1 animate-spin" />
+                              ) : (
+                                <RefreshCw size={14} className="mr-1" />
+                              )}
+                              Replace
+                            </Button>
+                          )}
+                          <span className="font-semibold">
+                            Total: ₹{order.total.toLocaleString()}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))
