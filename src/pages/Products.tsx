@@ -158,7 +158,13 @@ const Products = () => {
         <nav className="flex items-center space-x-1.5 text-sm text-muted-foreground mb-6">
           <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
           <ChevronRight size={14} />
-          {categoryParam ? (
+          {searchQuery ? (
+            <>
+              <Link to="/products" className="hover:text-foreground transition-colors">Products</Link>
+              <ChevronRight size={14} />
+              <span className="text-foreground">Search: "{searchQuery}"</span>
+            </>
+          ) : categoryParam ? (
             <>
               <Link to="/products" className="hover:text-foreground transition-colors">Products</Link>
               <ChevronRight size={14} />
