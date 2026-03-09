@@ -510,7 +510,7 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
               </div>
               <div className="space-y-1">
                 <Label htmlFor="state" className="text-xs">State</Label>
-                <Input id="state" name="state" defaultValue={editingAddress?.state} placeholder="Maharashtra" />
+                <Input id="state" name="state" defaultValue={editingAddress?.state} placeholder="Maharashtra" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
                 {addressErrors.state && <p className="text-[11px] text-destructive">{addressErrors.state}</p>}
               </div>
             </div>
