@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Package, FileText, Loader2, Eye, ChevronRight } from 'lucide-react';
+import { Package, FileText, Loader2, Eye, ChevronRight, RefreshCw } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -51,6 +51,25 @@ const OrderHistory = () => {
   const { formatPrice } = useCurrency();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [requestingReplacement, setRequestingReplacement] = useState<string | null>(null);
+
+  const handleRequestReplacement = async (orderId: string) => {
+    setRequestingReplacement(orderId);
+    try {
+      const { data, error } = await supabase.functions.invoke('request-replacement', {
+        body: { orderId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success('Replacement request submitted successfully');
+      // Update local state
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'replacement_requested' } : o));
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to submit replacement request');
+    } finally {
+      setRequestingReplacement(null);
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -212,6 +231,22 @@ const OrderHistory = () => {
                         <FileText size={16} className="mr-2" />
                         Download Invoice
                       </a>
+                    </Button>
+                  )}
+                  {order.status === 'delivered' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-orange-600 border-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                      onClick={() => handleRequestReplacement(order.id)}
+                      disabled={requestingReplacement === order.id}
+                    >
+                      {requestingReplacement === order.id ? (
+                        <Loader2 size={16} className="mr-2 animate-spin" />
+                      ) : (
+                        <RefreshCw size={16} className="mr-2" />
+                      )}
+                      Request Replacement
                     </Button>
                   )}
                   <Button variant="ghost" size="sm" asChild className="ml-auto">
