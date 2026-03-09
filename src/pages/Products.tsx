@@ -24,6 +24,7 @@ const Products = () => {
   const priceMaxParam = searchParams.get('priceMax');
   const sizeParams = searchParams.getAll('size');
   const colorParams = searchParams.getAll('color');
+  const searchQuery = searchParams.get('search') || '';
 
   const { products: allProducts, loading } = useDbProducts();
 
@@ -54,6 +55,17 @@ const Products = () => {
   const filteredProducts = useMemo(() => {
     let result = [...allProducts];
 
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((p) =>
+        p.name.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        (p.subcategory || '').toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query)
+      );
+    }
+
     if (saleParam === 'true') {
       result = result.filter((p) => p.discount);
     }
@@ -79,7 +91,7 @@ const Products = () => {
       default: result.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
     }
     return result;
-  }, [allProducts, saleParam, selectedCategories, selectedSubcategory, priceRange, selectedSizes, selectedColors, sortBy]);
+  }, [allProducts, searchQuery, saleParam, selectedCategories, selectedSubcategory, priceRange, selectedSizes, selectedColors, sortBy]);
 
   const toggleSize = (size: string) => setSelectedSizes((prev) => prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]);
   const toggleColor = (color: string) => setSelectedColors((prev) => prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]);
@@ -146,7 +158,13 @@ const Products = () => {
         <nav className="flex items-center space-x-1.5 text-sm text-muted-foreground mb-6">
           <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
           <ChevronRight size={14} />
-          {categoryParam ? (
+          {searchQuery ? (
+            <>
+              <Link to="/products" className="hover:text-foreground transition-colors">Products</Link>
+              <ChevronRight size={14} />
+              <span className="text-foreground">Search: "{searchQuery}"</span>
+            </>
+          ) : categoryParam ? (
             <>
               <Link to="/products" className="hover:text-foreground transition-colors">Products</Link>
               <ChevronRight size={14} />
@@ -165,7 +183,13 @@ const Products = () => {
 
         <div className="mb-8">
           <h1 className="font-serif text-3xl lg:text-4xl font-bold mb-2">
-            {saleParam ? 'Sale' : categoryParam ? `${categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1)}'s Collection` : 'All Products'}
+            {searchQuery 
+              ? `Results for "${searchQuery}"` 
+              : saleParam 
+                ? 'Sale' 
+                : categoryParam 
+                  ? `${categoryParam.charAt(0).toUpperCase() + categoryParam.slice(1)}'s Collection` 
+                  : 'All Products'}
           </h1>
           <p className="text-muted-foreground">{filteredProducts.length} products found</p>
         </div>

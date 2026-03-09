@@ -1,5 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SearchCommand from '@/components/SearchCommand';
+import VoiceSearchModal from '@/components/VoiceSearchModal';
+import ImageSearchModal from '@/components/ImageSearchModal';
 import { Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Truck, RefreshCw, Shield, Headphones, Loader2, SlidersHorizontal, X, Mic, Camera } from 'lucide-react';
@@ -17,6 +20,7 @@ import { Slider } from '@/components/ui/slider';
 import categoryMen from '@/assets/category-men.jpg';
 
 const Index = () => {
+  const navigate = useNavigate();
   const { products, loading } = useDbProducts();
   const [activeFilter, setActiveFilter] = useState('all');
   const [priceRange, setPriceRange] = useState([0, 5000]);
@@ -30,6 +34,16 @@ const Index = () => {
   const [tempColors, setTempColors] = useState<string[]>([]);
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [voiceSearchOpen, setVoiceSearchOpen] = useState(false);
+  const [imageSearchOpen, setImageSearchOpen] = useState(false);
+
+  const handleSearchFromVoice = useCallback((text: string) => {
+    navigate(`/products?search=${encodeURIComponent(text)}`);
+  }, [navigate]);
+
+  const handleSearchFromImage = useCallback((terms: string) => {
+    navigate(`/products?search=${encodeURIComponent(terms)}`);
+  }, [navigate]);
 
   const sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL'];
   const colors = [
@@ -159,18 +173,20 @@ const Index = () => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                // Voice search - can be implemented later
+                setVoiceSearchOpen(true);
               }}
               className="p-2 rounded-full hover:bg-secondary transition-colors"
+              title="Voice Search"
             >
               <Mic size={20} className="text-muted-foreground" />
             </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                // Camera search - can be implemented later
+                setImageSearchOpen(true);
               }}
               className="p-2 rounded-full hover:bg-secondary transition-colors"
+              title="Search by Image"
             >
               <Camera size={20} className="text-muted-foreground" />
             </button>
@@ -179,6 +195,16 @@ const Index = () => {
       </div>
 
       <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
+      <VoiceSearchModal 
+        open={voiceSearchOpen} 
+        onOpenChange={setVoiceSearchOpen} 
+        onResult={handleSearchFromVoice} 
+      />
+      <ImageSearchModal 
+        open={imageSearchOpen} 
+        onOpenChange={setImageSearchOpen} 
+        onSearch={handleSearchFromImage} 
+      />
 
       {/* Hero Product Carousel */}
       <HeroProductCarousel />
