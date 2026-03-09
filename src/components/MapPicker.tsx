@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Search, Navigation, Loader2, X, MapPin } from 'lucide-react';
@@ -8,6 +7,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
 // Fix for default marker icon in Leaflet with Vite
+// (using CDN for marker assets so it works reliably in Vite builds)
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
@@ -46,64 +46,37 @@ interface SearchResult {
   lon: string;
 }
 
-// Component to handle map clicks and marker dragging
-const DraggableMarker = ({
-  position,
-  setPosition,
-}: {
-  position: [number, number];
-  setPosition: (pos: [number, number]) => void;
-}) => {
-  const markerRef = useRef<L.Marker>(null);
-
-  useMapEvents({
-    click(e) {
-      setPosition([e.latlng.lat, e.latlng.lng]);
-    },
-  });
-
-  return (
-    <Marker
-      draggable
-      position={position}
-      ref={markerRef}
-      eventHandlers={{
-        dragend() {
-          const marker = markerRef.current;
-          if (marker) {
-            const { lat, lng } = marker.getLatLng();
-            setPosition([lat, lng]);
-          }
-        },
-      }}
-    />
-  );
-};
-
-// Component to recenter map
-const RecenterMap = ({ center }: { center: [number, number] }) => {
-  const map = useMap();
-  useEffect(() => {
-    map.setView(center, map.getZoom());
-  }, [center, map]);
-  return null;
-};
+const DEFAULT_CENTER: [number, number] = [20.5937, 78.9629];
 
 const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
-  const [position, setPosition] = useState<[number, number]>([20.5937, 78.9629]);
+  const [mapEl, setMapEl] = useState<HTMLDivElement | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
+
+  const [position, setPosition] = useState<[number, number]>(DEFAULT_CENTER);
   const [locationData, setLocationData] = useState<LocationData | null>(null);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [showResults, setShowResults] = useState(false);
+
   const [isSearching, setIsSearching] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
-  const [showResults, setShowResults] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
+
+  const searchWrapRef = useRef<HTMLDivElement | null>(null);
+
+  const zoom = 15;
+
+  const mapAttribution = useMemo(
+    () => '© OpenStreetMap contributors',
+    []
+  );
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+      if (searchWrapRef.current && !searchWrapRef.current.contains(e.target as Node)) {
         setShowResults(false);
       }
     };
@@ -111,9 +84,80 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Init / destroy Leaflet map
+  useEffect(() => {
+    if (!open) return;
+    if (!mapEl) return;
+
+    // Prevent double-init
+    if (mapRef.current) return;
+
+    const map = L.map(mapEl, {
+      zoomControl: false,
+      attributionControl: false,
+    }).setView(position, zoom);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: mapAttribution,
+      maxZoom: 19,
+    }).addTo(map);
+
+    // Attribution (kept minimal)
+    L.control
+      .attribution({ prefix: false, position: 'bottomright' })
+      .addTo(map)
+      .addAttribution(mapAttribution);
+
+    const marker = L.marker(position, { draggable: true }).addTo(map);
+
+    map.on('click', (e: L.LeafletMouseEvent) => {
+      setPosition([e.latlng.lat, e.latlng.lng]);
+    });
+
+    marker.on('dragend', () => {
+      const ll = marker.getLatLng();
+      setPosition([ll.lat, ll.lng]);
+    });
+
+    mapRef.current = map;
+    markerRef.current = marker;
+
+    // Force layout calculation after mount (Radix dialog animation can cause 0-size)
+    const t = setTimeout(() => {
+      try {
+        map.invalidateSize();
+      } catch {
+        // ignore
+      }
+    }, 200);
+
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, mapEl, mapAttribution, position, zoom]);
+
+  // Cleanup when closing
+  useEffect(() => {
+    if (open) return;
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+      markerRef.current = null;
+    }
+  }, [open]);
+
+  // Keep map/marker in sync with position
+  useEffect(() => {
+    if (!open) return;
+    if (!mapRef.current || !markerRef.current) return;
+
+    markerRef.current.setLatLng(position);
+    mapRef.current.setView(position, mapRef.current.getZoom(), { animate: true });
+  }, [position, open]);
+
   // Reverse geocode when position changes
   useEffect(() => {
     if (!open) return;
+
     const reverseGeocode = async () => {
       setIsGeocoding(true);
       try {
@@ -122,11 +166,16 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
         );
         const data = await res.json();
         const addr = data.address || {};
+
         setLocationData({
           lat: position[0],
           lng: position[1],
-          address: [addr.road, addr.neighbourhood, addr.suburb].filter(Boolean).join(', ') ||
-            data.display_name?.split(',').slice(0, 2).join(',') || '',
+          address:
+            [addr.road, addr.neighbourhood, addr.suburb]
+              .filter(Boolean)
+              .join(', ') ||
+            data.display_name?.split(',').slice(0, 2).join(',') ||
+            '',
           city: addr.city || addr.town || addr.village || addr.county || '',
           state: addr.state || '',
           pincode: addr.postcode || '',
@@ -138,16 +187,17 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
         setIsGeocoding(false);
       }
     };
+
     const timeout = setTimeout(reverseGeocode, 300);
     return () => clearTimeout(timeout);
   }, [position, open]);
 
-  // Get current location
   const handleGetCurrentLocation = () => {
     if (!navigator.geolocation) {
       toast.error('Geolocation not supported');
       return;
     }
+
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -162,19 +212,20 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
     );
   };
 
-  // Search with autocomplete
+  // Autocomplete search (overlay dropdown)
   useEffect(() => {
     if (!searchQuery.trim() || searchQuery.length < 3) {
       setSearchResults([]);
       return;
     }
+
     const timeout = setTimeout(async () => {
       setIsSearching(true);
       try {
         const res = await fetch(
           `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=5&countrycodes=in`
         );
-        const results = await res.json();
+        const results = (await res.json()) as SearchResult[];
         setSearchResults(results);
         setShowResults(true);
       } catch {
@@ -183,6 +234,7 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
         setIsSearching(false);
       }
     }, 400);
+
     return () => clearTimeout(timeout);
   }, [searchQuery]);
 
@@ -194,17 +246,15 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
   };
 
   const handleConfirm = () => {
-    if (locationData) {
-      onLocationSelect(locationData);
-      onClose();
-    }
+    if (!locationData) return;
+    onLocationSelect(locationData);
+    onClose();
   };
 
-  // Get current location on open
+  // Auto-locate on open
   useEffect(() => {
-    if (open) {
-      handleGetCurrentLocation();
-    }
+    if (open) handleGetCurrentLocation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   return (
@@ -218,11 +268,14 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
             </Button>
             <h2 className="font-semibold">Select Your Location</h2>
           </div>
-          
-          {/* Plain search box with dropdown */}
-          <div ref={searchRef} className="relative">
+
+          {/* Plain textbox + dropdown */}
+          <div ref={searchWrapRef} className="relative">
             <div className="relative">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <Search
+                size={16}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+              />
               <input
                 type="text"
                 placeholder="Search an area or address"
@@ -232,7 +285,10 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
                 className="w-full h-11 pl-10 pr-10 border border-border rounded-lg bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
               />
               {isSearching && (
-                <Loader2 size={16} className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground" />
+                <Loader2
+                  size={16}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-muted-foreground"
+                />
               )}
               {searchQuery && !isSearching && (
                 <button
@@ -242,25 +298,23 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
                     setShowResults(false);
                   }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label="Clear"
                 >
                   <X size={16} />
                 </button>
               )}
             </div>
 
-            {/* Dropdown results overlaid below */}
             {showResults && searchResults.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-[2000] max-h-60 overflow-y-auto">
-                {searchResults.map((result) => (
+                {searchResults.map((r) => (
                   <button
-                    key={result.place_id}
-                    onClick={() => handleSelectResult(result)}
+                    key={r.place_id}
+                    onClick={() => handleSelectResult(r)}
                     className="w-full px-4 py-3 text-left hover:bg-secondary/50 transition-colors border-b border-border last:border-b-0 flex items-start gap-3"
                   >
                     <MapPin size={16} className="text-primary mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-foreground line-clamp-2">
-                      {result.display_name}
-                    </span>
+                    <span className="text-sm text-foreground line-clamp-2">{r.display_name}</span>
                   </button>
                 ))}
               </div>
@@ -270,21 +324,9 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
 
         {/* Map */}
         <div className="flex-1 relative">
-          <MapContainer
-            center={position}
-            zoom={15}
-            style={{ height: '100%', width: '100%' }}
-            zoomControl={false}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <DraggableMarker position={position} setPosition={setPosition} />
-            <RecenterMap center={position} />
-          </MapContainer>
+          <div ref={setMapEl} className="h-full w-full" />
 
-          {/* Current location button */}
+          {/* Current location */}
           <button
             onClick={handleGetCurrentLocation}
             disabled={isLocating}
@@ -297,7 +339,7 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
             )}
           </button>
 
-          {/* Pin hint */}
+          {/* Hint */}
           <div className="absolute top-4 left-4 right-16 z-[1000]">
             <div className="bg-card/90 backdrop-blur-sm border border-border rounded-lg px-3 py-2 text-xs text-muted-foreground">
               <MapPin size={14} className="inline mr-1.5 text-primary" />
@@ -306,10 +348,12 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
           </div>
         </div>
 
-        {/* Footer with location info */}
+        {/* Footer */}
         <div className="p-4 border-t border-border bg-card">
           <div className="mb-3">
-            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Delivery Location</p>
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+              Delivery Location
+            </p>
             {isGeocoding ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 size={14} className="animate-spin" />
@@ -326,6 +370,7 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
               <p className="text-sm text-muted-foreground">Select a location on the map</p>
             )}
           </div>
+
           <Button
             onClick={handleConfirm}
             disabled={!locationData || isGeocoding}
