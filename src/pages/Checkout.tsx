@@ -907,22 +907,22 @@ const Checkout = () => {
       {/* Sticky Bottom Bar (mobile & desktop) */}
       <div className="fixed left-0 right-0 bottom-14 md:bottom-0 bg-card border-t border-border z-[60] lg:hidden shadow-lg">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-bold text-lg">{formatPrice(finalTotal)}</p>
-              {step !== 'address' && (
+          <div className={`flex items-center ${step === 'address' ? 'justify-end' : 'justify-between'}`}>
+            {step !== 'address' && (
+              <div>
+                <p className="font-bold text-lg">{formatPrice(finalTotal)}</p>
                 <button
                   onClick={() => setShowPriceDetails(!showPriceDetails)}
                   className="text-xs font-semibold text-primary"
                 >
                   {showPriceDetails ? 'HIDE DETAILS' : 'VIEW PRICE DETAILS'}
                 </button>
-              )}
-            </div>
+              </div>
+            )}
             <Button
               onClick={handleContinue}
               disabled={isPaymentLoading || isPlacingOrder}
-              className="px-8"
+              className={step === 'address' ? 'w-full' : 'px-8'}
               size="lg"
             >
               {isPaymentLoading || isPlacingOrder ? (
