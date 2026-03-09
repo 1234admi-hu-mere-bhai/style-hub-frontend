@@ -6,6 +6,7 @@ import {
   Package,
   Heart,
   CreditCard,
+  RefreshCw,
   Settings,
   LogOut,
   Plus,
