@@ -697,7 +697,11 @@ const Profile = () => {
                           {order.items.length} item(s)
                         </span>
                         <div className="flex items-center gap-3">
-                          {order.status === 'delivered' && (
+                          {order.status === 'delivered' && (() => {
+                            if (!order.deliveredAt) return true;
+                            const days = (Date.now() - new Date(order.deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
+                            return days <= 7;
+                          })() && (
                             <Button
                               variant="outline"
                               size="sm"
