@@ -237,7 +237,7 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                   <Input
                     id="firstName"
                     name="firstName"
-                    placeholder="John"
+                    placeholder="First Name"
                     className={errors.firstName ? 'border-destructive' : ''}
                   />
                   {errors.firstName && (
