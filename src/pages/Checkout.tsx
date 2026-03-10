@@ -642,9 +642,10 @@ const Checkout = () => {
                       </div>
                     </form>
                     {(savedAddresses.length === 0 || showNewAddressForm) && showNewAddressForm && (
-                      <Button onClick={handleSaveNewAddress} className="w-full" size="lg">
-                        Save Address & Continue
+                      <Button onClick={editingAddressId ? handleUpdateAddress : handleSaveNewAddress} className="w-full" size="lg">
+                        {editingAddressId ? 'Update Address' : 'Save Address & Continue'}
                       </Button>
+                    )}
                     )}
                     {savedAddresses.length === 0 && (
                       <Button onClick={handleContinue} className="w-full" size="lg">
