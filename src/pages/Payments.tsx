@@ -603,7 +603,7 @@ const Payments = () => {
                   id="accountNumber"
                   placeholder="Account Number"
                   type="password"
-                  className="border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                   className=""
                   value={bankForm.accountNumber}
                   onChange={(e) => setBankForm({ ...bankForm, accountNumber: e.target.value.replace(/\D/g, '') })}
                 />
