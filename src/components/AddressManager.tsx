@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Search,
   MapPin,
@@ -38,6 +38,8 @@ import { toast } from 'sonner';
 import { Address } from '@/data/user';
 import { addressSchema } from '@/lib/validations';
 import MapPicker from '@/components/MapPicker';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { INDIAN_STATES, fetchCityStateFromPincode } from '@/data/indianStates';
 
 interface AddressManagerProps {
   addresses: Address[];
@@ -45,6 +47,36 @@ interface AddressManagerProps {
 }
 
 type AddressType = 'home' | 'work' | 'other';
+
+// State select sub-component that listens for pincode auto-fill events
+const AddressStateSelect = ({ defaultValue }: { defaultValue?: string }) => {
+  const [value, setValue] = useState(defaultValue || '');
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const state = (e as CustomEvent).detail;
+      setValue(state);
+    };
+    document.addEventListener('pincode-state-update', handler);
+    return () => document.removeEventListener('pincode-state-update', handler);
+  }, []);
+
+  return (
+    <>
+      <input type="hidden" name="state" id="state-hidden" value={value} />
+      <Select value={value} onValueChange={setValue}>
+        <SelectTrigger className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary h-10">
+          <SelectValue placeholder="Select state" />
+        </SelectTrigger>
+        <SelectContent>
+          {INDIAN_STATES.map(s => (
+            <SelectItem key={s} value={s}>{s}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </>
+  );
+};
 
 const addressTypeIcons: Record<AddressType, typeof Home> = {
   home: Home,
@@ -504,26 +536,44 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
+                <Label htmlFor="pincode" className="text-xs">PIN Code</Label>
+                <Input id="pincode" name="pincode" defaultValue={editingAddress?.pincode} placeholder="" maxLength={6}
+                  className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (/^\d{6}$/.test(val)) {
+                      fetchCityStateFromPincode(val).then(result => {
+                        if (result) {
+                          const cityInput = document.getElementById('city') as HTMLInputElement;
+                          const stateHidden = document.getElementById('state-hidden') as HTMLInputElement;
+                          if (cityInput) cityInput.value = result.city;
+                          if (stateHidden) stateHidden.value = result.state;
+                          // Trigger state select update
+                          const event = new CustomEvent('pincode-state-update', { detail: result.state });
+                          document.dispatchEvent(event);
+                        }
+                      });
+                    }
+                  }}
+                />
+                {addressErrors.pincode && <p className="text-[11px] text-destructive">{addressErrors.pincode}</p>}
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="landmark" className="text-xs">Landmark</Label>
+                <Input id="landmark" name="landmark" defaultValue={editingAddress?.landmark} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
                 <Label htmlFor="city" className="text-xs">City</Label>
                 <Input id="city" name="city" defaultValue={editingAddress?.city} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
                 {addressErrors.city && <p className="text-[11px] text-destructive">{addressErrors.city}</p>}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="state" className="text-xs">State</Label>
-                <Input id="state" name="state" defaultValue={editingAddress?.state} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
+                <AddressStateSelect defaultValue={editingAddress?.state} />
                 {addressErrors.state && <p className="text-[11px] text-destructive">{addressErrors.state}</p>}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="pincode" className="text-xs">PIN Code</Label>
-                <Input id="pincode" name="pincode" defaultValue={editingAddress?.pincode} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
-                {addressErrors.pincode && <p className="text-[11px] text-destructive">{addressErrors.pincode}</p>}
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="landmark" className="text-xs">Landmark</Label>
-                <Input id="landmark" name="landmark" defaultValue={editingAddress?.landmark} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
               </div>
             </div>
 
