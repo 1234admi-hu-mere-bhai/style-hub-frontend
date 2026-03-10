@@ -164,8 +164,8 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
               type="text"
               value={newReview.title}
               onChange={(e) => setNewReview({ ...newReview, title: e.target.value })}
-              placeholder="Sum up your experience in a few words"
-              className="w-full px-3 py-2 border border-border rounded-md bg-background"
+               placeholder="Review Title"
+               className="w-full px-5 py-2 border border-border rounded-full bg-background"
               maxLength={100}
             />
           </div>
