@@ -34,9 +34,21 @@ const Checkout = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { items: cartItems, totalPrice: cartTotalPrice, clearCart, buyNowItem, setBuyNowItem, removeFromCart, revalidateCartPrices } = useCart();
+  const [flashSaleExpired, setFlashSaleExpired] = useState(false);
 
-  // Revalidate flash sale prices on checkout load
-  useEffect(() => { revalidateCartPrices(); }, []);
+  // Revalidate flash sale prices on checkout load and every 30s
+  useEffect(() => {
+    const check = async () => {
+      const ended = await revalidateCartPrices();
+      if (ended) {
+        setFlashSaleExpired(true);
+        toast.warning('⚡ Flash Sale has ended! Prices have been updated to original.', { duration: 8000 });
+      }
+    };
+    check();
+    const interval = setInterval(check, 30000);
+    return () => clearInterval(interval);
+  }, []);
   const { addToWishlist } = useWishlist();
   const { user, isLoading: authLoading } = useAuth();
   const { formatPrice } = useCurrency();
