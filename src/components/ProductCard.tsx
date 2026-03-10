@@ -85,20 +85,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <Heart size={18} className={inWishlist ? 'fill-current' : ''} />
         </button>
 
-        {/* Quick add overlay */}
-        <div
-          className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background/90 to-transparent transition-all duration-300 ${
-            isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          }`}
-        >
-          <button
-            onClick={handleQuickAdd}
-            className="w-full py-3 bg-foreground text-background font-medium text-sm uppercase tracking-wider hover:bg-primary transition-colors rounded flex items-center justify-center gap-2"
-          >
-            <ShoppingBag size={16} />
-            Quick Add
-          </button>
-        </div>
       </div>
 
       <div className="mt-4 space-y-1">
