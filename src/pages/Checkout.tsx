@@ -63,7 +63,12 @@ const Checkout = () => {
     fetchCoupons();
   }, []);
   
-  // Form state for address
+  // Saved addresses
+  const { addresses: savedAddresses, setAddresses: setSavedAddresses } = useAddresses();
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+
+  // Form state for new address (only used when adding new)
   const [addressForm, setAddressForm] = useState({
     firstName: '',
     lastName: '',
@@ -76,6 +81,25 @@ const Checkout = () => {
   });
 
   const [deliveryInfo, setDeliveryInfo] = useState<{ estimatedDays: string; zone: string } | null>(null);
+
+  // Auto-select default address
+  useEffect(() => {
+    if (savedAddresses.length > 0 && !selectedAddressId) {
+      const defaultAddr = savedAddresses.find(a => a.isDefault) || savedAddresses[0];
+      setSelectedAddressId(defaultAddr.id);
+      // Populate addressForm from selected address for order creation
+      setAddressForm({
+        firstName: defaultAddr.fullName.split(' ')[0] || '',
+        lastName: defaultAddr.fullName.split(' ').slice(1).join(' ') || '',
+        phone: defaultAddr.phone,
+        address: defaultAddr.address,
+        city: defaultAddr.city,
+        state: defaultAddr.state,
+        pincode: defaultAddr.pincode,
+        landmark: defaultAddr.landmark || '',
+      });
+    }
+  }, [savedAddresses]);
 
   // Calculate discount
   const discountAmount = useMemo(() => {
