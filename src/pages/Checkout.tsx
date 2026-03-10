@@ -579,10 +579,11 @@ const Checkout = () => {
                   <div className="space-y-4">
                     {showNewAddressForm && (
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm font-medium">Add New Address</p>
+                        <p className="text-sm font-medium">{editingAddressId ? 'Edit Address' : 'Add New Address'}</p>
                         {savedAddresses.length > 0 && (
                           <Button variant="ghost" size="sm" onClick={() => {
                             setShowNewAddressForm(false);
+                            setEditingAddressId(null);
                             const defaultAddr = savedAddresses.find(a => a.isDefault) || savedAddresses[0];
                             if (defaultAddr) selectSavedAddress(defaultAddr);
                           }}>
