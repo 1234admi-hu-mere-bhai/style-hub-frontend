@@ -30,6 +30,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
   const { formatPrice } = useCurrency();
+  const navigate = useNavigate();
   const inWishlist = isInWishlist(product.id);
 
   const handleWishlist = (e: React.MouseEvent) => {
