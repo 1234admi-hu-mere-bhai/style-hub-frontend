@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
 
     const { table, action, record } = await req.json()
 
-    const allowedTables = ['coupons', 'notifications', 'blog_posts', 'reviews']
+    const allowedTables = ['coupons', 'notifications', 'blog_posts', 'reviews', 'flash_sales']
     if (!allowedTables.includes(table)) {
       return new Response(JSON.stringify({ error: 'Invalid table' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -333,6 +333,7 @@ const Admin = () => {
             />
           )}
           {activeTab === 'coupons' && <AdminCoupons />}
+          {activeTab === 'flash-sales' && <AdminFlashSales />}
           {activeTab === 'reviews' && <AdminReviews />}
           {activeTab === 'notifications' && <AdminNotifications />}
           {activeTab === 'blog' && <AdminBlog />}

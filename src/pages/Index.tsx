@@ -229,7 +229,8 @@ const Index = () => {
       {/* Hero Product Carousel */}
       <HeroProductCarousel />
 
-
+      {/* Flash Sale Banner - Below Hero, Above Categories */}
+      <FlashSaleBanner />
 
       {/* Categories */}
       <section className="py-16 lg:py-24">
