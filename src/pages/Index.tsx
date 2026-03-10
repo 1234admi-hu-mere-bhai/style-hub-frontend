@@ -48,11 +48,11 @@ const Index = () => {
       return;
     }
     setSubscribing(true);
-    const code = 'WELCOME30';
+    const code = 'WELCOME20';
     setTimeout(() => {
       setDiscountCode(code);
       setSubscribing(false);
-      toast.success(`🎉 Your 30% discount code: ${code}`, { duration: 10000 });
+      toast.success(`🎉 Your 20% discount code: ${code}`, { duration: 10000 });
     }, 800);
   }, [newsletterEmail]);
 
