@@ -3,9 +3,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/hooks/useNotifications';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { ArrowLeft, Bell } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { useEffect } from 'react';
+import { ArrowLeft, Bell, Eye } from 'lucide-react';
+import { formatDistanceToNow, format } from 'date-fns';
+import { useEffect, useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 const typeIcons: Record<string, string> = {
   info: '💡',
@@ -21,10 +28,20 @@ const typeBadgeColors: Record<string, string> = {
   alert: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
 };
 
+interface NotificationItem {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  is_read: boolean | null;
+  created_at: string;
+}
+
 const Notifications = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { notifications, loading } = useNotifications();
   const navigate = useNavigate();
+  const [selected, setSelected] = useState<NotificationItem | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/auth');
@@ -78,9 +95,10 @@ const Notifications = () => {
             {notifications.map((n) => (
               <div
                 key={n.id}
-                className={`rounded-xl border border-border p-4 transition-colors ${
+                className={`rounded-xl border border-border p-4 transition-colors cursor-pointer hover:border-primary/30 ${
                   !n.is_read ? 'bg-primary/5 border-primary/20' : 'bg-card'
                 }`}
+                onClick={() => setSelected(n)}
               >
                 <div className="flex gap-3">
                   <span className="text-xl mt-0.5">{typeIcons[n.type] || '🔔'}</span>
@@ -94,10 +112,16 @@ const Notifications = () => {
                         <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">{n.message}</p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
-                    </p>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{n.message}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                      </p>
+                      <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-primary">
+                        <Eye size={14} />
+                        View
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -106,6 +130,28 @@ const Notifications = () => {
         )}
       </main>
       <Footer />
+
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">{typeIcons[selected?.type || ''] || '🔔'}</span>
+              <DialogTitle className="text-lg">{selected?.title}</DialogTitle>
+            </div>
+          </DialogHeader>
+          <div className="space-y-4">
+            <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${typeBadgeColors[selected?.type || ''] || 'bg-muted text-muted-foreground'}`}>
+              {selected?.type}
+            </span>
+            <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+              {selected?.message}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {selected?.created_at && format(new Date(selected.created_at), 'PPpp')}
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
