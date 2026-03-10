@@ -32,7 +32,7 @@ const Wishlist = () => {
         duration: 5000,
         action: {
           label: 'Go to Cart',
-          onClick: () => navigate('/checkout'),
+          onClick: () => setCartOpen(true),
         },
       });
     }
