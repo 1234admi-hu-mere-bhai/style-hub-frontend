@@ -563,6 +563,7 @@ const Checkout = () => {
                     <button
                       onClick={() => {
                         setShowNewAddressForm(true);
+                        setEditingAddressId(null);
                         setSelectedAddressId(null);
                         setAddressForm({ firstName: '', lastName: '', phone: '', address: '', city: '', state: '', pincode: '', landmark: '' });
                       }}
