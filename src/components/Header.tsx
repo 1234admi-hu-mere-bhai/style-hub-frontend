@@ -119,6 +119,7 @@ const Header = () => {
 
             {/* Right icons */}
             <div className="flex items-center space-x-2 lg:space-x-4">
+              <NotificationBell />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="p-2 hover:bg-secondary rounded-full transition-colors relative">
