@@ -997,14 +997,10 @@ const Checkout = () => {
                 </h2>
                 <div className="p-4 bg-secondary/50 rounded-lg">
                   <div className="flex items-center gap-3 mb-2">
-                    <img 
-                      src="https://razorpay.com/assets/razorpay-logo.svg" 
-                      alt="Razorpay" 
-                      className="h-6 dark:invert"
-                    />
+                    <span className="font-semibold text-primary text-lg">PayU</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    You will be redirected to Razorpay's secure payment gateway to complete your payment.
+                    You will be redirected to PayU's secure payment gateway to complete your payment.
                     Supports UPI, Credit/Debit Cards, Net Banking, and Wallets.
                   </p>
                 </div>
