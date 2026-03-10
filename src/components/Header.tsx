@@ -88,14 +88,6 @@ const Header = () => {
 
             {/* Right icons */}
             <div className="flex items-center space-x-2 lg:space-x-4">
-              {/* Mobile search icon */}
-              <button
-                className="p-2 hover:bg-secondary rounded-full transition-colors sm:hidden"
-                onClick={() => setSearchOpen(true)}
-              >
-                <Search size={20} />
-              </button>
-
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button className="p-2 hover:bg-secondary rounded-full transition-colors relative">
