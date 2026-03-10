@@ -2,3 +2,6 @@ project_id = "zybjzfffkylezzvotcnn"
 
 [functions.support-chat]
 verify_jwt = false
+
+[functions.payu-hash]
+verify_jwt = false
