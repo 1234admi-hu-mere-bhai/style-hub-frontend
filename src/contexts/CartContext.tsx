@@ -24,7 +24,7 @@ interface CartContextType {
   setBuyNowItem: (item: CartItem | null) => void;
   isCartOpen: boolean;
   setCartOpen: (open: boolean) => void;
-  revalidateCartPrices: () => Promise<void>;
+  revalidateCartPrices: () => Promise<boolean>; // returns true if flash sale ended and prices changed
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
