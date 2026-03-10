@@ -247,7 +247,7 @@ const Auth = () => {
                       <Input
                         id="signup-password"
                         type={showPassword ? 'text' : 'password'}
-                        placeholder="••••••••"
+                        placeholder="Password"
                         value={signupForm.password}
                         onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
                       />
