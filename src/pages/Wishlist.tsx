@@ -29,6 +29,7 @@ const Wishlist = () => {
         quantity: 1,
       });
       toast.success('Added to cart', {
+        duration: 5000,
         action: {
           label: 'Go to Cart',
           onClick: () => navigate('/checkout'),
