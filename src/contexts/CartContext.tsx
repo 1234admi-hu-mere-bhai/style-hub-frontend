@@ -82,7 +82,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     ]);
 
     const dbProducts = productsResult.data as { id: string; price: number; original_price: number | null; discount: number | null }[] | null;
-    if (!dbProducts) return;
+    if (!dbProducts) return false;
 
     const flashSale = (flashResult.data as any[] | null)?.[0] ?? null;
     const flashProductIds: string[] = flashSale?.product_ids || [];
