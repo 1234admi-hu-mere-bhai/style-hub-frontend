@@ -34,6 +34,7 @@ import NotFound from "./pages/NotFound";
 import VisitorTracker from "./components/VisitorTracker";
 import BottomNav from "./components/BottomNav";
 import LiveSupportChat from "./components/LiveSupportChat";
+import PushNotificationPrompt from "./components/PushNotificationPrompt";
 
 const queryClient = new QueryClient();
 
