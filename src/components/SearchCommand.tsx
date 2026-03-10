@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, X, Clock, TrendingUp, ArrowLeft } from 'lucide-react';
+import { Search, X, Clock, TrendingUp, ArrowLeft, Mic, Camera } from 'lucide-react';
 import { useDbProducts } from '@/hooks/useDbProducts';
+import VoiceSearchModal from './VoiceSearchModal';
+import ImageSearchModal from './ImageSearchModal';
 
 interface SearchCommandProps {
   open: boolean;
