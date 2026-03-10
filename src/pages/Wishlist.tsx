@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 
 const Wishlist = () => {
   const { items, removeFromWishlist } = useWishlist();
-  const { addToCart } = useCart();
+  const { addToCart, setCartOpen } = useCart();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
 
@@ -32,7 +32,7 @@ const Wishlist = () => {
         duration: 5000,
         action: {
           label: 'Go to Cart',
-          onClick: () => navigate('/checkout'),
+          onClick: () => setCartOpen(true),
         },
       });
     }

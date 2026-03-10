@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
@@ -28,9 +28,9 @@ interface ProductCardProps {
 const ProductCard = ({ product }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const { addToCart } = useCart();
+  const { addToCart, setCartOpen } = useCart();
   const { formatPrice } = useCurrency();
-  const navigate = useNavigate();
+  
   const inWishlist = isInWishlist(product.id);
 
   const handleWishlist = (e: React.MouseEvent) => {
@@ -66,7 +66,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       duration: 5000,
       action: {
         label: 'Go to Cart',
-        onClick: () => navigate('/checkout'),
+        onClick: () => setCartOpen(true),
       },
     });
   };
