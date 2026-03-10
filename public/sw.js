@@ -1,6 +1,11 @@
 // Push notification service worker
 self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : {};
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (e) {
+    data = { title: 'MUFFI GOUT', message: event.data ? event.data.text() : 'New notification' };
+  }
   const title = data.title || 'MUFFI GOUT';
   const options = {
     body: data.message || data.body || 'You have a new notification',
@@ -10,6 +15,12 @@ self.addEventListener('push', (event) => {
     vibrate: [200, 100, 200],
     tag: data.tag || 'default',
     renotify: true,
+    requireInteraction: true,
+    silent: false,
+    actions: [
+      { action: 'open', title: 'Open' },
+      { action: 'dismiss', title: 'Dismiss' },
+    ],
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });
