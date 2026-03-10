@@ -624,6 +624,10 @@ const Checkout = () => {
                         <Label htmlFor="address">Address</Label>
                         <Input id="address" placeholder="e.g. 12, MG Road, Bandra West" value={addressForm.address} onChange={handleAddressChange} required />
                       </div>
+                      <div className="space-y-2">
+                          <Label htmlFor="pincode">PIN Code</Label>
+                          <Input id="pincode" placeholder="e.g. 400050" value={addressForm.pincode} onChange={handleAddressChange} required maxLength={6} />
+                        </div>
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="city">City</Label>
@@ -631,19 +635,22 @@ const Checkout = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="state">State</Label>
-                          <Input id="state" placeholder="e.g. Maharashtra" value={addressForm.state} onChange={handleAddressChange} required />
+                          <Select value={addressForm.state} onValueChange={(val) => setAddressForm(prev => ({ ...prev, state: val }))}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select state" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {INDIAN_STATES.map(s => (
+                                <SelectItem key={s} value={s}>{s}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="pincode">PIN Code</Label>
-                          <Input id="pincode" placeholder="e.g. 400050" value={addressForm.pincode} onChange={handleAddressChange} required />
-                        </div>
-                        <div className="space-y-2">
+                      <div className="space-y-2">
                           <Label htmlFor="landmark">Landmark (Optional)</Label>
                           <Input id="landmark" placeholder="e.g. Near City Mall" value={addressForm.landmark} onChange={handleAddressChange} />
                         </div>
-                      </div>
 
                       {/* Pincode Delivery Checker */}
                       <div className="bg-secondary/30 p-4 rounded-lg space-y-2">
