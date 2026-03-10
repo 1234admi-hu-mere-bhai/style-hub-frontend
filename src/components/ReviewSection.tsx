@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProductReviews, DbReview } from '@/hooks/useProductReviews';
 import { supabase } from '@/integrations/supabase/client';
+import { reviewSchema } from '@/lib/validations';
 
 interface ReviewSectionProps {
   productId: string;
@@ -20,6 +21,7 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
   const [submitting, setSubmitting] = useState(false);
   const [reviewImages, setReviewImages] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [reviewErrors, setReviewErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [newReview, setNewReview] = useState({
     rating: 5,
@@ -76,10 +78,16 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
       toast.error('Please log in to write a review');
       return;
     }
-    if (!newReview.title.trim() || !newReview.comment.trim()) {
-      toast.error('Please fill in all fields');
+    const result = reviewSchema.safeParse(newReview);
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) newErrors[err.path[0] as string] = err.message;
+      });
+      setReviewErrors(newErrors);
       return;
     }
+    setReviewErrors({});
     setSubmitting(true);
     try {
       const imageUrls = reviewImages.length > 0 ? await uploadImages() : [];
@@ -164,20 +172,24 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
             <Input
               type="text"
               value={newReview.title}
-              onChange={(e) => setNewReview({ ...newReview, title: e.target.value })}
+              onChange={(e) => { setNewReview({ ...newReview, title: e.target.value }); setReviewErrors(prev => ({ ...prev, title: '' })); }}
               placeholder="Review Title"
+              className={reviewErrors.title ? 'border-destructive' : ''}
               maxLength={100}
             />
+            {reviewErrors.title && <p className="text-xs text-destructive">{reviewErrors.title}</p>}
           </div>
           <div>
             <label className="text-sm font-medium mb-2 block">Your Review</label>
             <Textarea
               value={newReview.comment}
-              onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+              onChange={(e) => { setNewReview({ ...newReview, comment: e.target.value }); setReviewErrors(prev => ({ ...prev, comment: '' })); }}
               placeholder="Your Review"
+              className={reviewErrors.comment ? 'border-destructive' : ''}
               rows={4}
               maxLength={1000}
             />
+            {reviewErrors.comment && <p className="text-xs text-destructive">{reviewErrors.comment}</p>}
           </div>
           {/* Photo Upload */}
           <div>

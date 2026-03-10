@@ -63,6 +63,7 @@ const TrackOrder = () => {
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get('id');
   const [searchQuery, setSearchQuery] = useState(orderId || '');
+  const [searchError, setSearchError] = useState('');
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -122,9 +123,12 @@ const TrackOrder = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      fetchOrder(searchQuery.trim());
+    if (!searchQuery.trim()) {
+      setSearchError('Order number is required');
+      return;
     }
+    setSearchError('');
+    fetchOrder(searchQuery.trim());
   };
 
   const isReplacementFlow = order?.status.startsWith('replacement');
@@ -203,15 +207,16 @@ const TrackOrder = () => {
               />
               <Input
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { setSearchQuery(e.target.value); setSearchError(''); }}
                 placeholder="Enter Order Number"
-                className="pl-10"
+                className={`pl-10 ${searchError ? 'border-destructive' : ''}`}
               />
             </div>
             <Button type="submit" disabled={isLoading}>
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Track'}
             </Button>
           </form>
+          {searchError && <p className="text-xs text-destructive mt-2">{searchError}</p>}
         </div>
 
         {isLoading ? (

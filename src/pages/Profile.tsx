@@ -38,7 +38,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { Address } from '@/data/user';
-import { addressSchema } from '@/lib/validations';
+import { addressSchema, profileSchema } from '@/lib/validations';
 import AddressManager from '@/components/AddressManager';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -51,6 +51,7 @@ const Profile = () => {
   const { user, isLoading: authLoading, signOut } = useAuth();
 
   const [profile, setProfile] = useState({ firstName: '', lastName: '', email: '', phone: '' });
+  const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
   const { addresses, setAddresses } = useAddresses();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -153,6 +154,20 @@ const Profile = () => {
   const handleSaveProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user) return;
+    const result = profileSchema.safeParse({
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      phone: profile.phone,
+    });
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) newErrors[err.path[0] as string] = err.message;
+      });
+      setProfileErrors(newErrors);
+      return;
+    }
+    setProfileErrors({});
     try {
       const { error } = await supabase
         .from('profiles')
@@ -266,20 +281,26 @@ const Profile = () => {
                       <Input
                         id="firstName"
                         value={profile.firstName}
-                        onChange={(e) =>
-                          setProfile({ ...profile, firstName: e.target.value })
-                        }
+                        onChange={(e) => {
+                          setProfile({ ...profile, firstName: e.target.value });
+                          setProfileErrors(prev => ({ ...prev, firstName: '' }));
+                        }}
+                        className={profileErrors.firstName ? 'border-destructive' : ''}
                       />
+                      {profileErrors.firstName && <p className="text-xs text-destructive">{profileErrors.firstName}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input
                         id="lastName"
                         value={profile.lastName}
-                        onChange={(e) =>
-                          setProfile({ ...profile, lastName: e.target.value })
-                        }
+                        onChange={(e) => {
+                          setProfile({ ...profile, lastName: e.target.value });
+                          setProfileErrors(prev => ({ ...prev, lastName: '' }));
+                        }}
+                        className={profileErrors.lastName ? 'border-destructive' : ''}
                       />
+                      {profileErrors.lastName && <p className="text-xs text-destructive">{profileErrors.lastName}</p>}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -302,10 +323,13 @@ const Profile = () => {
                       id="phone"
                       type="tel"
                       value={profile.phone}
-                      onChange={(e) =>
-                        setProfile({ ...profile, phone: e.target.value })
-                      }
+                      onChange={(e) => {
+                        setProfile({ ...profile, phone: e.target.value });
+                        setProfileErrors(prev => ({ ...prev, phone: '' }));
+                      }}
+                      className={profileErrors.phone ? 'border-destructive' : ''}
                     />
+                    {profileErrors.phone && <p className="text-xs text-destructive">{profileErrors.phone}</p>}
                   </div>
                   <Button type="submit">Save Changes</Button>
                 </form>

@@ -122,8 +122,17 @@ const Admin = () => {
     navigate('/admin');
   };
 
+  const [adminFieldErrors, setAdminFieldErrors] = useState<Record<string, string>>({});
+
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    const errors: Record<string, string> = {};
+    if (!loginEmail.trim()) errors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(loginEmail)) errors.email = 'Please enter a valid email';
+    if (!loginPassword.trim()) errors.password = 'Password is required';
+    else if (loginPassword.length < 6) errors.password = 'Password must be at least 6 characters';
+    if (Object.keys(errors).length > 0) { setAdminFieldErrors(errors); return; }
+    setAdminFieldErrors({});
     setLoginLoading(true);
     setLoginError('');
     try {
@@ -153,25 +162,27 @@ const Admin = () => {
             {loginError && (
               <div className="bg-destructive/10 text-destructive text-sm rounded-lg px-4 py-3">{loginError}</div>
             )}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-foreground">Email</label>
               <Input
                 type="email"
                 value={loginEmail}
-                onChange={e => setLoginEmail(e.target.value)}
+                onChange={e => { setLoginEmail(e.target.value); setAdminFieldErrors(prev => ({ ...prev, email: '' })); }}
                 placeholder="Email Address"
-                required
+                className={adminFieldErrors.email ? 'border-destructive' : ''}
               />
+              {adminFieldErrors.email && <p className="text-xs text-destructive">{adminFieldErrors.email}</p>}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">Password</label>
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-foreground">Password</label>
               <Input
                 type="password"
                 value={loginPassword}
-                onChange={e => setLoginPassword(e.target.value)}
+                onChange={e => { setLoginPassword(e.target.value); setAdminFieldErrors(prev => ({ ...prev, password: '' })); }}
                 placeholder="Password"
-                required
+                className={adminFieldErrors.password ? 'border-destructive' : ''}
               />
+              {adminFieldErrors.password && <p className="text-xs text-destructive">{adminFieldErrors.password}</p>}
             </div>
             <Button type="submit" className="w-full" disabled={loginLoading}>
               {loginLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}

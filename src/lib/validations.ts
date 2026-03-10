@@ -105,7 +105,96 @@ export const addressSchema = z.object({
     .optional(),
 });
 
+export const profileSchema = z.object({
+  firstName: z
+    .string()
+    .trim()
+    .min(1, { message: 'First name is required' })
+    .max(50, { message: 'First name must be less than 50 characters' })
+    .regex(/^[a-zA-Z\s]+$/, { message: 'First name can only contain letters' }),
+  lastName: z
+    .string()
+    .trim()
+    .min(1, { message: 'Last name is required' })
+    .max(50, { message: 'Last name must be less than 50 characters' })
+    .regex(/^[a-zA-Z\s]+$/, { message: 'Last name can only contain letters' }),
+  phone: z
+    .string()
+    .trim()
+    .min(1, { message: 'Phone number is required' })
+    .regex(/^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/, {
+      message: 'Please enter a valid Indian phone number',
+    }),
+});
+
+export const reviewSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, { message: 'Review title is required' })
+    .max(100, { message: 'Title must be less than 100 characters' }),
+  comment: z
+    .string()
+    .trim()
+    .min(10, { message: 'Review must be at least 10 characters' })
+    .max(1000, { message: 'Review must be less than 1000 characters' }),
+  rating: z.number().min(1).max(5),
+});
+
+export const orderTrackingSchema = z.object({
+  orderNumber: z
+    .string()
+    .trim()
+    .min(1, { message: 'Order number is required' }),
+});
+
+export const checkoutAddressSchema = z.object({
+  firstName: z
+    .string()
+    .trim()
+    .min(1, { message: 'First name is required' })
+    .max(50, { message: 'First name must be less than 50 characters' }),
+  lastName: z
+    .string()
+    .trim()
+    .max(50, { message: 'Last name must be less than 50 characters' })
+    .optional(),
+  phone: z
+    .string()
+    .trim()
+    .min(1, { message: 'Phone number is required' })
+    .regex(/^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/, {
+      message: 'Please enter a valid Indian phone number',
+    }),
+  address: z
+    .string()
+    .trim()
+    .min(1, { message: 'Address is required' })
+    .max(500, { message: 'Address must be less than 500 characters' }),
+  city: z
+    .string()
+    .trim()
+    .min(1, { message: 'City is required' }),
+  state: z
+    .string()
+    .trim()
+    .min(1, { message: 'State is required' }),
+  pincode: z
+    .string()
+    .trim()
+    .min(1, { message: 'PIN code is required' })
+    .regex(/^[1-9][0-9]{5}$/, { message: 'Please enter a valid 6-digit PIN code' }),
+  landmark: z
+    .string()
+    .trim()
+    .max(200, { message: 'Landmark must be less than 200 characters' })
+    .optional(),
+});
+
 export type LoginEmailFormData = z.infer<typeof loginEmailSchema>;
 export type LoginPhoneFormData = z.infer<typeof loginPhoneSchema>;
 export type SignupFormData = z.infer<typeof signupSchema>;
 export type AddressFormData = z.infer<typeof addressSchema>;
+export type ProfileFormData = z.infer<typeof profileSchema>;
+export type ReviewFormData = z.infer<typeof reviewSchema>;
+export type CheckoutAddressFormData = z.infer<typeof checkoutAddressSchema>;
