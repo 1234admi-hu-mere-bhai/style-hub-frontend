@@ -613,7 +613,7 @@ const Checkout = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="lastName">Last Name</Label>
-                          <Input id="lastName" placeholder="e.g. Sharma" value={addressForm.lastName} onChange={handleAddressChange} required />
+                          <Input id="lastName" placeholder="Last Name" value={addressForm.lastName} onChange={handleAddressChange} required />
                         </div>
                       </div>
                       <div className="space-y-2">
