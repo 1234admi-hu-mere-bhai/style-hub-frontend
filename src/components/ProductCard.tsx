@@ -18,6 +18,7 @@ export interface ProductCardProduct {
   reviews: number;
   isNew?: boolean;
   isFeatured?: boolean;
+  isFlashSale?: boolean;
 }
 
 interface ProductCardProps {
