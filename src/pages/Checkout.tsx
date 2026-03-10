@@ -313,10 +313,16 @@ const Checkout = () => {
   };
 
   const handleSaveNewAddress = () => {
-    if (!addressForm.firstName || !addressForm.phone || !addressForm.address || !addressForm.city || !addressForm.state || !addressForm.pincode) {
-      toast.error('Please fill in all required address fields');
+    const result = checkoutAddressSchema.safeParse(addressForm);
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) newErrors[err.path[0] as string] = err.message;
+      });
+      setAddressErrors(newErrors);
       return;
     }
+    setAddressErrors({});
     const newAddr: Address = {
       id: Date.now().toString(),
       fullName: `${addressForm.firstName} ${addressForm.lastName}`.trim(),
