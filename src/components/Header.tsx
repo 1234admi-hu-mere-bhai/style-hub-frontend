@@ -80,10 +80,13 @@ const Header = () => {
             {/* Center: Search bar */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="hidden sm:flex items-center gap-2 flex-1 max-w-md mx-4 lg:mx-8 px-4 py-2 rounded-full border border-border bg-secondary/50 text-muted-foreground text-sm hover:bg-secondary transition-colors"
+              className="hidden sm:flex items-center gap-2 flex-1 max-w-md mx-4 lg:mx-8 px-4 py-2.5 rounded-full border border-border bg-secondary/40 text-muted-foreground text-sm hover:bg-secondary/80 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 active:scale-[0.98] transition-all duration-200"
             >
-              <Search size={16} />
+              <Search size={16} className="text-primary/60" />
               <span>Search products...</span>
+              <kbd className="ml-auto hidden lg:inline-flex items-center gap-0.5 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                ⌘K
+              </kbd>
             </button>
 
             {/* Right icons */}
