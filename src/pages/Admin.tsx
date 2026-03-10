@@ -21,6 +21,7 @@ import AdminCoupons from '@/components/admin/AdminCoupons';
 import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminBlog from '@/components/admin/AdminBlog';
 import AdminReviews from '@/components/admin/AdminReviews';
+import AdminFlashSales from '@/components/admin/AdminFlashSales';
 
 interface Analytics {
   totalOrders: number;
