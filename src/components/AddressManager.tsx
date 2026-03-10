@@ -565,7 +565,7 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="city" className="text-xs">City</Label>
-                <Input id="city" name="city" defaultValue={editingAddress?.city} placeholder="e.g. Mumbai" />
+                <Input id="city" name="city" defaultValue={editingAddress?.city} placeholder="City" />
                 {addressErrors.city && <p className="text-[11px] text-destructive">{addressErrors.city}</p>}
               </div>
               <div className="space-y-1">
