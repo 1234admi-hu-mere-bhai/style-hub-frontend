@@ -27,6 +27,7 @@ const AdminNotifications = () => {
   const [showForm, setShowForm] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [form, setForm] = useState({ title: '', message: '', type: 'info' });
+  const [sendingPush, setSendingPush] = useState(false);
 
   useEffect(() => { fetchNotifications(); }, []);
 
