@@ -80,7 +80,7 @@ const Header = () => {
             {/* Center: Search bar */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="hidden sm:flex items-center gap-2 flex-1 max-w-md mx-4 lg:mx-8 px-4 py-2.5 rounded-full border border-border bg-secondary/40 text-muted-foreground text-sm hover:bg-secondary/80 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 active:scale-[0.98] transition-all duration-200"
+              className="hidden sm:flex items-center gap-2 flex-1 max-w-md mx-4 lg:mx-8 px-4 py-2.5 rounded-full border border-border bg-secondary/40 text-muted-foreground text-sm hover:bg-secondary/80 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 active:scale-[0.98] transition-all duration-200 animate-search-glow"
             >
               <Search size={16} className="text-primary/60" />
               <span>Search products...</span>
