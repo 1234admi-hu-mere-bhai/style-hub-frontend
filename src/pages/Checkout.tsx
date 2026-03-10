@@ -109,11 +109,14 @@ const Checkout = () => {
   // Calculate discount
   const discountAmount = useMemo(() => {
     if (!appliedCoupon) return 0;
+    // When flash sale items exist, apply coupon only to non-flash-sale items
+    const couponBase = hasFlashSaleItems ? nonFlashSaleTotal : totalPrice;
+    if (couponBase <= 0) return 0;
     if (appliedCoupon.discount_type === 'percentage') {
-      return Math.round(totalPrice * (appliedCoupon.discount_value / 100));
+      return Math.round(couponBase * (appliedCoupon.discount_value / 100));
     }
-    return appliedCoupon.discount_value;
-  }, [appliedCoupon, totalPrice]);
+    return Math.min(appliedCoupon.discount_value, couponBase);
+  }, [appliedCoupon, totalPrice, hasFlashSaleItems, nonFlashSaleTotal]);
 
   // Calculate product-level discounts (originalPrice vs price)
   const flashSaleDiscount = useMemo(() => {
