@@ -286,6 +286,7 @@ const Checkout = () => {
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
     setAddressForm(prev => ({ ...prev, [id]: value }));
+    setAddressErrors(prev => ({ ...prev, [id]: '' }));
 
     // Auto-fetch city & state when pincode is 6 digits
     if (id === 'pincode' && /^\d{6}$/.test(value)) {
