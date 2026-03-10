@@ -51,6 +51,7 @@ const Profile = () => {
   const { user, isLoading: authLoading, signOut } = useAuth();
 
   const [profile, setProfile] = useState({ firstName: '', lastName: '', email: '', phone: '' });
+  const [profileErrors, setProfileErrors] = useState<Record<string, string>>({});
   const { addresses, setAddresses } = useAddresses();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
