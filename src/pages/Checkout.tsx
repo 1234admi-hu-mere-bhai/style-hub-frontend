@@ -624,34 +624,39 @@ const Checkout = () => {
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="firstName">First Name</Label>
-                          <Input id="firstName" placeholder="First Name" value={addressForm.firstName} onChange={handleAddressChange} required />
+                          <Input id="firstName" placeholder="First Name" value={addressForm.firstName} onChange={handleAddressChange} className={addressErrors.firstName ? 'border-destructive' : ''} />
+                          {addressErrors.firstName && <p className="text-xs text-destructive">{addressErrors.firstName}</p>}
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="lastName">Last Name</Label>
-                          <Input id="lastName" placeholder="Last Name" value={addressForm.lastName} onChange={handleAddressChange} required />
+                          <Input id="lastName" placeholder="Last Name" value={addressForm.lastName} onChange={handleAddressChange} />
                         </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="phone">Phone Number</Label>
-                        <Input id="phone" type="tel" placeholder="Phone Number" value={addressForm.phone} onChange={handleAddressChange} required />
+                        <Input id="phone" type="tel" placeholder="Phone Number" value={addressForm.phone} onChange={handleAddressChange} className={addressErrors.phone ? 'border-destructive' : ''} />
+                        {addressErrors.phone && <p className="text-xs text-destructive">{addressErrors.phone}</p>}
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="address">Address</Label>
-                        <Input id="address" placeholder="Street Address" value={addressForm.address} onChange={handleAddressChange} required />
+                        <Input id="address" placeholder="Street Address" value={addressForm.address} onChange={handleAddressChange} className={addressErrors.address ? 'border-destructive' : ''} />
+                        {addressErrors.address && <p className="text-xs text-destructive">{addressErrors.address}</p>}
                       </div>
                       <div className="space-y-2">
                           <Label htmlFor="pincode">PIN Code</Label>
-                          <Input id="pincode" placeholder="PIN Code" value={addressForm.pincode} onChange={handleAddressChange} required maxLength={6} />
+                          <Input id="pincode" placeholder="PIN Code" value={addressForm.pincode} onChange={handleAddressChange} className={addressErrors.pincode ? 'border-destructive' : ''} maxLength={6} />
+                          {addressErrors.pincode && <p className="text-xs text-destructive">{addressErrors.pincode}</p>}
                         </div>
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="city">City</Label>
-                          <Input id="city" placeholder="City" value={addressForm.city} onChange={handleAddressChange} required />
+                          <Input id="city" placeholder="City" value={addressForm.city} onChange={handleAddressChange} className={addressErrors.city ? 'border-destructive' : ''} />
+                          {addressErrors.city && <p className="text-xs text-destructive">{addressErrors.city}</p>}
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="state">State</Label>
-                          <Select value={addressForm.state} onValueChange={(val) => setAddressForm(prev => ({ ...prev, state: val }))}>
-                            <SelectTrigger>
+                          <Select value={addressForm.state} onValueChange={(val) => { setAddressForm(prev => ({ ...prev, state: val })); setAddressErrors(prev => ({ ...prev, state: '' })); }}>
+                            <SelectTrigger className={addressErrors.state ? 'border-destructive' : ''}>
                               <SelectValue placeholder="Select state" />
                             </SelectTrigger>
                             <SelectContent>
@@ -660,6 +665,7 @@ const Checkout = () => {
                               ))}
                             </SelectContent>
                           </Select>
+                          {addressErrors.state && <p className="text-xs text-destructive">{addressErrors.state}</p>}
                         </div>
                       </div>
                       <div className="space-y-2">
