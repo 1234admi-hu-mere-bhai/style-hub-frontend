@@ -173,20 +173,24 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
             <Input
               type="text"
               value={newReview.title}
-              onChange={(e) => setNewReview({ ...newReview, title: e.target.value })}
+              onChange={(e) => { setNewReview({ ...newReview, title: e.target.value }); setReviewErrors(prev => ({ ...prev, title: '' })); }}
               placeholder="Review Title"
+              className={reviewErrors.title ? 'border-destructive' : ''}
               maxLength={100}
             />
+            {reviewErrors.title && <p className="text-xs text-destructive">{reviewErrors.title}</p>}
           </div>
           <div>
             <label className="text-sm font-medium mb-2 block">Your Review</label>
             <Textarea
               value={newReview.comment}
-              onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+              onChange={(e) => { setNewReview({ ...newReview, comment: e.target.value }); setReviewErrors(prev => ({ ...prev, comment: '' })); }}
               placeholder="Your Review"
+              className={reviewErrors.comment ? 'border-destructive' : ''}
               rows={4}
               maxLength={1000}
             />
+            {reviewErrors.comment && <p className="text-xs text-destructive">{reviewErrors.comment}</p>}
           </div>
           {/* Photo Upload */}
           <div>
