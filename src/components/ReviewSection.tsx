@@ -160,12 +160,11 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
           </div>
           <div>
             <label className="text-sm font-medium mb-2 block">Review Title</label>
-            <input
+            <Input
               type="text"
               value={newReview.title}
               onChange={(e) => setNewReview({ ...newReview, title: e.target.value })}
-               placeholder="Review Title"
-               className="w-full px-5 py-2 border border-border rounded-full bg-background"
+              placeholder="Review Title"
               maxLength={100}
             />
           </div>

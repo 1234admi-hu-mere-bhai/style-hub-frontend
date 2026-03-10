@@ -164,11 +164,10 @@ const Admin = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Password</label>
-              <input
+              <Input
                 type="password"
                 value={loginPassword}
                 onChange={e => setLoginPassword(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Password"
                 required
               />

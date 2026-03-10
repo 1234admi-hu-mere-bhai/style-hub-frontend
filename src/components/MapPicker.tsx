@@ -276,13 +276,13 @@ const MapPicker = ({ open, onClose, onLocationSelect }: MapPickerProps) => {
                 size={16}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
               />
-              <input
+              <Input
                 type="text"
                 placeholder="Search an area or address"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => searchResults.length > 0 && setShowResults(true)}
-                className="w-full h-11 pl-10 pr-10 border border-border rounded-lg bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors"
+                className="pl-10 pr-10"
               />
               {isSearching && (
                 <Loader2
