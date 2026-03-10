@@ -50,26 +50,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
     }
   };
 
-  const handleQuickAdd = (e: React.MouseEvent) => {
-    e.preventDefault();
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      originalPrice: product.originalPrice,
-      image: product.images[0],
-      size: product.sizes[0] || '',
-      color: product.colors[0]?.name || '',
-      quantity: 1,
-    });
-    toast.success('Added to cart', {
-      duration: 5000,
-      action: {
-        label: 'Go to Cart',
-        onClick: () => setCartOpen(true),
-      },
-    });
-  };
 
   return (
     <Link
