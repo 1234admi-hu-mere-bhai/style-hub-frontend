@@ -281,20 +281,26 @@ const Profile = () => {
                       <Input
                         id="firstName"
                         value={profile.firstName}
-                        onChange={(e) =>
-                          setProfile({ ...profile, firstName: e.target.value })
-                        }
+                        onChange={(e) => {
+                          setProfile({ ...profile, firstName: e.target.value });
+                          setProfileErrors(prev => ({ ...prev, firstName: '' }));
+                        }}
+                        className={profileErrors.firstName ? 'border-destructive' : ''}
                       />
+                      {profileErrors.firstName && <p className="text-xs text-destructive">{profileErrors.firstName}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
                       <Input
                         id="lastName"
                         value={profile.lastName}
-                        onChange={(e) =>
-                          setProfile({ ...profile, lastName: e.target.value })
-                        }
+                        onChange={(e) => {
+                          setProfile({ ...profile, lastName: e.target.value });
+                          setProfileErrors(prev => ({ ...prev, lastName: '' }));
+                        }}
+                        className={profileErrors.lastName ? 'border-destructive' : ''}
                       />
+                      {profileErrors.lastName && <p className="text-xs text-destructive">{profileErrors.lastName}</p>}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -317,10 +323,13 @@ const Profile = () => {
                       id="phone"
                       type="tel"
                       value={profile.phone}
-                      onChange={(e) =>
-                        setProfile({ ...profile, phone: e.target.value })
-                      }
+                      onChange={(e) => {
+                        setProfile({ ...profile, phone: e.target.value });
+                        setProfileErrors(prev => ({ ...prev, phone: '' }));
+                      }}
+                      className={profileErrors.phone ? 'border-destructive' : ''}
                     />
+                    {profileErrors.phone && <p className="text-xs text-destructive">{profileErrors.phone}</p>}
                   </div>
                   <Button type="submit">Save Changes</Button>
                 </form>
