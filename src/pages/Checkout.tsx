@@ -942,8 +942,8 @@ const Checkout = () => {
                 </div>
                 {totalSavings > 0 && (
                   <div className="mt-3 p-3 bg-success/10 rounded-lg flex items-center gap-2 text-sm font-medium text-success">
-                    <Tag size={16} />
-                    Yay! Your total discount is {formatPrice(totalSavings)}
+                    {hasFlashSaleItems ? <Zap size={16} /> : <Tag size={16} />}
+                    Yay! You're saving {formatPrice(totalSavings)}{hasFlashSaleItems ? ' with Flash Sale' : ''}{discountAmount > 0 ? ' + coupon' : ''}!
                   </div>
                 )}
               </div>
