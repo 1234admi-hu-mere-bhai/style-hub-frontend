@@ -646,7 +646,6 @@ const Checkout = () => {
                         {editingAddressId ? 'Update Address' : 'Save Address & Continue'}
                       </Button>
                     )}
-                    )}
                     {savedAddresses.length === 0 && (
                       <Button onClick={handleContinue} className="w-full" size="lg">
                         Continue to Review
