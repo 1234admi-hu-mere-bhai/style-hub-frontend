@@ -254,7 +254,7 @@ const AdminProducts = () => {
               </div>
               <div>
                 <Label>Image URL *</Label>
-                <Input value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} placeholder="https://... or /assets/product-1.jpg" />
+                <Input value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} placeholder="Image URL" />
               </div>
               <div>
                 <Label>Stock Quantity</Label>
