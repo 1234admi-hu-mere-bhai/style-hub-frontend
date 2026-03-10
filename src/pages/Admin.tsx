@@ -8,6 +8,7 @@ import {
   Tag, Bell, FileText, Menu, X, ChevronRight, Store, MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import logoNew from '@/assets/logo-new.png';
 import AdminDashboard from '@/components/admin/AdminDashboard';
 import AdminOrders from '@/components/admin/AdminOrders';

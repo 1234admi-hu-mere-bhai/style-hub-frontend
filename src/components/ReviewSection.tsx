@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { Star, ThumbsUp, Camera, User, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
