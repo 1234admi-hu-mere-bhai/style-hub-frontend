@@ -48,6 +48,36 @@ interface AddressManagerProps {
 
 type AddressType = 'home' | 'work' | 'other';
 
+// State select sub-component that listens for pincode auto-fill events
+const AddressStateSelect = ({ defaultValue }: { defaultValue?: string }) => {
+  const [value, setValue] = useState(defaultValue || '');
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const state = (e as CustomEvent).detail;
+      setValue(state);
+    };
+    document.addEventListener('pincode-state-update', handler);
+    return () => document.removeEventListener('pincode-state-update', handler);
+  }, []);
+
+  return (
+    <>
+      <input type="hidden" name="state" id="state-hidden" value={value} />
+      <Select value={value} onValueChange={setValue}>
+        <SelectTrigger className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary h-10">
+          <SelectValue placeholder="Select state" />
+        </SelectTrigger>
+        <SelectContent>
+          {INDIAN_STATES.map(s => (
+            <SelectItem key={s} value={s}>{s}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </>
+  );
+};
+
 const addressTypeIcons: Record<AddressType, typeof Home> = {
   home: Home,
   work: Briefcase,
