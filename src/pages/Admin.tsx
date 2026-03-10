@@ -8,6 +8,7 @@ import {
   Tag, Bell, FileText, Menu, X, ChevronRight, Store, MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import logoNew from '@/assets/logo-new.png';
 import AdminDashboard from '@/components/admin/AdminDashboard';
 import AdminOrders from '@/components/admin/AdminOrders';
@@ -154,22 +155,20 @@ const Admin = () => {
             )}
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
-              <input
+              <Input
                 type="email"
                 value={loginEmail}
                 onChange={e => setLoginEmail(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Email Address"
                 required
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">Password</label>
-              <input
+              <Input
                 type="password"
                 value={loginPassword}
                 onChange={e => setLoginPassword(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 placeholder="Password"
                 required
               />
