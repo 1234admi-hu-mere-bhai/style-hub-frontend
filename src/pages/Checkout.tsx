@@ -295,13 +295,21 @@ const Checkout = () => {
         setIsPlacingOrder(false);
       }
     },
-    onError: (error) => {
-      toast.error('Payment failed', {
-        description: error.message,
-      });
+    onError: async (error) => {
+      toast.error('Payment failed', { description: error.message });
+      const ended = await revalidateCartPrices();
+      if (ended) {
+        setFlashSaleExpired(true);
+        toast.warning('⚡ Flash Sale has ended! Prices have been updated. Please review your order.', { duration: 10000 });
+      }
     },
-    onDismiss: () => {
+    onDismiss: async () => {
       toast.info('Payment cancelled');
+      const ended = await revalidateCartPrices();
+      if (ended) {
+        setFlashSaleExpired(true);
+        toast.warning('⚡ Flash Sale has ended! Prices have been updated. Please review your order.', { duration: 10000 });
+      }
     },
   });
 
