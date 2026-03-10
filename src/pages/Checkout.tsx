@@ -823,10 +823,39 @@ const Checkout = () => {
             {step === 'summary' && (
               <div className="lg:hidden bg-card p-4 rounded-lg border border-border space-y-3">
                 {allFlashSaleItems ? (
+                  <>
                   <div className="flex items-center gap-2 p-3 bg-accent/10 rounded-lg border border-accent/30">
                     <Zap size={16} className="text-accent" />
                      <span className="text-sm font-medium text-foreground">⚡ Flash Sale discount applied — coupons not available</span>
                   </div>
+                  {availableCoupons.length > 0 && (
+                    <div className="space-y-2 pt-2 opacity-60">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Available Offers</p>
+                      {availableCoupons.map((coupon) => (
+                        <div key={coupon.id} className="border border-border rounded-lg overflow-hidden">
+                          <div className="flex">
+                            <div className="w-14 bg-primary/10 flex items-center justify-center shrink-0">
+                              <span className="text-[10px] font-bold text-primary -rotate-90 whitespace-nowrap">
+                                {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% OFF` : `₹${coupon.discount_value} OFF`}
+                              </span>
+                            </div>
+                            <div className="flex-1 p-3">
+                              <div className="flex items-center justify-between">
+                                <span className="font-bold text-sm">{coupon.code}</span>
+                                <span className="text-xs font-semibold text-muted-foreground cursor-not-allowed">APPLY</span>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {coupon.discount_type === 'percentage'
+                                  ? `Flat ${coupon.discount_value}% off on orders above ₹${coupon.min_order_value || 0}`
+                                  : `Flat ₹${coupon.discount_value} off on orders above ₹${coupon.min_order_value || 0}`}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  </>
                 ) : appliedCoupon ? (
                   <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg border border-success/30">
                     <div className="flex items-center gap-2">
