@@ -65,7 +65,7 @@ const AddressStateSelect = ({ defaultValue }: { defaultValue?: string }) => {
     <>
       <input type="hidden" name="state" id="state-hidden" value={value} />
       <Select value={value} onValueChange={setValue}>
-        <SelectTrigger className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary h-10">
+        <SelectTrigger>
           <SelectValue placeholder="Select state" />
         </SelectTrigger>
         <SelectContent>
