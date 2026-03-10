@@ -476,15 +476,16 @@ const Index = () => {
           <div className="relative rounded-2xl overflow-hidden bg-primary p-8 lg:p-16 text-primary-foreground">
             <div className="relative z-10 max-w-xl">
               <span className="inline-block bg-primary-foreground/20 px-4 py-1 rounded-full text-sm font-medium mb-4">
-                ✨ EXCLUSIVE DROP ALERT
+                LIMITED TIME OFFER
               </span>
               <h2 className="font-serif text-3xl lg:text-5xl font-bold mb-4">
-                Join the
+                Get 20% Off
                 <br />
-                Style Inner Circle
+                Your First Order
               </h2>
               <p className="text-primary-foreground/80 mb-8">
-                Unlock 20% off your first order + early access to drops, secret sales & style tips straight to your inbox. Don't just follow trends — start them.
+                Sign up for our newsletter and receive an exclusive discount code.
+                Plus, be the first to know about new arrivals and sales.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 {discountCode ? (
