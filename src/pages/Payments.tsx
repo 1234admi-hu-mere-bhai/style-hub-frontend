@@ -629,7 +629,7 @@ const Payments = () => {
                 <Input
                   id="holderName"
                   placeholder="Account Holder's Name"
-                  className="border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                   className=""
                   value={bankForm.holderName}
                   onChange={(e) => setBankForm({ ...bankForm, holderName: e.target.value })}
                 />
