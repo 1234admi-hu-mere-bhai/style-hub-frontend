@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingBag, Star } from 'lucide-react';
+import { Heart, Star } from 'lucide-react';
 import { useWishlist } from '@/contexts/WishlistContext';
-import { useCart } from '@/contexts/CartContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import { toast } from 'sonner';
 
@@ -28,7 +27,7 @@ interface ProductCardProps {
 const ProductCard = ({ product }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const { addToCart, setCartOpen } = useCart();
+  
   const { formatPrice } = useCurrency();
   
   const inWishlist = isInWishlist(product.id);
@@ -50,26 +49,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
     }
   };
 
-  const handleQuickAdd = (e: React.MouseEvent) => {
-    e.preventDefault();
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      originalPrice: product.originalPrice,
-      image: product.images[0],
-      size: product.sizes[0] || '',
-      color: product.colors[0]?.name || '',
-      quantity: 1,
-    });
-    toast.success('Added to cart', {
-      duration: 5000,
-      action: {
-        label: 'Go to Cart',
-        onClick: () => setCartOpen(true),
-      },
-    });
-  };
 
   return (
     <Link
@@ -105,20 +84,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <Heart size={18} className={inWishlist ? 'fill-current' : ''} />
         </button>
 
-        {/* Quick add overlay */}
-        <div
-          className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background/90 to-transparent transition-all duration-300 ${
-            isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          }`}
-        >
-          <button
-            onClick={handleQuickAdd}
-            className="w-full py-3 bg-foreground text-background font-medium text-sm uppercase tracking-wider hover:bg-primary transition-colors rounded flex items-center justify-center gap-2"
-          >
-            <ShoppingBag size={16} />
-            Quick Add
-          </button>
-        </div>
       </div>
 
       <div className="mt-4 space-y-1">
