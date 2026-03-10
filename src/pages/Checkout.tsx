@@ -34,9 +34,21 @@ const Checkout = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { items: cartItems, totalPrice: cartTotalPrice, clearCart, buyNowItem, setBuyNowItem, removeFromCart, revalidateCartPrices } = useCart();
+  const [flashSaleExpired, setFlashSaleExpired] = useState(false);
 
-  // Revalidate flash sale prices on checkout load
-  useEffect(() => { revalidateCartPrices(); }, []);
+  // Revalidate flash sale prices on checkout load and every 30s
+  useEffect(() => {
+    const check = async () => {
+      const ended = await revalidateCartPrices();
+      if (ended) {
+        setFlashSaleExpired(true);
+        toast.warning('⚡ Flash Sale has ended! Prices have been updated to original.', { duration: 8000 });
+      }
+    };
+    check();
+    const interval = setInterval(check, 30000);
+    return () => clearInterval(interval);
+  }, []);
   const { addToWishlist } = useWishlist();
   const { user, isLoading: authLoading } = useAuth();
   const { formatPrice } = useCurrency();
@@ -283,13 +295,21 @@ const Checkout = () => {
         setIsPlacingOrder(false);
       }
     },
-    onError: (error) => {
-      toast.error('Payment failed', {
-        description: error.message,
-      });
+    onError: async (error) => {
+      toast.error('Payment failed', { description: error.message });
+      const ended = await revalidateCartPrices();
+      if (ended) {
+        setFlashSaleExpired(true);
+        toast.warning('⚡ Flash Sale has ended! Prices have been updated. Please review your order.', { duration: 10000 });
+      }
     },
-    onDismiss: () => {
+    onDismiss: async () => {
       toast.info('Payment cancelled');
+      const ended = await revalidateCartPrices();
+      if (ended) {
+        setFlashSaleExpired(true);
+        toast.warning('⚡ Flash Sale has ended! Prices have been updated. Please review your order.', { duration: 10000 });
+      }
     },
   });
 
@@ -549,6 +569,20 @@ const Checkout = () => {
             </div>
           ))}
         </div>
+
+        {/* Flash Sale Expired Banner */}
+        {flashSaleExpired && (
+          <div className="flex items-center gap-3 p-4 bg-destructive/10 border border-destructive/30 rounded-lg animate-fade-in">
+            <Zap size={20} className="text-destructive shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">⚡ Flash Sale has ended</p>
+              <p className="text-xs text-muted-foreground">Prices have been updated to their original values. Please review your order total.</p>
+            </div>
+            <button onClick={() => setFlashSaleExpired(false)} className="ml-auto shrink-0 text-muted-foreground hover:text-foreground">
+              <X size={16} />
+            </button>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Form */}

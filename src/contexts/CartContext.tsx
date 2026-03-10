@@ -24,7 +24,7 @@ interface CartContextType {
   setBuyNowItem: (item: CartItem | null) => void;
   isCartOpen: boolean;
   setCartOpen: (open: boolean) => void;
-  revalidateCartPrices: () => Promise<void>;
+  revalidateCartPrices: () => Promise<boolean>; // returns true if flash sale ended and prices changed
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -62,8 +62,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, [buyNowItem]);
 
   // Revalidate cart prices against current DB prices & active flash sales
-  const revalidateCartPrices = useCallback(async () => {
-    if (items.length === 0) return;
+  const revalidateCartPrices = useCallback(async (): Promise<boolean> => {
+    if (items.length === 0) return false;
 
     const productIds = [...new Set(items.map(i => i.id))];
 
@@ -82,7 +82,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     ]);
 
     const dbProducts = productsResult.data as { id: string; price: number; original_price: number | null; discount: number | null }[] | null;
-    if (!dbProducts) return;
+    if (!dbProducts) return false;
 
     const flashSale = (flashResult.data as any[] | null)?.[0] ?? null;
     const flashProductIds: string[] = flashSale?.product_ids || [];
@@ -106,12 +106,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
     }
 
+    let flashSaleEnded = false;
+
     setItems(prev => {
       let changed = false;
       const updated = prev.map(item => {
         const current = priceMap.get(item.id);
         if (!current) return item;
         if (item.price !== current.price || item.originalPrice !== current.originalPrice) {
+          // Detect flash sale ending: item had originalPrice (was on sale) but now doesn't
+          if (item.originalPrice && item.originalPrice > item.price && !current.originalPrice) {
+            flashSaleEnded = true;
+          }
           changed = true;
           return { ...item, price: current.price, originalPrice: current.originalPrice };
         }
@@ -124,9 +130,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (buyNowItem) {
       const current = priceMap.get(buyNowItem.id);
       if (current && (buyNowItem.price !== current.price || buyNowItem.originalPrice !== current.originalPrice)) {
+        if (buyNowItem.originalPrice && buyNowItem.originalPrice > buyNowItem.price && !current.originalPrice) {
+          flashSaleEnded = true;
+        }
         setBuyNowItemState({ ...buyNowItem, price: current.price, originalPrice: current.originalPrice });
       }
     }
+
+    return flashSaleEnded;
   }, [items, buyNowItem]);
 
   // Revalidate on mount and every 30 seconds
