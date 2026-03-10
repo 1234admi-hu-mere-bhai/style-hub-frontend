@@ -177,7 +177,9 @@ const Checkout = () => {
       setAppliedCoupon({ code: data.code, discount_type: data.discount_type, discount_value: data.discount_value });
       setCouponCode(data.code);
       setSavingsOpen(false);
-      toast.success(`Coupon "${data.code}" applied! You save ₹${data.discount_type === 'percentage' ? Math.round(totalPrice * (data.discount_value / 100)) : data.discount_value}`);
+      const couponBase = hasFlashSaleItems ? nonFlashSaleTotal : totalPrice;
+      const savedAmount = data.discount_type === 'percentage' ? Math.round(couponBase * (data.discount_value / 100)) : Math.min(data.discount_value, couponBase);
+      toast.success(`Coupon "${data.code}" applied! You save ₹${savedAmount}${hasFlashSaleItems ? ' (on non-sale items)' : ''}`);
     } catch {
       toast.error('Failed to validate coupon');
     } finally {
