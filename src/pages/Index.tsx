@@ -48,11 +48,11 @@ const Index = () => {
       return;
     }
     setSubscribing(true);
-    const code = 'WELCOME30';
+    const code = 'WELCOME20';
     setTimeout(() => {
       setDiscountCode(code);
       setSubscribing(false);
-      toast.success(`🎉 Your 30% discount code: ${code}`, { duration: 10000 });
+      toast.success(`🎉 Your 20% discount code: ${code}`, { duration: 10000 });
     }, 800);
   }, [newsletterEmail]);
 
@@ -479,7 +479,7 @@ const Index = () => {
                 LIMITED TIME OFFER
               </span>
               <h2 className="font-serif text-3xl lg:text-5xl font-bold mb-4">
-                Get 30% Off
+                Get 20% Off
                 <br />
                 Your First Order
               </h2>
