@@ -106,15 +106,6 @@ const Checkout = () => {
     }
   }, [savedAddresses]);
 
-  // Calculate discount
-  const discountAmount = useMemo(() => {
-    if (!appliedCoupon) return 0;
-    if (appliedCoupon.discount_type === 'percentage') {
-      return Math.round(totalPrice * (appliedCoupon.discount_value / 100));
-    }
-    return appliedCoupon.discount_value;
-  }, [appliedCoupon, totalPrice]);
-
   // Calculate product-level discounts (originalPrice vs price)
   const flashSaleDiscount = useMemo(() => {
     return items.reduce((sum, item) => {
@@ -128,6 +119,28 @@ const Checkout = () => {
   const hasFlashSaleItems = useMemo(() => {
     return items.some(item => item.originalPrice && item.originalPrice > item.price);
   }, [items]);
+
+  const allFlashSaleItems = useMemo(() => {
+    return items.length > 0 && items.every(item => item.originalPrice && item.originalPrice > item.price);
+  }, [items]);
+
+  const nonFlashSaleTotal = useMemo(() => {
+    return items.reduce((sum, item) => {
+      if (item.originalPrice && item.originalPrice > item.price) return sum;
+      return sum + item.price * item.quantity;
+    }, 0);
+  }, [items]);
+
+  // Calculate coupon discount — applies only to non-flash-sale items
+  const discountAmount = useMemo(() => {
+    if (!appliedCoupon) return 0;
+    const couponBase = hasFlashSaleItems ? nonFlashSaleTotal : totalPrice;
+    if (couponBase <= 0) return 0;
+    if (appliedCoupon.discount_type === 'percentage') {
+      return Math.round(couponBase * (appliedCoupon.discount_value / 100));
+    }
+    return Math.min(appliedCoupon.discount_value, couponBase);
+  }, [appliedCoupon, totalPrice, hasFlashSaleItems, nonFlashSaleTotal]);
 
   const totalProductDiscount = flashSaleDiscount;
 
@@ -144,7 +157,7 @@ const Checkout = () => {
   const finalTotal = totalPrice - discountAmount + shippingCost;
 
   const handleApplyCoupon = useCallback(async (codeOverride?: string) => {
-    if (hasFlashSaleItems) { toast.error('Coupons cannot be applied with Flash Sale items'); return; }
+    if (allFlashSaleItems) { toast.error('All items are on Flash Sale — coupons not available'); return; }
     const code = (codeOverride || couponCode).trim().toUpperCase();
     if (!code) { toast.error('Please enter a coupon code'); return; }
     setCouponLoading(true);
@@ -164,19 +177,22 @@ const Checkout = () => {
       setAppliedCoupon({ code: data.code, discount_type: data.discount_type, discount_value: data.discount_value });
       setCouponCode(data.code);
       setSavingsOpen(false);
-      toast.success(`Coupon "${data.code}" applied! You save ₹${data.discount_type === 'percentage' ? Math.round(totalPrice * (data.discount_value / 100)) : data.discount_value}`);
+      const couponBase = hasFlashSaleItems ? nonFlashSaleTotal : totalPrice;
+      const savedAmount = data.discount_type === 'percentage' ? Math.round(couponBase * (data.discount_value / 100)) : Math.min(data.discount_value, couponBase);
+      toast.success(`Coupon "${data.code}" applied! You save ₹${savedAmount}${hasFlashSaleItems ? ' (on non-sale items)' : ''}`);
     } catch {
       toast.error('Failed to validate coupon');
     } finally {
       setCouponLoading(false);
     }
-  }, [couponCode, totalPrice]);
+  }, [couponCode, totalPrice, allFlashSaleItems]);
 
   const removeCoupon = () => { setAppliedCoupon(null); setCouponCode(''); toast.info('Coupon removed'); };
 
   const getCouponSavings = (coupon: any) => {
-    if (coupon.discount_type === 'percentage') return Math.round(totalPrice * (coupon.discount_value / 100));
-    return coupon.discount_value;
+    const base = hasFlashSaleItems ? nonFlashSaleTotal : totalPrice;
+    if (coupon.discount_type === 'percentage') return Math.round(base * (coupon.discount_value / 100));
+    return Math.min(coupon.discount_value, base);
   };
 
   const getAmountNeeded = (coupon: any) => {
@@ -803,7 +819,7 @@ const Checkout = () => {
             {/* Mobile Coupon Section - visible on mobile only */}
             {step === 'summary' && (
               <div className="lg:hidden bg-card p-4 rounded-lg border border-border space-y-3">
-                {hasFlashSaleItems ? (
+                {allFlashSaleItems ? (
                   <div className="flex items-center gap-2 p-3 bg-accent/10 rounded-lg border border-accent/30">
                     <Zap size={16} className="text-accent" />
                      <span className="text-sm font-medium text-foreground">⚡ Flash Sale discount applied — coupons not available</span>
@@ -812,7 +828,7 @@ const Checkout = () => {
                   <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg border border-success/30">
                     <div className="flex items-center gap-2">
                       <Tag size={16} className="text-success" />
-                      <span className="text-sm font-semibold text-success">{appliedCoupon.code} applied ✓</span>
+                      <span className="text-sm font-semibold text-success">{appliedCoupon.code} applied ✓{hasFlashSaleItems ? ' (non-sale items only)' : ''}</span>
                     </div>
                     <button onClick={removeCoupon} className="text-xs text-destructive hover:underline">Remove</button>
                   </div>
@@ -930,7 +946,7 @@ const Checkout = () => {
                   )}
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-success">
-                      <span>Coupon Discount ({appliedCoupon?.code})</span>
+                      <span>Coupon ({appliedCoupon?.code}){hasFlashSaleItems ? ' — non-sale items' : ''}</span>
                       <span>- {formatPrice(discountAmount)}</span>
                     </div>
                   )}
@@ -962,7 +978,7 @@ const Checkout = () => {
               <div className="bg-card p-6 rounded-lg border border-border sticky top-28">
                 {/* Savings Corner (top) */}
                 <div className="space-y-3">
-                  {hasFlashSaleItems ? (
+                  {allFlashSaleItems ? (
                     <div className="flex items-center gap-2 p-3 bg-accent/10 rounded-lg border border-accent/30">
                       <Zap size={16} className="text-accent" />
                       <span className="text-sm font-medium text-foreground">⚡ Flash Sale discount applied — coupons not available</span>
@@ -971,7 +987,7 @@ const Checkout = () => {
                     <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg border border-success/30">
                       <div className="flex items-center gap-2">
                         <Tag size={16} className="text-success" />
-                        <span className="text-sm font-semibold text-success">{appliedCoupon.code} applied ✓</span>
+                        <span className="text-sm font-semibold text-success">{appliedCoupon.code} applied ✓{hasFlashSaleItems ? ' (non-sale items only)' : ''}</span>
                       </div>
                       <button onClick={removeCoupon} className="text-xs text-destructive hover:underline">Remove</button>
                     </div>
