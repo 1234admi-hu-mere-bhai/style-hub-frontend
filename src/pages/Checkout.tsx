@@ -465,117 +465,146 @@ const Checkout = () => {
 
             {step === 'address' && (
               <div className="bg-card p-6 rounded-lg border border-border">
-                <h2 className="font-semibold text-lg mb-6 flex items-center gap-2">
+                <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
                   <MapPin size={20} />
                   Delivery Address
                 </h2>
-                <form className="space-y-4">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input 
-                        id="firstName" 
-                        placeholder="John" 
-                        value={addressForm.firstName}
-                        onChange={handleAddressChange}
-                        required 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input 
-                        id="lastName" 
-                        placeholder="Doe" 
-                        value={addressForm.lastName}
-                        onChange={handleAddressChange}
-                        required 
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number</Label>
-                    <Input 
-                      id="phone" 
-                      type="tel" 
-                      placeholder="+91 98765 43210" 
-                      value={addressForm.phone}
-                      onChange={handleAddressChange}
-                      required 
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="address">Address</Label>
-                    <Input 
-                      id="address" 
-                      placeholder="House No, Street Name" 
-                      value={addressForm.address}
-                      onChange={handleAddressChange}
-                      required 
-                    />
-                  </div>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="city">City</Label>
-                      <Input 
-                        id="city" 
-                        placeholder="Mumbai" 
-                        value={addressForm.city}
-                        onChange={handleAddressChange}
-                        required 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="state">State</Label>
-                      <Input 
-                        id="state" 
-                        placeholder="Maharashtra" 
-                        value={addressForm.state}
-                        onChange={handleAddressChange}
-                        required 
-                      />
-                    </div>
-                  </div>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="pincode">PIN Code</Label>
-                      <Input 
-                        id="pincode" 
-                        placeholder="400001" 
-                        value={addressForm.pincode}
-                        onChange={handleAddressChange}
-                        required 
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="landmark">Landmark (Optional)</Label>
-                      <Input 
-                        id="landmark" 
-                        placeholder="Near..." 
-                        value={addressForm.landmark}
-                        onChange={handleAddressChange}
-                      />
-                    </div>
-                  </div>
 
-                  {/* Pincode Delivery Checker */}
-                  <div className="bg-secondary/30 p-4 rounded-lg space-y-2">
-                    <h3 className="text-sm font-medium flex items-center gap-2">
-                      <Clock size={16} className="text-primary" />
-                      Check Delivery Availability
-                    </h3>
-                    <PincodeChecker
-                      pincode={addressForm.pincode}
-                      onDeliveryInfo={setDeliveryInfo}
-                    />
+                {/* Saved Addresses List */}
+                {savedAddresses.length > 0 && !showNewAddressForm && (
+                  <div className="space-y-3 mb-4">
+                    <p className="text-sm text-muted-foreground">Select a saved address to deliver to:</p>
+                    {savedAddresses.map((addr) => (
+                      <button
+                        key={addr.id}
+                        onClick={() => selectSavedAddress(addr)}
+                        className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                          selectedAddressId === addr.id
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border hover:border-muted-foreground/40'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                            selectedAddressId === addr.id ? 'border-primary bg-primary' : 'border-muted-foreground/40'
+                          }`}>
+                            {selectedAddressId === addr.id && <Check size={12} className="text-primary-foreground" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className="font-semibold text-sm">{addr.fullName}</span>
+                              {addr.isDefault && (
+                                <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-primary/10 text-primary rounded">Default</span>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">{addr.phone}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {addr.address}{addr.landmark ? `, ${addr.landmark}` : ''}, {addr.city}, {addr.state} - {addr.pincode}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+
+                    <button
+                      onClick={() => {
+                        setShowNewAddressForm(true);
+                        setSelectedAddressId(null);
+                        setAddressForm({ firstName: '', lastName: '', phone: '', address: '', city: '', state: '', pincode: '', landmark: '' });
+                      }}
+                      className="w-full flex items-center gap-2 p-3 rounded-xl border-2 border-dashed border-border hover:border-primary/50 text-sm font-medium text-primary transition-colors"
+                    >
+                      <Plus size={16} />
+                      Add New Address
+                    </button>
                   </div>
-                </form>
-                <Button
-                  onClick={handleContinue}
-                  className="w-full mt-4 lg:mt-6"
-                  size="lg"
-                >
-                  Continue to Review
-                </Button>
+                )}
+
+                {/* New Address Form (shown when no saved addresses or user clicks Add New) */}
+                {(savedAddresses.length === 0 || showNewAddressForm) && (
+                  <div className="space-y-4">
+                    {showNewAddressForm && (
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-medium">Add New Address</p>
+                        {savedAddresses.length > 0 && (
+                          <Button variant="ghost" size="sm" onClick={() => {
+                            setShowNewAddressForm(false);
+                            const defaultAddr = savedAddresses.find(a => a.isDefault) || savedAddresses[0];
+                            if (defaultAddr) selectSavedAddress(defaultAddr);
+                          }}>
+                            Cancel
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                    <form className="space-y-4">
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="firstName">First Name</Label>
+                          <Input id="firstName" placeholder="John" value={addressForm.firstName} onChange={handleAddressChange} required />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="lastName">Last Name</Label>
+                          <Input id="lastName" placeholder="Doe" value={addressForm.lastName} onChange={handleAddressChange} required />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input id="phone" type="tel" placeholder="+91 98765 43210" value={addressForm.phone} onChange={handleAddressChange} required />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="address">Address</Label>
+                        <Input id="address" placeholder="House No, Street Name" value={addressForm.address} onChange={handleAddressChange} required />
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="city">City</Label>
+                          <Input id="city" placeholder="Mumbai" value={addressForm.city} onChange={handleAddressChange} required />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="state">State</Label>
+                          <Input id="state" placeholder="Maharashtra" value={addressForm.state} onChange={handleAddressChange} required />
+                        </div>
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="pincode">PIN Code</Label>
+                          <Input id="pincode" placeholder="400001" value={addressForm.pincode} onChange={handleAddressChange} required />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="landmark">Landmark (Optional)</Label>
+                          <Input id="landmark" placeholder="Near..." value={addressForm.landmark} onChange={handleAddressChange} />
+                        </div>
+                      </div>
+
+                      {/* Pincode Delivery Checker */}
+                      <div className="bg-secondary/30 p-4 rounded-lg space-y-2">
+                        <h3 className="text-sm font-medium flex items-center gap-2">
+                          <Clock size={16} className="text-primary" />
+                          Check Delivery Availability
+                        </h3>
+                        <PincodeChecker pincode={addressForm.pincode} onDeliveryInfo={setDeliveryInfo} />
+                      </div>
+                    </form>
+                    {(savedAddresses.length === 0 || showNewAddressForm) && showNewAddressForm && (
+                      <Button onClick={handleSaveNewAddress} className="w-full" size="lg">
+                        Save Address & Continue
+                      </Button>
+                    )}
+                    {savedAddresses.length === 0 && (
+                      <Button onClick={handleContinue} className="w-full" size="lg">
+                        Continue to Review
+                      </Button>
+                    )}
+                  </div>
+                )}
+
+                {/* Continue button for saved address selection */}
+                {savedAddresses.length > 0 && !showNewAddressForm && selectedAddressId && (
+                  <Button onClick={handleContinue} className="w-full" size="lg">
+                    Deliver to this Address
+                  </Button>
+                )}
               </div>
             )}
 
