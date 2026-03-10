@@ -399,8 +399,27 @@ const Checkout = () => {
         toast.error('Please save your new address first');
         return;
       }
-      if (!selectedAddressId || !addressForm.firstName || !addressForm.address) {
+      // If user has saved addresses, they must select one
+      if (savedAddresses.length > 0 && !selectedAddressId) {
         toast.error('Please select a delivery address');
+        return;
+      }
+      // If no saved addresses, validate the inline form
+      if (savedAddresses.length === 0) {
+        const result = checkoutAddressSchema.safeParse(addressForm);
+        if (!result.success) {
+          const newErrors: Record<string, string> = {};
+          result.error.errors.forEach((err) => {
+            if (err.path[0]) newErrors[err.path[0] as string] = err.message;
+          });
+          setAddressErrors(newErrors);
+          toast.error('Please fill in all required address fields');
+          return;
+        }
+        setAddressErrors({});
+      }
+      if (!addressForm.firstName || !addressForm.address) {
+        toast.error('Please fill in your delivery address');
         return;
       }
       setStep('summary');
