@@ -116,6 +116,9 @@ const Settings = () => {
             </div>
           </div>
 
+          {/* Push Notifications */}
+          <PushNotificationSettings />
+
           {/* Language */}
           <div className="bg-card p-6 rounded-lg border border-border">
             <h2 className="font-semibold text-xl mb-6 flex items-center gap-2">
