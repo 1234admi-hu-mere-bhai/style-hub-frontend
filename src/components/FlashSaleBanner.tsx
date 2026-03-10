@@ -7,8 +7,8 @@ import { useCurrency } from '@/hooks/useCurrency';
 
 const CountdownUnit = ({ value, label }: { value: number; label: string }) => (
   <div className="flex flex-col items-center">
-    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-background/20 backdrop-blur-sm flex items-center justify-center border border-background/30">
-      <span className="text-xl sm:text-2xl font-bold text-primary-foreground font-mono">
+    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-background/25 backdrop-blur-md flex items-center justify-center border border-accent/40 shadow-[0_0_15px_hsl(var(--accent)/0.3)]">
+      <span className="text-xl sm:text-2xl font-bold text-accent-foreground font-mono drop-shadow-[0_0_8px_hsl(var(--accent)/0.5)]">
         {String(value).padStart(2, '0')}
       </span>
     </div>
@@ -82,9 +82,9 @@ const FlashSaleBanner = () => {
               </div>
 
               {/* Countdown */}
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <Clock className="w-4 h-4 text-primary-foreground/70 mr-1 hidden sm:block" />
-                <span className="text-base sm:text-lg font-bold text-primary-foreground mr-2 uppercase tracking-wide">Ends in</span>
+              <div className="flex items-center gap-1.5 sm:gap-2 bg-background/10 backdrop-blur-sm rounded-xl px-4 py-2 border border-accent/20 shadow-[0_0_20px_hsl(var(--accent)/0.2)]">
+                <Clock className="w-5 h-5 text-accent animate-pulse mr-1 hidden sm:block" />
+                <span className="text-base sm:text-lg font-bold text-accent mr-2 uppercase tracking-wide drop-shadow-[0_0_6px_hsl(var(--accent)/0.5)]">Ends in</span>
                 <CountdownUnit value={timeLeft.days} label="Days" />
                 <span className="text-primary-foreground/50 text-xl font-bold mt-[-16px]">:</span>
                 <CountdownUnit value={timeLeft.hours} label="Hrs" />
