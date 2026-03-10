@@ -27,7 +27,7 @@ interface ProductCardProps {
 const ProductCard = ({ product }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const { addToCart, setCartOpen } = useCart();
+  
   const { formatPrice } = useCurrency();
   
   const inWishlist = isInWishlist(product.id);
