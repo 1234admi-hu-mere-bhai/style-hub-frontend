@@ -77,9 +77,24 @@ const Header = () => {
               </Link>
             </div>
 
+            {/* Center: Search bar */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="hidden sm:flex items-center gap-2 flex-1 max-w-md mx-4 lg:mx-8 px-4 py-2 rounded-full border border-border bg-secondary/50 text-muted-foreground text-sm hover:bg-secondary transition-colors"
+            >
+              <Search size={16} />
+              <span>Search products...</span>
+            </button>
 
             {/* Right icons */}
             <div className="flex items-center space-x-2 lg:space-x-4">
+              {/* Mobile search icon */}
+              <button
+                className="p-2 hover:bg-secondary rounded-full transition-colors sm:hidden"
+                onClick={() => setSearchOpen(true)}
+              >
+                <Search size={20} />
+              </button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
