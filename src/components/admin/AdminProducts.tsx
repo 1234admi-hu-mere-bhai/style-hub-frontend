@@ -250,7 +250,7 @@ const AdminProducts = () => {
               </div>
               <div>
                 <Label>Subcategory *</Label>
-                <Input value={form.subcategory} onChange={e => setForm({ ...form, subcategory: e.target.value })} placeholder="e.g. Jeans, Polos, Shirts" />
+                <Input value={form.subcategory} onChange={e => setForm({ ...form, subcategory: e.target.value })} placeholder="Subcategory" />
               </div>
               <div>
                 <Label>Image URL *</Label>
