@@ -631,7 +631,7 @@ const Checkout = () => {
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="city">City</Label>
-                          <Input id="city" placeholder="e.g. Mumbai" value={addressForm.city} onChange={handleAddressChange} required />
+                          <Input id="city" placeholder="City" value={addressForm.city} onChange={handleAddressChange} required />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="state">State</Label>
