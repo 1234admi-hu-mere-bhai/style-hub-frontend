@@ -21,6 +21,7 @@ import PincodeChecker from '@/components/PincodeChecker';
 import { supabase } from '@/integrations/supabase/client';
 import { useAddresses } from '@/hooks/useAddresses';
 import { Address } from '@/data/user';
+import { checkoutAddressSchema } from '@/lib/validations';
 
 const getEstimatedDeliveryDate = (days?: string) => {
   const deliveryDays = days ? parseInt(days) : 5;
