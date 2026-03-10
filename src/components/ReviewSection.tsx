@@ -79,10 +79,16 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
       toast.error('Please log in to write a review');
       return;
     }
-    if (!newReview.title.trim() || !newReview.comment.trim()) {
-      toast.error('Please fill in all fields');
+    const result = reviewSchema.safeParse(newReview);
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) newErrors[err.path[0] as string] = err.message;
+      });
+      setReviewErrors(newErrors);
       return;
     }
+    setReviewErrors({});
     setSubmitting(true);
     try {
       const imageUrls = reviewImages.length > 0 ? await uploadImages() : [];
