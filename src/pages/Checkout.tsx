@@ -144,6 +144,7 @@ const Checkout = () => {
   const finalTotal = totalPrice - discountAmount + shippingCost;
 
   const handleApplyCoupon = useCallback(async (codeOverride?: string) => {
+    if (hasFlashSaleItems) { toast.error('Coupons cannot be applied with Flash Sale items'); return; }
     const code = (codeOverride || couponCode).trim().toUpperCase();
     if (!code) { toast.error('Please enter a coupon code'); return; }
     setCouponLoading(true);
@@ -802,7 +803,12 @@ const Checkout = () => {
             {/* Mobile Coupon Section - visible on mobile only */}
             {step === 'summary' && (
               <div className="lg:hidden bg-card p-4 rounded-lg border border-border space-y-3">
-                {appliedCoupon ? (
+                {hasFlashSaleItems ? (
+                  <div className="flex items-center gap-2 p-3 bg-accent/10 rounded-lg border border-accent/30">
+                    <Zap size={16} className="text-accent" />
+                    <span className="text-sm font-medium text-accent-foreground">Flash Sale discount applied — coupons not available</span>
+                  </div>
+                ) : appliedCoupon ? (
                   <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg border border-success/30">
                     <div className="flex items-center gap-2">
                       <Tag size={16} className="text-success" />
@@ -956,7 +962,12 @@ const Checkout = () => {
               <div className="bg-card p-6 rounded-lg border border-border sticky top-28">
                 {/* Savings Corner (top) */}
                 <div className="space-y-3">
-                  {appliedCoupon ? (
+                  {hasFlashSaleItems ? (
+                    <div className="flex items-center gap-2 p-3 bg-accent/10 rounded-lg border border-accent/30">
+                      <Zap size={16} className="text-accent" />
+                      <span className="text-sm font-medium text-accent-foreground">Flash Sale discount applied — coupons not available</span>
+                    </div>
+                  ) : appliedCoupon ? (
                     <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg border border-success/30">
                       <div className="flex items-center gap-2">
                         <Tag size={16} className="text-success" />
