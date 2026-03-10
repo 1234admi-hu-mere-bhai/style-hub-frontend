@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useRazorpay, RazorpayResponse } from '@/hooks/useRazorpay';
-import PincodeChecker from '@/components/PincodeChecker';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useAddresses } from '@/hooks/useAddresses';
 import { Address } from '@/data/user';
