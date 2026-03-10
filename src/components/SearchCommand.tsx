@@ -41,6 +41,8 @@ const removeRecentSearch = (term: string) => {
 const SearchCommand = ({ open, onOpenChange }: SearchCommandProps) => {
   const [query, setQuery] = useState('');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const [imageSearchOpen, setImageSearchOpen] = useState(false);
   const navigate = useNavigate();
   const { products } = useDbProducts();
 
