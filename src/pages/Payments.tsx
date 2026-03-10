@@ -690,7 +690,7 @@ const Payments = () => {
                 <Input
                   id="upiName"
                   placeholder="Account Holder's Name"
-                  className="border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                  className=""
                   value={upiForm.name}
                   onChange={(e) => setUpiForm({ ...upiForm, name: e.target.value })}
                 />

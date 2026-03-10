@@ -174,7 +174,7 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
             <Textarea
               value={newReview.comment}
               onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
-              placeholder="Share your experience with this product..."
+              placeholder="Your Review"
               rows={4}
               maxLength={1000}
             />

@@ -267,7 +267,7 @@ const Auth = () => {
                     <Input
                       id="signup-confirm"
                       type="password"
-                      placeholder="••••••••"
+                      placeholder="Confirm Password"
                       value={signupForm.confirmPassword}
                       onChange={(e) => setSignupForm({ ...signupForm, confirmPassword: e.target.value })}
                     />

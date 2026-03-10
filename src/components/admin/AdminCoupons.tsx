@@ -129,7 +129,7 @@ const AdminCoupons = () => {
               <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}><X className="h-4 w-4" /></Button>
             </div>
             <div className="space-y-4">
-              <div><Label>Coupon Code *</Label><Input value={form.code} onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder="SAVE20" /></div>
+              <div><Label>Coupon Code *</Label><Input value={form.code} onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })} placeholder="Coupon Code" /></div>
               <div>
                 <Label>Discount Type</Label>
                 <Select value={form.discount_type} onValueChange={val => setForm({ ...form, discount_type: val })}>

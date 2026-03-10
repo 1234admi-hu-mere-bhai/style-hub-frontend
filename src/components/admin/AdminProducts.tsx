@@ -266,7 +266,7 @@ const AdminProducts = () => {
               </div>
               <div>
                 <Label>Additional Images (comma-separated URLs)</Label>
-                <Input value={additionalImagesInput} onChange={e => setAdditionalImagesInput(e.target.value)} placeholder="https://img1.png, https://img2.png" />
+                <Input value={additionalImagesInput} onChange={e => setAdditionalImagesInput(e.target.value)} placeholder="Additional Image URLs" />
               </div>
               <div>
                 <Label>Sizes (comma-separated) *</Label>

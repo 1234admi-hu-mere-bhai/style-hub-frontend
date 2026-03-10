@@ -293,7 +293,7 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                     id="signupPassword"
                     name="signupPassword"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
+                    placeholder="Password"
                     className={errors.password ? 'border-destructive' : ''}
                   />
                   <button

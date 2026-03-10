@@ -170,7 +170,7 @@ const Admin = () => {
                 value={loginPassword}
                 onChange={e => setLoginPassword(e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                placeholder="••••••••"
+                placeholder="Password"
                 required
               />
             </div>
