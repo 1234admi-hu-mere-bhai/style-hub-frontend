@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Star } from 'lucide-react';
+import { Heart, Star, Zap } from 'lucide-react';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import { toast } from 'sonner';
