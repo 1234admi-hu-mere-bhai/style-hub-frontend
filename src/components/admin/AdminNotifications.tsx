@@ -44,7 +44,7 @@ const AdminNotifications = () => {
     } finally { setLoading(false); }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (alsoSendPush = false) => {
     if (!form.title) { toast({ title: 'Error', description: 'Title is required', variant: 'destructive' }); return; }
     setSaving(true);
     try {
@@ -53,12 +53,30 @@ const AdminNotifications = () => {
       });
       if (error) throw error;
       toast({ title: 'Notification created' });
+
+      if (alsoSendPush) {
+        await handleSendPush(form.title, form.message);
+      }
+
       setShowForm(false);
       setForm({ title: '', message: '', type: 'info' });
       fetchNotifications();
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally { setSaving(false); }
+  };
+
+  const handleSendPush = async (title: string, message: string) => {
+    setSendingPush(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-push', {
+        body: { title, message },
+      });
+      if (error) throw error;
+      toast({ title: 'Push sent', description: `Delivered to ${data?.sent || 0} subscriber(s)` });
+    } catch (err: any) {
+      toast({ title: 'Push failed', description: err.message, variant: 'destructive' });
+    } finally { setSendingPush(false); }
   };
 
   const handleDelete = async (id: string) => {
