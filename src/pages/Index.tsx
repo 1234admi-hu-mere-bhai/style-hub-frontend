@@ -13,6 +13,7 @@ import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import HeroProductCarousel from '@/components/HeroProductCarousel';
 import { useDbProducts } from '@/hooks/useDbProducts';
+import FlashSaleBanner from '@/components/FlashSaleBanner';
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from '@/components/ui/sheet';
@@ -228,7 +229,8 @@ const Index = () => {
       {/* Hero Product Carousel */}
       <HeroProductCarousel />
 
-
+      {/* Flash Sale Banner - Below Hero, Above Categories */}
+      <FlashSaleBanner />
 
       {/* Categories */}
       <section className="py-16 lg:py-24">

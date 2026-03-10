@@ -167,6 +167,48 @@ export type Database = {
         }
         Relationships: []
       }
+      flash_sales: {
+        Row: {
+          banner_color: string | null
+          created_at: string
+          description: string | null
+          discount_percentage: number
+          end_time: string
+          id: string
+          is_active: boolean | null
+          product_ids: string[]
+          start_time: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          banner_color?: string | null
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number
+          end_time: string
+          id?: string
+          is_active?: boolean | null
+          product_ids?: string[]
+          start_time?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          banner_color?: string | null
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean | null
+          product_ids?: string[]
+          start_time?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string

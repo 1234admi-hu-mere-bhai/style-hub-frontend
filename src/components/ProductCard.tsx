@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Star } from 'lucide-react';
+import { Heart, Star, Zap } from 'lucide-react';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import { toast } from 'sonner';
@@ -18,6 +18,7 @@ export interface ProductCardProduct {
   reviews: number;
   isNew?: boolean;
   isFeatured?: boolean;
+  isFlashSale?: boolean;
 }
 
 interface ProductCardProps {
@@ -66,6 +67,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
         {/* Badges */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
+          {product.isFlashSale && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-accent text-accent-foreground text-[10px] font-bold uppercase">
+              <Zap className="w-2.5 h-2.5" /> Flash Sale
+            </span>
+          )}
           {product.isNew && <span className="badge-new rounded">NEW</span>}
           {product.discount && (
             <span className="badge-sale rounded">-{product.discount}%</span>

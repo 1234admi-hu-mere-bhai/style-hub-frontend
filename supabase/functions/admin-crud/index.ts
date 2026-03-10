@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
 
     const { table, action, record } = await req.json()
 
-    const allowedTables = ['coupons', 'notifications', 'blog_posts', 'reviews']
+    const allowedTables = ['coupons', 'notifications', 'blog_posts', 'reviews', 'flash_sales']
     if (!allowedTables.includes(table)) {
       return new Response(JSON.stringify({ error: 'Invalid table' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
 
     if (action === 'update') {
       const { id, ...updates } = record
-      if (updates.updated_at === undefined && (table === 'coupons' || table === 'blog_posts')) {
+      if (updates.updated_at === undefined && (table === 'coupons' || table === 'blog_posts' || table === 'flash_sales')) {
         updates.updated_at = new Date().toISOString()
       }
       const { data, error } = await adminClient
