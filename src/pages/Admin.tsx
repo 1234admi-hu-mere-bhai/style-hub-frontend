@@ -122,8 +122,17 @@ const Admin = () => {
     navigate('/admin');
   };
 
+  const [adminFieldErrors, setAdminFieldErrors] = useState<Record<string, string>>({});
+
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    const errors: Record<string, string> = {};
+    if (!loginEmail.trim()) errors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(loginEmail)) errors.email = 'Please enter a valid email';
+    if (!loginPassword.trim()) errors.password = 'Password is required';
+    else if (loginPassword.length < 6) errors.password = 'Password must be at least 6 characters';
+    if (Object.keys(errors).length > 0) { setAdminFieldErrors(errors); return; }
+    setAdminFieldErrors({});
     setLoginLoading(true);
     setLoginError('');
     try {
