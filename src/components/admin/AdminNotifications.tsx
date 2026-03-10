@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Trash2, Bell, Loader2, X } from 'lucide-react';
+import { Plus, Trash2, Bell, Loader2, X, Send } from 'lucide-react';
 
 interface Notification {
   id: string;
