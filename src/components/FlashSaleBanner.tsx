@@ -82,9 +82,9 @@ const FlashSaleBanner = () => {
               </div>
 
               {/* Countdown */}
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <Clock className="w-4 h-4 text-primary-foreground/70 mr-1 hidden sm:block" />
-                <span className="text-base sm:text-lg font-bold text-primary-foreground mr-2 uppercase tracking-wide">Ends in</span>
+              <div className="flex items-center gap-1.5 sm:gap-2 bg-background/10 backdrop-blur-sm rounded-xl px-4 py-2 border border-accent/20 shadow-[0_0_20px_hsl(var(--accent)/0.2)]">
+                <Clock className="w-5 h-5 text-accent animate-pulse mr-1 hidden sm:block" />
+                <span className="text-base sm:text-lg font-bold text-accent mr-2 uppercase tracking-wide drop-shadow-[0_0_6px_hsl(var(--accent)/0.5)]">Ends in</span>
                 <CountdownUnit value={timeLeft.days} label="Days" />
                 <span className="text-primary-foreground/50 text-xl font-bold mt-[-16px]">:</span>
                 <CountdownUnit value={timeLeft.hours} label="Hrs" />
