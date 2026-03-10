@@ -227,18 +227,18 @@ const Index = () => {
 
       {/* Hero Product Carousel */}
       <HeroProductCarousel />
-      {/* Features Bar */}
-      <section className="border-y border-border bg-secondary/30">
-        <div className="container mx-auto px-4 py-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      {/* Trust Badges */}
+      <section className="bg-secondary/20 py-8 lg:py-10">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <feature.icon className="w-5 h-5 text-primary" />
+              <div key={index} className="flex items-center gap-4 justify-center md:justify-start">
+                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <feature.icon className="w-6 h-6 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-sm">{feature.title}</h3>
-                  <p className="text-xs text-muted-foreground">{feature.desc}</p>
+                  <h3 className="font-semibold text-sm lg:text-base">{feature.title}</h3>
+                  <p className="text-xs lg:text-sm text-muted-foreground">{feature.desc}</p>
                 </div>
               </div>
             ))}
