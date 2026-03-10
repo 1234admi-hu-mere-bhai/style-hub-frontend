@@ -537,7 +537,7 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="pincode" className="text-xs">PIN Code</Label>
-                <Input id="pincode" name="pincode" defaultValue={editingAddress?.pincode} placeholder="e.g. 400050" maxLength={6}
+                <Input id="pincode" name="pincode" defaultValue={editingAddress?.pincode} placeholder="PIN Code" maxLength={6}
                   onChange={(e) => {
                     const val = e.target.value;
                     if (/^\d{6}$/.test(val)) {
