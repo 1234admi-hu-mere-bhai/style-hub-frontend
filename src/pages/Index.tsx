@@ -179,7 +179,7 @@ const Index = () => {
       <Header />
 
       {/* Search Bar */}
-      <div className="sticky top-[104px] lg:top-[116px] z-40 bg-primary px-3 py-3">
+      <div className="sm:hidden sticky top-[104px] lg:top-[116px] z-40 bg-primary px-3 py-3">
         <div className="flex items-center gap-2 bg-background rounded-lg px-4 py-3 shadow-sm border border-border">
           <button
             onClick={() => setSearchOpen(true)}
