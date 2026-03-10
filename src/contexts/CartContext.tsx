@@ -21,6 +21,8 @@ interface CartContextType {
   totalPrice: number;
   buyNowItem: CartItem | null;
   setBuyNowItem: (item: CartItem | null) => void;
+  isCartOpen: boolean;
+  setCartOpen: (open: boolean) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
