@@ -42,6 +42,7 @@ import { addressSchema } from '@/lib/validations';
 import AddressManager from '@/components/AddressManager';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useAddresses } from '@/hooks/useAddresses';
 
 const Profile = () => {
   const [searchParams, setSearchParams] = useSearchParams();
