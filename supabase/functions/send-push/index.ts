@@ -250,10 +250,14 @@ Deno.serve(async (req) => {
     let sent = 0;
     let failed = 0;
 
+    console.log(`Sending push to ${subscriptions.length} subscriber(s)`);
+
     for (const sub of subscriptions) {
       try {
         const endpointUrl = new URL(sub.endpoint);
         const audience = `${endpointUrl.protocol}//${endpointUrl.host}`;
+
+        console.log(`Sending to endpoint: ${sub.endpoint.substring(0, 80)}...`);
 
         const jwt = await createVapidJwt(privateKeyJwk, audience, config.subject);
         const encryptedBody = await encryptPayload(payload, sub.p256dh, sub.auth);
@@ -270,6 +274,9 @@ Deno.serve(async (req) => {
           body: encryptedBody,
         });
 
+        const responseText = await response.text();
+        console.log(`Push response for ${sub.id}: status=${response.status}, body=${responseText}`);
+
         if (response.status === 201 || response.status === 200) {
           sent++;
         } else if (response.status === 404 || response.status === 410) {
@@ -280,7 +287,7 @@ Deno.serve(async (req) => {
             .eq("id", sub.id);
           failed++;
         } else {
-          console.error(`Push failed for ${sub.id}: ${response.status} ${await response.text()}`);
+          console.error(`Push failed for ${sub.id}: ${response.status} ${responseText}`);
           failed++;
         }
       } catch (err) {
