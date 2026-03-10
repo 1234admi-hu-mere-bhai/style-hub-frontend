@@ -678,7 +678,7 @@ const Payments = () => {
                 <Input
                   id="upiId"
                   placeholder="UPI ID"
-                  className="border-0 border-b-2 border-primary rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                  className=""
                   value={upiForm.upiId}
                   onChange={(e) => setUpiForm({ ...upiForm, upiId: e.target.value })}
                 />
