@@ -8,6 +8,8 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProductReviews, DbReview } from '@/hooks/useProductReviews';
 import { supabase } from '@/integrations/supabase/client';
+import { reviewSchema } from '@/lib/validations';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ReviewSectionProps {
   productId: string;
