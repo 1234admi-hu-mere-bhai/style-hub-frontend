@@ -113,7 +113,12 @@ const ProductDetail = () => {
       color: selectedColor,
       quantity,
     });
-    toast.success('Added to cart!');
+    toast.success('Added to cart!', {
+      action: {
+        label: 'Go to Cart',
+        onClick: () => navigate('/checkout'),
+      },
+    });
   };
 
   const handleBuyNow = () => {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCart } from '@/contexts/CartContext';
@@ -30,6 +30,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
   const { formatPrice } = useCurrency();
+  const navigate = useNavigate();
   const inWishlist = isInWishlist(product.id);
 
   const handleWishlist = (e: React.MouseEvent) => {
@@ -61,7 +62,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
       color: product.colors[0]?.name || '',
       quantity: 1,
     });
-    toast.success('Added to cart');
+    toast.success('Added to cart', {
+      action: {
+        label: 'Go to Cart',
+        onClick: () => navigate('/checkout'),
+      },
+    });
   };
 
   return (
