@@ -48,7 +48,7 @@ const Index = () => {
       return;
     }
     setSubscribing(true);
-    const code = 'WELCOME20';
+    const code = 'MGHUB20';
     setTimeout(() => {
       setDiscountCode(code);
       setSubscribing(false);
