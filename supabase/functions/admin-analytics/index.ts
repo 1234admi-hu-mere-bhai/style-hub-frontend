@@ -55,6 +55,14 @@ Deno.serve(async (req) => {
 
     if (profilesError) throw profilesError
 
+    // Fetch all addresses
+    const { data: allAddresses, error: addressesError } = await adminClient
+      .from('addresses')
+      .select('*')
+      .order('created_at', { ascending: true })
+
+    if (addressesError) throw addressesError
+
     const allOrders = orders || []
     const allProfiles = profiles || []
 
