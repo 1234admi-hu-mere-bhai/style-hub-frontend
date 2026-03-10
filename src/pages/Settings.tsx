@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useWebPush } from '@/hooks/useWebPush';
 
 const Settings = () => {
   const navigate = useNavigate();
