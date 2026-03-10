@@ -38,6 +38,8 @@ import { toast } from 'sonner';
 import { Address } from '@/data/user';
 import { addressSchema } from '@/lib/validations';
 import MapPicker from '@/components/MapPicker';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { INDIAN_STATES, fetchCityStateFromPincode } from '@/data/indianStates';
 
 interface AddressManagerProps {
   addresses: Address[];
