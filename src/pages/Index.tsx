@@ -451,6 +451,25 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Trust Badges */}
+      <section className="bg-secondary/20 py-8 lg:py-10">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
+            {features.map((feature, index) => (
+              <div key={index} className="flex items-center gap-4 justify-center md:justify-start group cursor-default">
+                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20 group-hover:shadow-md group-hover:shadow-primary/20">
+                  <feature.icon className="w-6 h-6 text-primary transition-transform duration-300 group-hover:scale-110" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm lg:text-base transition-colors duration-300 group-hover:text-primary">{feature.title}</h3>
+                  <p className="text-xs lg:text-sm text-muted-foreground">{feature.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Discount Banner */}
       <section className="py-16 lg:py-24">
         <div className="container mx-auto px-4">
@@ -520,24 +539,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Trust Badges */}
-      <section className="bg-secondary/20 py-8 lg:py-10">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
-            {features.map((feature, index) => (
-              <div key={index} className="flex items-center gap-4 justify-center md:justify-start group cursor-default">
-                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20 group-hover:shadow-md group-hover:shadow-primary/20">
-                  <feature.icon className="w-6 h-6 text-primary transition-transform duration-300 group-hover:scale-110" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm lg:text-base transition-colors duration-300 group-hover:text-primary">{feature.title}</h3>
-                  <p className="text-xs lg:text-sm text-muted-foreground">{feature.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
+
     </div>
   );
 };
