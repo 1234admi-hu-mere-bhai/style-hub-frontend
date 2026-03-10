@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn, Clock, Tag, X, ChevronDown, Heart, Check } from 'lucide-react';
+import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn, Clock, Tag, X, ChevronDown, Heart, Check, Plus } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCart } from '@/contexts/CartContext';
@@ -17,6 +17,8 @@ import { toast } from 'sonner';
 import { useRazorpay, RazorpayResponse } from '@/hooks/useRazorpay';
 import PincodeChecker from '@/components/PincodeChecker';
 import { supabase } from '@/integrations/supabase/client';
+import { useAddresses } from '@/hooks/useAddresses';
+import { Address } from '@/data/user';
 
 const getEstimatedDeliveryDate = (days?: string) => {
   const deliveryDays = days ? parseInt(days) : 5;
