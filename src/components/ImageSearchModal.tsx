@@ -81,12 +81,6 @@ const ImageSearchModal = ({ open, onOpenChange, onSearch }: ImageSearchModalProp
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <div className="flex flex-col items-center py-4">
-          <button
-            onClick={handleClose}
-            className="absolute right-4 top-4 p-1 rounded-full hover:bg-secondary"
-          >
-            <X size={20} className="text-muted-foreground" />
-          </button>
 
           <h3 className="text-lg font-semibold mb-2">Search by Image</h3>
           <p className="text-sm text-muted-foreground text-center mb-6">

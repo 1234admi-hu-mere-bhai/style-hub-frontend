@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, X, Clock, TrendingUp, ArrowLeft } from 'lucide-react';
+import { Search, X, Clock, TrendingUp, ArrowLeft, Mic, Camera } from 'lucide-react';
 import { useDbProducts } from '@/hooks/useDbProducts';
+import VoiceSearchModal from './VoiceSearchModal';
+import ImageSearchModal from './ImageSearchModal';
 
 interface SearchCommandProps {
   open: boolean;
@@ -39,6 +41,8 @@ const removeRecentSearch = (term: string) => {
 const SearchCommand = ({ open, onOpenChange }: SearchCommandProps) => {
   const [query, setQuery] = useState('');
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const [imageSearchOpen, setImageSearchOpen] = useState(false);
   const navigate = useNavigate();
   const { products } = useDbProducts();
 
@@ -132,6 +136,20 @@ const SearchCommand = ({ open, onOpenChange }: SearchCommandProps) => {
               </button>
             )}
           </div>
+          <button
+            onClick={() => setVoiceOpen(true)}
+            className="p-2.5 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-primary"
+            title="Voice search"
+          >
+            <Mic size={20} />
+          </button>
+          <button
+            onClick={() => setImageSearchOpen(true)}
+            className="p-2.5 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-primary"
+            title="Search by image"
+          >
+            <Camera size={20} />
+          </button>
         </div>
       </div>
 
@@ -241,6 +259,22 @@ const SearchCommand = ({ open, onOpenChange }: SearchCommandProps) => {
           </div>
         )}
       </div>
+
+      <VoiceSearchModal
+        open={voiceOpen}
+        onOpenChange={setVoiceOpen}
+        onResult={(text) => {
+          setQuery(text);
+          handleSearch(text);
+        }}
+      />
+      <ImageSearchModal
+        open={imageSearchOpen}
+        onOpenChange={setImageSearchOpen}
+        onSearch={(terms) => {
+          handleSearch(terms);
+        }}
+      />
     </div>
   );
 };
