@@ -116,7 +116,7 @@ const Checkout = () => {
   }, [appliedCoupon, totalPrice]);
 
   // Calculate product-level discounts (originalPrice vs price)
-  const totalProductDiscount = useMemo(() => {
+  const flashSaleDiscount = useMemo(() => {
     return items.reduce((sum, item) => {
       if (item.originalPrice && item.originalPrice > item.price) {
         return sum + (item.originalPrice - item.price) * item.quantity;
@@ -124,6 +124,12 @@ const Checkout = () => {
       return sum;
     }, 0);
   }, [items]);
+
+  const hasFlashSaleItems = useMemo(() => {
+    return items.some(item => item.originalPrice && item.originalPrice > item.price);
+  }, [items]);
+
+  const totalProductDiscount = flashSaleDiscount;
 
   const totalOriginalPrice = useMemo(() => {
     return items.reduce((sum, item) => {
