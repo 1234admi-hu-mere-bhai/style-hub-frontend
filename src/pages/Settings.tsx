@@ -43,7 +43,15 @@ const PushSettings = () => {
           id="push-notif"
           checked={isSubscribed}
           disabled={loading || permission === 'denied'}
-          onCheckedChange={(checked) => { if (checked) subscribe(); else unsubscribe(); }}
+          onCheckedChange={(checked) => {
+            if (checked) {
+              localStorage.removeItem('push-notifications-off');
+              subscribe();
+            } else {
+              localStorage.setItem('push-notifications-off', 'true');
+              unsubscribe();
+            }
+          }}
         />
       </div>
     </div>
