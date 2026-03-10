@@ -157,7 +157,7 @@ const Checkout = () => {
   const finalTotal = totalPrice - discountAmount + shippingCost;
 
   const handleApplyCoupon = useCallback(async (codeOverride?: string) => {
-    if (hasFlashSaleItems) { toast.error('Coupons cannot be applied with Flash Sale items'); return; }
+    if (allFlashSaleItems) { toast.error('All items are on Flash Sale — coupons not available'); return; }
     const code = (codeOverride || couponCode).trim().toUpperCase();
     if (!code) { toast.error('Please enter a coupon code'); return; }
     setCouponLoading(true);
