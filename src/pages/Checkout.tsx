@@ -17,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useRazorpay, RazorpayResponse } from '@/hooks/useRazorpay';
-import PincodeChecker from '@/components/PincodeChecker';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useAddresses } from '@/hooks/useAddresses';
 import { Address } from '@/data/user';
@@ -673,14 +673,6 @@ const Checkout = () => {
                           <Input id="landmark" placeholder="Landmark" value={addressForm.landmark} onChange={handleAddressChange} />
                         </div>
 
-                      {/* Pincode Delivery Checker */}
-                      <div className="bg-secondary/30 p-4 rounded-lg space-y-2">
-                        <h3 className="text-sm font-medium flex items-center gap-2">
-                          <Clock size={16} className="text-primary" />
-                          Check Delivery Availability
-                        </h3>
-                        <PincodeChecker pincode={addressForm.pincode} onDeliveryInfo={setDeliveryInfo} />
-                      </div>
                     </form>
                     {(savedAddresses.length === 0 || showNewAddressForm) && showNewAddressForm && (
                       <Button onClick={editingAddressId ? handleUpdateAddress : handleSaveNewAddress} className="w-full" size="lg">
