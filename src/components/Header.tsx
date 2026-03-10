@@ -172,7 +172,7 @@ const Header = () => {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-border animate-slide-down">
+          <div className="border-t border-border animate-slide-down">
             <nav className="container mx-auto px-4 py-4 space-y-4">
               {categories.map((cat) => (
                 <Link
