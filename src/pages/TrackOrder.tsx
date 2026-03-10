@@ -207,15 +207,16 @@ const TrackOrder = () => {
               />
               <Input
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => { setSearchQuery(e.target.value); setSearchError(''); }}
                 placeholder="Enter Order Number"
-                className="pl-10"
+                className={`pl-10 ${searchError ? 'border-destructive' : ''}`}
               />
             </div>
             <Button type="submit" disabled={isLoading}>
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Track'}
             </Button>
           </form>
+          {searchError && <p className="text-xs text-destructive mt-2">{searchError}</p>}
         </div>
 
         {isLoading ? (
