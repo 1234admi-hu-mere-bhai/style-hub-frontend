@@ -184,6 +184,23 @@ Deno.serve(async (req) => {
       registeredAtMap[u.id] = u.created_at || ''
     })
 
+    // Group addresses by user_id
+    const addressesByUser: Record<string, any[]> = {}
+    ;(allAddresses || []).forEach((a: any) => {
+      if (!addressesByUser[a.user_id]) addressesByUser[a.user_id] = []
+      addressesByUser[a.user_id].push({
+        id: a.id,
+        full_name: a.full_name,
+        phone: a.phone,
+        address: a.address,
+        city: a.city,
+        state: a.state,
+        pincode: a.pincode,
+        landmark: a.landmark,
+        is_default: a.is_default,
+      })
+    })
+
     // Return ALL registered customers
     const customers = allProfiles.map((p: any) => ({
       id: p.id,
@@ -197,6 +214,7 @@ Deno.serve(async (req) => {
       total_spent: customerSpend[p.id] || 0,
       last_order_at: customerLastOrder[p.id] || null,
       orders: customerOrders[p.id] || [],
+      addresses: addressesByUser[p.id] || [],
     }))
 
     return new Response(
