@@ -38,7 +38,14 @@ export interface StoreProduct {
   description: string;
   isNew?: boolean;
   isFeatured?: boolean;
+  isFlashSale?: boolean;
   subcategory?: string;
+}
+
+interface ActiveFlashSale {
+  id: string;
+  discount_percentage: number;
+  product_ids: string[];
 }
 
 export const dbToStoreProduct = (p: DbProduct): StoreProduct => {
@@ -66,20 +73,61 @@ export const dbToStoreProduct = (p: DbProduct): StoreProduct => {
   };
 };
 
+const applyFlashSale = (product: StoreProduct, flashSale: ActiveFlashSale | null): StoreProduct => {
+  if (!flashSale || !flashSale.product_ids.includes(product.id)) return product;
+  
+  const originalPrice = product.originalPrice || product.price;
+  const flashPrice = Math.round(originalPrice * (1 - flashSale.discount_percentage / 100));
+  
+  return {
+    ...product,
+    price: flashPrice,
+    originalPrice: originalPrice,
+    discount: flashSale.discount_percentage,
+    isFlashSale: true,
+  };
+};
+
+const fetchActiveFlashSale = async (): Promise<ActiveFlashSale | null> => {
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from('flash_sales' as any)
+    .select('id, discount_percentage, product_ids')
+    .eq('is_active', true)
+    .gt('end_time', now)
+    .lte('start_time', now)
+    .order('created_at', { ascending: false })
+    .limit(1);
+
+  if (!error && data && (data as any[]).length > 0) {
+    const sale = (data as any[])[0];
+    return {
+      id: sale.id,
+      discount_percentage: sale.discount_percentage,
+      product_ids: sale.product_ids || [],
+    };
+  }
+  return null;
+};
+
 export const useDbProducts = () => {
   const [products, setProducts] = useState<StoreProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('in_stock', true)
-        .order('created_at', { ascending: false });
+      const [productsResult, flashSale] = await Promise.all([
+        supabase.from('products').select('*').eq('in_stock', true).order('created_at', { ascending: false }),
+        fetchActiveFlashSale(),
+      ]);
+
+      const { data, error } = productsResult;
 
       if (!error && data) {
-        const storeProducts = data.map((p: any) => dbToStoreProduct(p as DbProduct));
+        let storeProducts = data.map((p: any) => dbToStoreProduct(p as DbProduct));
+
+        // Apply flash sale pricing
+        storeProducts = storeProducts.map(p => applyFlashSale(p, flashSale));
 
         // Fetch review stats for all products
         const { data: reviewData } = await supabase
@@ -118,14 +166,17 @@ export const useDbProduct = (id: string) => {
 
   useEffect(() => {
     const fetchProduct = async () => {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('id', id)
-        .single();
+      const [productResult, flashSale] = await Promise.all([
+        supabase.from('products').select('*').eq('id', id).single(),
+        fetchActiveFlashSale(),
+      ]);
+
+      const { data, error } = productResult;
 
       if (!error && data) {
-        setProduct(dbToStoreProduct(data as unknown as DbProduct));
+        let storeProduct = dbToStoreProduct(data as unknown as DbProduct);
+        storeProduct = applyFlashSale(storeProduct, flashSale);
+        setProduct(storeProduct);
       }
       setLoading(false);
     };
