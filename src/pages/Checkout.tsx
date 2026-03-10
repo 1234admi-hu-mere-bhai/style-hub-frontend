@@ -33,7 +33,10 @@ const getEstimatedDeliveryDate = (days?: string) => {
 const Checkout = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { items: cartItems, totalPrice: cartTotalPrice, clearCart, buyNowItem, setBuyNowItem, removeFromCart } = useCart();
+  const { items: cartItems, totalPrice: cartTotalPrice, clearCart, buyNowItem, setBuyNowItem, removeFromCart, revalidateCartPrices } = useCart();
+
+  // Revalidate flash sale prices on checkout load
+  useEffect(() => { revalidateCartPrices(); }, []);
   const { addToWishlist } = useWishlist();
   const { user, isLoading: authLoading } = useAuth();
   const { formatPrice } = useCurrency();
