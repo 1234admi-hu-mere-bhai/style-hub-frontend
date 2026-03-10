@@ -129,6 +129,17 @@ const Checkout = () => {
     return items.some(item => item.originalPrice && item.originalPrice > item.price);
   }, [items]);
 
+  const allFlashSaleItems = useMemo(() => {
+    return items.length > 0 && items.every(item => item.originalPrice && item.originalPrice > item.price);
+  }, [items]);
+
+  const nonFlashSaleTotal = useMemo(() => {
+    return items.reduce((sum, item) => {
+      if (item.originalPrice && item.originalPrice > item.price) return sum;
+      return sum + item.price * item.quantity;
+    }, 0);
+  }, [items]);
+
   const totalProductDiscount = flashSaleDiscount;
 
   const totalOriginalPrice = useMemo(() => {
