@@ -28,6 +28,8 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const [imageSearchOpen, setImageSearchOpen] = useState(false);
   const { totalItems } = useCart();
   const { items: wishlistItems } = useWishlist();
   const { user, signOut } = useAuth();
