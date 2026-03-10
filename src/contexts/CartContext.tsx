@@ -62,8 +62,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, [buyNowItem]);
 
   // Revalidate cart prices against current DB prices & active flash sales
-  const revalidateCartPrices = useCallback(async () => {
-    if (items.length === 0) return;
+  const revalidateCartPrices = useCallback(async (): Promise<boolean> => {
+    if (items.length === 0) return false;
 
     const productIds = [...new Set(items.map(i => i.id))];
 
