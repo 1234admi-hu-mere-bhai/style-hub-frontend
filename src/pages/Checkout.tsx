@@ -282,7 +282,17 @@ const Checkout = () => {
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAddressForm({ ...addressForm, [e.target.id]: e.target.value });
+    const { id, value } = e.target;
+    setAddressForm(prev => ({ ...prev, [id]: value }));
+
+    // Auto-fetch city & state when pincode is 6 digits
+    if (id === 'pincode' && /^\d{6}$/.test(value)) {
+      fetchCityStateFromPincode(value).then(result => {
+        if (result) {
+          setAddressForm(prev => ({ ...prev, city: result.city, state: result.state }));
+        }
+      });
+    }
   };
 
   const selectSavedAddress = (addr: Address) => {
