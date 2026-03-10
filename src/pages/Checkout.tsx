@@ -806,7 +806,7 @@ const Checkout = () => {
                 {hasFlashSaleItems ? (
                   <div className="flex items-center gap-2 p-3 bg-accent/10 rounded-lg border border-accent/30">
                     <Zap size={16} className="text-accent" />
-                    <span className="text-sm font-medium text-accent-foreground">Flash Sale discount applied — coupons not available</span>
+                     <span className="text-sm font-medium text-foreground">⚡ Flash Sale discount applied — coupons not available</span>
                   </div>
                 ) : appliedCoupon ? (
                   <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg border border-success/30">
