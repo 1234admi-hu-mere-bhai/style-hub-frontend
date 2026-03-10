@@ -90,16 +90,32 @@ const Header = () => {
             </div>
 
             {/* Center: Search bar */}
-            <button
-              onClick={() => setSearchOpen(true)}
-              className="hidden sm:flex items-center gap-2 flex-1 max-w-md mx-4 lg:mx-8 px-4 py-2.5 rounded-full border border-border bg-secondary/40 text-muted-foreground text-sm hover:bg-secondary/80 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 active:scale-[0.98] transition-all duration-200 animate-search-glow"
-            >
-              <Search size={16} className="text-primary/60" />
-              <span>Search products...</span>
-              <kbd className="ml-auto hidden lg:inline-flex items-center gap-0.5 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                ⌘K
-              </kbd>
-            </button>
+            <div className="hidden sm:flex items-center gap-1.5 flex-1 max-w-lg mx-4 lg:mx-8">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="flex items-center gap-2 flex-1 px-4 py-2.5 rounded-full border border-border bg-secondary/40 text-muted-foreground text-sm hover:bg-secondary/80 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 active:scale-[0.98] transition-all duration-200 animate-search-glow"
+              >
+                <Search size={16} className="text-primary/60" />
+                <span>Search products...</span>
+                <kbd className="ml-auto hidden lg:inline-flex items-center gap-0.5 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  ⌘K
+                </kbd>
+              </button>
+              <button
+                onClick={() => setVoiceOpen(true)}
+                className="p-2.5 rounded-full border border-border bg-secondary/40 text-muted-foreground hover:bg-secondary/80 hover:border-primary/30 hover:text-primary transition-all duration-200"
+                title="Voice search"
+              >
+                <Mic size={16} />
+              </button>
+              <button
+                onClick={() => setImageSearchOpen(true)}
+                className="p-2.5 rounded-full border border-border bg-secondary/40 text-muted-foreground hover:bg-secondary/80 hover:border-primary/30 hover:text-primary transition-all duration-200"
+                title="Search by image"
+              >
+                <Camera size={16} />
+              </button>
+            </div>
 
             {/* Right icons */}
             <div className="flex items-center space-x-2 lg:space-x-4">
