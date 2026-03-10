@@ -28,13 +28,7 @@ const Wishlist = () => {
         color: product.colors[0].name,
         quantity: 1,
       });
-      toast.success('Added to cart', {
-        duration: 5000,
-        action: {
-          label: 'Go to Cart',
-          onClick: () => setCartOpen(true),
-        },
-      });
+      toast.success('Added to cart');
     }
   };
 

@@ -28,6 +28,7 @@ const ProductDetail = () => {
   const { formatPrice } = useCurrency();
 
   const [selectedSize, setSelectedSize] = useState('');
+  const [addedToCart, setAddedToCart] = useState(false);
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
@@ -101,6 +102,10 @@ const ProductDetail = () => {
   const relatedProducts = allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
 
   const handleAddToCart = () => {
+    if (addedToCart) {
+      setCartOpen(true);
+      return;
+    }
     if (!selectedSize) { toast.error('Please select a size'); return; }
     if (!selectedColor) { toast.error('Please select a color'); return; }
     addToCart({
@@ -113,13 +118,8 @@ const ProductDetail = () => {
       color: selectedColor,
       quantity,
     });
-    toast.success('Added to cart!', {
-      duration: 5000,
-      action: {
-        label: 'Go to Cart',
-        onClick: () => setCartOpen(true),
-      },
-    });
+    toast.success('Added to cart!');
+    setAddedToCart(true);
   };
 
   const handleBuyNow = () => {
@@ -293,7 +293,9 @@ const ProductDetail = () => {
             </div>
 
             <div className="flex gap-4 pb-16 md:pb-0">
-              <Button size="lg" className="flex-1" onClick={handleAddToCart}>Add to Cart</Button>
+              <Button size="lg" className="flex-1" onClick={handleAddToCart}>
+                {addedToCart ? 'Go to Cart' : 'Add to Cart'}
+              </Button>
               <Button size="lg" variant="outline" className="flex-1" onClick={handleBuyNow}>Buy Now</Button>
               <Button size="lg" variant="outline" className="px-4" onClick={handleWishlist}>
                 <Heart size={20} className={inWishlist ? 'fill-primary text-primary' : ''} />
