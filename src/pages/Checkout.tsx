@@ -84,6 +84,7 @@ const Checkout = () => {
     landmark: '',
   });
 
+  const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
   const [deliveryInfo, setDeliveryInfo] = useState<{ estimatedDays: string; zone: string } | null>(null);
 
   // Auto-select default address
