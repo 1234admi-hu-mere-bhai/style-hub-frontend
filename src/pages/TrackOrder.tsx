@@ -204,7 +204,7 @@ const TrackOrder = () => {
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Enter Order Number (e.g., ORDABC123XYZ)"
+                placeholder="Enter Order Number"
                 className="pl-10"
               />
             </div>
