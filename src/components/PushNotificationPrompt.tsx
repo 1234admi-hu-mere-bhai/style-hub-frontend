@@ -16,14 +16,11 @@ const PushNotificationPrompt = () => {
       return;
     }
 
-    // Check if user has dismissed before
-    const dismissedAt = localStorage.getItem('push-prompt-dismissed');
-    if (dismissedAt) {
-      const daysSince = (Date.now() - parseInt(dismissedAt)) / (1000 * 60 * 60 * 24);
-      if (daysSince < 7) {
-        setShow(false);
-        return;
-      }
+    // Only hide if user explicitly turned off notifications
+    const explicitlyOff = localStorage.getItem('push-notifications-off');
+    if (explicitlyOff === 'true') {
+      setShow(false);
+      return;
     }
 
     // Show after a short delay
