@@ -7,8 +7,8 @@ import { useCurrency } from '@/hooks/useCurrency';
 
 const CountdownUnit = ({ value, label }: { value: number; label: string }) => (
   <div className="flex flex-col items-center">
-    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-background/20 backdrop-blur-sm flex items-center justify-center border border-background/30">
-      <span className="text-xl sm:text-2xl font-bold text-primary-foreground font-mono">
+    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-background/25 backdrop-blur-md flex items-center justify-center border border-accent/40 shadow-[0_0_15px_hsl(var(--accent)/0.3)]">
+      <span className="text-xl sm:text-2xl font-bold text-accent-foreground font-mono drop-shadow-[0_0_8px_hsl(var(--accent)/0.5)]">
         {String(value).padStart(2, '0')}
       </span>
     </div>
