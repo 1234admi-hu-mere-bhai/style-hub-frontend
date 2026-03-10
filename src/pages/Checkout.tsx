@@ -626,7 +626,7 @@ const Checkout = () => {
                       </div>
                       <div className="space-y-2">
                           <Label htmlFor="pincode">PIN Code</Label>
-                          <Input id="pincode" placeholder="e.g. 400050" value={addressForm.pincode} onChange={handleAddressChange} required maxLength={6} />
+                          <Input id="pincode" placeholder="PIN Code" value={addressForm.pincode} onChange={handleAddressChange} required maxLength={6} />
                         </div>
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
