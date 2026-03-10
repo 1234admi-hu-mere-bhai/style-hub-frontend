@@ -82,15 +82,20 @@ const FlashSaleBanner = () => {
               </div>
 
               {/* Countdown */}
-              <div className="flex items-center gap-1.5 sm:gap-2">
-                <Clock className="w-4 h-4 text-primary-foreground/70 mr-1 hidden sm:block" />
-                <CountdownUnit value={timeLeft.days} label="Days" />
-                <span className="text-primary-foreground/50 text-xl font-bold mt-[-16px]">:</span>
-                <CountdownUnit value={timeLeft.hours} label="Hrs" />
-                <span className="text-primary-foreground/50 text-xl font-bold mt-[-16px]">:</span>
-                <CountdownUnit value={timeLeft.minutes} label="Min" />
-                <span className="text-primary-foreground/50 text-xl font-bold mt-[-16px]">:</span>
-                <CountdownUnit value={timeLeft.seconds} label="Sec" />
+              <div className="flex flex-col items-center sm:items-end gap-1">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <Clock className="w-4 h-4 text-primary-foreground/70 mr-1 hidden sm:block" />
+                  <CountdownUnit value={timeLeft.days} label="Days" />
+                  <span className="text-primary-foreground/50 text-xl font-bold mt-[-16px]">:</span>
+                  <CountdownUnit value={timeLeft.hours} label="Hrs" />
+                  <span className="text-primary-foreground/50 text-xl font-bold mt-[-16px]">:</span>
+                  <CountdownUnit value={timeLeft.minutes} label="Min" />
+                  <span className="text-primary-foreground/50 text-xl font-bold mt-[-16px]">:</span>
+                  <CountdownUnit value={timeLeft.seconds} label="Sec" />
+                </div>
+                <p className="text-xs text-primary-foreground/60 font-medium tracking-wide">
+                  Sale ends {new Date(flashSale.end_time).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} at {new Date(flashSale.end_time).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                </p>
               </div>
             </div>
 
