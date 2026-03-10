@@ -102,6 +102,10 @@ const ProductDetail = () => {
   const relatedProducts = allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
 
   const handleAddToCart = () => {
+    if (addedToCart) {
+      setCartOpen(true);
+      return;
+    }
     if (!selectedSize) { toast.error('Please select a size'); return; }
     if (!selectedColor) { toast.error('Please select a color'); return; }
     addToCart({
@@ -114,13 +118,8 @@ const ProductDetail = () => {
       color: selectedColor,
       quantity,
     });
-    toast.success('Added to cart!', {
-      duration: 5000,
-      action: {
-        label: 'Go to Cart',
-        onClick: () => setCartOpen(true),
-      },
-    });
+    toast.success('Added to cart!');
+    setAddedToCart(true);
   };
 
   const handleBuyNow = () => {
