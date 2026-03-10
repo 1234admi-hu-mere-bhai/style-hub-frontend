@@ -156,7 +156,7 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder="Email Address"
                     className={errors.email ? 'border-destructive' : ''}
                   />
                   {errors.email && (
