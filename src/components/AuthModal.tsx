@@ -156,7 +156,7 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="you@example.com"
+                    placeholder="Email Address"
                     className={errors.email ? 'border-destructive' : ''}
                   />
                   {errors.email && (
@@ -170,7 +170,7 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                     id="phone"
                     name="phone"
                     type="tel"
-                    placeholder="+91 98765 43210"
+                    placeholder="Mobile Number"
                     className={errors.phone ? 'border-destructive' : ''}
                   />
                   {errors.phone && (
@@ -186,7 +186,7 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
+                    placeholder="Password"
                     className={errors.password ? 'border-destructive' : ''}
                   />
                   <button
@@ -237,7 +237,7 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                   <Input
                     id="firstName"
                     name="firstName"
-                    placeholder="John"
+                    placeholder="First Name"
                     className={errors.firstName ? 'border-destructive' : ''}
                   />
                   {errors.firstName && (
@@ -249,7 +249,7 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                   <Input
                     id="lastName"
                     name="lastName"
-                    placeholder="Doe"
+                    placeholder="Last Name"
                     className={errors.lastName ? 'border-destructive' : ''}
                   />
                   {errors.lastName && (
@@ -264,7 +264,7 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                   id="signupEmail"
                   name="signupEmail"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder="Email Address"
                   className={errors.email ? 'border-destructive' : ''}
                 />
                 {errors.email && (
@@ -278,7 +278,7 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                   id="signupPhone"
                   name="signupPhone"
                   type="tel"
-                  placeholder="+91 98765 43210"
+                  placeholder="Mobile Number"
                   className={errors.phone ? 'border-destructive' : ''}
                 />
                 {errors.phone && (
@@ -293,7 +293,7 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                     id="signupPassword"
                     name="signupPassword"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
+                    placeholder="Password"
                     className={errors.password ? 'border-destructive' : ''}
                   />
                   <button

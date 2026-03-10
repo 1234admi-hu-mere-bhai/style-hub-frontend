@@ -254,7 +254,7 @@ const AdminProducts = () => {
               </div>
               <div>
                 <Label>Image URL *</Label>
-                <Input value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} placeholder="https://... or /assets/product-1.jpg" />
+                <Input value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} placeholder="Image URL" />
               </div>
               <div>
                 <Label>Stock Quantity</Label>
@@ -266,7 +266,7 @@ const AdminProducts = () => {
               </div>
               <div>
                 <Label>Additional Images (comma-separated URLs)</Label>
-                <Input value={additionalImagesInput} onChange={e => setAdditionalImagesInput(e.target.value)} placeholder="https://img1.png, https://img2.png" />
+                <Input value={additionalImagesInput} onChange={e => setAdditionalImagesInput(e.target.value)} placeholder="Additional Image URLs" />
               </div>
               <div>
                 <Label>Sizes (comma-separated) *</Label>

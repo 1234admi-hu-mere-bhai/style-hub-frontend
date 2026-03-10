@@ -588,7 +588,7 @@ const Payments = () => {
                 <Input
                   id="ifsc"
                   placeholder="IFSC Code"
-                  className="border-0 border-b-2 border-primary rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary uppercase"
+                  className="uppercase"
                   value={bankForm.ifsc}
                   onChange={(e) => setBankForm({ ...bankForm, ifsc: e.target.value.toUpperCase() })}
                   maxLength={11}
@@ -603,7 +603,7 @@ const Payments = () => {
                   id="accountNumber"
                   placeholder="Account Number"
                   type="password"
-                  className="border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                   className=""
                   value={bankForm.accountNumber}
                   onChange={(e) => setBankForm({ ...bankForm, accountNumber: e.target.value.replace(/\D/g, '') })}
                 />
@@ -616,7 +616,7 @@ const Payments = () => {
                 <Input
                   id="confirmAccount"
                   placeholder="Confirm Account Number"
-                  className="border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                   className=""
                   value={bankForm.confirmAccount}
                   onChange={(e) => setBankForm({ ...bankForm, confirmAccount: e.target.value.replace(/\D/g, '') })}
                 />
@@ -629,7 +629,7 @@ const Payments = () => {
                 <Input
                   id="holderName"
                   placeholder="Account Holder's Name"
-                  className="border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                   className=""
                   value={bankForm.holderName}
                   onChange={(e) => setBankForm({ ...bankForm, holderName: e.target.value })}
                 />
@@ -678,7 +678,7 @@ const Payments = () => {
                 <Input
                   id="upiId"
                   placeholder="UPI ID"
-                  className="border-0 border-b-2 border-primary rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                  className=""
                   value={upiForm.upiId}
                   onChange={(e) => setUpiForm({ ...upiForm, upiId: e.target.value })}
                 />
@@ -690,7 +690,7 @@ const Payments = () => {
                 <Input
                   id="upiName"
                   placeholder="Account Holder's Name"
-                  className="border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                  className=""
                   value={upiForm.name}
                   onChange={(e) => setUpiForm({ ...upiForm, name: e.target.value })}
                 />
