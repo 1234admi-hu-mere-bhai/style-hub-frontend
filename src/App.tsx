@@ -36,6 +36,47 @@ import LiveSupportChat from "./components/LiveSupportChat";
 
 const queryClient = new QueryClient();
 
+const AppContent = () => {
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith('/admin');
+
+  return (
+    <>
+      <ScrollToTop />
+      <VisitorTracker />
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/order-confirmation" element={<OrderConfirmation />} />
+        <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/track-order" element={<TrackOrder />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/orders" element={<OrderHistory />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/return-exchange" element={<ReturnExchange />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/size-guide" element={<SizeGuide />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/shipping-policy" element={<ShippingPolicy />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/referral" element={<Referral />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/payments" element={<Payments />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+
+      {!isAdmin && <BottomNav />}
+      {!isAdmin && <LiveSupportChat />}
+    </>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -45,37 +86,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <ScrollToTop />
-              <VisitorTracker />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/order-confirmation" element={<OrderConfirmation />} />
-                <Route path="/wishlist" element={<Wishlist />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/track-order" element={<TrackOrder />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/orders" element={<OrderHistory />} />
-                <Route path="/admin" element={<Admin />} />
-                <Route path="/return-exchange" element={<ReturnExchange />} />
-                <Route path="/faq" element={<FAQ />} />
-                <Route path="/size-guide" element={<SizeGuide />} />
-                <Route path="/privacy" element={<PrivacyPolicy />} />
-                <Route path="/terms" element={<TermsOfService />} />
-                <Route path="/shipping-policy" element={<ShippingPolicy />} />
-                <Route path="/about" element={<AboutUs />} />
-                <Route path="/referral" element={<Referral />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/payments" element={<Payments />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-              
-              <BottomNav />
-              <LiveSupportChat />
+              <AppContent />
             </BrowserRouter>
           </WishlistProvider>
         </CartProvider>
