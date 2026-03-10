@@ -976,7 +976,7 @@ const Checkout = () => {
               <div className="bg-card p-6 rounded-lg border border-border sticky top-28">
                 {/* Savings Corner (top) */}
                 <div className="space-y-3">
-                  {hasFlashSaleItems ? (
+                  {allFlashSaleItems ? (
                     <div className="flex items-center gap-2 p-3 bg-accent/10 rounded-lg border border-accent/30">
                       <Zap size={16} className="text-accent" />
                       <span className="text-sm font-medium text-foreground">⚡ Flash Sale discount applied — coupons not available</span>
