@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 
 const Wishlist = () => {
   const { items, removeFromWishlist } = useWishlist();
-  const { addToCart } = useCart();
+  const { addToCart, setCartOpen } = useCart();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
 

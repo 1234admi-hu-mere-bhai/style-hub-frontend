@@ -23,7 +23,7 @@ const ProductDetail = () => {
   const { product, loading } = useDbProduct(id || '');
   const { products: allProducts } = useDbProducts();
   const { averageRating, totalReviews } = useProductReviews(id || '');
-  const { addToCart, setBuyNowItem } = useCart();
+  const { addToCart, setBuyNowItem, setCartOpen } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { formatPrice } = useCurrency();
 
