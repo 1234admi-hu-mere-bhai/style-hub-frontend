@@ -22,6 +22,7 @@ import CartDrawer from './CartDrawer';
 import SearchCommand from './SearchCommand';
 import VoiceSearchModal from './VoiceSearchModal';
 import ImageSearchModal from './ImageSearchModal';
+import NotificationBell from './NotificationBell';
 import { toast } from 'sonner';
 
 const Header = () => {
