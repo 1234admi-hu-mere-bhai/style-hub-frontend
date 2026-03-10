@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn, Clock, Tag, X, ChevronDown, Heart, Check, Plus, Edit2 } from 'lucide-react';
+import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn, Clock, Tag, X, ChevronDown, Heart, Check, Plus, Edit2, Zap } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { INDIAN_STATES, fetchCityStateFromPincode } from '@/data/indianStates';
 import Header from '@/components/Header';
@@ -116,7 +116,7 @@ const Checkout = () => {
   }, [appliedCoupon, totalPrice]);
 
   // Calculate product-level discounts (originalPrice vs price)
-  const totalProductDiscount = useMemo(() => {
+  const flashSaleDiscount = useMemo(() => {
     return items.reduce((sum, item) => {
       if (item.originalPrice && item.originalPrice > item.price) {
         return sum + (item.originalPrice - item.price) * item.quantity;
@@ -124,6 +124,12 @@ const Checkout = () => {
       return sum;
     }, 0);
   }, [items]);
+
+  const hasFlashSaleItems = useMemo(() => {
+    return items.some(item => item.originalPrice && item.originalPrice > item.price);
+  }, [items]);
+
+  const totalProductDiscount = flashSaleDiscount;
 
   const totalOriginalPrice = useMemo(() => {
     return items.reduce((sum, item) => {
@@ -909,7 +915,10 @@ const Checkout = () => {
                   </div>
                   {totalProductDiscount > 0 && (
                     <div className="flex justify-between text-success">
-                      <span>Product Discount</span>
+                      <span className="flex items-center gap-1">
+                        {hasFlashSaleItems && <Zap size={14} className="text-accent" />}
+                        {hasFlashSaleItems ? 'Flash Sale Discount' : 'Product Discount'}
+                      </span>
                       <span>- {formatPrice(totalProductDiscount)}</span>
                     </div>
                   )}
@@ -933,8 +942,8 @@ const Checkout = () => {
                 </div>
                 {totalSavings > 0 && (
                   <div className="mt-3 p-3 bg-success/10 rounded-lg flex items-center gap-2 text-sm font-medium text-success">
-                    <Tag size={16} />
-                    Yay! Your total discount is {formatPrice(totalSavings)}
+                    {hasFlashSaleItems ? <Zap size={16} /> : <Tag size={16} />}
+                    Yay! You're saving {formatPrice(totalSavings)}{hasFlashSaleItems ? ' with Flash Sale' : ''}{discountAmount > 0 ? ' + coupon' : ''}!
                   </div>
                 )}
               </div>
