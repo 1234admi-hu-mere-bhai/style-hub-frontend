@@ -58,7 +58,7 @@ const Header = () => {
             {/* Left: Menu + Logo */}
             <div className="flex items-center gap-3">
               <button
-                className="lg:hidden p-2 -ml-2"
+                className="p-2 -ml-2"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
