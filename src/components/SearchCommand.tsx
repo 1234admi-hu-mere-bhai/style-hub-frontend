@@ -136,6 +136,20 @@ const SearchCommand = ({ open, onOpenChange }: SearchCommandProps) => {
               </button>
             )}
           </div>
+          <button
+            onClick={() => setVoiceOpen(true)}
+            className="p-2.5 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-primary"
+            title="Voice search"
+          >
+            <Mic size={20} />
+          </button>
+          <button
+            onClick={() => setImageSearchOpen(true)}
+            className="p-2.5 rounded-full hover:bg-secondary transition-colors text-muted-foreground hover:text-primary"
+            title="Search by image"
+          >
+            <Camera size={20} />
+          </button>
         </div>
       </div>
 
