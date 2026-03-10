@@ -58,7 +58,7 @@ const Header = () => {
             {/* Left: Menu + Logo */}
             <div className="flex items-center gap-3">
               <button
-                className="lg:hidden p-2 -ml-2"
+                className="p-2 -ml-2"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -77,18 +77,6 @@ const Header = () => {
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-8">
-              {categories.map((cat) => (
-                <Link
-                  key={cat.name}
-                  to={cat.href}
-                  className="text-sm font-medium uppercase tracking-wider link-underline hover:text-primary transition-colors"
-                >
-                  {cat.name}
-                </Link>
-              ))}
-            </nav>
 
             {/* Right icons */}
             <div className="flex items-center space-x-2 lg:space-x-4">
@@ -184,7 +172,7 @@ const Header = () => {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-border animate-slide-down">
+          <div className="border-t border-border animate-slide-down">
             <nav className="container mx-auto px-4 py-4 space-y-4">
               {categories.map((cat) => (
                 <Link
