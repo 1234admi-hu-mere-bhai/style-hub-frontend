@@ -597,39 +597,39 @@ const Checkout = () => {
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="firstName">First Name</Label>
-                          <Input id="firstName" placeholder="John" value={addressForm.firstName} onChange={handleAddressChange} required />
+                          <Input id="firstName" value={addressForm.firstName} onChange={handleAddressChange} required />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="lastName">Last Name</Label>
-                          <Input id="lastName" placeholder="Doe" value={addressForm.lastName} onChange={handleAddressChange} required />
+                          <Input id="lastName" value={addressForm.lastName} onChange={handleAddressChange} required />
                         </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="phone">Phone Number</Label>
-                        <Input id="phone" type="tel" placeholder="+91 98765 43210" value={addressForm.phone} onChange={handleAddressChange} required />
+                        <Input id="phone" type="tel" value={addressForm.phone} onChange={handleAddressChange} required />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="address">Address</Label>
-                        <Input id="address" placeholder="House No, Street Name" value={addressForm.address} onChange={handleAddressChange} required />
+                        <Input id="address" value={addressForm.address} onChange={handleAddressChange} required />
                       </div>
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="city">City</Label>
-                          <Input id="city" placeholder="Mumbai" value={addressForm.city} onChange={handleAddressChange} required />
+                          <Input id="city" value={addressForm.city} onChange={handleAddressChange} required />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="state">State</Label>
-                          <Input id="state" placeholder="Maharashtra" value={addressForm.state} onChange={handleAddressChange} required />
+                          <Input id="state" value={addressForm.state} onChange={handleAddressChange} required />
                         </div>
                       </div>
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="pincode">PIN Code</Label>
-                          <Input id="pincode" placeholder="400001" value={addressForm.pincode} onChange={handleAddressChange} required />
+                          <Input id="pincode" value={addressForm.pincode} onChange={handleAddressChange} required />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="landmark">Landmark (Optional)</Label>
-                          <Input id="landmark" placeholder="Near..." value={addressForm.landmark} onChange={handleAddressChange} />
+                          <Input id="landmark" value={addressForm.landmark} onChange={handleAddressChange} />
                         </div>
                       </div>
 
