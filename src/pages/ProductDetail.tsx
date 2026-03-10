@@ -293,7 +293,9 @@ const ProductDetail = () => {
             </div>
 
             <div className="flex gap-4 pb-16 md:pb-0">
-              <Button size="lg" className="flex-1" onClick={handleAddToCart}>Add to Cart</Button>
+              <Button size="lg" className="flex-1" onClick={handleAddToCart}>
+                {addedToCart ? 'Go to Cart' : 'Add to Cart'}
+              </Button>
               <Button size="lg" variant="outline" className="flex-1" onClick={handleBuyNow}>Buy Now</Button>
               <Button size="lg" variant="outline" className="px-4" onClick={handleWishlist}>
                 <Heart size={20} className={inWishlist ? 'fill-primary text-primary' : ''} />
