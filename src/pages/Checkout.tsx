@@ -518,35 +518,46 @@ const Checkout = () => {
                   <div className="space-y-3 mb-4">
                     <p className="text-sm text-muted-foreground">Select a saved address to deliver to:</p>
                     {savedAddresses.map((addr) => (
-                      <button
+                      <div
                         key={addr.id}
-                        onClick={() => selectSavedAddress(addr)}
-                        className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                        className={`relative rounded-xl border-2 transition-all ${
                           selectedAddressId === addr.id
                             ? 'border-primary bg-primary/5'
                             : 'border-border hover:border-muted-foreground/40'
                         }`}
                       >
-                        <div className="flex items-start gap-3">
-                          <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                            selectedAddressId === addr.id ? 'border-primary bg-primary' : 'border-muted-foreground/40'
-                          }`}>
-                            {selectedAddressId === addr.id && <Check size={12} className="text-primary-foreground" />}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <span className="font-semibold text-sm">{addr.fullName}</span>
-                              {addr.isDefault && (
-                                <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-primary/10 text-primary rounded">Default</span>
-                              )}
+                        <button
+                          onClick={() => selectSavedAddress(addr)}
+                          className="w-full text-left p-4"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                              selectedAddressId === addr.id ? 'border-primary bg-primary' : 'border-muted-foreground/40'
+                            }`}>
+                              {selectedAddressId === addr.id && <Check size={12} className="text-primary-foreground" />}
                             </div>
-                            <p className="text-xs text-muted-foreground">{addr.phone}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {addr.address}{addr.landmark ? `, ${addr.landmark}` : ''}, {addr.city}, {addr.state} - {addr.pincode}
-                            </p>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className="font-semibold text-sm">{addr.fullName}</span>
+                                {addr.isDefault && (
+                                  <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-primary/10 text-primary rounded">Default</span>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground">{addr.phone}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {addr.address}{addr.landmark ? `, ${addr.landmark}` : ''}, {addr.city}, {addr.state} - {addr.pincode}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </button>
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleEditAddress(addr); }}
+                          className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-primary transition-colors"
+                          title="Edit address"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                      </div>
                     ))}
 
                     <button
