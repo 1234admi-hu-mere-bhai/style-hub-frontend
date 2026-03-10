@@ -16,7 +16,7 @@ import { Label } from '@/components/ui/label';
 
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import { useRazorpay, RazorpayResponse } from '@/hooks/useRazorpay';
+import { usePayU, PayUResponse } from '@/hooks/usePayU';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAddresses } from '@/hooks/useAddresses';
@@ -254,17 +254,17 @@ const Checkout = () => {
       total: finalTotal,
       shippingCost,
       address: addressForm,
-      paymentMethod: 'Online Payment (Razorpay)',
+      paymentMethod: 'Online Payment (PayU)',
     };
     if (isBuyNow) { setBuyNowItem(null); } else { clearCart(); }
     navigate('/order-confirmation', { state: orderDetails });
   };
 
-  // Razorpay integration
-  const { initiatePayment, isLoading: isPaymentLoading } = useRazorpay({
-    onSuccess: async (response: RazorpayResponse) => {
+  // PayU integration
+  const { initiatePayment, isLoading: isPaymentLoading } = usePayU({
+    onSuccess: async (response: PayUResponse) => {
       toast.success('Payment successful!', {
-        description: `Payment ID: ${response.razorpay_payment_id}`,
+        description: `Transaction ID: ${response.txnid}`,
       });
       
       try {
@@ -284,10 +284,10 @@ const Checkout = () => {
           shippingCost,
           total: finalTotal,
           shippingAddress: addressForm,
-          paymentMethod: 'Online Payment (Razorpay)',
-          paymentId: response.razorpay_payment_id,
+          paymentMethod: 'Online Payment (PayU)',
+          paymentId: response.txnid,
         });
-        navigateToConfirmation(order.order_number, response.razorpay_payment_id);
+        navigateToConfirmation(order.order_number, response.txnid);
       } catch (error) {
         console.error('Failed to create order:', error);
         toast.error('Failed to create order. Please contact support.');
@@ -320,10 +320,29 @@ const Checkout = () => {
       return;
     }
 
-    // Initiate Razorpay payment
+    // Store checkout data in sessionStorage for PayU callback
+    sessionStorage.setItem('payu_checkout', JSON.stringify({
+      items: items.map(item => ({
+        product_id: item.id,
+        product_name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color,
+        image: item.image,
+      })),
+      subtotal: totalPrice,
+      shippingCost,
+      total: finalTotal,
+      address: addressForm,
+      isBuyNow,
+    }));
+
+    // Initiate PayU payment
     await initiatePayment({
       amount: finalTotal,
       customerName: `${addressForm.firstName} ${addressForm.lastName}`,
+      customerEmail: user.email,
       customerPhone: addressForm.phone,
       description: `Order of ${items.length} item(s) from MUFFI GOUT APPAREL HUB`,
     });
@@ -978,14 +997,10 @@ const Checkout = () => {
                 </h2>
                 <div className="p-4 bg-secondary/50 rounded-lg">
                   <div className="flex items-center gap-3 mb-2">
-                    <img 
-                      src="https://razorpay.com/assets/razorpay-logo.svg" 
-                      alt="Razorpay" 
-                      className="h-6 dark:invert"
-                    />
+                    <span className="font-semibold text-primary text-lg">PayU</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    You will be redirected to Razorpay's secure payment gateway to complete your payment.
+                    You will be redirected to PayU's secure payment gateway to complete your payment.
                     Supports UPI, Credit/Debit Cards, Net Banking, and Wallets.
                   </p>
                 </div>
