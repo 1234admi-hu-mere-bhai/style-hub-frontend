@@ -915,7 +915,10 @@ const Checkout = () => {
                   </div>
                   {totalProductDiscount > 0 && (
                     <div className="flex justify-between text-success">
-                      <span>Product Discount</span>
+                      <span className="flex items-center gap-1">
+                        {hasFlashSaleItems && <Zap size={14} className="text-accent" />}
+                        {hasFlashSaleItems ? 'Flash Sale Discount' : 'Product Discount'}
+                      </span>
                       <span>- {formatPrice(totalProductDiscount)}</span>
                     </div>
                   )}
