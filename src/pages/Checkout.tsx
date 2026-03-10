@@ -649,7 +649,7 @@ const Checkout = () => {
                       </div>
                       <div className="space-y-2">
                           <Label htmlFor="landmark">Landmark (Optional)</Label>
-                          <Input id="landmark" placeholder="e.g. Near City Mall" value={addressForm.landmark} onChange={handleAddressChange} />
+                          <Input id="landmark" placeholder="Landmark" value={addressForm.landmark} onChange={handleAddressChange} />
                         </div>
 
                       {/* Pincode Delivery Checker */}
