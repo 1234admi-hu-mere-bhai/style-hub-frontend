@@ -170,7 +170,7 @@ const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
                     id="phone"
                     name="phone"
                     type="tel"
-                    placeholder="+91 98765 43210"
+                    placeholder="Mobile Number"
                     className={errors.phone ? 'border-destructive' : ''}
                   />
                   {errors.phone && (
