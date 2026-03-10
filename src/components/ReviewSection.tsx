@@ -22,6 +22,7 @@ const ReviewSection = ({ productId }: ReviewSectionProps) => {
   const [submitting, setSubmitting] = useState(false);
   const [reviewImages, setReviewImages] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [reviewErrors, setReviewErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [newReview, setNewReview] = useState({
     rating: 5,
