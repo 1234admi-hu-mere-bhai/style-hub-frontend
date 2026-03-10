@@ -618,7 +618,7 @@ const Checkout = () => {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="phone">Phone Number</Label>
-                        <Input id="phone" type="tel" placeholder="e.g. 9876543210" value={addressForm.phone} onChange={handleAddressChange} required />
+                        <Input id="phone" type="tel" placeholder="Phone Number" value={addressForm.phone} onChange={handleAddressChange} required />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="address">Address</Label>
