@@ -523,7 +523,7 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
               </div>
               <div className="space-y-1">
                 <Label htmlFor="phone" className="text-xs">Phone</Label>
-                <Input id="phone" name="phone" defaultValue={editingAddress?.phone} placeholder="e.g. 9876543210" />
+                <Input id="phone" name="phone" defaultValue={editingAddress?.phone} placeholder="Phone Number" />
                 {addressErrors.phone && <p className="text-[11px] text-destructive">{addressErrors.phone}</p>}
               </div>
             </div>
