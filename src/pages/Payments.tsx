@@ -616,7 +616,7 @@ const Payments = () => {
                 <Input
                   id="confirmAccount"
                   placeholder="Confirm Account Number"
-                  className="border-0 border-b border-border rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary"
+                   className=""
                   value={bankForm.confirmAccount}
                   onChange={(e) => setBankForm({ ...bankForm, confirmAccount: e.target.value.replace(/\D/g, '') })}
                 />
