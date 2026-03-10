@@ -123,9 +123,12 @@ const TrackOrder = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      fetchOrder(searchQuery.trim());
+    if (!searchQuery.trim()) {
+      setSearchError('Order number is required');
+      return;
     }
+    setSearchError('');
+    fetchOrder(searchQuery.trim());
   };
 
   const isReplacementFlow = order?.status.startsWith('replacement');
