@@ -228,6 +228,8 @@ const Header = () => {
       </header>
 
       <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
+      <VoiceSearchModal open={voiceOpen} onOpenChange={setVoiceOpen} onResult={handleVoiceResult} />
+      <ImageSearchModal open={imageSearchOpen} onOpenChange={setImageSearchOpen} onSearch={handleImageSearch} />
     </>
   );
 };

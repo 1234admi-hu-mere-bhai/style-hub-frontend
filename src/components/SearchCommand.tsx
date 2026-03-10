@@ -259,6 +259,22 @@ const SearchCommand = ({ open, onOpenChange }: SearchCommandProps) => {
           </div>
         )}
       </div>
+
+      <VoiceSearchModal
+        open={voiceOpen}
+        onOpenChange={setVoiceOpen}
+        onResult={(text) => {
+          setQuery(text);
+          handleSearch(text);
+        }}
+      />
+      <ImageSearchModal
+        open={imageSearchOpen}
+        onOpenChange={setImageSearchOpen}
+        onSearch={(terms) => {
+          handleSearch(terms);
+        }}
+      />
     </div>
   );
 };
