@@ -154,6 +154,20 @@ const Profile = () => {
   const handleSaveProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!user) return;
+    const result = profileSchema.safeParse({
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      phone: profile.phone,
+    });
+    if (!result.success) {
+      const newErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) newErrors[err.path[0] as string] = err.message;
+      });
+      setProfileErrors(newErrors);
+      return;
+    }
+    setProfileErrors({});
     try {
       const { error } = await supabase
         .from('profiles')
