@@ -817,7 +817,7 @@ const Checkout = () => {
             {/* Mobile Coupon Section - visible on mobile only */}
             {step === 'summary' && (
               <div className="lg:hidden bg-card p-4 rounded-lg border border-border space-y-3">
-                {hasFlashSaleItems ? (
+                {allFlashSaleItems ? (
                   <div className="flex items-center gap-2 p-3 bg-accent/10 rounded-lg border border-accent/30">
                     <Zap size={16} className="text-accent" />
                      <span className="text-sm font-medium text-foreground">⚡ Flash Sale discount applied — coupons not available</span>
