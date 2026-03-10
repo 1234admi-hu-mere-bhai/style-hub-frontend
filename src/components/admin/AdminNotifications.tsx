@@ -131,8 +131,12 @@ const AdminNotifications = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex gap-3">
-                <Button onClick={handleSave} disabled={saving}>{saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}Create</Button>
+              <div className="flex gap-3 flex-wrap">
+                <Button onClick={() => handleSave(false)} disabled={saving}>{saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}Create</Button>
+                <Button onClick={() => handleSave(true)} disabled={saving || sendingPush} variant="secondary" className="gap-1.5">
+                  {sendingPush ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                  Create & Push
+                </Button>
                 <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
               </div>
             </div>
