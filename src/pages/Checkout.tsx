@@ -622,7 +622,7 @@ const Checkout = () => {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="address">Address</Label>
-                        <Input id="address" placeholder="e.g. 12, MG Road, Bandra West" value={addressForm.address} onChange={handleAddressChange} required />
+                        <Input id="address" placeholder="Street Address" value={addressForm.address} onChange={handleAddressChange} required />
                       </div>
                       <div className="space-y-2">
                           <Label htmlFor="pincode">PIN Code</Label>
