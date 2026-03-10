@@ -587,7 +587,7 @@ const Payments = () => {
                 <Label htmlFor="ifsc" className="text-sm text-primary font-medium">IFSC Code</Label>
                 <Input
                   id="ifsc"
-                  placeholder="e.g., SBIN0001234"
+                  placeholder="IFSC Code"
                   className="border-0 border-b-2 border-primary rounded-none px-0 focus-visible:ring-0 focus-visible:border-primary uppercase"
                   value={bankForm.ifsc}
                   onChange={(e) => setBankForm({ ...bankForm, ifsc: e.target.value.toUpperCase() })}
