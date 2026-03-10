@@ -188,8 +188,9 @@ const Checkout = () => {
   const removeCoupon = () => { setAppliedCoupon(null); setCouponCode(''); toast.info('Coupon removed'); };
 
   const getCouponSavings = (coupon: any) => {
-    if (coupon.discount_type === 'percentage') return Math.round(totalPrice * (coupon.discount_value / 100));
-    return coupon.discount_value;
+    const base = hasFlashSaleItems ? nonFlashSaleTotal : totalPrice;
+    if (coupon.discount_type === 'percentage') return Math.round(base * (coupon.discount_value / 100));
+    return Math.min(coupon.discount_value, base);
   };
 
   const getAmountNeeded = (coupon: any) => {
