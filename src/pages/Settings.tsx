@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Moon, Sun, Globe, IndianRupee } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Globe, IndianRupee, Bell } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,40 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useWebPush } from '@/hooks/useWebPush';
+
+const PushSettings = () => {
+  const { supported, isSubscribed, permission, subscribe, unsubscribe, loading } = useWebPush();
+  if (!supported) return null;
+  return (
+    <div className="bg-card p-6 rounded-lg border border-border">
+      <h2 className="font-semibold text-xl mb-6 flex items-center gap-2">
+        <Bell size={20} />
+        Push Notifications
+      </h2>
+      <div className="flex items-center justify-between">
+        <div>
+          <Label htmlFor="push-notif" className="text-base">
+            {permission === 'denied' ? 'Notifications Blocked' : 'Push Notifications'}
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            {permission === 'denied'
+              ? 'Please enable notifications in your browser settings'
+              : isSubscribed
+                ? 'You will receive push notifications for sales & updates'
+                : 'Get notified about flash sales, order updates & offers'}
+          </p>
+        </div>
+        <Switch
+          id="push-notif"
+          checked={isSubscribed}
+          disabled={loading || permission === 'denied'}
+          onCheckedChange={(checked) => { if (checked) subscribe(); else unsubscribe(); }}
+        />
+      </div>
+    </div>
+  );
+};
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -114,6 +148,9 @@ const Settings = () => {
               />
             </div>
           </div>
+
+          {/* Push Notifications */}
+          <PushSettings />
 
           {/* Language */}
           <div className="bg-card p-6 rounded-lg border border-border">

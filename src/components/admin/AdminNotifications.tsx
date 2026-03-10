@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Trash2, Bell, Loader2, X } from 'lucide-react';
+import { Plus, Trash2, Bell, Loader2, X, Send } from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -27,6 +27,7 @@ const AdminNotifications = () => {
   const [showForm, setShowForm] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [form, setForm] = useState({ title: '', message: '', type: 'info' });
+  const [sendingPush, setSendingPush] = useState(false);
 
   useEffect(() => { fetchNotifications(); }, []);
 
@@ -43,7 +44,7 @@ const AdminNotifications = () => {
     } finally { setLoading(false); }
   };
 
-  const handleSave = async () => {
+  const handleSave = async (alsoSendPush = false) => {
     if (!form.title) { toast({ title: 'Error', description: 'Title is required', variant: 'destructive' }); return; }
     setSaving(true);
     try {
@@ -52,12 +53,30 @@ const AdminNotifications = () => {
       });
       if (error) throw error;
       toast({ title: 'Notification created' });
+
+      if (alsoSendPush) {
+        await handleSendPush(form.title, form.message);
+      }
+
       setShowForm(false);
       setForm({ title: '', message: '', type: 'info' });
       fetchNotifications();
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally { setSaving(false); }
+  };
+
+  const handleSendPush = async (title: string, message: string) => {
+    setSendingPush(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-push', {
+        body: { title, message },
+      });
+      if (error) throw error;
+      toast({ title: 'Push sent', description: `Delivered to ${data?.sent || 0} subscriber(s)` });
+    } catch (err: any) {
+      toast({ title: 'Push failed', description: err.message, variant: 'destructive' });
+    } finally { setSendingPush(false); }
   };
 
   const handleDelete = async (id: string) => {
@@ -112,8 +131,12 @@ const AdminNotifications = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex gap-3">
-                <Button onClick={handleSave} disabled={saving}>{saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}Create</Button>
+              <div className="flex gap-3 flex-wrap">
+                <Button onClick={() => handleSave(false)} disabled={saving}>{saving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />}Create</Button>
+                <Button onClick={() => handleSave(true)} disabled={saving || sendingPush} variant="secondary" className="gap-1.5">
+                  {sendingPush ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
+                  Create & Push
+                </Button>
                 <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
               </div>
             </div>
