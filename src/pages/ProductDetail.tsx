@@ -28,6 +28,7 @@ const ProductDetail = () => {
   const { formatPrice } = useCurrency();
 
   const [selectedSize, setSelectedSize] = useState('');
+  const [addedToCart, setAddedToCart] = useState(false);
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
