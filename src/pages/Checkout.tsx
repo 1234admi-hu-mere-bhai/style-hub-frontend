@@ -609,7 +609,7 @@ const Checkout = () => {
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="firstName">First Name</Label>
-                          <Input id="firstName" placeholder="e.g. Rahul" value={addressForm.firstName} onChange={handleAddressChange} required />
+                          <Input id="firstName" placeholder="First Name" value={addressForm.firstName} onChange={handleAddressChange} required />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="lastName">Last Name</Label>
