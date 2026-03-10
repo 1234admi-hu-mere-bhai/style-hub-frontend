@@ -518,26 +518,26 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="fullName" className="text-xs">Full Name</Label>
-                <Input id="fullName" name="fullName" defaultValue={editingAddress?.fullName} placeholder="e.g. Rahul Sharma" />
+                <Input id="fullName" name="fullName" defaultValue={editingAddress?.fullName} placeholder="Full Name" />
                 {addressErrors.fullName && <p className="text-[11px] text-destructive">{addressErrors.fullName}</p>}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="phone" className="text-xs">Phone</Label>
-                <Input id="phone" name="phone" defaultValue={editingAddress?.phone} placeholder="e.g. 9876543210" />
+                <Input id="phone" name="phone" defaultValue={editingAddress?.phone} placeholder="Phone Number" />
                 {addressErrors.phone && <p className="text-[11px] text-destructive">{addressErrors.phone}</p>}
               </div>
             </div>
 
             <div className="space-y-1">
               <Label htmlFor="address" className="text-xs">Address</Label>
-              <Input id="address" name="address" defaultValue={editingAddress?.address} placeholder="e.g. 12, MG Road, Bandra West" />
+              <Input id="address" name="address" defaultValue={editingAddress?.address} placeholder="Street Address" />
               {addressErrors.address && <p className="text-[11px] text-destructive">{addressErrors.address}</p>}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="pincode" className="text-xs">PIN Code</Label>
-                <Input id="pincode" name="pincode" defaultValue={editingAddress?.pincode} placeholder="e.g. 400050" maxLength={6}
+                <Input id="pincode" name="pincode" defaultValue={editingAddress?.pincode} placeholder="PIN Code" maxLength={6}
                   onChange={(e) => {
                     const val = e.target.value;
                     if (/^\d{6}$/.test(val)) {
@@ -558,14 +558,14 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
               </div>
               <div className="space-y-1">
                 <Label htmlFor="landmark" className="text-xs">Landmark</Label>
-                <Input id="landmark" name="landmark" defaultValue={editingAddress?.landmark} placeholder="e.g. Near City Mall" />
+                <Input id="landmark" name="landmark" defaultValue={editingAddress?.landmark} placeholder="Landmark" />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="city" className="text-xs">City</Label>
-                <Input id="city" name="city" defaultValue={editingAddress?.city} placeholder="e.g. Mumbai" />
+                <Input id="city" name="city" defaultValue={editingAddress?.city} placeholder="City" />
                 {addressErrors.city && <p className="text-[11px] text-destructive">{addressErrors.city}</p>}
               </div>
               <div className="space-y-1">

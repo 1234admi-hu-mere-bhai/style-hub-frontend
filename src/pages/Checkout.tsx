@@ -609,29 +609,29 @@ const Checkout = () => {
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="firstName">First Name</Label>
-                          <Input id="firstName" placeholder="e.g. Rahul" value={addressForm.firstName} onChange={handleAddressChange} required />
+                          <Input id="firstName" placeholder="First Name" value={addressForm.firstName} onChange={handleAddressChange} required />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="lastName">Last Name</Label>
-                          <Input id="lastName" placeholder="e.g. Sharma" value={addressForm.lastName} onChange={handleAddressChange} required />
+                          <Input id="lastName" placeholder="Last Name" value={addressForm.lastName} onChange={handleAddressChange} required />
                         </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="phone">Phone Number</Label>
-                        <Input id="phone" type="tel" placeholder="e.g. 9876543210" value={addressForm.phone} onChange={handleAddressChange} required />
+                        <Input id="phone" type="tel" placeholder="Phone Number" value={addressForm.phone} onChange={handleAddressChange} required />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="address">Address</Label>
-                        <Input id="address" placeholder="e.g. 12, MG Road, Bandra West" value={addressForm.address} onChange={handleAddressChange} required />
+                        <Input id="address" placeholder="Street Address" value={addressForm.address} onChange={handleAddressChange} required />
                       </div>
                       <div className="space-y-2">
                           <Label htmlFor="pincode">PIN Code</Label>
-                          <Input id="pincode" placeholder="e.g. 400050" value={addressForm.pincode} onChange={handleAddressChange} required maxLength={6} />
+                          <Input id="pincode" placeholder="PIN Code" value={addressForm.pincode} onChange={handleAddressChange} required maxLength={6} />
                         </div>
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="city">City</Label>
-                          <Input id="city" placeholder="e.g. Mumbai" value={addressForm.city} onChange={handleAddressChange} required />
+                          <Input id="city" placeholder="City" value={addressForm.city} onChange={handleAddressChange} required />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="state">State</Label>
@@ -649,7 +649,7 @@ const Checkout = () => {
                       </div>
                       <div className="space-y-2">
                           <Label htmlFor="landmark">Landmark (Optional)</Label>
-                          <Input id="landmark" placeholder="e.g. Near City Mall" value={addressForm.landmark} onChange={handleAddressChange} />
+                          <Input id="landmark" placeholder="Landmark" value={addressForm.landmark} onChange={handleAddressChange} />
                         </div>
 
                       {/* Pincode Delivery Checker */}
