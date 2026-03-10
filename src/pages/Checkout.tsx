@@ -67,6 +67,7 @@ const Checkout = () => {
   const { addresses: savedAddresses, setAddresses: setSavedAddresses } = useAddresses();
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
 
   // Form state for new address (only used when adding new)
   const [addressForm, setAddressForm] = useState({
