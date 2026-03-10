@@ -35,6 +35,14 @@ const Header = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
+  const handleVoiceResult = (text: string) => {
+    navigate(`/products?search=${encodeURIComponent(text)}`);
+  };
+
+  const handleImageSearch = (terms: string) => {
+    navigate(`/products?search=${encodeURIComponent(terms)}`);
+  };
+
   const categories = [
     { name: 'Home', href: '/' },
     { name: 'Men', href: '/products?category=men' },
