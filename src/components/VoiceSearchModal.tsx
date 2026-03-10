@@ -154,12 +154,6 @@ const VoiceSearchModal = ({ open, onOpenChange, onResult }: VoiceSearchModalProp
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <div className="flex flex-col items-center py-6">
-          <button
-            onClick={handleClose}
-            className="absolute right-4 top-4 p-1 rounded-full hover:bg-secondary"
-          >
-            <X size={20} className="text-muted-foreground" />
-          </button>
 
           {!isSupported ? (
             <div className="text-center">
