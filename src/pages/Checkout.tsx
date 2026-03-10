@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn, Clock, Tag, X, ChevronDown, Heart, Check, Plus } from 'lucide-react';
+import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn, Clock, Tag, X, ChevronDown, Heart, Check, Plus, Edit2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCart } from '@/contexts/CartContext';
@@ -67,6 +67,7 @@ const Checkout = () => {
   const { addresses: savedAddresses, setAddresses: setSavedAddresses } = useAddresses();
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
 
   // Form state for new address (only used when adding new)
   const [addressForm, setAddressForm] = useState({
@@ -316,7 +317,49 @@ const Checkout = () => {
     setSavedAddresses([...savedAddresses, newAddr]);
     setSelectedAddressId(newAddr.id);
     setShowNewAddressForm(false);
+    setEditingAddressId(null);
     toast.success('Address saved!');
+  };
+
+  const handleEditAddress = (addr: Address) => {
+    setEditingAddressId(addr.id);
+    setShowNewAddressForm(true);
+    setSelectedAddressId(null);
+    setAddressForm({
+      firstName: addr.fullName.split(' ')[0] || '',
+      lastName: addr.fullName.split(' ').slice(1).join(' ') || '',
+      phone: addr.phone,
+      address: addr.address,
+      city: addr.city,
+      state: addr.state,
+      pincode: addr.pincode,
+      landmark: addr.landmark || '',
+    });
+  };
+
+  const handleUpdateAddress = () => {
+    if (!addressForm.firstName || !addressForm.phone || !addressForm.address || !addressForm.city || !addressForm.state || !addressForm.pincode) {
+      toast.error('Please fill in all required address fields');
+      return;
+    }
+    setSavedAddresses(savedAddresses.map(a => 
+      a.id === editingAddressId
+        ? {
+            ...a,
+            fullName: `${addressForm.firstName} ${addressForm.lastName}`.trim(),
+            phone: addressForm.phone,
+            address: addressForm.address,
+            city: addressForm.city,
+            state: addressForm.state,
+            pincode: addressForm.pincode,
+            landmark: addressForm.landmark || undefined,
+          }
+        : a
+    ));
+    setSelectedAddressId(editingAddressId);
+    setShowNewAddressForm(false);
+    setEditingAddressId(null);
+    toast.success('Address updated!');
   };
 
   const stepLabels = ['Address', 'Review', 'Payment'];
@@ -475,40 +518,52 @@ const Checkout = () => {
                   <div className="space-y-3 mb-4">
                     <p className="text-sm text-muted-foreground">Select a saved address to deliver to:</p>
                     {savedAddresses.map((addr) => (
-                      <button
+                      <div
                         key={addr.id}
-                        onClick={() => selectSavedAddress(addr)}
-                        className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                        className={`relative rounded-xl border-2 transition-all ${
                           selectedAddressId === addr.id
                             ? 'border-primary bg-primary/5'
                             : 'border-border hover:border-muted-foreground/40'
                         }`}
                       >
-                        <div className="flex items-start gap-3">
-                          <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                            selectedAddressId === addr.id ? 'border-primary bg-primary' : 'border-muted-foreground/40'
-                          }`}>
-                            {selectedAddressId === addr.id && <Check size={12} className="text-primary-foreground" />}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <span className="font-semibold text-sm">{addr.fullName}</span>
-                              {addr.isDefault && (
-                                <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-primary/10 text-primary rounded">Default</span>
-                              )}
+                        <button
+                          onClick={() => selectSavedAddress(addr)}
+                          className="w-full text-left p-4"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                              selectedAddressId === addr.id ? 'border-primary bg-primary' : 'border-muted-foreground/40'
+                            }`}>
+                              {selectedAddressId === addr.id && <Check size={12} className="text-primary-foreground" />}
                             </div>
-                            <p className="text-xs text-muted-foreground">{addr.phone}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {addr.address}{addr.landmark ? `, ${addr.landmark}` : ''}, {addr.city}, {addr.state} - {addr.pincode}
-                            </p>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className="font-semibold text-sm">{addr.fullName}</span>
+                                {addr.isDefault && (
+                                  <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-primary/10 text-primary rounded">Default</span>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted-foreground">{addr.phone}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {addr.address}{addr.landmark ? `, ${addr.landmark}` : ''}, {addr.city}, {addr.state} - {addr.pincode}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </button>
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleEditAddress(addr); }}
+                          className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-primary transition-colors"
+                          title="Edit address"
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                      </div>
                     ))}
 
                     <button
                       onClick={() => {
                         setShowNewAddressForm(true);
+                        setEditingAddressId(null);
                         setSelectedAddressId(null);
                         setAddressForm({ firstName: '', lastName: '', phone: '', address: '', city: '', state: '', pincode: '', landmark: '' });
                       }}
@@ -525,10 +580,11 @@ const Checkout = () => {
                   <div className="space-y-4">
                     {showNewAddressForm && (
                       <div className="flex items-center justify-between mb-2">
-                        <p className="text-sm font-medium">Add New Address</p>
+                        <p className="text-sm font-medium">{editingAddressId ? 'Edit Address' : 'Add New Address'}</p>
                         {savedAddresses.length > 0 && (
                           <Button variant="ghost" size="sm" onClick={() => {
                             setShowNewAddressForm(false);
+                            setEditingAddressId(null);
                             const defaultAddr = savedAddresses.find(a => a.isDefault) || savedAddresses[0];
                             if (defaultAddr) selectSavedAddress(defaultAddr);
                           }}>
@@ -587,8 +643,8 @@ const Checkout = () => {
                       </div>
                     </form>
                     {(savedAddresses.length === 0 || showNewAddressForm) && showNewAddressForm && (
-                      <Button onClick={handleSaveNewAddress} className="w-full" size="lg">
-                        Save Address & Continue
+                      <Button onClick={editingAddressId ? handleUpdateAddress : handleSaveNewAddress} className="w-full" size="lg">
+                        {editingAddressId ? 'Update Address' : 'Save Address & Continue'}
                       </Button>
                     )}
                     {savedAddresses.length === 0 && (
