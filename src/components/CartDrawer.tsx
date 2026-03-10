@@ -86,9 +86,14 @@ const CartDrawer = ({ onClose }: CartDrawerProps) => {
                   <Trash2 size={18} />
                 </button>
               </div>
-              <p className="font-semibold mt-2">
-                {formatPrice(item.price * item.quantity)}
-              </p>
+              <div className="mt-2">
+                <span className="font-semibold">{formatPrice(item.price * item.quantity)}</span>
+                {item.originalPrice && item.originalPrice > item.price && (
+                  <span className="text-sm text-muted-foreground line-through ml-2">
+                    {formatPrice(item.originalPrice * item.quantity)}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         ))}
