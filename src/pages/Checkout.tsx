@@ -282,14 +282,55 @@ const Checkout = () => {
     setAddressForm({ ...addressForm, [e.target.id]: e.target.value });
   };
 
+  const selectSavedAddress = (addr: Address) => {
+    setSelectedAddressId(addr.id);
+    setAddressForm({
+      firstName: addr.fullName.split(' ')[0] || '',
+      lastName: addr.fullName.split(' ').slice(1).join(' ') || '',
+      phone: addr.phone,
+      address: addr.address,
+      city: addr.city,
+      state: addr.state,
+      pincode: addr.pincode,
+      landmark: addr.landmark || '',
+    });
+    setShowNewAddressForm(false);
+  };
+
+  const handleSaveNewAddress = () => {
+    if (!addressForm.firstName || !addressForm.phone || !addressForm.address || !addressForm.city || !addressForm.state || !addressForm.pincode) {
+      toast.error('Please fill in all required address fields');
+      return;
+    }
+    const newAddr: Address = {
+      id: Date.now().toString(),
+      fullName: `${addressForm.firstName} ${addressForm.lastName}`.trim(),
+      phone: addressForm.phone,
+      address: addressForm.address,
+      city: addressForm.city,
+      state: addressForm.state,
+      pincode: addressForm.pincode,
+      landmark: addressForm.landmark || undefined,
+      isDefault: savedAddresses.length === 0,
+    };
+    setSavedAddresses([...savedAddresses, newAddr]);
+    setSelectedAddressId(newAddr.id);
+    setShowNewAddressForm(false);
+    toast.success('Address saved!');
+  };
+
   const stepLabels = ['Address', 'Review', 'Payment'];
   const stepKeys: Array<typeof step> = ['address', 'summary', 'payment'];
   const currentStepIndex = stepKeys.indexOf(step);
 
   const handleContinue = () => {
     if (step === 'address') {
-      if (!addressForm.firstName || !addressForm.phone || !addressForm.address || !addressForm.city || !addressForm.state || !addressForm.pincode) {
-        toast.error('Please fill in all required address fields');
+      if (showNewAddressForm) {
+        toast.error('Please save your new address first');
+        return;
+      }
+      if (!selectedAddressId || !addressForm.firstName || !addressForm.address) {
+        toast.error('Please select a delivery address');
         return;
       }
       setStep('summary');
