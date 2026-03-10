@@ -317,7 +317,49 @@ const Checkout = () => {
     setSavedAddresses([...savedAddresses, newAddr]);
     setSelectedAddressId(newAddr.id);
     setShowNewAddressForm(false);
+    setEditingAddressId(null);
     toast.success('Address saved!');
+  };
+
+  const handleEditAddress = (addr: Address) => {
+    setEditingAddressId(addr.id);
+    setShowNewAddressForm(true);
+    setSelectedAddressId(null);
+    setAddressForm({
+      firstName: addr.fullName.split(' ')[0] || '',
+      lastName: addr.fullName.split(' ').slice(1).join(' ') || '',
+      phone: addr.phone,
+      address: addr.address,
+      city: addr.city,
+      state: addr.state,
+      pincode: addr.pincode,
+      landmark: addr.landmark || '',
+    });
+  };
+
+  const handleUpdateAddress = () => {
+    if (!addressForm.firstName || !addressForm.phone || !addressForm.address || !addressForm.city || !addressForm.state || !addressForm.pincode) {
+      toast.error('Please fill in all required address fields');
+      return;
+    }
+    setSavedAddresses(savedAddresses.map(a => 
+      a.id === editingAddressId
+        ? {
+            ...a,
+            fullName: `${addressForm.firstName} ${addressForm.lastName}`.trim(),
+            phone: addressForm.phone,
+            address: addressForm.address,
+            city: addressForm.city,
+            state: addressForm.state,
+            pincode: addressForm.pincode,
+            landmark: addressForm.landmark || undefined,
+          }
+        : a
+    ));
+    setSelectedAddressId(editingAddressId);
+    setShowNewAddressForm(false);
+    setEditingAddressId(null);
+    toast.success('Address updated!');
   };
 
   const stepLabels = ['Address', 'Review', 'Payment'];
