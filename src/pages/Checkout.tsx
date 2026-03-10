@@ -183,7 +183,7 @@ const Checkout = () => {
     } finally {
       setCouponLoading(false);
     }
-  }, [couponCode, totalPrice]);
+  }, [couponCode, totalPrice, allFlashSaleItems]);
 
   const removeCoupon = () => { setAppliedCoupon(null); setCouponCode(''); toast.info('Coupon removed'); };
 
