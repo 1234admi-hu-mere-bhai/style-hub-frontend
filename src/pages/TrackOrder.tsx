@@ -63,6 +63,7 @@ const TrackOrder = () => {
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get('id');
   const [searchQuery, setSearchQuery] = useState(orderId || '');
+  const [searchError, setSearchError] = useState('');
   const [order, setOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
