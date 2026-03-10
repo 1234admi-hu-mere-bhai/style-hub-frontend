@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
 
     if (action === 'update') {
       const { id, ...updates } = record
-      if (updates.updated_at === undefined && (table === 'coupons' || table === 'blog_posts')) {
+      if (updates.updated_at === undefined && (table === 'coupons' || table === 'blog_posts' || table === 'flash_sales')) {
         updates.updated_at = new Date().toISOString()
       }
       const { data, error } = await adminClient
