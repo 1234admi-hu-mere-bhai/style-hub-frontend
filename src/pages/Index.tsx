@@ -479,7 +479,7 @@ const Index = () => {
                 LIMITED TIME OFFER
               </span>
               <h2 className="font-serif text-3xl lg:text-5xl font-bold mb-4">
-                Get 30% Off
+                Get 20% Off
                 <br />
                 Your First Order
               </h2>
