@@ -518,7 +518,7 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="fullName" className="text-xs">Full Name</Label>
-                <Input id="fullName" name="fullName" defaultValue={editingAddress?.fullName} placeholder="e.g. Rahul Sharma" />
+                <Input id="fullName" name="fullName" defaultValue={editingAddress?.fullName} placeholder="Full Name" />
                 {addressErrors.fullName && <p className="text-[11px] text-destructive">{addressErrors.fullName}</p>}
               </div>
               <div className="space-y-1">
