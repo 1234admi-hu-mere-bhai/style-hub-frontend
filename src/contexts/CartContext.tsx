@@ -106,12 +106,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
     }
 
+    let flashSaleEnded = false;
+
     setItems(prev => {
       let changed = false;
       const updated = prev.map(item => {
         const current = priceMap.get(item.id);
         if (!current) return item;
         if (item.price !== current.price || item.originalPrice !== current.originalPrice) {
+          // Detect flash sale ending: item had originalPrice (was on sale) but now doesn't
+          if (item.originalPrice && item.originalPrice > item.price && !current.originalPrice) {
+            flashSaleEnded = true;
+          }
           changed = true;
           return { ...item, price: current.price, originalPrice: current.originalPrice };
         }
@@ -124,9 +130,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     if (buyNowItem) {
       const current = priceMap.get(buyNowItem.id);
       if (current && (buyNowItem.price !== current.price || buyNowItem.originalPrice !== current.originalPrice)) {
+        if (buyNowItem.originalPrice && buyNowItem.originalPrice > buyNowItem.price && !current.originalPrice) {
+          flashSaleEnded = true;
+        }
         setBuyNowItemState({ ...buyNowItem, price: current.price, originalPrice: current.originalPrice });
       }
     }
+
+    return flashSaleEnded;
   }, [items, buyNowItem]);
 
   // Revalidate on mount and every 30 seconds
