@@ -987,7 +987,7 @@ const Checkout = () => {
                     <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg border border-success/30">
                       <div className="flex items-center gap-2">
                         <Tag size={16} className="text-success" />
-                        <span className="text-sm font-semibold text-success">{appliedCoupon.code} applied ✓</span>
+                        <span className="text-sm font-semibold text-success">{appliedCoupon.code} applied ✓{hasFlashSaleItems ? ' (non-sale items only)' : ''}</span>
                       </div>
                       <button onClick={removeCoupon} className="text-xs text-destructive hover:underline">Remove</button>
                     </div>
