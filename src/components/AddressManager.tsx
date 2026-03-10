@@ -506,26 +506,44 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
+                <Label htmlFor="pincode" className="text-xs">PIN Code</Label>
+                <Input id="pincode" name="pincode" defaultValue={editingAddress?.pincode} placeholder="" maxLength={6}
+                  className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (/^\d{6}$/.test(val)) {
+                      fetchCityStateFromPincode(val).then(result => {
+                        if (result) {
+                          const cityInput = document.getElementById('city') as HTMLInputElement;
+                          const stateHidden = document.getElementById('state-hidden') as HTMLInputElement;
+                          if (cityInput) cityInput.value = result.city;
+                          if (stateHidden) stateHidden.value = result.state;
+                          // Trigger state select update
+                          const event = new CustomEvent('pincode-state-update', { detail: result.state });
+                          document.dispatchEvent(event);
+                        }
+                      });
+                    }
+                  }}
+                />
+                {addressErrors.pincode && <p className="text-[11px] text-destructive">{addressErrors.pincode}</p>}
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="landmark" className="text-xs">Landmark</Label>
+                <Input id="landmark" name="landmark" defaultValue={editingAddress?.landmark} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
                 <Label htmlFor="city" className="text-xs">City</Label>
                 <Input id="city" name="city" defaultValue={editingAddress?.city} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
                 {addressErrors.city && <p className="text-[11px] text-destructive">{addressErrors.city}</p>}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="state" className="text-xs">State</Label>
-                <Input id="state" name="state" defaultValue={editingAddress?.state} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
+                <AddressStateSelect defaultValue={editingAddress?.state} />
                 {addressErrors.state && <p className="text-[11px] text-destructive">{addressErrors.state}</p>}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label htmlFor="pincode" className="text-xs">PIN Code</Label>
-                <Input id="pincode" name="pincode" defaultValue={editingAddress?.pincode} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
-                {addressErrors.pincode && <p className="text-[11px] text-destructive">{addressErrors.pincode}</p>}
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="landmark" className="text-xs">Landmark</Label>
-                <Input id="landmark" name="landmark" defaultValue={editingAddress?.landmark} placeholder="" className="border-0 border-b border-border rounded-none bg-transparent px-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary" />
               </div>
             </div>
 
