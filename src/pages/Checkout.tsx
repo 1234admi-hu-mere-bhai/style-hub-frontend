@@ -946,7 +946,7 @@ const Checkout = () => {
                   )}
                   {discountAmount > 0 && (
                     <div className="flex justify-between text-success">
-                      <span>Coupon Discount ({appliedCoupon?.code})</span>
+                      <span>Coupon ({appliedCoupon?.code}){hasFlashSaleItems ? ' — non-sale items' : ''}</span>
                       <span>- {formatPrice(discountAmount)}</span>
                     </div>
                   )}
