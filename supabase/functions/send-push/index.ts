@@ -156,11 +156,13 @@ async function hkdf(
   info: Uint8Array,
   length: number
 ): Promise<Uint8Array> {
-  const key = await crypto.subtle.importKey("raw", ikm, { name: "HMAC", hash: "SHA-256" }, false, [
+  // HKDF-Extract: PRK = HMAC-Hash(salt, IKM)
+  const saltKey = await crypto.subtle.importKey("raw", salt, { name: "HMAC", hash: "SHA-256" }, false, [
     "sign",
   ]);
-  const prk = new Uint8Array(await crypto.subtle.sign("HMAC", key, salt));
+  const prk = new Uint8Array(await crypto.subtle.sign("HMAC", saltKey, ikm));
 
+  // HKDF-Expand: OKM = HMAC-Hash(PRK, info || 0x01)
   const prkKey = await crypto.subtle.importKey("raw", prk, { name: "HMAC", hash: "SHA-256" }, false, [
     "sign",
   ]);
