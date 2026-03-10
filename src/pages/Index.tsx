@@ -479,13 +479,12 @@ const Index = () => {
                 LIMITED TIME OFFER
               </span>
               <h2 className="font-serif text-3xl lg:text-5xl font-bold mb-4">
-                Get 20% Off
+                Unlock Your
                 <br />
-                Your First Order
+                MG Perks
               </h2>
               <p className="text-primary-foreground/80 mb-8">
-                Sign up for our newsletter and receive an exclusive discount code.
-                Plus, be the first to know about new arrivals and sales.
+                Subscribe for insider access, early drops & a 20% welcome reward.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 {discountCode ? (
