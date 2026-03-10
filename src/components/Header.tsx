@@ -77,18 +77,6 @@ const Header = () => {
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-8">
-              {categories.map((cat) => (
-                <Link
-                  key={cat.name}
-                  to={cat.href}
-                  className="text-sm font-medium uppercase tracking-wider link-underline hover:text-primary transition-colors"
-                >
-                  {cat.name}
-                </Link>
-              ))}
-            </nav>
 
             {/* Right icons */}
             <div className="flex items-center space-x-2 lg:space-x-4">
