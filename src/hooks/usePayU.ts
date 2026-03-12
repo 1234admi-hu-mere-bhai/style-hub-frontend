@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -28,11 +28,73 @@ interface PaymentDetails {
 const PAYU_BASE_URL = 'https://secure.payu.in/_payment'; // Production
 // const PAYU_BASE_URL = 'https://sandboxsecure.payu.in/_payment'; // Sandbox/Test
 
+const MAX_RETRIES = 3;
+const RETRY_DELAYS = [30, 60, 120]; // seconds for each retry
+
 export const usePayU = ({ onSuccess, onError, onDismiss }: UsePayUProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isRateLimited, setIsRateLimited] = useState(false);
+  const [retryCountdown, setRetryCountdown] = useState(0);
+  const [retryAttempt, setRetryAttempt] = useState(0);
+  const pendingDetailsRef = useRef<PaymentDetails | null>(null);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Countdown timer
+  useEffect(() => {
+    if (retryCountdown <= 0) {
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+      return;
+    }
+
+    countdownRef.current = setInterval(() => {
+      setRetryCountdown(prev => {
+        if (prev <= 1) {
+          setIsRateLimited(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
+  }, [retryCountdown > 0]);
+
+  const clearRetryState = useCallback(() => {
+    setIsRateLimited(false);
+    setRetryCountdown(0);
+    setRetryAttempt(0);
+    pendingDetailsRef.current = null;
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current);
+      countdownRef.current = null;
+    }
+  }, []);
+
+  const submitToPayU = useCallback((params: Record<string, string>) => {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = PAYU_BASE_URL;
+
+    Object.entries(params).forEach(([key, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+  }, []);
 
   const initiatePayment = useCallback(async (details: PaymentDetails) => {
     setIsLoading(true);
+    pendingDetailsRef.current = details;
 
     try {
       const txnid = `TXN${Date.now()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
@@ -51,8 +113,6 @@ export const usePayU = ({ onSuccess, onError, onDismiss }: UsePayUProps) => {
         throw new Error('Failed to generate payment hash. Please try again.');
       }
 
-      // Build the success/failure URLs
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const surl = `${window.location.origin}/payu-callback?status=success`;
       const furl = `${window.location.origin}/payu-callback?status=failure`;
       const curl = `${window.location.origin}/payu-callback?status=cancel`;
@@ -63,11 +123,6 @@ export const usePayU = ({ onSuccess, onError, onDismiss }: UsePayUProps) => {
         amount: details.amount,
         description: productinfo,
       }));
-
-      // Create a form and submit to PayU
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = PAYU_BASE_URL;
 
       const params: Record<string, string> = {
         key: hashData.key,
@@ -83,31 +138,87 @@ export const usePayU = ({ onSuccess, onError, onDismiss }: UsePayUProps) => {
         hash: hashData.hash,
       };
 
-      Object.entries(params).forEach(([key, value]) => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = value;
-        form.appendChild(input);
-      });
+      // Try submitting — if PayU rate-limits (form submit results in redirect that fails),
+      // we handle it via a fetch check first
+      try {
+        const checkResponse = await fetch(PAYU_BASE_URL, {
+          method: 'HEAD',
+          mode: 'no-cors',
+        });
+        // no-cors won't give status, so we just attempt the submit
+      } catch {
+        // Network error is expected with no-cors, proceed anyway
+      }
 
-      document.body.appendChild(form);
-      form.submit();
+      clearRetryState();
+      submitToPayU(params);
       // Page will redirect to PayU — loading state stays true
     } catch (error) {
       setIsLoading(false);
       const err = error instanceof Error ? error : new Error('Payment initialization failed');
-      if (onError) {
-        onError(err);
+      
+      // Check if it's a rate limit scenario (detect from error message or response)
+      const isRateLimit = err.message.toLowerCase().includes('too many') || 
+                          err.message.toLowerCase().includes('rate limit') ||
+                          err.message.includes('429');
+
+      if (isRateLimit && retryAttempt < MAX_RETRIES) {
+        const delay = RETRY_DELAYS[retryAttempt] || 120;
+        setIsRateLimited(true);
+        setRetryCountdown(delay);
+        setRetryAttempt(prev => prev + 1);
+        toast.error(`PayU is temporarily busy. Auto-retrying in ${delay} seconds...`, {
+          description: `Attempt ${retryAttempt + 1} of ${MAX_RETRIES}`,
+          duration: 5000,
+        });
+      } else if (isRateLimit) {
+        clearRetryState();
+        const finalErr = new Error('PayU is experiencing high traffic. Please try again in a few minutes.');
+        if (onError) {
+          onError(finalErr);
+        } else {
+          toast.error(finalErr.message);
+        }
       } else {
-        toast.error(err.message);
+        clearRetryState();
+        if (onError) {
+          onError(err);
+        } else {
+          toast.error(err.message);
+        }
       }
     }
-  }, [onSuccess, onError, onDismiss]);
+  }, [onSuccess, onError, onDismiss, retryAttempt, clearRetryState, submitToPayU]);
+
+  // Auto-retry when countdown reaches 0 and we have pending details
+  useEffect(() => {
+    if (retryCountdown === 0 && isRateLimited === false && retryAttempt > 0 && pendingDetailsRef.current) {
+      initiatePayment(pendingDetailsRef.current);
+    }
+  }, [retryCountdown, isRateLimited, retryAttempt]);
+
+  const retryNow = useCallback(() => {
+    if (pendingDetailsRef.current) {
+      setRetryCountdown(0);
+      setIsRateLimited(false);
+      initiatePayment(pendingDetailsRef.current);
+    }
+  }, [initiatePayment]);
+
+  const cancelRetry = useCallback(() => {
+    clearRetryState();
+    setIsLoading(false);
+    toast.info('Payment retry cancelled');
+  }, [clearRetryState]);
 
   return {
     initiatePayment,
     isLoading,
+    isRateLimited,
+    retryCountdown,
+    retryAttempt,
+    retryNow,
+    cancelRetry,
   };
 };
 
