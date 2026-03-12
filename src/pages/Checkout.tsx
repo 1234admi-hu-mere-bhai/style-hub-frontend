@@ -1278,23 +1278,46 @@ const Checkout = () => {
                 {showPriceDetails ? 'HIDE DETAILS' : 'VIEW PRICE DETAILS'}
               </button>
             </div>
-            <Button
-              onClick={handleContinue}
-              disabled={isPaymentLoading || isPlacingOrder}
-              className="px-8"
-              size="lg"
-            >
-              {isPaymentLoading || isPlacingOrder ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
-                </>
-              ) : step === 'payment' ? (
-                `Pay ${formatPrice(finalTotal)}`
-              ) : (
-                'Continue'
-              )}
-            </Button>
+            {isRateLimited ? (
+              <div className="w-full space-y-2">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Clock className="h-4 w-4 animate-pulse text-primary" />
+                  <span>PayU is busy. Retrying in <strong className="text-foreground">{retryCountdown}s</strong> (Attempt {retryAttempt}/{3})</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                  <div 
+                    className="h-full bg-primary rounded-full transition-all duration-1000 ease-linear"
+                    style={{ width: `${(retryCountdown / [30, 60, 120][retryAttempt - 1]) * 100}%` }}
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button onClick={retryNow} size="sm" className="flex-1">
+                    <Zap className="mr-1 h-3 w-3" /> Retry Now
+                  </Button>
+                  <Button onClick={cancelRetry} variant="outline" size="sm" className="flex-1">
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button
+                onClick={handleContinue}
+                disabled={isPaymentLoading || isPlacingOrder}
+                className="px-8"
+                size="lg"
+              >
+                {isPaymentLoading || isPlacingOrder ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : step === 'payment' ? (
+                  `Pay ${formatPrice(finalTotal)}`
+                ) : (
+                  'Continue'
+                )}
+              </Button>
+            )}
           </div>
 
           {/* Expandable price details */}
