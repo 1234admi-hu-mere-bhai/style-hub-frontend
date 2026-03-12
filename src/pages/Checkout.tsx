@@ -261,7 +261,7 @@ const Checkout = () => {
   };
 
   // PayU integration
-  const { initiatePayment, isLoading: isPaymentLoading } = usePayU({
+  const { initiatePayment, isLoading: isPaymentLoading, isRateLimited, retryCountdown, retryAttempt, retryNow, cancelRetry } = usePayU({
     onSuccess: async (response: PayUResponse) => {
       toast.success('Payment successful!', {
         description: `Transaction ID: ${response.txnid}`,
