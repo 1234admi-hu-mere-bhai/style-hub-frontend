@@ -35,11 +35,19 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400, headers: corsHeaders });
     }
 
-    const merchantKey = Deno.env.get('PAYU_MERCHANT_KEY')!;
-    const merchantSalt = Deno.env.get('PAYU_MERCHANT_SALT')!;
+    const merchantKey = (Deno.env.get('PAYU_MERCHANT_KEY') || '').trim();
+    const merchantSalt = (Deno.env.get('PAYU_MERCHANT_SALT') || '').trim();
+
+    if (!merchantKey || !merchantSalt) {
+      console.error('Missing PAYU_MERCHANT_KEY or PAYU_MERCHANT_SALT');
+      return new Response(JSON.stringify({ error: 'Payment configuration missing' }), { status: 500, headers: corsHeaders });
+    }
 
     // PayU hash formula: sha512(key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||salt)
     const hashString = `${merchantKey}|${txnid}|${amount}|${productinfo}|${firstname}|${email}|||||||||||${merchantSalt}`;
+    
+    console.log('Hash input (masked):', `${merchantKey}|${txnid}|${amount}|${productinfo}|${firstname}|${email}|||||||||||***`);
+    console.log('Key length:', merchantKey.length, 'Salt length:', merchantSalt.length);
 
     const encoder = new TextEncoder();
     const data = encoder.encode(hashString);
