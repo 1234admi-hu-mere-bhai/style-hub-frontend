@@ -675,7 +675,6 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
                   <><Loader2 size={14} className="animate-spin mr-1" /> Verifying...</>
                 ) : editingAddress?.id ? 'Update Address' : 'Save Address'}
               </Button>
-              </Button>
             </div>
           </form>
         </DialogContent>
