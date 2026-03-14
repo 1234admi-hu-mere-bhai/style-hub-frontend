@@ -221,6 +221,7 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
   const handleEdit = (address: Address) => {
     setEditingAddress(address);
     setAddressErrors({});
+    setAddressWarnings({});
     setIsFormOpen(true);
   };
 
