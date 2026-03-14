@@ -645,13 +645,24 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="city" className="text-xs">City</Label>
-                <Input id="city" name="city" defaultValue={editingAddress?.city} placeholder="City" />
+                <Input id="city" name="city" defaultValue={editingAddress?.city} placeholder="City"
+                  className={addressWarnings.city ? 'border-yellow-500' : ''} />
                 {addressErrors.city && <p className="text-[11px] text-destructive">{addressErrors.city}</p>}
+                {addressWarnings.city && (
+                  <p className="text-[11px] text-yellow-600 flex items-center gap-1">
+                    <AlertTriangle size={11} /> {addressWarnings.city}
+                  </p>
+                )}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="state" className="text-xs">State</Label>
                 <AddressStateSelect defaultValue={editingAddress?.state} />
                 {addressErrors.state && <p className="text-[11px] text-destructive">{addressErrors.state}</p>}
+                {addressWarnings.state && (
+                  <p className="text-[11px] text-yellow-600 flex items-center gap-1">
+                    <AlertTriangle size={11} /> {addressWarnings.state}
+                  </p>
+                )}
               </div>
             </div>
 
