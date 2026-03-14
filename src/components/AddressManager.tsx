@@ -91,9 +91,12 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
+  const [addressWarnings, setAddressWarnings] = useState<Record<string, string>>({});
   const [locatingUser, setLocatingUser] = useState(false);
   const [selectedType, setSelectedType] = useState<AddressType>('home');
   const [expandedAddressId, setExpandedAddressId] = useState<string | null>(null);
+  const [isValidatingAddress, setIsValidatingAddress] = useState(false);
+  const pincodeValidationRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const filteredAddresses = addresses.filter((addr) => {
     if (!searchQuery.trim()) return true;
