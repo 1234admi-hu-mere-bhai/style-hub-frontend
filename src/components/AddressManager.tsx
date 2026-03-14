@@ -225,7 +225,7 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
     setIsFormOpen(true);
   };
 
-  const handleSaveAddress = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSaveAddress = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const data = {
@@ -248,6 +248,41 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
       return;
     }
     setAddressErrors({});
+
+    // Cross-validate pincode vs city/state before saving
+    if (/^[1-9]\d{5}$/.test(data.pincode)) {
+      setIsValidatingAddress(true);
+      try {
+        const apiResult = await fetchCityStateFromPincode(data.pincode);
+        if (apiResult) {
+          const warnings: Record<string, string> = {};
+          const normCity = data.city.trim().toLowerCase();
+          const normState = data.state.trim().toLowerCase();
+          const apiCity = apiResult.city.toLowerCase();
+          const apiState = apiResult.state.toLowerCase();
+
+          if (normCity && apiCity && !apiCity.includes(normCity) && !normCity.includes(apiCity)) {
+            warnings.city = `PIN code ${data.pincode} belongs to ${apiResult.city}, not "${data.city}"`;
+          }
+          if (normState && apiState && apiState !== normState) {
+            warnings.state = `PIN code ${data.pincode} belongs to ${apiResult.state}, not "${data.state}"`;
+          }
+
+          if (Object.keys(warnings).length > 0) {
+            setAddressWarnings(warnings);
+            toast.warning('Address mismatch detected! Please review the highlighted fields.');
+            setIsValidatingAddress(false);
+            return; // Block save until user fixes
+          }
+        }
+      } catch {
+        // continue saving if validation API fails
+      } finally {
+        setIsValidatingAddress(false);
+      }
+    }
+
+    setAddressWarnings({});
 
     if (editingAddress && editingAddress.id) {
       onAddressesChange(
