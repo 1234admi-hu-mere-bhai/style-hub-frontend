@@ -609,8 +609,10 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
               <div className="space-y-1">
                 <Label htmlFor="pincode" className="text-xs">PIN Code</Label>
                 <Input id="pincode" name="pincode" defaultValue={editingAddress?.pincode} placeholder="PIN Code" maxLength={6}
+                  className={addressWarnings.pincode ? 'border-yellow-500' : ''}
                   onChange={(e) => {
                     const val = e.target.value;
+                    setAddressWarnings({});
                     if (/^\d{6}$/.test(val)) {
                       fetchCityStateFromPincode(val).then(result => {
                         if (result) {
@@ -620,12 +622,19 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
                           if (stateHidden) stateHidden.value = result.state;
                           const event = new CustomEvent('pincode-state-update', { detail: result.state });
                           document.dispatchEvent(event);
+                        } else {
+                          setAddressWarnings(prev => ({ ...prev, pincode: 'Invalid PIN code — could not verify' }));
                         }
                       });
                     }
                   }}
                 />
                 {addressErrors.pincode && <p className="text-[11px] text-destructive">{addressErrors.pincode}</p>}
+                {addressWarnings.pincode && (
+                  <p className="text-[11px] text-yellow-600 flex items-center gap-1">
+                    <AlertTriangle size={11} /> {addressWarnings.pincode}
+                  </p>
+                )}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="landmark" className="text-xs">Landmark</Label>
