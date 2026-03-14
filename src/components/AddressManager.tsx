@@ -180,9 +180,40 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
     toast.success('Location selected! Please fill in remaining details.');
   };
 
+  // Cross-validate pincode against city/state
+  const validatePincodeMatch = async (pincode: string, city: string, state: string) => {
+    if (!/^[1-9]\d{5}$/.test(pincode)) return;
+    setIsValidatingAddress(true);
+    try {
+      const result = await fetchCityStateFromPincode(pincode);
+      if (!result) {
+        setAddressWarnings(prev => ({ ...prev, pincode: 'Could not verify this PIN code. Please double-check.' }));
+        return;
+      }
+      const warnings: Record<string, string> = {};
+      const normCity = city.trim().toLowerCase();
+      const normState = state.trim().toLowerCase();
+      const apiCity = result.city.toLowerCase();
+      const apiState = result.state.toLowerCase();
+
+      if (normCity && apiCity && !apiCity.includes(normCity) && !normCity.includes(apiCity)) {
+        warnings.city = `PIN code ${pincode} belongs to ${result.city}, not "${city}"`;
+      }
+      if (normState && apiState && apiState !== normState) {
+        warnings.state = `PIN code ${pincode} belongs to ${result.state}, not "${state}"`;
+      }
+      setAddressWarnings(warnings);
+    } catch {
+      // silently fail
+    } finally {
+      setIsValidatingAddress(false);
+    }
+  };
+
   const handleAddNew = () => {
     setEditingAddress(null);
     setAddressErrors({});
+    setAddressWarnings({});
     setSelectedType('home');
     setIsFormOpen(true);
   };
