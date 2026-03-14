@@ -667,11 +667,14 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
             </div>
 
             <div className="flex gap-3 pt-2">
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setIsFormOpen(false)}>
+              <Button type="button" variant="outline" className="flex-1" onClick={() => { setIsFormOpen(false); setAddressWarnings({}); }}>
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1">
-                {editingAddress?.id ? 'Update Address' : 'Save Address'}
+              <Button type="submit" className="flex-1" disabled={isValidatingAddress}>
+                {isValidatingAddress ? (
+                  <><Loader2 size={14} className="animate-spin mr-1" /> Verifying...</>
+                ) : editingAddress?.id ? 'Update Address' : 'Save Address'}
+              </Button>
               </Button>
             </div>
           </form>
