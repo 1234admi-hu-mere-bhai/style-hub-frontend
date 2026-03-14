@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
+  AlertTriangle,
   Search,
   MapPin,
   Plus,
@@ -90,9 +91,12 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
+  const [addressWarnings, setAddressWarnings] = useState<Record<string, string>>({});
   const [locatingUser, setLocatingUser] = useState(false);
   const [selectedType, setSelectedType] = useState<AddressType>('home');
   const [expandedAddressId, setExpandedAddressId] = useState<string | null>(null);
+  const [isValidatingAddress, setIsValidatingAddress] = useState(false);
+  const pincodeValidationRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const filteredAddresses = addresses.filter((addr) => {
     if (!searchQuery.trim()) return true;
@@ -176,9 +180,40 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
     toast.success('Location selected! Please fill in remaining details.');
   };
 
+  // Cross-validate pincode against city/state
+  const validatePincodeMatch = async (pincode: string, city: string, state: string) => {
+    if (!/^[1-9]\d{5}$/.test(pincode)) return;
+    setIsValidatingAddress(true);
+    try {
+      const result = await fetchCityStateFromPincode(pincode);
+      if (!result) {
+        setAddressWarnings(prev => ({ ...prev, pincode: 'Could not verify this PIN code. Please double-check.' }));
+        return;
+      }
+      const warnings: Record<string, string> = {};
+      const normCity = city.trim().toLowerCase();
+      const normState = state.trim().toLowerCase();
+      const apiCity = result.city.toLowerCase();
+      const apiState = result.state.toLowerCase();
+
+      if (normCity && apiCity && !apiCity.includes(normCity) && !normCity.includes(apiCity)) {
+        warnings.city = `PIN code ${pincode} belongs to ${result.city}, not "${city}"`;
+      }
+      if (normState && apiState && apiState !== normState) {
+        warnings.state = `PIN code ${pincode} belongs to ${result.state}, not "${state}"`;
+      }
+      setAddressWarnings(warnings);
+    } catch {
+      // silently fail
+    } finally {
+      setIsValidatingAddress(false);
+    }
+  };
+
   const handleAddNew = () => {
     setEditingAddress(null);
     setAddressErrors({});
+    setAddressWarnings({});
     setSelectedType('home');
     setIsFormOpen(true);
   };
@@ -186,10 +221,11 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
   const handleEdit = (address: Address) => {
     setEditingAddress(address);
     setAddressErrors({});
+    setAddressWarnings({});
     setIsFormOpen(true);
   };
 
-  const handleSaveAddress = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSaveAddress = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const data = {
@@ -212,6 +248,41 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
       return;
     }
     setAddressErrors({});
+
+    // Cross-validate pincode vs city/state before saving
+    if (/^[1-9]\d{5}$/.test(data.pincode)) {
+      setIsValidatingAddress(true);
+      try {
+        const apiResult = await fetchCityStateFromPincode(data.pincode);
+        if (apiResult) {
+          const warnings: Record<string, string> = {};
+          const normCity = data.city.trim().toLowerCase();
+          const normState = data.state.trim().toLowerCase();
+          const apiCity = apiResult.city.toLowerCase();
+          const apiState = apiResult.state.toLowerCase();
+
+          if (normCity && apiCity && !apiCity.includes(normCity) && !normCity.includes(apiCity)) {
+            warnings.city = `PIN code ${data.pincode} belongs to ${apiResult.city}, not "${data.city}"`;
+          }
+          if (normState && apiState && apiState !== normState) {
+            warnings.state = `PIN code ${data.pincode} belongs to ${apiResult.state}, not "${data.state}"`;
+          }
+
+          if (Object.keys(warnings).length > 0) {
+            setAddressWarnings(warnings);
+            toast.warning('Address mismatch detected! Please review the highlighted fields.');
+            setIsValidatingAddress(false);
+            return; // Block save until user fixes
+          }
+        }
+      } catch {
+        // continue saving if validation API fails
+      } finally {
+        setIsValidatingAddress(false);
+      }
+    }
+
+    setAddressWarnings({});
 
     if (editingAddress && editingAddress.id) {
       onAddressesChange(
@@ -538,8 +609,10 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
               <div className="space-y-1">
                 <Label htmlFor="pincode" className="text-xs">PIN Code</Label>
                 <Input id="pincode" name="pincode" defaultValue={editingAddress?.pincode} placeholder="PIN Code" maxLength={6}
+                  className={addressWarnings.pincode ? 'border-yellow-500' : ''}
                   onChange={(e) => {
                     const val = e.target.value;
+                    setAddressWarnings({});
                     if (/^\d{6}$/.test(val)) {
                       fetchCityStateFromPincode(val).then(result => {
                         if (result) {
@@ -549,12 +622,19 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
                           if (stateHidden) stateHidden.value = result.state;
                           const event = new CustomEvent('pincode-state-update', { detail: result.state });
                           document.dispatchEvent(event);
+                        } else {
+                          setAddressWarnings(prev => ({ ...prev, pincode: 'Invalid PIN code — could not verify' }));
                         }
                       });
                     }
                   }}
                 />
                 {addressErrors.pincode && <p className="text-[11px] text-destructive">{addressErrors.pincode}</p>}
+                {addressWarnings.pincode && (
+                  <p className="text-[11px] text-yellow-600 flex items-center gap-1">
+                    <AlertTriangle size={11} /> {addressWarnings.pincode}
+                  </p>
+                )}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="landmark" className="text-xs">Landmark</Label>
@@ -565,22 +645,35 @@ const AddressManager = ({ addresses, onAddressesChange }: AddressManagerProps) =
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="city" className="text-xs">City</Label>
-                <Input id="city" name="city" defaultValue={editingAddress?.city} placeholder="City" />
+                <Input id="city" name="city" defaultValue={editingAddress?.city} placeholder="City"
+                  className={addressWarnings.city ? 'border-yellow-500' : ''} />
                 {addressErrors.city && <p className="text-[11px] text-destructive">{addressErrors.city}</p>}
+                {addressWarnings.city && (
+                  <p className="text-[11px] text-yellow-600 flex items-center gap-1">
+                    <AlertTriangle size={11} /> {addressWarnings.city}
+                  </p>
+                )}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="state" className="text-xs">State</Label>
                 <AddressStateSelect defaultValue={editingAddress?.state} />
                 {addressErrors.state && <p className="text-[11px] text-destructive">{addressErrors.state}</p>}
+                {addressWarnings.state && (
+                  <p className="text-[11px] text-yellow-600 flex items-center gap-1">
+                    <AlertTriangle size={11} /> {addressWarnings.state}
+                  </p>
+                )}
               </div>
             </div>
 
             <div className="flex gap-3 pt-2">
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setIsFormOpen(false)}>
+              <Button type="button" variant="outline" className="flex-1" onClick={() => { setIsFormOpen(false); setAddressWarnings({}); }}>
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1">
-                {editingAddress?.id ? 'Update Address' : 'Save Address'}
+              <Button type="submit" className="flex-1" disabled={isValidatingAddress}>
+                {isValidatingAddress ? (
+                  <><Loader2 size={14} className="animate-spin mr-1" /> Verifying...</>
+                ) : editingAddress?.id ? 'Update Address' : 'Save Address'}
               </Button>
             </div>
           </form>
