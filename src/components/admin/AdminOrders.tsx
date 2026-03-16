@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Eye, Package } from 'lucide-react';
+import { Eye, Package, Truck, Loader2 } from 'lucide-react';
 
 interface OrderItem {
   id: string;
@@ -35,6 +36,7 @@ interface Order {
   created_at: string;
   updated_at: string;
   delivered_at: string | null;
+  tracking_awb?: string | null;
   items: OrderItem[];
 }
 
@@ -62,6 +64,9 @@ const AdminOrders = ({ orders, onRefresh }: AdminOrdersProps) => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [creatingShipment, setCreatingShipment] = useState(false);
+  const [shipmentWeight, setShipmentWeight] = useState('0.5');
+  const [pickupName, setPickupName] = useState('Muffi Gout Warehouse');
 
   const filteredOrders = filterStatus === 'all' 
     ? orders 
@@ -70,21 +75,57 @@ const AdminOrders = ({ orders, onRefresh }: AdminOrdersProps) => {
   const updateStatus = async (orderId: string, newStatus: string) => {
     setUpdatingId(orderId);
     try {
-      const updateData: any = { status: newStatus, updated_at: new Date().toISOString() };
-      if (newStatus === 'delivered') updateData.delivered_at = new Date().toISOString();
-
-      // Use edge function to update (service role needed for other users' orders)
       const { error } = await supabase.functions.invoke('admin-update-order', {
         body: { orderId, status: newStatus },
       });
       if (error) throw error;
-
       toast({ title: 'Order updated', description: `Status changed to ${newStatus}` });
       onRefresh();
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const createDelhiveryShipment = async (order: Order) => {
+    setCreatingShipment(true);
+    try {
+      const addr = order.shipping_address;
+      const shipmentData = {
+        name: `${addr?.firstName || ''} ${addr?.lastName || ''}`.trim(),
+        add: addr?.address || '',
+        pin: addr?.pincode || '',
+        city: addr?.city || '',
+        state: addr?.state || '',
+        country: 'India',
+        phone: addr?.phone || '',
+        order: order.order_number,
+        payment_mode: order.payment_method === 'COD' ? 'COD' : 'Prepaid',
+        total_amount: order.total,
+        cod_amount: order.payment_method === 'COD' ? order.total : 0,
+        weight: parseFloat(shipmentWeight) * 1000, // kg to grams
+        pickup_location: { name: pickupName },
+        products_desc: order.items.map(i => i.product_name).join(', '),
+        quantity: order.items.reduce((sum, i) => sum + i.quantity, 0),
+      };
+
+      const { data, error } = await supabase.functions.invoke('delhivery', {
+        body: { action: 'create_shipment', orderId: order.id, shipmentData },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Shipment created!',
+        description: data?.awb ? `AWB: ${data.awb}` : 'Shipment booked on Delhivery',
+      });
+      onRefresh();
+      setSelectedOrder(null);
+    } catch (err: any) {
+      toast({ title: 'Shipment creation failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setCreatingShipment(false);
     }
   };
 
@@ -202,10 +243,48 @@ const AdminOrders = ({ orders, onRefresh }: AdminOrdersProps) => {
                   📞 {selectedOrder.shipping_address?.phone}
                 </p>
               </div>
+              {/* Delhivery Shipment */}
+              <Separator />
               <div>
-                <p className="text-sm font-medium">Payment</p>
-                <p className="text-sm text-muted-foreground">{selectedOrder.payment_method} · {selectedOrder.payment_status}</p>
-                {selectedOrder.payment_id && <p className="text-xs text-muted-foreground">ID: {selectedOrder.payment_id}</p>}
+                <p className="text-sm font-medium mb-2">Delhivery Shipment</p>
+                {selectedOrder.tracking_awb ? (
+                  <div>
+                    <Badge variant="default" className="mb-2">AWB: {selectedOrder.tracking_awb}</Badge>
+                    <p className="text-xs text-muted-foreground">Shipment already created</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Weight (kg)"
+                        value={shipmentWeight}
+                        onChange={(e) => setShipmentWeight(e.target.value)}
+                        className="w-24 h-8 text-xs"
+                        type="number"
+                        step="0.1"
+                        min="0.1"
+                      />
+                      <Input
+                        placeholder="Pickup location name"
+                        value={pickupName}
+                        onChange={(e) => setPickupName(e.target.value)}
+                        className="flex-1 h-8 text-xs"
+                      />
+                    </div>
+                    <Button
+                      size="sm"
+                      className="w-full"
+                      onClick={() => createDelhiveryShipment(selectedOrder)}
+                      disabled={creatingShipment}
+                    >
+                      {creatingShipment ? (
+                        <><Loader2 className="h-3 w-3 animate-spin mr-1" /> Creating...</>
+                      ) : (
+                        <><Truck className="h-3 w-3 mr-1" /> Create Delhivery Shipment</>
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           )}
