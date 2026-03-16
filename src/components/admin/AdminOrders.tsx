@@ -243,10 +243,48 @@ const AdminOrders = ({ orders, onRefresh }: AdminOrdersProps) => {
                   📞 {selectedOrder.shipping_address?.phone}
                 </p>
               </div>
+              {/* Delhivery Shipment */}
+              <Separator />
               <div>
-                <p className="text-sm font-medium">Payment</p>
-                <p className="text-sm text-muted-foreground">{selectedOrder.payment_method} · {selectedOrder.payment_status}</p>
-                {selectedOrder.payment_id && <p className="text-xs text-muted-foreground">ID: {selectedOrder.payment_id}</p>}
+                <p className="text-sm font-medium mb-2">Delhivery Shipment</p>
+                {selectedOrder.tracking_awb ? (
+                  <div>
+                    <Badge variant="default" className="mb-2">AWB: {selectedOrder.tracking_awb}</Badge>
+                    <p className="text-xs text-muted-foreground">Shipment already created</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Weight (kg)"
+                        value={shipmentWeight}
+                        onChange={(e) => setShipmentWeight(e.target.value)}
+                        className="w-24 h-8 text-xs"
+                        type="number"
+                        step="0.1"
+                        min="0.1"
+                      />
+                      <Input
+                        placeholder="Pickup location name"
+                        value={pickupName}
+                        onChange={(e) => setPickupName(e.target.value)}
+                        className="flex-1 h-8 text-xs"
+                      />
+                    </div>
+                    <Button
+                      size="sm"
+                      className="w-full"
+                      onClick={() => createDelhiveryShipment(selectedOrder)}
+                      disabled={creatingShipment}
+                    >
+                      {creatingShipment ? (
+                        <><Loader2 className="h-3 w-3 animate-spin mr-1" /> Creating...</>
+                      ) : (
+                        <><Truck className="h-3 w-3 mr-1" /> Create Delhivery Shipment</>
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           )}
