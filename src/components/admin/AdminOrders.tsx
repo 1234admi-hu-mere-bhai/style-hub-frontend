@@ -36,6 +36,7 @@ interface Order {
   created_at: string;
   updated_at: string;
   delivered_at: string | null;
+  tracking_awb?: string | null;
   items: OrderItem[];
 }
 
