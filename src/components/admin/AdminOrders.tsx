@@ -64,6 +64,9 @@ const AdminOrders = ({ orders, onRefresh }: AdminOrdersProps) => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [creatingShipment, setCreatingShipment] = useState(false);
+  const [shipmentWeight, setShipmentWeight] = useState('0.5');
+  const [pickupName, setPickupName] = useState('Muffi Gout Warehouse');
 
   const filteredOrders = filterStatus === 'all' 
     ? orders 
@@ -72,21 +75,57 @@ const AdminOrders = ({ orders, onRefresh }: AdminOrdersProps) => {
   const updateStatus = async (orderId: string, newStatus: string) => {
     setUpdatingId(orderId);
     try {
-      const updateData: any = { status: newStatus, updated_at: new Date().toISOString() };
-      if (newStatus === 'delivered') updateData.delivered_at = new Date().toISOString();
-
-      // Use edge function to update (service role needed for other users' orders)
       const { error } = await supabase.functions.invoke('admin-update-order', {
         body: { orderId, status: newStatus },
       });
       if (error) throw error;
-
       toast({ title: 'Order updated', description: `Status changed to ${newStatus}` });
       onRefresh();
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const createDelhiveryShipment = async (order: Order) => {
+    setCreatingShipment(true);
+    try {
+      const addr = order.shipping_address;
+      const shipmentData = {
+        name: `${addr?.firstName || ''} ${addr?.lastName || ''}`.trim(),
+        add: addr?.address || '',
+        pin: addr?.pincode || '',
+        city: addr?.city || '',
+        state: addr?.state || '',
+        country: 'India',
+        phone: addr?.phone || '',
+        order: order.order_number,
+        payment_mode: order.payment_method === 'COD' ? 'COD' : 'Prepaid',
+        total_amount: order.total,
+        cod_amount: order.payment_method === 'COD' ? order.total : 0,
+        weight: parseFloat(shipmentWeight) * 1000, // kg to grams
+        pickup_location: { name: pickupName },
+        products_desc: order.items.map(i => i.product_name).join(', '),
+        quantity: order.items.reduce((sum, i) => sum + i.quantity, 0),
+      };
+
+      const { data, error } = await supabase.functions.invoke('delhivery', {
+        body: { action: 'create_shipment', orderId: order.id, shipmentData },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Shipment created!',
+        description: data?.awb ? `AWB: ${data.awb}` : 'Shipment booked on Delhivery',
+      });
+      onRefresh();
+      setSelectedOrder(null);
+    } catch (err: any) {
+      toast({ title: 'Shipment creation failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setCreatingShipment(false);
     }
   };
 
