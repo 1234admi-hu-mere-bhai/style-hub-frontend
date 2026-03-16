@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.payu-hash]
 verify_jwt = false
+
+[functions.delhivery]
+verify_jwt = false
