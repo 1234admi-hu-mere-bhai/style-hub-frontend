@@ -233,6 +233,11 @@ const OrderHistory = () => {
                   </div>
                 </div>
 
+                {/* Mini Delivery Progress */}
+                {!['cancelled', 'replacement_requested', 'replacement_shipped', 'replacement_delivered'].includes(order.status) && (
+                  <MiniDeliveryProgress status={order.status} />
+                )}
+
                 <div className="flex gap-3 overflow-x-auto pb-2 mb-4">
                   {order.order_items.map((item) => (
                     <div
