@@ -53,6 +53,55 @@ const isWithin7Days = (deliveredAt: string | null) => {
   return days <= 7;
 };
 
+const DELIVERY_STEPS = [
+  { key: 'placed', label: 'Placed', icon: Package },
+  { key: 'confirmed', label: 'Confirmed', icon: CheckCircle2 },
+  { key: 'shipped', label: 'Shipped', icon: Truck },
+  { key: 'out_for_delivery', label: 'Out for Delivery', icon: MapPin },
+  { key: 'delivered', label: 'Delivered', icon: CheckCircle2 },
+];
+
+const MiniDeliveryProgress = ({ status }: { status: string }) => {
+  const statusOrder = ['placed', 'confirmed', 'shipped', 'out_for_delivery', 'delivered'];
+  const currentIdx = statusOrder.indexOf(status);
+
+  return (
+    <div className="flex items-center gap-1 my-3 px-1">
+      {DELIVERY_STEPS.map((step, idx) => {
+        const isCompleted = idx <= currentIdx;
+        const isCurrent = idx === currentIdx;
+        const StepIcon = step.icon;
+
+        return (
+          <div key={step.key} className="flex items-center flex-1 last:flex-none">
+            <div className="flex flex-col items-center">
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                isCompleted
+                  ? isCurrent
+                    ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/25 scale-110'
+                    : 'bg-primary/80 text-primary-foreground'
+                  : 'bg-muted text-muted-foreground'
+              }`}>
+                <StepIcon size={13} />
+              </div>
+              <span className={`text-[9px] mt-1 font-medium leading-tight text-center ${
+                isCompleted ? 'text-foreground' : 'text-muted-foreground'
+              }`}>
+                {step.label}
+              </span>
+            </div>
+            {idx < DELIVERY_STEPS.length - 1 && (
+              <div className={`h-0.5 flex-1 mx-0.5 rounded-full mt-[-14px] ${
+                idx < currentIdx ? 'bg-primary/60' : 'bg-border'
+              }`} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 const OrderHistory = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
