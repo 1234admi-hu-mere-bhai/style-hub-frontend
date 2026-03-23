@@ -140,7 +140,7 @@ Please format this as a clear, professional invoice summary that could be displa
         messages: [
           {
             role: 'system',
-            content: 'You are a professional invoice generator for MUFFI GOUT APPAREL HUB, a premium fashion e-commerce store. Generate clean, well-formatted invoice summaries.',
+            content: 'You are a professional invoice generator for MUFFIGOUT APPAREL HUB, a premium fashion e-commerce store. Generate clean, well-formatted invoice summaries.',
           },
           {
             role: 'user',

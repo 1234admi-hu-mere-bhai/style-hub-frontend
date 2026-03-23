@@ -125,7 +125,7 @@ const faqSections = [
       },
       {
         q: 'Are your products original/branded?',
-        a: 'Yes, all products sold on Muffi Gout Apparel Hub are 100% authentic. We source directly from trusted manufacturers and brands.',
+        a: 'Yes, all products sold on Muffigout Apparel Hub are 100% authentic. We source directly from trusted manufacturers and brands.',
       },
       {
         q: 'What if I receive a damaged or wrong product?',

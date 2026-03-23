@@ -79,11 +79,11 @@ const Header = () => {
               <Link to="/" className="flex items-center gap-2">
                 <img 
                   src="/assets/logo-new.png" 
-                  alt="MUFFI GOUT APPAREL HUB" 
+                  alt="MUFFIGOUT APPAREL HUB" 
                   className="h-10 lg:h-12 w-auto rounded-full shadow-sm"
                 />
                 <div className="flex flex-col items-start leading-none">
-                  <span className="font-serif text-base lg:text-lg font-bold tracking-tight text-foreground">MUFFI GOUT</span>
+                  <span className="font-serif text-base lg:text-lg font-bold tracking-tight text-foreground">MUFFIGOUT</span>
                   <span className="text-[9px] lg:text-[10px] font-semibold uppercase tracking-[0.2em] text-primary mt-0.5">Apparel Hub</span>
                 </div>
               </Link>

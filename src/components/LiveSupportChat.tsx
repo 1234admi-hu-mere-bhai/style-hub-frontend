@@ -14,7 +14,7 @@ type Message = { role: 'user' | 'assistant'; content: string };
 
 const WELCOME_MSG: Message = {
   role: 'assistant',
-  content: "Hey there! 👋 I'm **StyleGenie**, your personal shopping assistant at Muffi Gout Apparel Hub. How can I help you today?",
+  content: "Hey there! 👋 I'm **StyleGenie**, your personal shopping assistant at Muffigout Apparel Hub. How can I help you today?",
 };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/support-chat`;
@@ -271,7 +271,7 @@ const LiveSupportChat = () => {
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm leading-tight">StyleGenie</p>
-              <p className="text-[11px] opacity-80">Muffi Gout AI Assistant</p>
+              <p className="text-[11px] opacity-80">Muffigout AI Assistant</p>
             </div>
             {user && messages.length > 1 && (
               <button

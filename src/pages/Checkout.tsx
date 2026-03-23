@@ -344,7 +344,7 @@ const Checkout = () => {
       customerName: `${addressForm.firstName} ${addressForm.lastName}`,
       customerEmail: user.email,
       customerPhone: addressForm.phone,
-      description: `Order of ${items.length} item(s) from MUFFI GOUT APPAREL HUB`,
+      description: `Order of ${items.length} item(s) from MUFFIGOUT APPAREL HUB`,
     });
   };
 

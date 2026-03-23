@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
         const shipmentPayload = `format=json&data=${encodeURIComponent(JSON.stringify({
           shipments: [shipmentData],
           pickup_location: shipmentData.pickup_location || {
-            name: 'Muffi Gout Warehouse',
+            name: 'Muffigout Warehouse',
           },
         }))}`;
 

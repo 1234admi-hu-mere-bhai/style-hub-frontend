@@ -33,9 +33,9 @@ const Referral = () => {
 
   const handleShare = () => {
     if (!myCode) return;
-    const text = `Hey! Use my referral code ${myCode} on Muffi Gout Apparel Hub and get ₹100 off your first order! Shop now: ${window.location.origin}`;
+    const text = `Hey! Use my referral code ${myCode} on Muffigout Apparel Hub and get ₹100 off your first order! Shop now: ${window.location.origin}`;
     if (navigator.share) {
-      navigator.share({ title: 'Muffi Gout Referral', text });
+      navigator.share({ title: 'Muffigout Referral', text });
     } else {
       navigator.clipboard.writeText(text);
       toast.success('Share message copied to clipboard!');
@@ -148,7 +148,7 @@ const Referral = () => {
             <li>Referral discount of ₹100 is applicable on orders above ₹499.</li>
             <li>Each referral code can be used once per new customer.</li>
             <li>Referral rewards cannot be combined with other coupons or offers.</li>
-            <li>Muffi Gout Apparel Hub reserves the right to modify or cancel the referral program at any time.</li>
+            <li>Muffigout Apparel Hub reserves the right to modify or cancel the referral program at any time.</li>
           </ul>
         </div>
       </main>
