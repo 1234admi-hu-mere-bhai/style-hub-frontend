@@ -122,7 +122,7 @@ const Footer = () => {
               </li>
               <li className="flex items-start space-x-3">
                 <MapPin size={16} className="mt-1 flex-shrink-0" />
-                <span>Nasaratpur, Samudraghar, Purba Bardhaman, West Bengal - 713519</span>
+                <span>Samudraghar Rail Bazar Bus Stand, Nasaratpur, Near New Lakshmi Medical Hall, Purba Bardhaman, West Bengal - 713519</span>
               </li>
             </ul>
           </div>

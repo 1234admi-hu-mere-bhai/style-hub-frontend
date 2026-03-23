@@ -93,7 +93,7 @@ const PrivacyPolicy = () => {
             <ul className="space-y-2 text-muted-foreground">
               <li>📧 Email: <span className="text-foreground">support@muffi.com</span></li>
               <li>📞 Phone: <span className="text-foreground">+91 91363 54192</span></li>
-              <li>📍 Address: <span className="text-foreground">Nasaratpur, Samudraghar, Purba Bardhaman, West Bengal - 713519</span></li>
+              <li>📍 Address: <span className="text-foreground">Samudraghar Rail Bazar Bus Stand, Nasaratpur, Near New Lakshmi Medical Hall, Purba Bardhaman, West Bengal - 713519</span></li>
             </ul>
           </section>
         </div>

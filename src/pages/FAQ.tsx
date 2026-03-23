@@ -154,7 +154,7 @@ const faqSections = [
       },
       {
         q: 'Do you have a physical store?',
-        a: 'We are currently an online-only store based in Nasaratpur, Samudraghar, Purba Bardhaman, West Bengal - 713519.',
+        a: 'We are currently an online-only store based at Samudraghar Rail Bazar Bus Stand, Nasaratpur, Near New Lakshmi Medical Hall, Purba Bardhaman, West Bengal - 713519.',
       },
       {
         q: 'Do you offer wholesale or bulk orders?',
