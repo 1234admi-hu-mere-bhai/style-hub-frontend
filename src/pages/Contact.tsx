@@ -29,7 +29,7 @@ const Contact = () => {
             </svg>
           </a>
           <a
-            href="mailto:support@muffi.com"
+            href="mailto:supportmuffigoutapparelhub@gmail.com"
             className="flex flex-col items-center gap-3 py-6 hover:opacity-70 transition-opacity"
           >
             <span className="text-base font-medium text-foreground">Email</span>

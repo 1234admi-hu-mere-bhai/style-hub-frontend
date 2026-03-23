@@ -131,7 +131,7 @@ const ShippingPolicy = () => {
               <li>Please ensure your shipping address and phone number are correct to avoid delivery issues.</li>
               <li>All orders are prepaid via UPI, cards, or net banking.</li>
               <li>In case of failed delivery attempts, the order will be returned to our warehouse.</li>
-              <li>For bulk orders or special delivery requests, contact us at <span className="text-foreground">support@muffi.com</span>.</li>
+              <li>For bulk orders or special delivery requests, contact us at <span className="text-foreground">supportmuffigoutapparelhub@gmail.com</span>.</li>
             </ul>
           </section>
         </div>
