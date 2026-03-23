@@ -156,7 +156,7 @@ const Admin = () => {
       <div className="min-h-screen bg-muted flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="flex flex-col items-center mb-8">
-            <img src={logoNew} alt="Muffi Gout" className="h-16 w-16 rounded-full shadow-md mb-4" />
+            <img src={logoNew} alt="Muffigout" className="h-16 w-16 rounded-full shadow-md mb-4" />
             <h1 className="font-serif text-2xl font-bold text-foreground">Admin Panel</h1>
             <p className="text-sm text-muted-foreground mt-1">Sign in to manage your store</p>
           </div>
@@ -241,9 +241,9 @@ const Admin = () => {
       `}>
         {/* Sidebar Header */}
         <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
-          <img src={logoNew} alt="Muffi Gout" className="h-9 w-9 rounded-full" />
+          <img src={logoNew} alt="Muffigout" className="h-9 w-9 rounded-full" />
           <div className="flex-1 min-w-0">
-            <p className="font-serif text-sm font-bold truncate">MUFFI GOUT</p>
+            <p className="font-serif text-sm font-bold truncate">MUFFIGOUT</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Admin Panel</p>
           </div>
           <button className="lg:hidden p-1 hover:bg-muted rounded" onClick={() => setSidebarOpen(false)}>

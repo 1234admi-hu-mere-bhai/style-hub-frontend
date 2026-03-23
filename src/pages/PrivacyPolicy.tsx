@@ -12,7 +12,7 @@ const PrivacyPolicy = () => {
         <div className="space-y-10 text-foreground/90 leading-relaxed">
           <section>
             <h2 className="font-serif text-xl font-semibold mb-3">1. Information We Collect</h2>
-            <p className="mb-3">At Muffi Gout Apparel Hub, we collect information to provide you with the best shopping experience:</p>
+            <p className="mb-3">At Muffigout Apparel Hub, we collect information to provide you with the best shopping experience:</p>
             <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
               <li><strong className="text-foreground">Personal Information:</strong> Name, email address, phone number, and shipping address when you place an order or create an account.</li>
               <li><strong className="text-foreground">Payment Information:</strong> Payment details are processed securely through our trusted payment partners. We do not store your card details on our servers.</li>

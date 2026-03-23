@@ -13,7 +13,7 @@ const TermsOfService = () => {
           <section>
             <h2 className="font-serif text-xl font-semibold mb-3">1. Acceptance of Terms</h2>
             <p className="text-muted-foreground">
-              By accessing and using the Muffi Gout Apparel Hub website, you agree to be bound by these Terms of Service.
+              By accessing and using the Muffigout Apparel Hub website, you agree to be bound by these Terms of Service.
               If you do not agree with any part of these terms, please do not use our website.
             </p>
           </section>
@@ -68,7 +68,7 @@ const TermsOfService = () => {
           <section>
             <h2 className="font-serif text-xl font-semibold mb-3">7. Intellectual Property</h2>
             <p className="text-muted-foreground">
-              All content on this website — including logos, images, text, graphics, and designs — is the property of Muffi Gout Apparel Hub
+              All content on this website — including logos, images, text, graphics, and designs — is the property of Muffigout Apparel Hub
               and is protected by intellectual property laws. Unauthorized use, reproduction, or distribution is strictly prohibited.
             </p>
           </section>
@@ -76,7 +76,7 @@ const TermsOfService = () => {
           <section>
             <h2 className="font-serif text-xl font-semibold mb-3">8. Limitation of Liability</h2>
             <p className="text-muted-foreground">
-              Muffi Gout Apparel Hub shall not be liable for any indirect, incidental, or consequential damages arising from the use of our
+              Muffigout Apparel Hub shall not be liable for any indirect, incidental, or consequential damages arising from the use of our
               website or products. Our total liability shall not exceed the amount paid for the specific product in question.
             </p>
           </section>

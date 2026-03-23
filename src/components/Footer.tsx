@@ -11,11 +11,11 @@ const Footer = () => {
             <div className="flex items-center gap-3 mb-4">
               <img 
                 src="/assets/logo-new.png" 
-                alt="MUFFI GOUT APPAREL HUB" 
+                alt="MUFFIGOUT APPAREL HUB" 
                 className="h-14 w-auto rounded-full"
               />
               <div className="flex flex-col leading-none">
-                <span className="font-serif text-xl font-bold">MUFFI GOUT</span>
+                <span className="font-serif text-xl font-bold">MUFFIGOUT</span>
                 <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary mt-1">Apparel Hub</span>
               </div>
             </div>
@@ -129,7 +129,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-cream/20 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-cream/50">
-          <p>© 2024 MUFFI GOUT APPAREL HUB. All rights reserved.</p>
+          <p>© 2024 MUFFIGOUT APPAREL HUB. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link to="/privacy" className="hover:text-cream transition-colors">
               Privacy Policy

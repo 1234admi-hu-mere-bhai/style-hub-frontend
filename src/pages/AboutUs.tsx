@@ -11,10 +11,10 @@ const AboutUs = () => {
         {/* Hero */}
         <section className="relative bg-primary/5 py-16 lg:py-24">
           <div className="container mx-auto px-4 text-center max-w-3xl">
-            <img src={logoNew} alt="Muffi Gout Apparel Hub" className="h-20 w-20 rounded-full mx-auto mb-6 shadow-lg" />
+            <img src={logoNew} alt="Muffigout Apparel Hub" className="h-20 w-20 rounded-full mx-auto mb-6 shadow-lg" />
             <h1 className="font-serif text-4xl lg:text-5xl font-bold mb-4">Our Story</h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Born from a passion for quality and a commitment to trust, Muffi Gout Apparel Hub was founded with one simple belief —
+              Born from a passion for quality and a commitment to trust, Muffigout Apparel Hub was founded with one simple belief —
               every man deserves clothing that's crafted with care, built to last, and priced fairly.
             </p>
           </div>
@@ -26,7 +26,7 @@ const AboutUs = () => {
             <h2 className="font-serif text-2xl lg:text-3xl font-bold mb-6 text-center">How It All Began</h2>
             <div className="space-y-5 text-muted-foreground leading-relaxed">
               <p>
-                Muffi Gout Apparel Hub started as a dream in the heart of Purba Bardhaman, West Bengal. We noticed a gap in the market —
+                Muffigout Apparel Hub started as a dream in the heart of Purba Bardhaman, West Bengal. We noticed a gap in the market —
                 men's fashion that was both stylish and affordable, without compromising on quality. Too often, customers had to choose
                 between looking good and getting value for their money.
               </p>
@@ -35,7 +35,7 @@ const AboutUs = () => {
                 most: <strong className="text-foreground">premium fabrics, impeccable craftsmanship, and designs that speak for themselves.</strong>
               </p>
               <p>
-                Today, Muffi Gout Apparel Hub has grown into a trusted destination for men who value quality and style. Every piece in our
+                Today, Muffigout Apparel Hub has grown into a trusted destination for men who value quality and style. Every piece in our
                 collection is handpicked and tested to meet our high standards before it reaches your wardrobe.
               </p>
             </div>
@@ -126,7 +126,7 @@ const AboutUs = () => {
           <div className="container mx-auto px-4 text-center max-w-2xl">
             <h2 className="font-serif text-3xl lg:text-4xl font-bold mb-4">Crafted with Trust, Worn with Pride</h2>
             <p className="text-primary-foreground/80 mb-8">
-              Join thousands of customers who trust Muffi Gout Apparel Hub for quality men's fashion.
+              Join thousands of customers who trust Muffigout Apparel Hub for quality men's fashion.
               Experience the difference that genuine craftsmanship makes.
             </p>
             <a
