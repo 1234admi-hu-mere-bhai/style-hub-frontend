@@ -118,7 +118,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center space-x-3">
                 <Mail size={16} />
-                <span>support@muffi.com</span>
+                <span>supportmuffigoutapparelhub@gmail.com</span>
               </li>
               <li className="flex items-start space-x-3">
                 <MapPin size={16} className="mt-1 flex-shrink-0" />
