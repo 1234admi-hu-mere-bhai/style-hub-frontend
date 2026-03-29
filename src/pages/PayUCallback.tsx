@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
 import { createOrder } from '@/hooks/useOrders';
+import { supabase } from '@/integrations/supabase/client';
 
 const PayUCallback = () => {
   const [searchParams] = useSearchParams();
@@ -30,6 +31,7 @@ const PayUCallback = () => {
             return;
           }
 
+          // Create order with pending payment status
           const order = await createOrder({
             userId: user.id,
             items: checkout.items,
@@ -40,6 +42,23 @@ const PayUCallback = () => {
             paymentMethod: 'Online Payment (PayU)',
             paymentId: payment.txnid,
           });
+
+          // Verify payment server-side — this updates payment_status to 'paid' if verified
+          try {
+            const { data: verifyResult, error: verifyError } = await supabase.functions.invoke('verify-payment', {
+              body: {
+                orderId: order.id,
+                txnid: payment.txnid,
+              },
+            });
+
+            if (verifyError || !verifyResult?.success) {
+              console.warn('Payment verification pending:', verifyError || verifyResult?.message);
+              toast.warning('Payment is being verified. You will be notified once confirmed.');
+            }
+          } catch (verifyErr) {
+            console.error('Payment verification call failed:', verifyErr);
+          }
 
           // Clean up
           sessionStorage.removeItem('payu_payment');
