@@ -46,7 +46,7 @@ export const createOrder = async (params: CreateOrderParams) => {
     order_number: orderNumber,
     status: 'placed',
     payment_method: params.paymentMethod,
-    payment_status: params.paymentId ? 'paid' : 'pending',
+    payment_status: 'pending',
     payment_id: params.paymentId || null,
     subtotal: params.subtotal,
     shipping_cost: params.shippingCost,
@@ -86,16 +86,8 @@ export const createOrder = async (params: CreateOrderParams) => {
     throw itemsError;
   }
 
-  // If payment was made online, generate invoice immediately
-  if (params.paymentId) {
-    try {
-      await supabase.functions.invoke('generate-invoice', {
-        body: { orderId: order.id },
-      });
-    } catch (error) {
-      console.error('Failed to generate invoice:', error);
-    }
-  }
+  // Invoice generation is now handled server-side by verify-payment edge function
+  // after PayU payment verification succeeds.
 
   return {
     ...order,
