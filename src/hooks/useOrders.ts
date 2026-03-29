@@ -46,7 +46,7 @@ export const createOrder = async (params: CreateOrderParams) => {
     order_number: orderNumber,
     status: 'placed',
     payment_method: params.paymentMethod,
-    payment_status: params.paymentId ? 'paid' : 'pending',
+    payment_status: 'pending',
     payment_id: params.paymentId || null,
     subtotal: params.subtotal,
     shipping_cost: params.shippingCost,
