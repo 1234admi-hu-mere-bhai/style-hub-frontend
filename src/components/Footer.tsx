@@ -129,7 +129,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-cream/20 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-cream/50">
-          <p>© 2024 MUFFIGOUT APPAREL HUB. All rights reserved.</p>
+          <p><p>© 2026 MUFFIGOUT APPAREL HUB. All rights reserved.</p>. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link to="/privacy" className="hover:text-cream transition-colors">
               Privacy Policy
