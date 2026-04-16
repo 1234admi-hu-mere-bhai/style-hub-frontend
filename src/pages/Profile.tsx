@@ -7,6 +7,7 @@ import {
   Heart,
   CreditCard,
   RefreshCw,
+  Undo2,
   Settings,
   LogOut,
   ChevronRight,
@@ -56,6 +57,7 @@ const Profile = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [requestingReplacement, setRequestingReplacement] = useState<string | null>(null);
+  const [requestingReturn, setRequestingReturn] = useState<string | null>(null);
 
   const handleRequestReplacement = async (orderId: string) => {
     setRequestingReplacement(orderId);
@@ -71,6 +73,23 @@ const Profile = () => {
       toast.error(err.message || 'Failed to submit replacement request');
     } finally {
       setRequestingReplacement(null);
+    }
+  };
+
+  const handleRequestReturn = async (orderId: string) => {
+    setRequestingReturn(orderId);
+    try {
+      const { data, error } = await supabase.functions.invoke('request-return', {
+        body: { orderId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success('Return request submitted successfully');
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'return_requested' } : o));
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to submit return request');
+    } finally {
+      setRequestingReturn(null);
     }
   };
 
@@ -472,6 +491,26 @@ const Profile = () => {
                                 <RefreshCw size={14} className="mr-1" />
                               )}
                               Replace
+                            </Button>
+                          )}
+                          {order.status === 'delivered' && (() => {
+                            if (!order.deliveredAt) return true;
+                            const days = (Date.now() - new Date(order.deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
+                            return days <= 7;
+                          })() && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              onClick={() => handleRequestReturn(order.id)}
+                              disabled={requestingReturn === order.id}
+                            >
+                              {requestingReturn === order.id ? (
+                                <Loader2 size={14} className="mr-1 animate-spin" />
+                              ) : (
+                                <Undo2 size={14} className="mr-1" />
+                              )}
+                              Return
                             </Button>
                           )}
                           <span className="font-semibold">

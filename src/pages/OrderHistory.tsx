@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Package, FileText, Loader2, Eye, ChevronRight, RefreshCw, Search, Truck, MapPin, CheckCircle2 } from 'lucide-react';
+import { Package, FileText, Loader2, Eye, ChevronRight, RefreshCw, Search, Truck, MapPin, CheckCircle2, Undo2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -109,6 +109,7 @@ const OrderHistory = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [requestingReplacement, setRequestingReplacement] = useState<string | null>(null);
+  const [requestingReturn, setRequestingReturn] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleRequestReplacement = async (orderId: string) => {
@@ -120,12 +121,28 @@ const OrderHistory = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success('Replacement request submitted successfully');
-      // Update local state
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'replacement_requested' } : o));
     } catch (err: any) {
       toast.error(err.message || 'Failed to submit replacement request');
     } finally {
       setRequestingReplacement(null);
+    }
+  };
+
+  const handleRequestReturn = async (orderId: string) => {
+    setRequestingReturn(orderId);
+    try {
+      const { data, error } = await supabase.functions.invoke('request-return', {
+        body: { orderId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success('Return request submitted successfully');
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'return_requested' } : o));
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to submit return request');
+    } finally {
+      setRequestingReturn(null);
     }
   };
 
@@ -283,7 +300,7 @@ const OrderHistory = () => {
                 </div>
 
                 {/* Mini Delivery Progress */}
-                {!['cancelled', 'replacement_requested', 'replacement_shipped', 'replacement_delivered'].includes(order.status) && (
+                {!['cancelled', 'replacement_requested', 'replacement_shipped', 'replacement_delivered', 'return_requested', 'return_approved', 'return_picked_up', 'refund_processed'].includes(order.status) && (
                   <MiniDeliveryProgress status={order.status} />
                 )}
 
@@ -318,6 +335,22 @@ const OrderHistory = () => {
                         <FileText size={16} className="mr-2" />
                         Download Invoice
                       </a>
+                    </Button>
+                  )}
+                  {order.status === 'delivered' && isWithin7Days(order.delivered_at) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      onClick={() => handleRequestReturn(order.id)}
+                      disabled={requestingReturn === order.id}
+                    >
+                      {requestingReturn === order.id ? (
+                        <Loader2 size={16} className="mr-2 animate-spin" />
+                      ) : (
+                        <Undo2 size={16} className="mr-2" />
+                      )}
+                      Request Return
                     </Button>
                   )}
                   {order.status === 'delivered' && isWithin7Days(order.delivered_at) && (
