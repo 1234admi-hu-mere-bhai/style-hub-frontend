@@ -42,6 +42,12 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
+    if (!reason || reason.trim().length < 5) {
+      return new Response(JSON.stringify({ error: 'Please provide a return reason (at least 5 characters)' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     const adminClient = createClient(supabaseUrl, supabaseServiceKey)
 
@@ -72,7 +78,6 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Check 7-day return window
     if (order.delivered_at) {
       const deliveredDate = new Date(order.delivered_at)
       const now = new Date()
@@ -89,6 +94,7 @@ Deno.serve(async (req) => {
       .from('orders')
       .update({
         status: 'return_requested',
+        return_reason: reason.trim(),
         updated_at: new Date().toISOString(),
       })
       .eq('id', orderId)
