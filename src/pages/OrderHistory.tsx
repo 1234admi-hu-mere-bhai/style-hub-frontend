@@ -353,14 +353,9 @@ const OrderHistory = () => {
                       variant="outline"
                       size="sm"
                       className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      onClick={() => handleRequestReturn(order.id)}
-                      disabled={requestingReturn === order.id}
+                      onClick={() => setReturnDialogOrderId(order.id)}
                     >
-                      {requestingReturn === order.id ? (
-                        <Loader2 size={16} className="mr-2 animate-spin" />
-                      ) : (
-                        <Undo2 size={16} className="mr-2" />
-                      )}
+                      <Undo2 size={16} className="mr-2" />
                       Request Return
                     </Button>
                   )}
