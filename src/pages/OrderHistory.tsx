@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Package, FileText, Loader2, Eye, ChevronRight, RefreshCw, Search, Truck, MapPin, CheckCircle2 } from 'lucide-react';
+import { Package, FileText, Loader2, Eye, ChevronRight, RefreshCw, Search, Truck, MapPin, CheckCircle2, Undo2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -300,7 +300,7 @@ const OrderHistory = () => {
                 </div>
 
                 {/* Mini Delivery Progress */}
-                {!['cancelled', 'replacement_requested', 'replacement_shipped', 'replacement_delivered'].includes(order.status) && (
+                {!['cancelled', 'replacement_requested', 'replacement_shipped', 'replacement_delivered', 'return_requested', 'return_approved', 'return_picked_up', 'refund_processed'].includes(order.status) && (
                   <MiniDeliveryProgress status={order.status} />
                 )}
 
@@ -336,6 +336,21 @@ const OrderHistory = () => {
                         Download Invoice
                       </a>
                     </Button>
+                  )}
+                  {order.status === 'delivered' && isWithin7Days(order.delivered_at) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      onClick={() => handleRequestReturn(order.id)}
+                      disabled={requestingReturn === order.id}
+                    >
+                      {requestingReturn === order.id ? (
+                        <Loader2 size={16} className="mr-2 animate-spin" />
+                      ) : (
+                        <Undo2 size={16} className="mr-2" />
+                      )}
+                      Request Return
                   )}
                   {order.status === 'delivered' && isWithin7Days(order.delivered_at) && (
                     <Button
