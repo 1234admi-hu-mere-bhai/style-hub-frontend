@@ -351,6 +351,7 @@ const OrderHistory = () => {
                         <Undo2 size={16} className="mr-2" />
                       )}
                       Request Return
+                    </Button>
                   )}
                   {order.status === 'delivered' && isWithin7Days(order.delivered_at) && (
                     <Button
