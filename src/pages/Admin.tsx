@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   Loader2, ShieldAlert, LayoutDashboard, ShoppingCart, Users,
   CreditCard, BarChart3, LogOut, Package, Warehouse,
-  Tag, Bell, FileText, Menu, X, ChevronRight, Store, MessageSquare, Zap
+  Tag, Bell, FileText, Menu, X, ChevronRight, Store, MessageSquare, Zap, Undo2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +22,7 @@ import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminBlog from '@/components/admin/AdminBlog';
 import AdminReviews from '@/components/admin/AdminReviews';
 import AdminFlashSales from '@/components/admin/AdminFlashSales';
+import AdminReturns from '@/components/admin/AdminReturns';
 
 interface Analytics {
   totalOrders: number;
@@ -42,6 +43,7 @@ interface Analytics {
 const TABS = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'orders', label: 'Orders', icon: ShoppingCart },
+  { key: 'returns', label: 'Returns', icon: Undo2 },
   { key: 'products', label: 'Products', icon: Package },
   { key: 'customers', label: 'Client Data', icon: Users },
   { key: 'payments', label: 'Payments', icon: CreditCard },
@@ -314,6 +316,7 @@ const Admin = () => {
         <main className="flex-1 p-4 lg:p-6 max-w-5xl mx-auto w-full">
           {activeTab === 'dashboard' && <AdminDashboard analytics={analytics} />}
           {activeTab === 'orders' && <AdminOrders orders={analytics.allOrders} onRefresh={fetchAnalytics} />}
+          {activeTab === 'returns' && <AdminReturns orders={analytics.allOrders} onRefresh={fetchAnalytics} />}
           {activeTab === 'products' && <AdminProducts />}
           {activeTab === 'customers' && <AdminCustomers customers={analytics.customers} />}
           {activeTab === 'payments' && (

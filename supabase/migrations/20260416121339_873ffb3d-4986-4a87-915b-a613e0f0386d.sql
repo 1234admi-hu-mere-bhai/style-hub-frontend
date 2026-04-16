@@ -1,0 +1,1 @@
+ALTER TABLE public.orders ADD COLUMN return_reason text DEFAULT NULL;

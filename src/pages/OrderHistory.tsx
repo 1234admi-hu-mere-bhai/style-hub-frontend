@@ -6,6 +6,8 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import { supabase } from '@/integrations/supabase/client';
@@ -110,6 +112,8 @@ const OrderHistory = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [requestingReplacement, setRequestingReplacement] = useState<string | null>(null);
   const [requestingReturn, setRequestingReturn] = useState<string | null>(null);
+  const [returnDialogOrderId, setReturnDialogOrderId] = useState<string | null>(null);
+  const [returnReason, setReturnReason] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleRequestReplacement = async (orderId: string) => {
@@ -129,16 +133,23 @@ const OrderHistory = () => {
     }
   };
 
-  const handleRequestReturn = async (orderId: string) => {
-    setRequestingReturn(orderId);
+  const handleRequestReturn = async () => {
+    if (!returnDialogOrderId) return;
+    if (returnReason.trim().length < 5) {
+      toast.error('Please provide a return reason (at least 5 characters)');
+      return;
+    }
+    setRequestingReturn(returnDialogOrderId);
     try {
       const { data, error } = await supabase.functions.invoke('request-return', {
-        body: { orderId },
+        body: { orderId: returnDialogOrderId, reason: returnReason.trim() },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success('Return request submitted successfully');
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'return_requested' } : o));
+      setOrders(prev => prev.map(o => o.id === returnDialogOrderId ? { ...o, status: 'return_requested' } : o));
+      setReturnDialogOrderId(null);
+      setReturnReason('');
     } catch (err: any) {
       toast.error(err.message || 'Failed to submit return request');
     } finally {
@@ -342,14 +353,9 @@ const OrderHistory = () => {
                       variant="outline"
                       size="sm"
                       className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      onClick={() => handleRequestReturn(order.id)}
-                      disabled={requestingReturn === order.id}
+                      onClick={() => setReturnDialogOrderId(order.id)}
                     >
-                      {requestingReturn === order.id ? (
-                        <Loader2 size={16} className="mr-2 animate-spin" />
-                      ) : (
-                        <Undo2 size={16} className="mr-2" />
-                      )}
+                      <Undo2 size={16} className="mr-2" />
                       Request Return
                     </Button>
                   )}
@@ -384,6 +390,33 @@ const OrderHistory = () => {
       </main>
 
       <Footer />
+
+      {/* Return Reason Dialog */}
+      <Dialog open={!!returnDialogOrderId} onOpenChange={(open) => { if (!open) { setReturnDialogOrderId(null); setReturnReason(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Request Return</DialogTitle>
+            <DialogDescription>Please tell us why you'd like to return this order.</DialogDescription>
+          </DialogHeader>
+          <Textarea
+            placeholder="Describe the reason for return (e.g., wrong size, defective item, not as described)..."
+            value={returnReason}
+            onChange={e => setReturnReason(e.target.value)}
+            rows={4}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setReturnDialogOrderId(null); setReturnReason(''); }}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={handleRequestReturn}
+              disabled={requestingReturn === returnDialogOrderId || returnReason.trim().length < 5}
+            >
+              {requestingReturn === returnDialogOrderId ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
+              Submit Return Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
