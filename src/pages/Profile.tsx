@@ -7,6 +7,7 @@ import {
   Heart,
   CreditCard,
   RefreshCw,
+  Undo2,
   Settings,
   LogOut,
   ChevronRight,
@@ -490,6 +491,26 @@ const Profile = () => {
                                 <RefreshCw size={14} className="mr-1" />
                               )}
                               Replace
+                            </Button>
+                          )}
+                          {order.status === 'delivered' && (() => {
+                            if (!order.deliveredAt) return true;
+                            const days = (Date.now() - new Date(order.deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
+                            return days <= 7;
+                          })() && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              onClick={() => handleRequestReturn(order.id)}
+                              disabled={requestingReturn === order.id}
+                            >
+                              {requestingReturn === order.id ? (
+                                <Loader2 size={14} className="mr-1 animate-spin" />
+                              ) : (
+                                <Undo2 size={14} className="mr-1" />
+                              )}
+                              Return
                             </Button>
                           )}
                           <span className="font-semibold">
