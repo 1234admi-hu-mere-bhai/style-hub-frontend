@@ -109,6 +109,7 @@ const OrderHistory = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [requestingReplacement, setRequestingReplacement] = useState<string | null>(null);
+  const [requestingReturn, setRequestingReturn] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleRequestReplacement = async (orderId: string) => {
@@ -120,12 +121,28 @@ const OrderHistory = () => {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success('Replacement request submitted successfully');
-      // Update local state
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'replacement_requested' } : o));
     } catch (err: any) {
       toast.error(err.message || 'Failed to submit replacement request');
     } finally {
       setRequestingReplacement(null);
+    }
+  };
+
+  const handleRequestReturn = async (orderId: string) => {
+    setRequestingReturn(orderId);
+    try {
+      const { data, error } = await supabase.functions.invoke('request-return', {
+        body: { orderId },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success('Return request submitted successfully');
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'return_requested' } : o));
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to submit return request');
+    } finally {
+      setRequestingReturn(null);
     }
   };
 
