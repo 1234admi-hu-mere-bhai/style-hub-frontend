@@ -525,6 +525,33 @@ const Profile = () => {
       </main>
 
       <Footer />
+
+      {/* Return Reason Dialog */}
+      <Dialog open={!!returnDialogOrderId} onOpenChange={(open) => { if (!open) { setReturnDialogOrderId(null); setReturnReason(''); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Request Return</DialogTitle>
+            <DialogDescription>Please tell us why you'd like to return this order.</DialogDescription>
+          </DialogHeader>
+          <Textarea
+            placeholder="Describe the reason for return (e.g., wrong size, defective item, not as described)..."
+            value={returnReason}
+            onChange={e => setReturnReason(e.target.value)}
+            rows={4}
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setReturnDialogOrderId(null); setReturnReason(''); }}>Cancel</Button>
+            <Button
+              variant="destructive"
+              onClick={handleRequestReturn}
+              disabled={requestingReturn === returnDialogOrderId || returnReason.trim().length < 5}
+            >
+              {requestingReturn === returnDialogOrderId ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
+              Submit Return Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
