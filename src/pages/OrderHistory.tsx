@@ -6,6 +6,8 @@ import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import { supabase } from '@/integrations/supabase/client';
@@ -110,6 +112,8 @@ const OrderHistory = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [requestingReplacement, setRequestingReplacement] = useState<string | null>(null);
   const [requestingReturn, setRequestingReturn] = useState<string | null>(null);
+  const [returnDialogOrderId, setReturnDialogOrderId] = useState<string | null>(null);
+  const [returnReason, setReturnReason] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleRequestReplacement = async (orderId: string) => {
@@ -129,16 +133,23 @@ const OrderHistory = () => {
     }
   };
 
-  const handleRequestReturn = async (orderId: string) => {
-    setRequestingReturn(orderId);
+  const handleRequestReturn = async () => {
+    if (!returnDialogOrderId) return;
+    if (returnReason.trim().length < 5) {
+      toast.error('Please provide a return reason (at least 5 characters)');
+      return;
+    }
+    setRequestingReturn(returnDialogOrderId);
     try {
       const { data, error } = await supabase.functions.invoke('request-return', {
-        body: { orderId },
+        body: { orderId: returnDialogOrderId, reason: returnReason.trim() },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       toast.success('Return request submitted successfully');
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'return_requested' } : o));
+      setOrders(prev => prev.map(o => o.id === returnDialogOrderId ? { ...o, status: 'return_requested' } : o));
+      setReturnDialogOrderId(null);
+      setReturnReason('');
     } catch (err: any) {
       toast.error(err.message || 'Failed to submit return request');
     } finally {
