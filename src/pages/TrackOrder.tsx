@@ -284,8 +284,10 @@ const TrackOrder = () => {
 };
 
 /* ── Internal tracking fallback ─────────────────────────────── */
-const InternalTracking = ({ order }: { order: { status: string } }) => {
+const InternalTracking = ({ order }: { order: { status: string; return_reason?: string | null } }) => {
   const isReplacementFlow = order.status.startsWith('replacement');
+  const returnStatuses = ['return_requested', 'return_approved', 'return_picked_up', 'refund_processed'];
+  const isReturnFlow = returnStatuses.includes(order.status);
 
   const standardSteps = [
     { id: 'placed', label: 'Order Placed', icon: Package, description: 'Your order has been placed successfully' },
@@ -302,13 +304,22 @@ const InternalTracking = ({ order }: { order: { status: string } }) => {
     { id: 'replacement_delivered', label: 'Replacement Delivered', icon: CheckCircle2, description: 'Replacement delivered successfully' },
   ];
 
-  const trackingSteps = isReplacementFlow ? replacementSteps : standardSteps;
+  const returnSteps = [
+    { id: 'return_requested', label: 'Return Requested', icon: Undo2, description: 'Your return request has been submitted' },
+    { id: 'return_approved', label: 'Return Approved', icon: CheckCircle2, description: 'Admin has approved your return' },
+    { id: 'return_picked_up', label: 'Return Picked Up', icon: Truck, description: 'Courier has collected the package' },
+    { id: 'refund_processed', label: 'Refund Processed', icon: IndianRupee, description: 'Refund issued to your original payment method' },
+  ];
+
+  const trackingSteps = isReturnFlow ? returnSteps : isReplacementFlow ? replacementSteps : standardSteps;
 
   const getStepStatus = (stepId: string) => {
     if (order.status === 'cancelled') return 'cancelled';
-    const statusList = isReplacementFlow
-      ? ['delivered', 'replacement_requested', 'replacement_shipped', 'replacement_delivered']
-      : ['placed', 'confirmed', 'shipped', 'out_for_delivery', 'delivered'];
+    const statusList = isReturnFlow
+      ? returnStatuses
+      : isReplacementFlow
+        ? ['delivered', 'replacement_requested', 'replacement_shipped', 'replacement_delivered']
+        : ['placed', 'confirmed', 'shipped', 'out_for_delivery', 'delivered'];
     const currentIndex = statusList.indexOf(order.status);
     const stepIndex = statusList.indexOf(stepId);
     if (stepIndex < currentIndex) return 'completed';
@@ -326,8 +337,17 @@ const InternalTracking = ({ order }: { order: { status: string } }) => {
   }
 
   return (
-    <div className="bg-card p-6 rounded-lg border border-border mb-8">
-      <h2 className="font-semibold text-lg mb-6">Tracking Status</h2>
+    <>
+      {isReturnFlow && order.return_reason && (
+        <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg mb-4">
+          <p className="text-sm font-semibold mb-1">Your Return Reason</p>
+          <p className="text-sm text-muted-foreground">{order.return_reason}</p>
+        </div>
+      )}
+      <div className="bg-card p-6 rounded-lg border border-border mb-8">
+        <h2 className="font-semibold text-lg mb-6">
+          {isReturnFlow ? 'Return Status' : 'Tracking Status'}
+        </h2>
       <div className="relative">
         {trackingSteps.map((step, index) => {
           const status = getStepStatus(step.id);
