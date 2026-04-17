@@ -59,6 +59,9 @@ interface Order {
   invoice_url: string | null;
   tracking_awb: string | null;
   return_reason: string | null;
+  refund_amount: number | null;
+  refund_eta: string | null;
+  refund_processed_at: string | null;
   created_at: string;
   order_items: OrderItem[];
 }
@@ -107,6 +110,9 @@ const TrackOrder = () => {
           invoice_url: data.invoice_url,
           tracking_awb: (data as any).tracking_awb ?? null,
           return_reason: (data as any).return_reason ?? null,
+          refund_amount: (data as any).refund_amount != null ? Number((data as any).refund_amount) : null,
+          refund_eta: (data as any).refund_eta ?? null,
+          refund_processed_at: (data as any).refund_processed_at ?? null,
           created_at: data.created_at,
           order_items: data.order_items as unknown as OrderItem[],
         };
@@ -284,7 +290,7 @@ const TrackOrder = () => {
 };
 
 /* ── Internal tracking fallback ─────────────────────────────── */
-const InternalTracking = ({ order }: { order: { status: string; return_reason?: string | null } }) => {
+const InternalTracking = ({ order }: { order: { status: string; return_reason?: string | null; refund_amount?: number | null; refund_eta?: string | null; refund_processed_at?: string | null } }) => {
   const isReplacementFlow = order.status.startsWith('replacement');
   const returnStatuses = ['return_requested', 'return_approved', 'return_picked_up', 'refund_processed'];
   const isReturnFlow = returnStatuses.includes(order.status);
@@ -336,12 +342,54 @@ const InternalTracking = ({ order }: { order: { status: string; return_reason?: 
     );
   }
 
+  const formatDate = (iso?: string | null) =>
+    iso ? new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
+  const refundDone = order.status === 'refund_processed';
+
   return (
     <>
       {isReturnFlow && order.return_reason && (
         <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg mb-4">
           <p className="text-sm font-semibold mb-1">Your Return Reason</p>
           <p className="text-sm text-muted-foreground">{order.return_reason}</p>
+        </div>
+      )}
+      {isReturnFlow && (order.refund_amount || order.refund_eta || refundDone) && (
+        <div className="bg-card border border-border rounded-lg p-4 mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-9 h-9 rounded-full bg-success/15 text-success flex items-center justify-center">
+              <IndianRupee size={18} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold">Refund details</p>
+              <p className="text-xs text-muted-foreground">
+                {refundDone ? 'Refund completed' : 'Refund will be issued to your original payment method'}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            {order.refund_amount != null && (
+              <div className="bg-secondary/40 rounded-md p-3">
+                <p className="text-xs text-muted-foreground mb-1">Refund Amount</p>
+                <p className="font-semibold">₹{Number(order.refund_amount).toLocaleString('en-IN')}</p>
+              </div>
+            )}
+            <div className="bg-secondary/40 rounded-md p-3">
+              <p className="text-xs text-muted-foreground mb-1">
+                {refundDone ? 'Refunded On' : 'Estimated Refund By'}
+              </p>
+              <p className="font-semibold">
+                {refundDone
+                  ? formatDate(order.refund_processed_at) ?? '—'
+                  : formatDate(order.refund_eta) ?? 'Pending approval'}
+              </p>
+            </div>
+          </div>
+          {!refundDone && order.refund_eta && (
+            <p className="text-[11px] text-muted-foreground mt-3">
+              Refunds usually reflect in 5–7 business days after pickup, depending on your bank.
+            </p>
+          )}
         </div>
       )}
       <div className="bg-card p-6 rounded-lg border border-border mb-8">

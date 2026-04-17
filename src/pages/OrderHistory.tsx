@@ -45,6 +45,9 @@ interface Order {
   shipping_address: ShippingAddress;
   invoice_url: string | null;
   delivered_at: string | null;
+  refund_amount: number | null;
+  refund_eta: string | null;
+  refund_processed_at: string | null;
   created_at: string;
   order_items: OrderItem[];
 }
@@ -214,6 +217,9 @@ const OrderHistory = () => {
           shipping_address: order.shipping_address as unknown as ShippingAddress,
           invoice_url: order.invoice_url,
           delivered_at: order.delivered_at,
+          refund_amount: (order as any).refund_amount != null ? Number((order as any).refund_amount) : null,
+          refund_eta: (order as any).refund_eta ?? null,
+          refund_processed_at: (order as any).refund_processed_at ?? null,
           created_at: order.created_at,
           order_items: order.order_items as unknown as OrderItem[],
         }));
@@ -332,9 +338,23 @@ const OrderHistory = () => {
                   </div>
                 </div>
 
-                {/* Mini Delivery Progress */}
-                {!['cancelled', 'replacement_requested', 'replacement_shipped', 'replacement_delivered', 'return_requested', 'return_approved', 'return_picked_up', 'refund_processed'].includes(order.status) && (
+                {/* Mini Delivery / Return Progress */}
+                {!['cancelled', 'replacement_requested', 'replacement_shipped', 'replacement_delivered'].includes(order.status) && (
                   <MiniDeliveryProgress status={order.status} />
+                )}
+
+                {/* Refund summary chip (Meesho-style) */}
+                {['return_approved', 'return_picked_up', 'refund_processed'].includes(order.status) && (order.refund_amount || order.refund_eta || order.refund_processed_at) && (
+                  <div className="flex items-center justify-between gap-3 bg-success/10 border border-success/20 rounded-md px-3 py-2 mb-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <IndianRupee size={14} className="text-success shrink-0" />
+                      <p className="text-xs font-medium truncate">
+                        {order.status === 'refund_processed'
+                          ? `Refund of ${formatPrice(Number(order.refund_amount ?? order.total))} completed`
+                          : `Refund of ${formatPrice(Number(order.refund_amount ?? order.total))} expected by ${order.refund_eta ? new Date(order.refund_eta).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'soon'}`}
+                      </p>
+                    </div>
+                  </div>
                 )}
 
                 <div className="flex gap-3 overflow-x-auto pb-2 mb-4">

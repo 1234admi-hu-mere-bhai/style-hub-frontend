@@ -294,6 +294,9 @@ export type Database = {
           payment_id: string | null
           payment_method: string
           payment_status: string
+          refund_amount: number | null
+          refund_eta: string | null
+          refund_processed_at: string | null
           return_reason: string | null
           shipping_address: Json
           shipping_cost: number
@@ -314,6 +317,9 @@ export type Database = {
           payment_id?: string | null
           payment_method: string
           payment_status?: string
+          refund_amount?: number | null
+          refund_eta?: string | null
+          refund_processed_at?: string | null
           return_reason?: string | null
           shipping_address: Json
           shipping_cost?: number
@@ -334,6 +340,9 @@ export type Database = {
           payment_id?: string | null
           payment_method?: string
           payment_status?: string
+          refund_amount?: number | null
+          refund_eta?: string | null
+          refund_processed_at?: string | null
           return_reason?: string | null
           shipping_address?: Json
           shipping_cost?: number
