@@ -45,6 +45,9 @@ interface Order {
   shipping_address: ShippingAddress;
   invoice_url: string | null;
   delivered_at: string | null;
+  refund_amount: number | null;
+  refund_eta: string | null;
+  refund_processed_at: string | null;
   created_at: string;
   order_items: OrderItem[];
 }
