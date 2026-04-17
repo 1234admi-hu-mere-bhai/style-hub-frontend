@@ -290,7 +290,7 @@ const TrackOrder = () => {
 };
 
 /* ── Internal tracking fallback ─────────────────────────────── */
-const InternalTracking = ({ order }: { order: { status: string; return_reason?: string | null } }) => {
+const InternalTracking = ({ order }: { order: { status: string; return_reason?: string | null; refund_amount?: number | null; refund_eta?: string | null; refund_processed_at?: string | null } }) => {
   const isReplacementFlow = order.status.startsWith('replacement');
   const returnStatuses = ['return_requested', 'return_approved', 'return_picked_up', 'refund_processed'];
   const isReturnFlow = returnStatuses.includes(order.status);
