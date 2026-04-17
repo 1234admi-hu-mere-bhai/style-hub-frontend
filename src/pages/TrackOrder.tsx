@@ -58,6 +58,7 @@ interface Order {
   shipping_address: ShippingAddress;
   invoice_url: string | null;
   tracking_awb: string | null;
+  return_reason: string | null;
   created_at: string;
   order_items: OrderItem[];
 }
