@@ -217,6 +217,9 @@ const OrderHistory = () => {
           shipping_address: order.shipping_address as unknown as ShippingAddress,
           invoice_url: order.invoice_url,
           delivered_at: order.delivered_at,
+          refund_amount: (order as any).refund_amount != null ? Number((order as any).refund_amount) : null,
+          refund_eta: (order as any).refund_eta ?? null,
+          refund_processed_at: (order as any).refund_processed_at ?? null,
           created_at: order.created_at,
           order_items: order.order_items as unknown as OrderItem[],
         }));
