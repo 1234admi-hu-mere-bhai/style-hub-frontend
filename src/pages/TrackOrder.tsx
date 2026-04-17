@@ -253,11 +253,11 @@ const TrackOrder = () => {
               </div>
             </div>
 
-            {/* Delhivery Live Tracking (if AWB exists) */}
-            {order.tracking_awb ? (
+            {/* Delhivery Live Tracking (if AWB exists and not in return flow) */}
+            {order.tracking_awb && !['return_requested','return_approved','return_picked_up','refund_processed'].includes(order.status) ? (
               <DelhiveryTracking waybill={order.tracking_awb} />
             ) : (
-              /* Fallback internal tracking */
+              /* Fallback internal tracking (also used for return flow) */
               <InternalTracking order={order} />
             )}
 
