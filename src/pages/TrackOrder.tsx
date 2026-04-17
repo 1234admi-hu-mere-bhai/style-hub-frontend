@@ -59,6 +59,9 @@ interface Order {
   invoice_url: string | null;
   tracking_awb: string | null;
   return_reason: string | null;
+  refund_amount: number | null;
+  refund_eta: string | null;
+  refund_processed_at: string | null;
   created_at: string;
   order_items: OrderItem[];
 }
