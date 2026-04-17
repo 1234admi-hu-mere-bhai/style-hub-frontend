@@ -374,6 +374,7 @@ const InternalTracking = ({ order }: { order: { status: string; return_reason?: 
         })}
       </div>
     </div>
+    </>
   );
 };
 
