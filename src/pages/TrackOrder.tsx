@@ -106,6 +106,7 @@ const TrackOrder = () => {
           shipping_address: data.shipping_address as unknown as ShippingAddress,
           invoice_url: data.invoice_url,
           tracking_awb: (data as any).tracking_awb ?? null,
+          return_reason: (data as any).return_reason ?? null,
           created_at: data.created_at,
           order_items: data.order_items as unknown as OrderItem[],
         };
