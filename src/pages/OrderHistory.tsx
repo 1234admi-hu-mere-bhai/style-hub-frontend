@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Package, FileText, Loader2, Eye, ChevronRight, RefreshCw, Search, Truck, MapPin, CheckCircle2, Undo2 } from 'lucide-react';
+import { Package, FileText, Loader2, Eye, ChevronRight, RefreshCw, Search, Truck, MapPin, CheckCircle2, Undo2, IndianRupee } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -63,43 +63,65 @@ const DELIVERY_STEPS = [
   { key: 'delivered', label: 'Delivered', icon: CheckCircle2 },
 ];
 
+const RETURN_STEPS = [
+  { key: 'return_requested', label: 'Requested', icon: Undo2 },
+  { key: 'return_approved', label: 'Approved', icon: CheckCircle2 },
+  { key: 'return_picked_up', label: 'Picked Up', icon: Truck },
+  { key: 'refund_processed', label: 'Refunded', icon: IndianRupee },
+];
+
+const RETURN_STATUSES = ['return_requested', 'return_approved', 'return_picked_up', 'refund_processed'];
+
 const MiniDeliveryProgress = ({ status }: { status: string }) => {
-  const statusOrder = ['placed', 'confirmed', 'shipped', 'out_for_delivery', 'delivered'];
+  const isReturnFlow = RETURN_STATUSES.includes(status);
+  const steps = isReturnFlow ? RETURN_STEPS : DELIVERY_STEPS;
+  const statusOrder = isReturnFlow
+    ? RETURN_STATUSES
+    : ['placed', 'confirmed', 'shipped', 'out_for_delivery', 'delivered'];
   const currentIdx = statusOrder.indexOf(status);
+  const accentClass = isReturnFlow ? 'bg-accent' : 'bg-primary';
+  const accentSoftClass = isReturnFlow ? 'bg-accent/80' : 'bg-primary/80';
+  const accentLineClass = isReturnFlow ? 'bg-accent/60' : 'bg-primary/60';
+  const shadowClass = isReturnFlow ? 'shadow-accent/25' : 'shadow-primary/25';
 
   return (
-    <div className="flex items-center gap-1 my-3 px-1">
-      {DELIVERY_STEPS.map((step, idx) => {
-        const isCompleted = idx <= currentIdx;
-        const isCurrent = idx === currentIdx;
-        const StepIcon = step.icon;
+    <div className="my-3 px-1">
+      {isReturnFlow && (
+        <p className="text-[10px] font-semibold text-accent mb-2 uppercase tracking-wide">Return in progress</p>
+      )}
+      <div className="flex items-center gap-1">
+        {steps.map((step, idx) => {
+          const isCompleted = idx <= currentIdx;
+          const isCurrent = idx === currentIdx;
+          const StepIcon = step.icon;
 
-        return (
-          <div key={step.key} className="flex items-center flex-1 last:flex-none">
-            <div className="flex flex-col items-center">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
-                isCompleted
-                  ? isCurrent
-                    ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/25 scale-110'
-                    : 'bg-primary/80 text-primary-foreground'
-                  : 'bg-muted text-muted-foreground'
-              }`}>
-                <StepIcon size={13} />
+          return (
+            <div key={step.key} className="flex items-center flex-1 last:flex-none">
+              <div className="flex flex-col items-center">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                  isCompleted
+                    ? isCurrent
+                      ? `${accentClass} text-primary-foreground shadow-sm ${shadowClass} scale-110`
+                      : `${accentSoftClass} text-primary-foreground`
+                    : 'bg-muted text-muted-foreground'
+                }`}>
+                  <StepIcon size={13} />
+                </div>
+                <span className={`text-[9px] mt-1 font-medium leading-tight text-center ${
+                  isCompleted ? 'text-foreground' : 'text-muted-foreground'
+                }`}>
+                  {step.label}
+                </span>
               </div>
-              <span className={`text-[9px] mt-1 font-medium leading-tight text-center ${
-                isCompleted ? 'text-foreground' : 'text-muted-foreground'
-              }`}>
-                {step.label}
-              </span>
+              {idx < steps.length - 1 && (
+                <div className={`h-0.5 flex-1 mx-0.5 rounded-full mt-[-14px] ${
+                  idx < currentIdx ? accentLineClass : 'bg-border'
+                }`} />
+              )}
             </div>
-            {idx < DELIVERY_STEPS.length - 1 && (
-              <div className={`h-0.5 flex-1 mx-0.5 rounded-full mt-[-14px] ${
-                idx < currentIdx ? 'bg-primary/60' : 'bg-border'
-              }`} />
-            )}
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 };
