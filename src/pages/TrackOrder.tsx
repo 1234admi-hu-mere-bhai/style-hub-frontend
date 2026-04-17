@@ -110,6 +110,9 @@ const TrackOrder = () => {
           invoice_url: data.invoice_url,
           tracking_awb: (data as any).tracking_awb ?? null,
           return_reason: (data as any).return_reason ?? null,
+          refund_amount: (data as any).refund_amount != null ? Number((data as any).refund_amount) : null,
+          refund_eta: (data as any).refund_eta ?? null,
+          refund_processed_at: (data as any).refund_processed_at ?? null,
           created_at: data.created_at,
           order_items: data.order_items as unknown as OrderItem[],
         };
