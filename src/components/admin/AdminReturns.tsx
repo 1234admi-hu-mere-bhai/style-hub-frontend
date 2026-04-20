@@ -282,6 +282,33 @@ const AdminReturns = ({ orders, onRefresh }: AdminReturnsProps) => {
                   ))}
                 </div>
 
+                {/* Refund summary (when applicable) */}
+                {(order.status === 'return_approved' || order.status === 'return_picked_up' || order.status === 'refund_processed') && (
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3 px-3 py-2 rounded-lg bg-accent/10 border border-accent/30">
+                    <div className="text-xs flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className="inline-flex items-center gap-1 font-semibold">
+                        <IndianRupee size={12} />
+                        Refund: ₹{(order.refund_amount ?? order.total).toLocaleString()}
+                      </span>
+                      {order.status !== 'refund_processed' && order.refund_eta && (
+                        <span className="text-muted-foreground">
+                          ETA: {formatDate(order.refund_eta)}
+                        </span>
+                      )}
+                      {order.status === 'refund_processed' && order.refund_processed_at && (
+                        <span className="text-muted-foreground">
+                          Refunded: {formatDate(order.refund_processed_at)}
+                        </span>
+                      )}
+                    </div>
+                    {order.status !== 'refund_processed' && (
+                      <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setEditRefundOrder(order)}>
+                        <Pencil size={12} className="mr-1" /> Edit
+                      </Button>
+                    )}
+                  </div>
+                )}
+
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="text-sm">
                     <span className="text-muted-foreground">Total:</span>{' '}
