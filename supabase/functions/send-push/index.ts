@@ -216,7 +216,7 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    const { title, message, url, tag } = await req.json();
+    const { title, message, url, tag, userId } = await req.json();
 
     // Get VAPID keys
     const { data: config } = await adminClient
@@ -234,10 +234,12 @@ Deno.serve(async (req) => {
 
     const privateKeyJwk = JSON.parse(config.private_key);
 
-    // Get all subscriptions
-    const { data: subscriptions } = await adminClient
-      .from("push_subscriptions")
-      .select("*");
+    // Get subscriptions (scoped to user if userId provided)
+    let subQuery = adminClient.from("push_subscriptions").select("*");
+    if (userId) {
+      subQuery = subQuery.eq("user_id", userId);
+    }
+    const { data: subscriptions } = await subQuery;
 
     if (!subscriptions || subscriptions.length === 0) {
       return new Response(JSON.stringify({ sent: 0, message: "No subscribers" }), {
