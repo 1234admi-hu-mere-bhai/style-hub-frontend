@@ -68,6 +68,9 @@ const AdminReturns = ({ orders, onRefresh }: AdminReturnsProps) => {
       created_at: o.created_at,
       updated_at: o.updated_at,
       delivered_at: o.delivered_at,
+      refund_amount: o.refund_amount ?? null,
+      refund_eta: o.refund_eta ?? null,
+      refund_processed_at: o.refund_processed_at ?? null,
       items: o.items || [],
     }));
 
