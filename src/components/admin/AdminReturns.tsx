@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { Loader2, CheckCircle2, XCircle, Package, Search, Clock, Undo2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Loader2, CheckCircle2, XCircle, Package, Search, Clock, Undo2, IndianRupee, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
@@ -22,6 +23,9 @@ interface ReturnOrder {
   created_at: string;
   updated_at: string;
   delivered_at: string | null;
+  refund_amount: number | null;
+  refund_eta: string | null;
+  refund_processed_at: string | null;
   items: { product_name: string; quantity: number; price: number; size?: string; color?: string; image?: string }[];
 }
 
@@ -48,6 +52,24 @@ const AdminReturns = ({ orders, onRefresh }: AdminReturnsProps) => {
   const [rejectReason, setRejectReason] = useState('');
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectingOrderId, setRejectingOrderId] = useState<string | null>(null);
+  const [editRefundOrder, setEditRefundOrder] = useState<ReturnOrder | null>(null);
+  const [editRefundAmount, setEditRefundAmount] = useState('');
+  const [editRefundEta, setEditRefundEta] = useState('');
+  const [savingRefund, setSavingRefund] = useState(false);
+
+  // Sync edit form when opening
+  useEffect(() => {
+    if (editRefundOrder) {
+      setEditRefundAmount(
+        editRefundOrder.refund_amount != null ? String(editRefundOrder.refund_amount) : String(editRefundOrder.total)
+      );
+      setEditRefundEta(
+        editRefundOrder.refund_eta
+          ? new Date(editRefundOrder.refund_eta).toISOString().slice(0, 10)
+          : new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
+      );
+    }
+  }, [editRefundOrder]);
 
   const returnOrders: ReturnOrder[] = orders
     .filter((o: any) => RETURN_STATUSES.includes(o.status))
@@ -64,6 +86,9 @@ const AdminReturns = ({ orders, onRefresh }: AdminReturnsProps) => {
       created_at: o.created_at,
       updated_at: o.updated_at,
       delivered_at: o.delivered_at,
+      refund_amount: o.refund_amount ?? null,
+      refund_eta: o.refund_eta ?? null,
+      refund_processed_at: o.refund_processed_at ?? null,
       items: o.items || [],
     }));
 
@@ -107,6 +132,42 @@ const AdminReturns = ({ orders, onRefresh }: AdminReturnsProps) => {
     setShowRejectDialog(false);
     setRejectReason('');
     setRejectingOrderId(null);
+  };
+
+  const handleSaveRefund = async () => {
+    if (!editRefundOrder) return;
+    const amt = Number(editRefundAmount);
+    if (Number.isNaN(amt) || amt < 0) {
+      toast.error('Enter a valid refund amount');
+      return;
+    }
+    if (amt > editRefundOrder.total) {
+      toast.error(`Refund cannot exceed order total ₹${editRefundOrder.total}`);
+      return;
+    }
+    if (!editRefundEta) {
+      toast.error('Select a refund ETA');
+      return;
+    }
+    setSavingRefund(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-update-order', {
+        body: {
+          orderId: editRefundOrder.id,
+          refund_amount: amt,
+          refund_eta: new Date(editRefundEta).toISOString(),
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success('Refund details updated');
+      setEditRefundOrder(null);
+      onRefresh();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update refund details');
+    } finally {
+      setSavingRefund(false);
+    }
   };
 
   const formatDate = (d: string) =>
@@ -220,6 +281,33 @@ const AdminReturns = ({ orders, onRefresh }: AdminReturnsProps) => {
                     </div>
                   ))}
                 </div>
+
+                {/* Refund summary (when applicable) */}
+                {(order.status === 'return_approved' || order.status === 'return_picked_up' || order.status === 'refund_processed') && (
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3 px-3 py-2 rounded-lg bg-accent/10 border border-accent/30">
+                    <div className="text-xs flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className="inline-flex items-center gap-1 font-semibold">
+                        <IndianRupee size={12} />
+                        Refund: ₹{(order.refund_amount ?? order.total).toLocaleString()}
+                      </span>
+                      {order.status !== 'refund_processed' && order.refund_eta && (
+                        <span className="text-muted-foreground">
+                          ETA: {formatDate(order.refund_eta)}
+                        </span>
+                      )}
+                      {order.status === 'refund_processed' && order.refund_processed_at && (
+                        <span className="text-muted-foreground">
+                          Refunded: {formatDate(order.refund_processed_at)}
+                        </span>
+                      )}
+                    </div>
+                    {order.status !== 'refund_processed' && (
+                      <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setEditRefundOrder(order)}>
+                        <Pencil size={12} className="mr-1" /> Edit
+                      </Button>
+                    )}
+                  </div>
+                )}
 
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="text-sm">
@@ -377,6 +465,58 @@ const AdminReturns = ({ orders, onRefresh }: AdminReturnsProps) => {
             <Button variant="destructive" onClick={handleReject} disabled={updating === rejectingOrderId}>
               {updating === rejectingOrderId ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
               Reject Return
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Refund Dialog */}
+      <Dialog open={!!editRefundOrder} onOpenChange={(open) => !open && setEditRefundOrder(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Refund Details</DialogTitle>
+            <DialogDescription>
+              {editRefundOrder ? `Order ${editRefundOrder.order_number} · Total ₹${editRefundOrder.total.toLocaleString()}` : ''}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="refund-amount">Refund Amount (₹)</Label>
+              <Input
+                id="refund-amount"
+                type="number"
+                min={0}
+                step="0.01"
+                max={editRefundOrder?.total ?? undefined}
+                value={editRefundAmount}
+                onChange={e => setEditRefundAmount(e.target.value)}
+                placeholder="Refund amount"
+              />
+              <p className="text-xs text-muted-foreground">
+                Use a partial amount if the customer is being partially refunded. Cannot exceed order total.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="refund-eta">Estimated Refund By</Label>
+              <Input
+                id="refund-eta"
+                type="date"
+                value={editRefundEta}
+                onChange={e => setEditRefundEta(e.target.value)}
+                min={new Date().toISOString().slice(0, 10)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Customer will see this date as the expected refund arrival.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditRefundOrder(null)} disabled={savingRefund}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveRefund} disabled={savingRefund}>
+              {savingRefund ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
+              Save Refund Details
             </Button>
           </DialogFooter>
         </DialogContent>

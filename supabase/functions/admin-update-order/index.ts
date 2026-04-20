@@ -37,9 +37,10 @@ Deno.serve(async (req) => {
       })
     }
 
-    const { orderId, status } = await req.json()
-    if (!orderId || !status) {
-      return new Response(JSON.stringify({ error: 'orderId and status are required' }), {
+    const body = await req.json()
+    const { orderId, status, refund_amount, refund_eta } = body
+    if (!orderId) {
+      return new Response(JSON.stringify({ error: 'orderId is required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
@@ -47,8 +48,33 @@ Deno.serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, supabaseServiceKey)
 
-    const updateData: any = { status, updated_at: new Date().toISOString() }
-    if (status === 'delivered') updateData.delivered_at = new Date().toISOString()
+    const updateData: any = { updated_at: new Date().toISOString() }
+    if (status) {
+      updateData.status = status
+      if (status === 'delivered') updateData.delivered_at = new Date().toISOString()
+    }
+    if (refund_amount !== undefined) {
+      const amt = Number(refund_amount)
+      if (Number.isNaN(amt) || amt < 0) {
+        return new Response(JSON.stringify({ error: 'Invalid refund_amount' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      updateData.refund_amount = amt
+    }
+    if (refund_eta !== undefined) {
+      if (refund_eta === null) {
+        updateData.refund_eta = null
+      } else {
+        const d = new Date(refund_eta)
+        if (Number.isNaN(d.getTime())) {
+          return new Response(JSON.stringify({ error: 'Invalid refund_eta' }), {
+            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+        updateData.refund_eta = d.toISOString()
+      }
+    }
 
     const { error: updateError } = await adminClient
       .from('orders')
