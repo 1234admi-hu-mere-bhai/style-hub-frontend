@@ -76,12 +76,78 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Fetch current order to detect transitions
+    const { data: prevOrder } = await adminClient
+      .from('orders')
+      .select('id, user_id, order_number, status, refund_amount, refund_eta, total')
+      .eq('id', orderId)
+      .maybeSingle()
+
     const { error: updateError } = await adminClient
       .from('orders')
       .update(updateData)
       .eq('id', orderId)
 
     if (updateError) throw updateError
+
+    // Re-fetch to get post-trigger values (refund_amount/eta auto-set on return_approved)
+    const { data: nextOrder } = await adminClient
+      .from('orders')
+      .select('id, user_id, order_number, status, refund_amount, refund_eta')
+      .eq('id', orderId)
+      .maybeSingle()
+
+    // Detect refund-related status transitions and notify customer
+    if (prevOrder && nextOrder && prevOrder.status !== nextOrder.status) {
+      let notif: { title: string; message: string; tag: string } | null = null
+
+      if (nextOrder.status === 'return_approved') {
+        const amt = Number(nextOrder.refund_amount ?? prevOrder.total ?? 0)
+        const etaStr = nextOrder.refund_eta
+          ? new Date(nextOrder.refund_eta).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+          : 'soon'
+        notif = {
+          title: 'Refund Approved ✅',
+          message: `Your refund of ₹${amt.toLocaleString('en-IN')} for order ${nextOrder.order_number} is approved. Expected by ${etaStr}.`,
+          tag: `refund-${nextOrder.id}`,
+        }
+      } else if (nextOrder.status === 'refund_processed') {
+        const amt = Number(nextOrder.refund_amount ?? prevOrder.total ?? 0)
+        notif = {
+          title: 'Refund Processed 💸',
+          message: `Your refund of ₹${amt.toLocaleString('en-IN')} for order ${nextOrder.order_number} has been issued to your original payment method.`,
+          tag: `refund-${nextOrder.id}`,
+        }
+      }
+
+      if (notif && nextOrder.user_id) {
+        // Insert in-app notification (best effort)
+        try {
+          await adminClient.from('notifications').insert({
+            title: notif.title,
+            message: notif.message,
+            type: 'order',
+          })
+        } catch (e) {
+          console.error('notifications insert failed:', e)
+        }
+
+        // Send push to that user (best effort)
+        try {
+          await anonClient.functions.invoke('send-push', {
+            body: {
+              userId: nextOrder.user_id,
+              title: notif.title,
+              message: notif.message,
+              url: '/track-order',
+              tag: notif.tag,
+            },
+          })
+        } catch (e) {
+          console.error('send-push invoke failed:', e)
+        }
+      }
+    }
 
     return new Response(
       JSON.stringify({ success: true }),
