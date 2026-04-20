@@ -469,6 +469,58 @@ const AdminReturns = ({ orders, onRefresh }: AdminReturnsProps) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Refund Dialog */}
+      <Dialog open={!!editRefundOrder} onOpenChange={(open) => !open && setEditRefundOrder(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Refund Details</DialogTitle>
+            <DialogDescription>
+              {editRefundOrder ? `Order ${editRefundOrder.order_number} · Total ₹${editRefundOrder.total.toLocaleString()}` : ''}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="refund-amount">Refund Amount (₹)</Label>
+              <Input
+                id="refund-amount"
+                type="number"
+                min={0}
+                step="0.01"
+                max={editRefundOrder?.total ?? undefined}
+                value={editRefundAmount}
+                onChange={e => setEditRefundAmount(e.target.value)}
+                placeholder="Refund amount"
+              />
+              <p className="text-xs text-muted-foreground">
+                Use a partial amount if the customer is being partially refunded. Cannot exceed order total.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="refund-eta">Estimated Refund By</Label>
+              <Input
+                id="refund-eta"
+                type="date"
+                value={editRefundEta}
+                onChange={e => setEditRefundEta(e.target.value)}
+                min={new Date().toISOString().slice(0, 10)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Customer will see this date as the expected refund arrival.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditRefundOrder(null)} disabled={savingRefund}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveRefund} disabled={savingRefund}>
+              {savingRefund ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
+              Save Refund Details
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
