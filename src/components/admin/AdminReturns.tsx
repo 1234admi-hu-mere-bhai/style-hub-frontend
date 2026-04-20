@@ -134,6 +134,42 @@ const AdminReturns = ({ orders, onRefresh }: AdminReturnsProps) => {
     setRejectingOrderId(null);
   };
 
+  const handleSaveRefund = async () => {
+    if (!editRefundOrder) return;
+    const amt = Number(editRefundAmount);
+    if (Number.isNaN(amt) || amt < 0) {
+      toast.error('Enter a valid refund amount');
+      return;
+    }
+    if (amt > editRefundOrder.total) {
+      toast.error(`Refund cannot exceed order total ₹${editRefundOrder.total}`);
+      return;
+    }
+    if (!editRefundEta) {
+      toast.error('Select a refund ETA');
+      return;
+    }
+    setSavingRefund(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-update-order', {
+        body: {
+          orderId: editRefundOrder.id,
+          refund_amount: amt,
+          refund_eta: new Date(editRefundEta).toISOString(),
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success('Refund details updated');
+      setEditRefundOrder(null);
+      onRefresh();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to update refund details');
+    } finally {
+      setSavingRefund(false);
+    }
+  };
+
   const formatDate = (d: string) =>
     new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
