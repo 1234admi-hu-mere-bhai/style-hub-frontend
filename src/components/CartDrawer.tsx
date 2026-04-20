@@ -106,11 +106,11 @@ const CartDrawer = ({ onClose }: CartDrawerProps) => {
         </div>
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Shipping</span>
-          <span className={totalPrice >= 999 ? 'text-success font-medium' : 'text-foreground'}>
-            {totalPrice >= 999 ? 'FREE' : formatPrice(99)}
+          <span className={totalPrice <= 1 || totalPrice >= 999 ? 'text-success font-medium' : 'text-foreground'}>
+            {totalPrice <= 1 || totalPrice >= 999 ? 'FREE' : formatPrice(99)}
           </span>
         </div>
-        {totalPrice > 0 && totalPrice < 999 && (
+        {totalPrice > 1 && totalPrice < 999 && (
           <p className="text-xs text-primary">
             Add {formatPrice(999 - totalPrice)} more for free shipping!
           </p>
