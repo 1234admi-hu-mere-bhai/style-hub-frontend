@@ -23,6 +23,9 @@ interface ReturnOrder {
   created_at: string;
   updated_at: string;
   delivered_at: string | null;
+  refund_amount: number | null;
+  refund_eta: string | null;
+  refund_processed_at: string | null;
   items: { product_name: string; quantity: number; price: number; size?: string; color?: string; image?: string }[];
 }
 
