@@ -52,6 +52,24 @@ const AdminReturns = ({ orders, onRefresh }: AdminReturnsProps) => {
   const [rejectReason, setRejectReason] = useState('');
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectingOrderId, setRejectingOrderId] = useState<string | null>(null);
+  const [editRefundOrder, setEditRefundOrder] = useState<ReturnOrder | null>(null);
+  const [editRefundAmount, setEditRefundAmount] = useState('');
+  const [editRefundEta, setEditRefundEta] = useState('');
+  const [savingRefund, setSavingRefund] = useState(false);
+
+  // Sync edit form when opening
+  useEffect(() => {
+    if (editRefundOrder) {
+      setEditRefundAmount(
+        editRefundOrder.refund_amount != null ? String(editRefundOrder.refund_amount) : String(editRefundOrder.total)
+      );
+      setEditRefundEta(
+        editRefundOrder.refund_eta
+          ? new Date(editRefundOrder.refund_eta).toISOString().slice(0, 10)
+          : new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
+      );
+    }
+  }, [editRefundOrder]);
 
   const returnOrders: ReturnOrder[] = orders
     .filter((o: any) => RETURN_STATUSES.includes(o.status))
