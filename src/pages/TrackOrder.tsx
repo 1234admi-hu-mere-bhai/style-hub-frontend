@@ -93,6 +93,27 @@ const TrackOrder = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [trackingMode, setTrackingMode] = useState<'order' | 'awb'>('order');
   const [awbQuery, setAwbQuery] = useState('');
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  const handleCancelOrder = async () => {
+    if (!order) return;
+    setIsCancelling(true);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled' })
+        .eq('id', order.id);
+      if (error) throw error;
+      toast.success('Order cancelled. Refund will be initiated within 5–7 business days.');
+      setOrder({ ...order, status: 'cancelled' });
+      setShowCancelDialog(false);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to cancel order. It may have already shipped.');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
