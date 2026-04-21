@@ -28,8 +28,11 @@ Deno.serve(async (req) => {
     if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: corsHeaders });
     }
+    const userId = claimsData.claims.sub as string;
+    const userEmail = (claimsData.claims.email as string) || '';
 
-    const { txnid, amount, productinfo, firstname, email, phone } = await req.json();
+    const body = await req.json();
+    const { txnid, amount, productinfo, firstname, email, phone, checkout } = body;
 
     if (!txnid || !amount || !productinfo || !firstname || !email) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400, headers: corsHeaders });
@@ -41,6 +44,31 @@ Deno.serve(async (req) => {
     if (!merchantKey || !merchantSalt) {
       console.error('Missing PAYU_MERCHANT_KEY or PAYU_MERCHANT_SALT');
       return new Response(JSON.stringify({ error: 'Payment configuration missing' }), { status: 500, headers: corsHeaders });
+    }
+
+    // Persist checkout payload server-side so we can recover the order
+    // even if the user's browser session is lost during the PayU redirect.
+    if (checkout && checkout.items && checkout.address) {
+      const adminClient = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+      );
+      const { error: pendingError } = await adminClient.from('pending_payments').upsert({
+        txnid,
+        user_id: userId,
+        user_email: userEmail,
+        items: checkout.items,
+        subtotal: checkout.subtotal,
+        shipping_cost: checkout.shippingCost,
+        total: checkout.total,
+        shipping_address: checkout.address,
+        is_buy_now: !!checkout.isBuyNow,
+        status: 'pending',
+      }, { onConflict: 'txnid' });
+      if (pendingError) {
+        console.error('Failed to persist pending_payment:', pendingError);
+        // Continue — hash generation shouldn't be blocked
+      }
     }
 
     // PayU hash formula: sha512(key|txnid|amount|productinfo|firstname|email|udf1|udf2|udf3|udf4|udf5||||||salt)
