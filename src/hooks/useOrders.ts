@@ -33,9 +33,11 @@ interface CreateOrderParams {
 }
 
 export const generateOrderNumber = () => {
-  const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).substr(2, 4).toUpperCase();
-  return `ORD${timestamp}${random}`;
+  // Format: OD + 18 digits (e.g. OD337282733413795100)
+  // 13 digits from timestamp (ms since epoch) + 5 random digits
+  const timestamp = Date.now().toString().padStart(13, '0');
+  const random = Math.floor(10000 + Math.random() * 90000).toString();
+  return `OD${timestamp}${random}`;
 };
 
 export const createOrder = async (params: CreateOrderParams) => {
