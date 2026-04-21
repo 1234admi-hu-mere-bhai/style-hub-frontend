@@ -168,8 +168,9 @@ const Checkout = () => {
 
   const totalSavings = totalProductDiscount + discountAmount;
 
-  // Free shipping for ₹1 test orders or carts ≥ ₹999
-  const shippingCost = totalPrice <= 1 || totalPrice >= 999 ? 0 : 99;
+  // Free shipping if cart contains a ₹1 test product or subtotal ≥ ₹999
+  const hasTestItem = items.some(i => i.price <= 1);
+  const shippingCost = hasTestItem || totalPrice >= 999 ? 0 : 99;
   const finalTotal = totalPrice - discountAmount + shippingCost;
 
   const handleApplyCoupon = useCallback(async (codeOverride?: string) => {
