@@ -1,19 +1,12 @@
 import { useState, useEffect } from 'react';
 import {
-  Package,
-  CheckCircle2,
-  Truck,
-  MapPin,
   Loader2,
   RefreshCw,
   AlertCircle,
-  Clock,
-  Radio,
-  ChevronDown,
-  ChevronUp,
+  Truck,
+  Share2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 
 interface TrackingScan {
@@ -52,24 +45,37 @@ interface DelhiveryTrackingProps {
   waybill: string;
 }
 
-const PROGRESS_STEPS = [
-  { key: 'PU', label: 'Picked Up', icon: Package },
-  { key: 'OT', label: 'In Transit', icon: Truck },
-  { key: 'OD', label: 'Out for Delivery', icon: MapPin },
-  { key: 'DL', label: 'Delivered', icon: CheckCircle2 },
+/* ── Meesho-style status detection ─────────────────────────── */
+// Identifies "milestone" scans that should render as a pill badge
+// instead of a plain text row, matching the screenshots provided.
+const MILESTONE_KEYWORDS: { match: RegExp; label: string }[] = [
+  { match: /manifested|order placed|pickup scheduled/i, label: 'Order Placed' },
+  { match: /picked up|pickup done|pickup complete/i, label: 'Picked Up' },
+  { match: /in[-\s]?transit|dispatched|bag added|shipped/i, label: 'Shipped' },
+  { match: /out for delivery/i, label: 'Out for Delivery' },
+  { match: /delivered/i, label: 'Delivered' },
+  { match: /rto|return to origin/i, label: 'Return to Origin' },
+  { match: /undelivered|delivery attempt failed/i, label: 'Delivery Attempted' },
 ];
 
-const getProgressIndex = (statusType: string) => {
-  const map: Record<string, number> = { PU: 0, OT: 1, OD: 2, DL: 3, RT: -1 };
-  return map[statusType?.toUpperCase()] ?? 1;
+const detectMilestone = (scan: TrackingScan): string | null => {
+  const haystack = `${scan.Scan || ''} ${scan.Instructions || ''} ${scan.ScanType || ''}`;
+  for (const { match, label } of MILESTONE_KEYWORDS) {
+    if (match.test(haystack)) return label;
+  }
+  return null;
 };
+
+const formatDayMonth = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+
+const formatTime = (iso: string) =>
+  new Date(iso).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true });
 
 const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
   const [tracking, setTracking] = useState<TrackingData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showAllScans, setShowAllScans] = useState(false);
-  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   const fetchTracking = async () => {
     setIsLoading(true);
@@ -83,7 +89,6 @@ const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
 
       if (data?.ShipmentData?.[0]) {
         setTracking(data.ShipmentData[0]);
-        setLastRefresh(new Date());
       } else if (data?.Error) {
         setError(data.Error);
       } else {
@@ -100,23 +105,32 @@ const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
     if (waybill) fetchTracking();
   }, [waybill]);
 
+  const handleShare = async () => {
+    const shareText = `Track my order: AWB ${waybill}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Order Tracking', text: shareText });
+      } catch { /* user cancelled */ }
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareText);
+      } catch { /* clipboard blocked */ }
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="bg-card rounded-2xl border border-border p-8 flex flex-col items-center justify-center py-16">
-        <div className="relative">
-          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        </div>
-        <p className="text-muted-foreground mt-4 font-medium">Fetching live tracking...</p>
-        <p className="text-xs text-muted-foreground/60 mt-1">AWB: {waybill}</p>
+      <div className="bg-card rounded-2xl border border-border p-8 flex flex-col items-center justify-center py-16 mb-8">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-muted-foreground mt-4 text-sm font-medium">Fetching live tracking…</p>
+        <p className="text-xs text-muted-foreground/60 mt-1 font-mono">AWB: {waybill}</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-card rounded-2xl border border-border p-8">
+      <div className="bg-card rounded-2xl border border-border p-8 mb-8">
         <div className="flex flex-col items-center text-center">
           <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center mb-4">
             <AlertCircle size={28} className="text-destructive" />
@@ -134,189 +148,114 @@ const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
   if (!tracking) return null;
 
   const shipment = tracking.Shipment;
-  const scans = shipment.Scans?.map(s => s.ScanDetail).reverse() || [];
-  const currentStatus = shipment.Status;
-  const isRTO = currentStatus.StatusType?.toUpperCase() === 'RT';
-  const progressIndex = getProgressIndex(currentStatus.StatusType);
-  const isDelivered = currentStatus.StatusType?.toUpperCase() === 'DL';
-  const visibleScans = showAllScans ? scans : scans.slice(0, 4);
+  // Delhivery returns scans oldest first; reverse so newest sits at the TOP
+  // (matches Meesho's "See all updates" view).
+  const scans = (shipment.Scans?.map(s => s.ScanDetail) || []).slice().reverse();
 
   return (
-    <div className="space-y-4 mb-8">
-      {/* Live Status Card */}
-      <div className="bg-card rounded-2xl border border-border overflow-hidden">
-        {/* Header with live badge */}
-        <div className={`px-6 py-5 ${isDelivered ? 'bg-success/5' : isRTO ? 'bg-destructive/5' : 'bg-primary/5'}`}>
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                isDelivered ? 'bg-success/15 text-success' : isRTO ? 'bg-destructive/15 text-destructive' : 'bg-primary/15 text-primary'
-              }`}>
-                {isDelivered ? <CheckCircle2 size={24} /> : isRTO ? <AlertCircle size={24} /> : <Truck size={24} />}
-              </div>
-              <div className="min-w-0">
-                <h2 className="font-bold text-lg leading-tight">{currentStatus.Status}</h2>
-                <p className="text-sm text-muted-foreground truncate">{currentStatus.StatusLocation}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <Badge variant="outline" className="gap-1.5 text-[10px] font-semibold uppercase tracking-wider border-primary/30 text-primary bg-primary/5">
-                <Radio size={8} className="animate-pulse" /> Live
-              </Badge>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={fetchTracking}>
-                <RefreshCw size={14} />
-              </Button>
-            </div>
-          </div>
-
-          {/* Meta row */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-xs text-muted-foreground">
-            <span className="font-mono">AWB: {waybill}</span>
-            {shipment.ExpectedDeliveryDate && !isDelivered && (
-              <span className="flex items-center gap-1">
-                <Clock size={12} />
-                Expected: {new Date(shipment.ExpectedDeliveryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-              </span>
-            )}
-            {shipment.Origin && shipment.Destination && (
-              <span>{shipment.Origin} → {shipment.Destination}</span>
-            )}
-            {lastRefresh && (
-              <span>Updated {lastRefresh.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</span>
-            )}
-          </div>
-
-          {currentStatus.Instructions && (
-            <p className="text-sm text-muted-foreground mt-2 bg-background/50 rounded-lg px-3 py-2">
-              {currentStatus.Instructions}
-            </p>
-          )}
+    <div className="bg-card rounded-2xl border border-border overflow-hidden mb-8">
+      {/* Header — courier + tracking ID + share */}
+      <div className="px-5 py-4 border-b border-border flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm text-muted-foreground">
+            Courier: <span className="font-semibold text-foreground">Delhivery</span>
+          </p>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Tracking ID: <span className="font-bold text-foreground font-mono">{waybill}</span>
+          </p>
         </div>
-
-        {/* Progress Stepper */}
-        {!isRTO && (
-          <div className="px-6 py-5 border-t border-border">
-            <div className="flex items-center justify-between relative">
-              {/* Background line */}
-              <div className="absolute top-5 left-6 right-6 h-0.5 bg-border" />
-              {/* Progress line */}
-              <div
-                className="absolute top-5 left-6 h-0.5 bg-primary transition-all duration-700 ease-out"
-                style={{ width: `calc(${(Math.max(0, progressIndex) / (PROGRESS_STEPS.length - 1)) * 100}% - 48px)` }}
-              />
-
-              {PROGRESS_STEPS.map((step, idx) => {
-                const isCompleted = idx <= progressIndex;
-                const isCurrent = idx === progressIndex;
-                const StepIcon = step.icon;
-
-                return (
-                  <div key={step.key} className="flex flex-col items-center z-10 relative">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 ${
-                      isCompleted
-                        ? isCurrent
-                          ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30 scale-110'
-                          : 'bg-primary text-primary-foreground'
-                        : 'bg-card border-2 border-border text-muted-foreground'
-                    }`}>
-                      <StepIcon size={18} />
-                    </div>
-                    <span className={`text-[10px] mt-2 font-medium text-center leading-tight max-w-[60px] ${
-                      isCompleted ? 'text-foreground' : 'text-muted-foreground'
-                    }`}>
-                      {step.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* RTO Warning */}
-        {isRTO && (
-          <div className="mx-6 my-4 bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3">
-            <p className="text-sm font-medium text-destructive">Return to Origin (RTO)</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Your shipment is being returned to the sender.</p>
-          </div>
-        )}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" onClick={fetchTracking} aria-label="Refresh">
+            <RefreshCw size={16} />
+          </Button>
+          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" onClick={handleShare} aria-label="Share">
+            <Share2 size={16} />
+          </Button>
+        </div>
       </div>
 
-      {/* Scan History Card */}
-      <div className="bg-card rounded-2xl border border-border overflow-hidden">
-        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-          <h3 className="font-semibold">Shipment Journey</h3>
-          <Badge variant="secondary" className="text-xs">{scans.length} updates</Badge>
-        </div>
-
-        <div className="px-6 py-4">
-          <div className="relative">
-            {visibleScans.map((scan, index) => {
-              const isFirst = index === 0;
-              const isLast = index === visibleScans.length - 1 && (showAllScans || scans.length <= 4);
+      {/* Timeline */}
+      <div className="px-5 py-5">
+        {scans.length === 0 ? (
+          <div className="text-center py-8">
+            <Truck size={32} className="mx-auto text-muted-foreground mb-3" />
+            <p className="text-sm text-muted-foreground">
+              No scan updates yet. Your shipment is being processed.
+            </p>
+          </div>
+        ) : (
+          <ol className="relative">
+            {scans.map((scan, idx) => {
+              const isLast = idx === scans.length - 1;
+              const milestone = detectMilestone(scan);
+              const dateTime = scan.ScanDateTime || scan.StatusDateTime;
+              const dateLabel = formatDayMonth(dateTime);
+              const timeLabel = formatTime(dateTime);
+              const isDelivered = milestone === 'Delivered';
 
               return (
-                <div key={index} className="flex gap-4 group">
-                  {/* Timeline */}
-                  <div className="flex flex-col items-center">
-                    <div className={`w-3 h-3 rounded-full flex-shrink-0 mt-1.5 transition-colors ${
-                      isFirst
-                        ? 'bg-primary ring-4 ring-primary/20'
-                        : 'bg-border group-hover:bg-muted-foreground'
-                    }`} />
-                    {!(isLast) && (
-                      <div className="w-px flex-1 min-h-[2rem] bg-border" />
-                    )}
+                <li key={idx} className="grid grid-cols-[3.25rem_1.5rem_1fr] gap-x-3 items-start">
+                  {/* Date column */}
+                  <div className="pt-0.5 text-xs text-muted-foreground font-medium tabular-nums text-right">
+                    {dateLabel}
+                  </div>
+
+                  {/* Timeline rail */}
+                  <div className="flex flex-col items-center self-stretch">
+                    <div
+                      className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        isDelivered
+                          ? 'bg-success text-success-foreground'
+                          : 'bg-success text-success-foreground'
+                      }`}
+                    >
+                      <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </div>
+                    {!isLast && <div className="w-0.5 flex-1 min-h-[1.75rem] bg-success/60 my-0.5" />}
                   </div>
 
                   {/* Content */}
-                  <div className={`pb-5 flex-1 min-w-0 ${isFirst ? '' : 'opacity-70 group-hover:opacity-100 transition-opacity'}`}>
-                    <p className={`text-sm leading-snug ${isFirst ? 'font-semibold text-foreground' : 'font-medium text-foreground/80'}`}>
-                      {scan.Scan || scan.Instructions}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
-                      <span className="text-xs text-muted-foreground">{scan.ScannedLocation}</span>
-                      <span className="text-xs text-muted-foreground/40">·</span>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(scan.ScanDateTime || scan.StatusDateTime).toLocaleString('en-IN', {
-                          day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-                        })}
+                  <div className={`pb-5 min-w-0 ${isLast ? 'pb-0' : ''}`}>
+                    {milestone ? (
+                      <span
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                          isDelivered
+                            ? 'bg-success/15 text-success'
+                            : 'bg-primary/10 text-primary'
+                        }`}
+                      >
+                        {milestone}
                       </span>
-                    </div>
+                    ) : (
+                      <p className="text-sm text-foreground leading-snug">
+                        {scan.Instructions || scan.Scan}
+                        {scan.ScannedLocation && !/(at|reached)/i.test(scan.Instructions || scan.Scan || '') && (
+                          <> at <span className="font-medium">{scan.ScannedLocation}</span></>
+                        )}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-1">{timeLabel}</p>
                   </div>
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ol>
+        )}
+      </div>
 
-          {scans.length > 4 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full mt-2 text-xs text-muted-foreground hover:text-foreground"
-              onClick={() => setShowAllScans(!showAllScans)}
-            >
-              {showAllScans ? (
-                <><ChevronUp size={14} className="mr-1" /> Show less</>
-              ) : (
-                <><ChevronDown size={14} className="mr-1" /> Show all {scans.length} updates</>
-              )}
-            </Button>
-          )}
-        </div>
-
-        {/* Auto-sync footer */}
-        <div className="px-6 py-3 border-t border-border bg-muted/30 flex items-center justify-between">
-          <p className="text-[10px] text-muted-foreground flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-            Status auto-syncs every 30 minutes
+      {/* Auto-sync footer */}
+      <div className="px-5 py-3 border-t border-border bg-muted/30 flex items-center justify-between">
+        <p className="text-[10px] text-muted-foreground flex items-center gap-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+          Auto-syncs every 30 minutes
+        </p>
+        {shipment.ExpectedDeliveryDate && (
+          <p className="text-[10px] text-muted-foreground">
+            Expected: <span className="font-medium text-foreground">{formatDayMonth(shipment.ExpectedDeliveryDate)}</span>
           </p>
-          {lastRefresh && (
-            <p className="text-[10px] text-muted-foreground">
-              Last checked: {lastRefresh.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-            </p>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
