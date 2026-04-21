@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json()
-    const { orderId, status, refund_amount, refund_eta } = body
+    const { orderId, status, refund_amount, refund_eta, rejection_reason } = body
     if (!orderId) {
       return new Response(JSON.stringify({ error: 'orderId is required' }), {
         status: 400,
@@ -75,11 +75,14 @@ Deno.serve(async (req) => {
         updateData.refund_eta = d.toISOString()
       }
     }
+    if (rejection_reason !== undefined) {
+      updateData.rejection_reason = rejection_reason ? String(rejection_reason).slice(0, 1000) : null
+    }
 
     // Fetch current order to detect transitions
     const { data: prevOrder } = await adminClient
       .from('orders')
-      .select('id, user_id, order_number, status, refund_amount, refund_eta, total')
+      .select('id, user_id, order_number, status, refund_amount, refund_eta, total, rejection_reason')
       .eq('id', orderId)
       .maybeSingle()
 
@@ -93,7 +96,7 @@ Deno.serve(async (req) => {
     // Re-fetch to get post-trigger values (refund_amount/eta auto-set on return_approved)
     const { data: nextOrder } = await adminClient
       .from('orders')
-      .select('id, user_id, order_number, status, refund_amount, refund_eta')
+      .select('id, user_id, order_number, status, refund_amount, refund_eta, rejection_reason')
       .eq('id', orderId)
       .maybeSingle()
 
@@ -118,15 +121,23 @@ Deno.serve(async (req) => {
           message: `Your refund of ₹${amt.toLocaleString('en-IN')} for order ${nextOrder.order_number} has been issued to your original payment method.`,
           tag: `refund-${nextOrder.id}`,
         }
+      } else if (nextOrder.status === 'return_rejected') {
+        const reason = nextOrder.rejection_reason || 'Please contact support for details.'
+        notif = {
+          title: 'Return Request Rejected ❌',
+          message: `Your return request for order ${nextOrder.order_number} was rejected. Reason: ${reason}`,
+          tag: `return-rejected-${nextOrder.id}`,
+        }
       }
 
       if (notif && nextOrder.user_id) {
-        // Insert in-app notification (best effort)
+        // Insert in-app notification scoped to this user (best effort)
         try {
           await adminClient.from('notifications').insert({
             title: notif.title,
             message: notif.message,
             type: 'order',
+            user_id: nextOrder.user_id,
           })
         } catch (e) {
           console.error('notifications insert failed:', e)

@@ -59,6 +59,7 @@ interface Order {
   invoice_url: string | null;
   tracking_awb: string | null;
   return_reason: string | null;
+  rejection_reason: string | null;
   refund_amount: number | null;
   refund_eta: string | null;
   refund_processed_at: string | null;
@@ -110,6 +111,7 @@ const TrackOrder = () => {
           invoice_url: data.invoice_url,
           tracking_awb: (data as any).tracking_awb ?? null,
           return_reason: (data as any).return_reason ?? null,
+          rejection_reason: (data as any).rejection_reason ?? null,
           refund_amount: (data as any).refund_amount != null ? Number((data as any).refund_amount) : null,
           refund_eta: (data as any).refund_eta ?? null,
           refund_processed_at: (data as any).refund_processed_at ?? null,
@@ -260,7 +262,7 @@ const TrackOrder = () => {
             </div>
 
             {/* Delhivery Live Tracking (if AWB exists and not in return flow) */}
-            {order.tracking_awb && !['return_requested','return_approved','return_picked_up','refund_processed'].includes(order.status) ? (
+            {order.tracking_awb && !['return_requested','return_approved','return_picked_up','refund_processed','return_rejected'].includes(order.status) ? (
               <DelhiveryTracking waybill={order.tracking_awb} />
             ) : (
               /* Fallback internal tracking (also used for return flow) */
@@ -290,10 +292,11 @@ const TrackOrder = () => {
 };
 
 /* ── Internal tracking fallback ─────────────────────────────── */
-const InternalTracking = ({ order }: { order: { status: string; return_reason?: string | null; refund_amount?: number | null; refund_eta?: string | null; refund_processed_at?: string | null } }) => {
+const InternalTracking = ({ order }: { order: { status: string; return_reason?: string | null; rejection_reason?: string | null; refund_amount?: number | null; refund_eta?: string | null; refund_processed_at?: string | null } }) => {
   const isReplacementFlow = order.status.startsWith('replacement');
   const returnStatuses = ['return_requested', 'return_approved', 'return_picked_up', 'refund_processed'];
   const isReturnFlow = returnStatuses.includes(order.status);
+  const isReturnRejected = order.status === 'return_rejected';
 
   const standardSteps = [
     { id: 'placed', label: 'Order Placed', icon: Package, description: 'Your order has been placed successfully' },
@@ -338,6 +341,37 @@ const InternalTracking = ({ order }: { order: { status: string; return_reason?: 
       <div className="bg-destructive/10 p-6 rounded-lg text-center mb-8">
         <p className="text-destructive font-semibold text-lg">Order Cancelled</p>
         <p className="text-muted-foreground mt-2">This order has been cancelled.</p>
+      </div>
+    );
+  }
+
+  if (isReturnRejected) {
+    return (
+      <div className="bg-card border border-border rounded-lg p-6 mb-8">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-destructive/15 text-destructive flex items-center justify-center flex-shrink-0">
+            <Undo2 size={20} />
+          </div>
+          <div className="flex-1">
+            <h2 className="font-semibold text-lg">Return Request Rejected</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Unfortunately, your return request was not approved.
+            </p>
+          </div>
+        </div>
+        {order.return_reason && (
+          <div className="bg-secondary/40 rounded-md p-3 mb-3">
+            <p className="text-xs text-muted-foreground mb-1">Your Return Reason</p>
+            <p className="text-sm">{order.return_reason}</p>
+          </div>
+        )}
+        <div className="bg-destructive/5 border border-destructive/20 rounded-md p-3">
+          <p className="text-xs text-destructive font-semibold mb-1">Rejection Reason</p>
+          <p className="text-sm">{order.rejection_reason || 'Please contact support for more details.'}</p>
+        </div>
+        <p className="text-xs text-muted-foreground mt-3">
+          Need help? Reach out to our support team via WhatsApp or phone.
+        </p>
       </div>
     );
   }
