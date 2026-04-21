@@ -48,6 +48,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import DelhiveryTracking from '@/components/DelhiveryTracking';
+import InvoiceDialog from '@/components/InvoiceDialog';
 
 const CANCELLABLE_STATUSES = ['placed', 'confirmed'];
 
@@ -130,6 +131,7 @@ const TrackOrder = () => {
   const [submittingReplacement, setSubmittingReplacement] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [showFullTimeline, setShowFullTimeline] = useState(false);
+  const [invoiceOpen, setInvoiceOpen] = useState(false);
 
   const openCancelDialog = async () => {
     if (!order) return;
@@ -587,16 +589,15 @@ const TrackOrder = () => {
               </div>
               <div className="text-right">
                 <p className="font-bold text-base">{formatPrice(order.subtotal)}</p>
-                {order.invoice_url && (
-                  <a
-                    href={order.invoice_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                {order.payment_status === 'paid' && (
+                  <button
+                    type="button"
+                    onClick={() => setInvoiceOpen(true)}
                     className="text-primary text-xs font-bold uppercase tracking-wide hover:opacity-80 inline-flex items-center gap-1 mt-1"
                   >
                     <FileText size={12} />
                     View Bill
-                  </a>
+                  </button>
                 )}
               </div>
             </div>
