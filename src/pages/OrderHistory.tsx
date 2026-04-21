@@ -520,6 +520,29 @@ const OrderHistory = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Cancel Order Confirmation */}
+      <AlertDialog open={!!cancelDialogOrderId} onOpenChange={(open) => { if (!open) setCancelDialogOrderId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel this order?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Once cancelled, this order cannot be reinstated. If payment was made, the refund will be initiated to your original payment method within 5–7 business days.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={!!cancellingOrderId}>Keep Order</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleCancelOrder(); }}
+              disabled={!!cancellingOrderId}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {cancellingOrderId ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
+              Yes, Cancel Order
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
