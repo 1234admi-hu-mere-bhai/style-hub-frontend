@@ -505,17 +505,6 @@ const InvoiceDialog = ({
 
         {/* Sticky footer actions */}
         <div className="px-4 py-3 border-t border-border bg-card flex flex-row gap-2">
-          {!hasInvoice && order && !isGenerating && (
-            <Button
-              onClick={() => generateNow(false)}
-              size="sm"
-              variant="outline"
-              className="rounded-full flex-1"
-            >
-              <RefreshCw className="h-4 w-4 mr-1.5" />
-              Regenerate
-            </Button>
-          )}
           <Button
             variant="outline"
             size="sm"
