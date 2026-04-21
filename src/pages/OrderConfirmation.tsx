@@ -218,6 +218,50 @@ const OrderConfirmation = () => {
             </p>
           </div>
 
+          {/* Delhivery AWB Tracking */}
+          <div className="bg-card border border-border rounded-lg p-6 mb-6">
+            <div className="flex items-center gap-3 mb-3">
+              <Package className="w-6 h-6 text-primary" />
+              <h3 className="font-semibold">Delhivery Tracking</h3>
+            </div>
+            {awb ? (
+              <div className="space-y-3">
+                <div className="bg-primary/5 border border-primary/20 rounded-md p-3">
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium mb-1">AWB Number</p>
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <p className="font-mono font-bold text-base text-primary break-all">{awb}</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(awb);
+                        toast.success('AWB copied to clipboard');
+                      }}
+                    >
+                      <Copy size={14} className="mr-1.5" /> Copy
+                    </Button>
+                  </div>
+                </div>
+                <Button variant="outline" className="w-full" asChild>
+                  <a
+                    href={`https://www.delhivery.com/track/package/${awb}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink size={16} className="mr-2" />
+                    Track on Delhivery
+                  </a>
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Your AWB tracking number will appear here once your order is shipped (usually within 24 hours). You can also track live updates from your{' '}
+                <Link to="/orders" className="text-primary hover:underline font-medium">order history</Link>.
+              </p>
+            )}
+          </div>
+
           {/* Invoice Note */}
           <div className="bg-secondary/50 p-4 rounded-lg mb-6">
             <div className="flex items-start gap-3">
