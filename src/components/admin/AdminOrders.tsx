@@ -67,6 +67,8 @@ const AdminOrders = ({ orders, onRefresh }: AdminOrdersProps) => {
   const [creatingShipment, setCreatingShipment] = useState(false);
   const [shipmentWeight, setShipmentWeight] = useState('0.5');
   const [pickupName, setPickupName] = useState('Muffigout Warehouse');
+  const [manualAwb, setManualAwb] = useState('');
+  const [savingAwb, setSavingAwb] = useState(false);
 
   const filteredOrders = filterStatus === 'all' 
     ? orders 
