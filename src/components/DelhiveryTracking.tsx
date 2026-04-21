@@ -156,7 +156,7 @@ const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
           </div>
           <h3 className="font-semibold text-lg mb-1">Tracking Unavailable</h3>
           <p className="text-sm text-muted-foreground mb-4 max-w-sm">{error}</p>
-          <Button variant="outline" size="sm" onClick={fetchTracking} className="rounded-full">
+          <Button variant="outline" size="sm" onClick={() => fetchTracking()} className="rounded-full">
             <RefreshCw size={14} className="mr-2" /> Retry
           </Button>
         </div>
@@ -184,7 +184,7 @@ const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
           </p>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
-          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" onClick={fetchTracking} aria-label="Refresh">
+          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" onClick={() => fetchTracking()} aria-label="Refresh">
             <RefreshCw size={16} />
           </Button>
           <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" onClick={handleShare} aria-label="Share">
