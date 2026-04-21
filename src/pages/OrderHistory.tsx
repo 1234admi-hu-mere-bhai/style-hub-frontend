@@ -61,6 +61,7 @@ interface Order {
   refund_eta: string | null;
   refund_processed_at: string | null;
   created_at: string;
+  tracking_awb: string | null;
   order_items: OrderItem[];
 }
 
@@ -297,6 +298,7 @@ const OrderHistory = () => {
           refund_eta: (order as any).refund_eta ?? null,
           refund_processed_at: (order as any).refund_processed_at ?? null,
           created_at: order.created_at,
+          tracking_awb: (order as any).tracking_awb ?? null,
           order_items: order.order_items as unknown as OrderItem[],
         }));
         
