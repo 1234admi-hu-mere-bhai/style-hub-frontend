@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'User not found', userEmail }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const orderNumber = `ORD${Date.now().toString(36).toUpperCase()}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
+    const orderNumber = `OD${Date.now().toString().padStart(13, '0')}${Math.floor(10000 + Math.random() * 90000)}`;
     const { data: order, error: orderError } = await adminClient.from('orders').insert([{
       user_id: targetUser.id,
       order_number: orderNumber,
