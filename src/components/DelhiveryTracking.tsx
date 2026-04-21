@@ -262,7 +262,7 @@ const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
       <div className="px-5 py-3 border-t border-border bg-muted/30 flex items-center justify-between">
         <p className="text-[10px] text-muted-foreground flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-          Auto-syncs every 30 minutes
+          Live · auto-updates every minute{lastSync && ` · synced ${formatTime(lastSync.toISOString())}`}
         </p>
         {shipment.ExpectedDeliveryDate && (
           <p className="text-[10px] text-muted-foreground">
