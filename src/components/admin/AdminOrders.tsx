@@ -272,7 +272,11 @@ const AdminOrders = ({ orders, onRefresh }: AdminOrdersProps) => {
               <Separator />
               <div>
                 <p className="text-sm font-medium mb-2">Shipment Tracking</p>
-                {selectedOrder.tracking_awb ? (
+                {selectedOrder.status === 'cancelled' ? (
+                  <p className="text-xs text-muted-foreground">
+                    This order has been <strong>cancelled</strong>. Shipment creation is disabled.
+                  </p>
+                ) : selectedOrder.tracking_awb ? (
                   <div className="space-y-2">
                     <Badge variant="default" className="font-mono">AWB: {selectedOrder.tracking_awb}</Badge>
                     <p className="text-xs text-muted-foreground">Tracking number is visible to the customer in their order history.</p>
