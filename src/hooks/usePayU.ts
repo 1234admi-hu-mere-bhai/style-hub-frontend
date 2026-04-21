@@ -23,6 +23,24 @@ interface PaymentDetails {
   customerPhone?: string;
   description?: string;
   orderId?: string;
+  // Server-side persisted checkout payload (so order can be created via webhook
+  // even if the browser session is lost during the PayU redirect).
+  checkout?: {
+    items: Array<{
+      product_id: string;
+      product_name: string;
+      price: number;
+      quantity: number;
+      size?: string;
+      color?: string;
+      image?: string;
+    }>;
+    subtotal: number;
+    shippingCost: number;
+    total: number;
+    address: Record<string, any>;
+    isBuyNow?: boolean;
+  };
 }
 
 const PAYU_BASE_URL = 'https://secure.payu.in/_payment'; // Production
@@ -104,18 +122,23 @@ export const usePayU = ({ onSuccess, onError, onDismiss }: UsePayUProps) => {
       const email = details.customerEmail || 'customer@example.com';
       const phone = details.customerPhone || '';
 
-      // Get hash from edge function
+      // Get hash from edge function (also persists pending_payment server-side)
       const { data: hashData, error: hashError } = await supabase.functions.invoke('payu-hash', {
-        body: { txnid, amount, productinfo, firstname, email, phone },
+        body: { txnid, amount, productinfo, firstname, email, phone, checkout: details.checkout },
       });
 
       if (hashError || !hashData?.hash) {
         throw new Error('Failed to generate payment hash. Please try again.');
       }
 
-      const surl = `${window.location.origin}/payu-callback?status=success`;
-      const furl = `${window.location.origin}/payu-callback?status=failure`;
-      const curl = `${window.location.origin}/payu-callback?status=cancel`;
+      // Route surl/furl/curl through the server-side webhook so the order is
+      // created even if the browser session is lost. The webhook then
+      // 303-redirects back to /payu-callback with status & txnid params.
+      const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
+      const webhookBase = `${supabaseUrl}/functions/v1/payu-webhook`;
+      const surl = `${webhookBase}?status=success`;
+      const furl = `${webhookBase}?status=failure`;
+      const curl = `${webhookBase}?status=cancel`;
 
       // Store payment details in sessionStorage for callback handling
       sessionStorage.setItem('payu_payment', JSON.stringify({
@@ -137,18 +160,6 @@ export const usePayU = ({ onSuccess, onError, onDismiss }: UsePayUProps) => {
         curl,
         hash: hashData.hash,
       };
-
-      // Try submitting — if PayU rate-limits (form submit results in redirect that fails),
-      // we handle it via a fetch check first
-      try {
-        const checkResponse = await fetch(PAYU_BASE_URL, {
-          method: 'HEAD',
-          mode: 'no-cors',
-        });
-        // no-cors won't give status, so we just attempt the submit
-      } catch {
-        // Network error is expected with no-cors, proceed anyway
-      }
 
       clearRetryState();
       submitToPayU(params);
