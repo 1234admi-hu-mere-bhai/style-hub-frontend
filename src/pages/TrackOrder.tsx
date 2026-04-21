@@ -15,6 +15,7 @@ import {
   IndianRupee,
   XCircle,
   ExternalLink,
+  Copy,
 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -315,7 +316,7 @@ const TrackOrder = () => {
                         className="h-6 px-2 text-xs"
                         onClick={() => {
                           navigator.clipboard?.writeText(order.tracking_awb!);
-                          toast({ title: 'AWB copied to clipboard' });
+                          toast.success('AWB copied to clipboard');
                         }}
                       >
                         <Copy size={11} className="mr-1" />
