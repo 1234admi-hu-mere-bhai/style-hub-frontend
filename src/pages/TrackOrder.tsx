@@ -345,6 +345,37 @@ const InternalTracking = ({ order }: { order: { status: string; return_reason?: 
     );
   }
 
+  if (isReturnRejected) {
+    return (
+      <div className="bg-card border border-border rounded-lg p-6 mb-8">
+        <div className="flex items-start gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-destructive/15 text-destructive flex items-center justify-center flex-shrink-0">
+            <Undo2 size={20} />
+          </div>
+          <div className="flex-1">
+            <h2 className="font-semibold text-lg">Return Request Rejected</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Unfortunately, your return request was not approved.
+            </p>
+          </div>
+        </div>
+        {order.return_reason && (
+          <div className="bg-secondary/40 rounded-md p-3 mb-3">
+            <p className="text-xs text-muted-foreground mb-1">Your Return Reason</p>
+            <p className="text-sm">{order.return_reason}</p>
+          </div>
+        )}
+        <div className="bg-destructive/5 border border-destructive/20 rounded-md p-3">
+          <p className="text-xs text-destructive font-semibold mb-1">Rejection Reason</p>
+          <p className="text-sm">{order.rejection_reason || 'Please contact support for more details.'}</p>
+        </div>
+        <p className="text-xs text-muted-foreground mt-3">
+          Need help? Reach out to our support team via WhatsApp or phone.
+        </p>
+      </div>
+    );
+  }
+
   const formatDate = (iso?: string | null) =>
     iso ? new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
   const refundDone = order.status === 'refund_processed';

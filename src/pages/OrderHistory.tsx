@@ -76,6 +76,18 @@ const RETURN_STEPS = [
 const RETURN_STATUSES = ['return_requested', 'return_approved', 'return_picked_up', 'refund_processed'];
 
 const MiniDeliveryProgress = ({ status }: { status: string }) => {
+  // Special standalone state for rejected returns — no timeline
+  if (status === 'return_rejected') {
+    return (
+      <div className="my-3 px-1">
+        <div className="flex items-center gap-2 bg-destructive/10 border border-destructive/20 rounded-md px-3 py-2">
+          <Undo2 size={14} className="text-destructive flex-shrink-0" />
+          <span className="text-[11px] font-semibold text-destructive">Return Request Rejected</span>
+        </div>
+      </div>
+    );
+  }
+
   const isReturnFlow = RETURN_STATUSES.includes(status);
   const steps = isReturnFlow ? RETURN_STEPS : DELIVERY_STEPS;
   const statusOrder = isReturnFlow
