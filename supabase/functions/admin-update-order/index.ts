@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json()
-    const { orderId, status, refund_amount, refund_eta, rejection_reason } = body
+    const { orderId, status, refund_amount, refund_eta, rejection_reason, tracking_awb } = body
     if (!orderId) {
       return new Response(JSON.stringify({ error: 'orderId is required' }), {
         status: 400,
@@ -77,6 +77,15 @@ Deno.serve(async (req) => {
     }
     if (rejection_reason !== undefined) {
       updateData.rejection_reason = rejection_reason ? String(rejection_reason).slice(0, 1000) : null
+    }
+    if (tracking_awb !== undefined) {
+      const awbStr = tracking_awb === null ? null : String(tracking_awb).trim().slice(0, 64)
+      if (awbStr && !/^[A-Za-z0-9-]+$/.test(awbStr)) {
+        return new Response(JSON.stringify({ error: 'Invalid tracking_awb format' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      updateData.tracking_awb = awbStr || null
     }
 
     // Fetch current order to detect transitions
