@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { CheckCircle2, Package, FileText, ArrowRight, Truck, MapPin } from 'lucide-react';
+import { CheckCircle2, Package, FileText, ArrowRight, Truck, MapPin, ExternalLink, Copy } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface OrderItem {
   id: string;
@@ -39,12 +41,50 @@ const OrderConfirmation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const orderDetails = location.state as OrderDetails | null;
+  const [awb, setAwb] = useState<string | null>(null);
 
   useEffect(() => {
     if (!orderDetails) {
       navigate('/');
     }
   }, [orderDetails, navigate]);
+
+  // Poll for AWB — Delhivery shipment is created shortly after order confirmation by admin/automation.
+  // Check immediately, then every 30s for up to 10 minutes.
+  useEffect(() => {
+    if (!orderDetails?.orderId) return;
+    let attempts = 0;
+    const maxAttempts = 20;
+    let cancelled = false;
+
+    const checkAwb = async () => {
+      const { data } = await supabase
+        .from('orders')
+        .select('tracking_awb')
+        .eq('order_number', orderDetails.orderId)
+        .maybeSingle();
+      if (cancelled) return;
+      if (data?.tracking_awb) {
+        setAwb(data.tracking_awb);
+        return true;
+      }
+      return false;
+    };
+
+    checkAwb().then((found) => {
+      if (found) return;
+      const id = window.setInterval(async () => {
+        attempts++;
+        const found = await checkAwb();
+        if (found || attempts >= maxAttempts) window.clearInterval(id);
+      }, 30000);
+      return () => window.clearInterval(id);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [orderDetails?.orderId]);
 
   if (!orderDetails) {
     return null;
@@ -176,6 +216,50 @@ const OrderConfirmation = () => {
             <p className="text-muted-foreground">
               Your order will be delivered within 3-5 business days. You'll receive tracking updates via email and SMS.
             </p>
+          </div>
+
+          {/* Delhivery AWB Tracking */}
+          <div className="bg-card border border-border rounded-lg p-6 mb-6">
+            <div className="flex items-center gap-3 mb-3">
+              <Package className="w-6 h-6 text-primary" />
+              <h3 className="font-semibold">Delhivery Tracking</h3>
+            </div>
+            {awb ? (
+              <div className="space-y-3">
+                <div className="bg-primary/5 border border-primary/20 rounded-md p-3">
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium mb-1">AWB Number</p>
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <p className="font-mono font-bold text-base text-primary break-all">{awb}</p>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(awb);
+                        toast.success('AWB copied to clipboard');
+                      }}
+                    >
+                      <Copy size={14} className="mr-1.5" /> Copy
+                    </Button>
+                  </div>
+                </div>
+                <Button variant="outline" className="w-full" asChild>
+                  <a
+                    href={`https://www.delhivery.com/track/package/${awb}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink size={16} className="mr-2" />
+                    Track on Delhivery
+                  </a>
+                </Button>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Your AWB tracking number will appear here once your order is shipped (usually within 24 hours). You can also track live updates from your{' '}
+                <Link to="/orders" className="text-primary hover:underline font-medium">order history</Link>.
+              </p>
+            )}
           </div>
 
           {/* Invoice Note */}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Package, FileText, Loader2, Eye, ChevronRight, RefreshCw, Search, Truck, MapPin, CheckCircle2, Undo2, IndianRupee, XCircle } from 'lucide-react';
+import { Package, FileText, Loader2, Eye, ChevronRight, RefreshCw, Search, Truck, MapPin, CheckCircle2, Undo2, IndianRupee, XCircle, ExternalLink, Copy } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -61,6 +61,7 @@ interface Order {
   refund_eta: string | null;
   refund_processed_at: string | null;
   created_at: string;
+  tracking_awb: string | null;
   order_items: OrderItem[];
 }
 
@@ -297,6 +298,7 @@ const OrderHistory = () => {
           refund_eta: (order as any).refund_eta ?? null,
           refund_processed_at: (order as any).refund_processed_at ?? null,
           created_at: order.created_at,
+          tracking_awb: (order as any).tracking_awb ?? null,
           order_items: order.order_items as unknown as OrderItem[],
         }));
         
@@ -429,6 +431,43 @@ const OrderHistory = () => {
                           ? `Refund of ${formatPrice(Number(order.refund_amount ?? order.total))} completed`
                           : `Refund of ${formatPrice(Number(order.refund_amount ?? order.total))} expected by ${order.refund_eta ? new Date(order.refund_eta).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'soon'}`}
                       </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* AWB Tracking Chip with Delhivery link */}
+                {order.tracking_awb && (
+                  <div className="flex items-center justify-between gap-3 bg-primary/5 border border-primary/20 rounded-md px-3 py-2 mb-3">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <Truck size={14} className="text-primary shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Delhivery AWB</p>
+                        <p className="text-xs font-mono font-semibold truncate">{order.tracking_awb}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2"
+                        onClick={() => {
+                          navigator.clipboard?.writeText(order.tracking_awb!);
+                          toast.success('AWB copied');
+                        }}
+                        aria-label="Copy AWB"
+                      >
+                        <Copy size={12} />
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-7 px-2.5 text-xs" asChild>
+                        <a
+                          href={`https://www.delhivery.com/track/package/${order.tracking_awb}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View on Delhivery
+                          <ExternalLink size={11} className="ml-1" />
+                        </a>
+                      </Button>
                     </div>
                   </div>
                 )}

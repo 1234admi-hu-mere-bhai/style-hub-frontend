@@ -14,6 +14,7 @@ import {
   Undo2,
   IndianRupee,
   XCircle,
+  ExternalLink,
 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -306,7 +307,18 @@ const TrackOrder = () => {
                 {order.tracking_awb && (
                   <div>
                     <p className="text-sm text-muted-foreground">AWB Number</p>
-                    <p className="font-semibold font-mono text-sm text-primary">{order.tracking_awb}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold font-mono text-sm text-primary">{order.tracking_awb}</p>
+                      <a
+                        href={`https://www.delhivery.com/track/package/${order.tracking_awb}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium"
+                      >
+                        View on Delhivery
+                        <ExternalLink size={11} />
+                      </a>
+                    </div>
                   </div>
                 )}
               </div>
