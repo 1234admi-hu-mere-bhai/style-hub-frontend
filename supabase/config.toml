@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.sync-delhivery-status]
 verify_jwt = false
+
+[functions.payu-webhook]
+verify_jwt = false
