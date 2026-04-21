@@ -217,6 +217,7 @@ export type Database = {
           message: string
           title: string
           type: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -225,6 +226,7 @@ export type Database = {
           message?: string
           title: string
           type?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -233,6 +235,7 @@ export type Database = {
           message?: string
           title?: string
           type?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -297,6 +300,7 @@ export type Database = {
           refund_amount: number | null
           refund_eta: string | null
           refund_processed_at: string | null
+          rejection_reason: string | null
           return_reason: string | null
           shipping_address: Json
           shipping_cost: number
@@ -320,6 +324,7 @@ export type Database = {
           refund_amount?: number | null
           refund_eta?: string | null
           refund_processed_at?: string | null
+          rejection_reason?: string | null
           return_reason?: string | null
           shipping_address: Json
           shipping_cost?: number
@@ -343,6 +348,7 @@ export type Database = {
           refund_amount?: number | null
           refund_eta?: string | null
           refund_processed_at?: string | null
+          rejection_reason?: string | null
           return_reason?: string | null
           shipping_address?: Json
           shipping_cost?: number
