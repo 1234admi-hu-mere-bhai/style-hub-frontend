@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -94,19 +95,51 @@ const TrackOrder = () => {
   const [awbQuery, setAwbQuery] = useState('');
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [cancelReason, setCancelReason] = useState('');
+  const [verifyingCancel, setVerifyingCancel] = useState(false);
+
+  // Re-fetch latest status from DB before opening cancel dialog so users
+  // can't cancel an order that has already advanced (e.g. shipped).
+  const openCancelDialog = async () => {
+    if (!order) return;
+    setVerifyingCancel(true);
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('status')
+        .eq('id', order.id)
+        .single();
+      if (error) throw error;
+      if (!CANCELLABLE_STATUSES.includes(data.status)) {
+        toast.error(`Cancellation no longer available — order is ${data.status.replace(/_/g, ' ')}.`);
+        setOrder({ ...order, status: data.status });
+        return;
+      }
+      setCancelReason('');
+      setShowCancelDialog(true);
+    } catch {
+      toast.error('Could not verify order status. Please try again.');
+    } finally {
+      setVerifyingCancel(false);
+    }
+  };
 
   const handleCancelOrder = async () => {
     if (!order) return;
     setIsCancelling(true);
     try {
+      const updates: { status: string; cancellation_reason?: string } = { status: 'cancelled' };
+      if (cancelReason.trim()) updates.cancellation_reason = cancelReason.trim();
       const { error } = await supabase
         .from('orders')
-        .update({ status: 'cancelled' })
-        .eq('id', order.id);
+        .update(updates)
+        .eq('id', order.id)
+        .in('status', CANCELLABLE_STATUSES);
       if (error) throw error;
       toast.success('Order cancelled. Refund will be initiated within 5–7 business days.');
       setOrder({ ...order, status: 'cancelled' });
       setShowCancelDialog(false);
+      setCancelReason('');
     } catch (err: any) {
       toast.error(err.message || 'Failed to cancel order. It may have already shipped.');
     } finally {
@@ -305,9 +338,13 @@ const TrackOrder = () => {
                     variant="outline"
                     size="sm"
                     className="text-destructive border-destructive/30 hover:bg-destructive/10"
-                    onClick={() => setShowCancelDialog(true)}
+                    onClick={openCancelDialog}
+                    disabled={verifyingCancel}
                   >
-                    <XCircle size={16} className="mr-2" /> Cancel Order
+                    {verifyingCancel
+                      ? <Loader2 size={16} className="mr-2 animate-spin" />
+                      : <XCircle size={16} className="mr-2" />}
+                    Cancel Order
                   </Button>
                 </div>
               )}
@@ -315,7 +352,10 @@ const TrackOrder = () => {
 
             {/* Delhivery Live Tracking (if AWB exists and not in return flow) */}
             {order.tracking_awb && !['return_requested','return_approved','return_picked_up','refund_processed','return_rejected'].includes(order.status) ? (
-              <DelhiveryTracking waybill={order.tracking_awb} />
+              <DelhiveryTracking
+                waybill={order.tracking_awb}
+                paused={['cancelled', 'delivered'].includes(order.status)}
+              />
             ) : (
               /* Fallback internal tracking (also used for return flow) */
               <InternalTracking order={order} />
@@ -341,7 +381,7 @@ const TrackOrder = () => {
       <Footer />
 
       {/* Cancel Order Confirmation */}
-      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+      <AlertDialog open={showCancelDialog} onOpenChange={(open) => { setShowCancelDialog(open); if (!open) setCancelReason(''); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Cancel this order?</AlertDialogTitle>
@@ -349,6 +389,17 @@ const TrackOrder = () => {
               Once cancelled, this order cannot be reinstated. If payment was made, the refund will be initiated to your original payment method within 5–7 business days.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Reason for cancellation <span className="text-muted-foreground font-normal">(optional)</span></label>
+            <Textarea
+              placeholder="Tell us why you're cancelling — helps us improve."
+              value={cancelReason}
+              onChange={e => setCancelReason(e.target.value)}
+              rows={3}
+              maxLength={500}
+              disabled={isCancelling}
+            />
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isCancelling}>Keep Order</AlertDialogCancel>
             <AlertDialogAction
