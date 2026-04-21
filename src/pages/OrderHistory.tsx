@@ -435,6 +435,43 @@ const OrderHistory = () => {
                   </div>
                 )}
 
+                {/* AWB Tracking Chip with Delhivery link */}
+                {order.tracking_awb && (
+                  <div className="flex items-center justify-between gap-3 bg-primary/5 border border-primary/20 rounded-md px-3 py-2 mb-3">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <Truck size={14} className="text-primary shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Delhivery AWB</p>
+                        <p className="text-xs font-mono font-semibold truncate">{order.tracking_awb}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2"
+                        onClick={() => {
+                          navigator.clipboard?.writeText(order.tracking_awb!);
+                          toast.success('AWB copied');
+                        }}
+                        aria-label="Copy AWB"
+                      >
+                        <Copy size={12} />
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-7 px-2.5 text-xs" asChild>
+                        <a
+                          href={`https://www.delhivery.com/track/package/${order.tracking_awb}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View on Delhivery
+                          <ExternalLink size={11} className="ml-1" />
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex gap-3 overflow-x-auto pb-2 mb-4">
                   {order.order_items.map((item) => (
                     <div
