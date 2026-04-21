@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import brandLogo from '@/assets/logo-new.png';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import {
@@ -218,9 +219,12 @@ const InvoiceDialog = ({
         </head>
         <body>
           <div class="header">
-            <div>
-              <div class="brand">MUFFIGOUT APPAREL HUB</div>
-              <div class="tag">Crafted with Trust · Worn with Pride</div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <img src="${window.location.origin}${brandLogo}" alt="MUFFIGOUT APPAREL HUB" style="height:56px;width:56px;border-radius:50%;object-fit:cover;border:2px solid #7C3AED;" />
+              <div>
+                <div class="brand">MUFFIGOUT APPAREL HUB</div>
+                <div class="tag">Crafted with Trust · Worn with Pride</div>
+              </div>
             </div>
             <div class="invoice-no">
               <h2>Tax Invoice</h2>
@@ -310,8 +314,12 @@ const InvoiceDialog = ({
         <DialogHeader className="px-5 pt-5 pb-4 bg-gradient-to-br from-primary via-primary to-primary/80 text-primary-foreground border-b border-border space-y-2">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
-              <div className="h-9 w-9 rounded-full bg-primary-foreground/15 flex items-center justify-center flex-shrink-0 backdrop-blur">
-                <Receipt className="h-5 w-5" />
+              <div className="h-10 w-10 rounded-full bg-primary-foreground flex items-center justify-center flex-shrink-0 overflow-hidden ring-2 ring-primary-foreground/40 shadow-md">
+                <img
+                  src={brandLogo}
+                  alt="MUFFIGOUT APPAREL HUB"
+                  className="h-full w-full object-cover"
+                />
               </div>
               <div className="min-w-0">
                 <DialogTitle className="text-base sm:text-lg font-bold truncate text-primary-foreground">
@@ -343,13 +351,20 @@ const InvoiceDialog = ({
           ) : (
             <div className="p-4 space-y-3">
               {/* Brand strip */}
-              <div className="rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20 p-4 text-center">
-                <p className="font-serif font-bold text-lg text-primary leading-tight">
-                  MUFFIGOUT APPAREL HUB
-                </p>
-                <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mt-1">
-                  Crafted with Trust · Worn with Pride
-                </p>
+              <div className="rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20 p-4 flex items-center justify-center gap-3">
+                <img
+                  src={brandLogo}
+                  alt="MUFFIGOUT APPAREL HUB"
+                  className="h-14 w-14 rounded-full object-cover shadow-md ring-2 ring-primary/30 flex-shrink-0"
+                />
+                <div className="text-left">
+                  <p className="font-serif font-bold text-lg text-primary leading-tight">
+                    MUFFIGOUT APPAREL HUB
+                  </p>
+                  <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mt-1">
+                    Crafted with Trust · Worn with Pride
+                  </p>
+                </div>
               </div>
 
               {/* Summary Section */}
