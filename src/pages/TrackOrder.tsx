@@ -295,6 +295,23 @@ const TrackOrder = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Cancel order — only available before shipment */}
+              {CANCELLABLE_STATUSES.includes(order.status) && (
+                <div className="mt-4 pt-4 border-t border-border flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-xs text-muted-foreground">
+                    Need to cancel? You can cancel for free until the order is shipped.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                    onClick={() => setShowCancelDialog(true)}
+                  >
+                    <XCircle size={16} className="mr-2" /> Cancel Order
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* Delhivery Live Tracking (if AWB exists and not in return flow) */}
