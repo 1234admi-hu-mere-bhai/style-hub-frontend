@@ -732,6 +732,16 @@ const TrackOrder = () => {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Invoice dialog */}
+        <InvoiceDialog
+          open={invoiceOpen}
+          onOpenChange={setInvoiceOpen}
+          orderId={order.id}
+          orderNumber={order.order_number}
+          invoiceUrl={order.invoice_url}
+          onGenerated={(url) => setOrder({ ...order, invoice_url: url })}
+        />
       </div>
     );
   }
