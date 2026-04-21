@@ -340,13 +340,32 @@ const Checkout = () => {
       isBuyNow,
     }));
 
-    // Initiate PayU payment
+    // Initiate PayU payment — checkout payload is persisted server-side
+    // by payu-hash so order can be created via webhook even if browser
+    // session is lost.
+    const checkoutItems = items.map(item => ({
+      product_id: item.id,
+      product_name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      size: item.size,
+      color: item.color,
+      image: item.image,
+    }));
     await initiatePayment({
       amount: finalTotal,
       customerName: `${addressForm.firstName} ${addressForm.lastName}`,
       customerEmail: user.email,
       customerPhone: addressForm.phone,
       description: `Order of ${items.length} item(s) from MUFFIGOUT APPAREL HUB`,
+      checkout: {
+        items: checkoutItems,
+        subtotal: totalPrice,
+        shippingCost,
+        total: finalTotal,
+        address: addressForm,
+        isBuyNow,
+      },
     });
   };
 
