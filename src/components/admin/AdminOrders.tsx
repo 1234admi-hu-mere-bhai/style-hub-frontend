@@ -131,6 +131,29 @@ const AdminOrders = ({ orders, onRefresh }: AdminOrdersProps) => {
     }
   };
 
+  const saveManualAwb = async (orderId: string) => {
+    const awb = manualAwb.trim();
+    if (!awb) {
+      toast({ title: 'Enter an AWB number', variant: 'destructive' });
+      return;
+    }
+    setSavingAwb(true);
+    try {
+      const { error } = await supabase.functions.invoke('admin-update-order', {
+        body: { orderId, tracking_awb: awb, status: 'shipped' },
+      });
+      if (error) throw error;
+      toast({ title: 'AWB saved', description: `Tracking number ${awb} added to order` });
+      setManualAwb('');
+      onRefresh();
+      setSelectedOrder(null);
+    } catch (err: any) {
+      toast({ title: 'Failed to save AWB', description: err.message, variant: 'destructive' });
+    } finally {
+      setSavingAwb(false);
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
