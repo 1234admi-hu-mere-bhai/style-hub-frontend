@@ -435,40 +435,33 @@ const OrderHistory = () => {
                   </div>
                 )}
 
-                {/* AWB Tracking Chip with Delhivery link */}
+                {/* AWB Tracking Chip — courier-agnostic */}
                 {order.tracking_awb && (
-                  <div className="flex items-center justify-between gap-3 bg-primary/5 border border-primary/20 rounded-md px-3 py-2 mb-3">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <Truck size={14} className="text-primary shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Delhivery AWB</p>
-                        <p className="text-xs font-mono font-semibold truncate">{order.tracking_awb}</p>
+                  <div className="bg-primary/5 border border-primary/20 rounded-md px-3 py-2.5 mb-3 space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Truck size={14} className="text-primary shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Tracking / AWB Number</p>
+                          <p className="text-sm font-mono font-semibold truncate">{order.tracking_awb}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        className="h-7 px-2"
+                        className="h-7 px-2.5 text-xs shrink-0"
                         onClick={() => {
                           navigator.clipboard?.writeText(order.tracking_awb!);
-                          toast.success('AWB copied');
+                          toast.success('AWB copied to clipboard');
                         }}
-                        aria-label="Copy AWB"
                       >
-                        <Copy size={12} />
-                      </Button>
-                      <Button variant="outline" size="sm" className="h-7 px-2.5 text-xs" asChild>
-                        <a
-                          href={`https://www.delhivery.com/track/package/${order.tracking_awb}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View on Delhivery
-                          <ExternalLink size={11} className="ml-1" />
-                        </a>
+                        <Copy size={12} className="mr-1" />
+                        Copy
                       </Button>
                     </div>
+                    <p className="text-[11px] text-muted-foreground leading-snug">
+                      Use this AWB number on your courier partner's official tracking website (e.g. Delhivery, Bluedart, DTDC, India Post) to view live shipment status.
+                    </p>
                   </div>
                 )}
 

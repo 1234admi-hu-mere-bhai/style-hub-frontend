@@ -218,16 +218,16 @@ const OrderConfirmation = () => {
             </p>
           </div>
 
-          {/* Delhivery AWB Tracking */}
+          {/* Shipment Tracking (courier-agnostic) */}
           <div className="bg-card border border-border rounded-lg p-6 mb-6">
             <div className="flex items-center gap-3 mb-3">
               <Package className="w-6 h-6 text-primary" />
-              <h3 className="font-semibold">Delhivery Tracking</h3>
+              <h3 className="font-semibold">Shipment Tracking</h3>
             </div>
             {awb ? (
               <div className="space-y-3">
                 <div className="bg-primary/5 border border-primary/20 rounded-md p-3">
-                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium mb-1">AWB Number</p>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-medium mb-1">Tracking / AWB Number</p>
                   <div className="flex items-center justify-between gap-3 flex-wrap">
                     <p className="font-mono font-bold text-base text-primary break-all">{awb}</p>
                     <Button
@@ -243,20 +243,13 @@ const OrderConfirmation = () => {
                     </Button>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full" asChild>
-                  <a
-                    href={`https://www.delhivery.com/track/package/${awb}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <ExternalLink size={16} className="mr-2" />
-                    Track on Delhivery
-                  </a>
-                </Button>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Use this AWB number on your courier partner's official tracking website (e.g. Delhivery, Bluedart, DTDC, India Post) to view live shipment status.
+                </p>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Your AWB tracking number will appear here once your order is shipped (usually within 24 hours). You can also track live updates from your{' '}
+                Your tracking / AWB number will appear here once your order is shipped (usually within 24 hours). You can also view it later from your{' '}
                 <Link to="/orders" className="text-primary hover:underline font-medium">order history</Link>.
               </p>
             )}

@@ -67,6 +67,8 @@ const AdminOrders = ({ orders, onRefresh }: AdminOrdersProps) => {
   const [creatingShipment, setCreatingShipment] = useState(false);
   const [shipmentWeight, setShipmentWeight] = useState('0.5');
   const [pickupName, setPickupName] = useState('Muffigout Warehouse');
+  const [manualAwb, setManualAwb] = useState('');
+  const [savingAwb, setSavingAwb] = useState(false);
 
   const filteredOrders = filterStatus === 'all' 
     ? orders 
@@ -126,6 +128,29 @@ const AdminOrders = ({ orders, onRefresh }: AdminOrdersProps) => {
       toast({ title: 'Shipment creation failed', description: err.message, variant: 'destructive' });
     } finally {
       setCreatingShipment(false);
+    }
+  };
+
+  const saveManualAwb = async (orderId: string) => {
+    const awb = manualAwb.trim();
+    if (!awb) {
+      toast({ title: 'Enter an AWB number', variant: 'destructive' });
+      return;
+    }
+    setSavingAwb(true);
+    try {
+      const { error } = await supabase.functions.invoke('admin-update-order', {
+        body: { orderId, tracking_awb: awb, status: 'shipped' },
+      });
+      if (error) throw error;
+      toast({ title: 'AWB saved', description: `Tracking number ${awb} added to order` });
+      setManualAwb('');
+      onRefresh();
+      setSelectedOrder(null);
+    } catch (err: any) {
+      toast({ title: 'Failed to save AWB', description: err.message, variant: 'destructive' });
+    } finally {
+      setSavingAwb(false);
     }
   };
 
@@ -243,46 +268,99 @@ const AdminOrders = ({ orders, onRefresh }: AdminOrdersProps) => {
                   📞 {selectedOrder.shipping_address?.phone}
                 </p>
               </div>
-              {/* Delhivery Shipment */}
+              {/* Shipment / AWB */}
               <Separator />
               <div>
-                <p className="text-sm font-medium mb-2">Delhivery Shipment</p>
+                <p className="text-sm font-medium mb-2">Shipment Tracking</p>
                 {selectedOrder.tracking_awb ? (
-                  <div>
-                    <Badge variant="default" className="mb-2">AWB: {selectedOrder.tracking_awb}</Badge>
-                    <p className="text-xs text-muted-foreground">Shipment already created</p>
+                  <div className="space-y-2">
+                    <Badge variant="default" className="font-mono">AWB: {selectedOrder.tracking_awb}</Badge>
+                    <p className="text-xs text-muted-foreground">Tracking number is visible to the customer in their order history.</p>
+                    <div className="pt-2">
+                      <p className="text-xs font-medium mb-1">Update / replace AWB</p>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="New AWB number"
+                          value={manualAwb}
+                          onChange={(e) => setManualAwb(e.target.value)}
+                          className="flex-1 h-8 text-xs font-mono"
+                        />
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => saveManualAwb(selectedOrder.id)}
+                          disabled={savingAwb || !manualAwb.trim()}
+                        >
+                          {savingAwb ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Weight (kg)"
-                        value={shipmentWeight}
-                        onChange={(e) => setShipmentWeight(e.target.value)}
-                        className="w-24 h-8 text-xs"
-                        type="number"
-                        step="0.1"
-                        min="0.1"
-                      />
-                      <Input
-                        placeholder="Pickup location name"
-                        value={pickupName}
-                        onChange={(e) => setPickupName(e.target.value)}
-                        className="flex-1 h-8 text-xs"
-                      />
+                  <div className="space-y-4">
+                    {/* Manual AWB entry — for any third-party courier */}
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium">Enter AWB manually (any courier)</p>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="e.g. 12345678901234"
+                          value={manualAwb}
+                          onChange={(e) => setManualAwb(e.target.value)}
+                          className="flex-1 h-8 text-xs font-mono"
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => saveManualAwb(selectedOrder.id)}
+                          disabled={savingAwb || !manualAwb.trim()}
+                        >
+                          {savingAwb ? (
+                            <><Loader2 className="h-3 w-3 animate-spin mr-1" /> Saving...</>
+                          ) : (
+                            <>Save AWB</>
+                          )}
+                        </Button>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">
+                        Saving will mark the order as <strong>shipped</strong> and show the AWB to the customer.
+                      </p>
                     </div>
-                    <Button
-                      size="sm"
-                      className="w-full"
-                      onClick={() => createDelhiveryShipment(selectedOrder)}
-                      disabled={creatingShipment}
-                    >
-                      {creatingShipment ? (
-                        <><Loader2 className="h-3 w-3 animate-spin mr-1" /> Creating...</>
-                      ) : (
-                        <><Truck className="h-3 w-3 mr-1" /> Create Delhivery Shipment</>
-                      )}
-                    </Button>
+
+                    <Separator />
+
+                    {/* Auto-create via Delhivery API */}
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium">Or auto-create via Delhivery</p>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Weight (kg)"
+                          value={shipmentWeight}
+                          onChange={(e) => setShipmentWeight(e.target.value)}
+                          className="w-24 h-8 text-xs"
+                          type="number"
+                          step="0.1"
+                          min="0.1"
+                        />
+                        <Input
+                          placeholder="Pickup location name"
+                          value={pickupName}
+                          onChange={(e) => setPickupName(e.target.value)}
+                          className="flex-1 h-8 text-xs"
+                        />
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => createDelhiveryShipment(selectedOrder)}
+                        disabled={creatingShipment}
+                      >
+                        {creatingShipment ? (
+                          <><Loader2 className="h-3 w-3 animate-spin mr-1" /> Creating...</>
+                        ) : (
+                          <><Truck className="h-3 w-3 mr-1" /> Create Delhivery Shipment</>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 )}
               </div>
