@@ -59,6 +59,7 @@ interface Order {
   invoice_url: string | null;
   tracking_awb: string | null;
   return_reason: string | null;
+  rejection_reason: string | null;
   refund_amount: number | null;
   refund_eta: string | null;
   refund_processed_at: string | null;
@@ -110,6 +111,7 @@ const TrackOrder = () => {
           invoice_url: data.invoice_url,
           tracking_awb: (data as any).tracking_awb ?? null,
           return_reason: (data as any).return_reason ?? null,
+          rejection_reason: (data as any).rejection_reason ?? null,
           refund_amount: (data as any).refund_amount != null ? Number((data as any).refund_amount) : null,
           refund_eta: (data as any).refund_eta ?? null,
           refund_processed_at: (data as any).refund_processed_at ?? null,
@@ -260,7 +262,7 @@ const TrackOrder = () => {
             </div>
 
             {/* Delhivery Live Tracking (if AWB exists and not in return flow) */}
-            {order.tracking_awb && !['return_requested','return_approved','return_picked_up','refund_processed'].includes(order.status) ? (
+            {order.tracking_awb && !['return_requested','return_approved','return_picked_up','refund_processed','return_rejected'].includes(order.status) ? (
               <DelhiveryTracking waybill={order.tracking_awb} />
             ) : (
               /* Fallback internal tracking (also used for return flow) */
@@ -290,10 +292,11 @@ const TrackOrder = () => {
 };
 
 /* ── Internal tracking fallback ─────────────────────────────── */
-const InternalTracking = ({ order }: { order: { status: string; return_reason?: string | null; refund_amount?: number | null; refund_eta?: string | null; refund_processed_at?: string | null } }) => {
+const InternalTracking = ({ order }: { order: { status: string; return_reason?: string | null; rejection_reason?: string | null; refund_amount?: number | null; refund_eta?: string | null; refund_processed_at?: string | null } }) => {
   const isReplacementFlow = order.status.startsWith('replacement');
   const returnStatuses = ['return_requested', 'return_approved', 'return_picked_up', 'refund_processed'];
   const isReturnFlow = returnStatuses.includes(order.status);
+  const isReturnRejected = order.status === 'return_rejected';
 
   const standardSteps = [
     { id: 'placed', label: 'Order Placed', icon: Package, description: 'Your order has been placed successfully' },
