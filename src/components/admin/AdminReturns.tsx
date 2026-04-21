@@ -128,10 +128,27 @@ const AdminReturns = ({ orders, onRefresh }: AdminReturnsProps) => {
 
   const handleReject = async () => {
     if (!rejectingOrderId) return;
-    await updateStatus(rejectingOrderId, 'return_rejected');
-    setShowRejectDialog(false);
-    setRejectReason('');
-    setRejectingOrderId(null);
+    if (!rejectReason.trim()) {
+      toast.error('Please provide a rejection reason');
+      return;
+    }
+    setUpdating(rejectingOrderId);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-update-order', {
+        body: { orderId: rejectingOrderId, status: 'return_rejected', rejection_reason: rejectReason.trim() },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success('Return rejected and customer notified');
+      onRefresh();
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to reject return');
+    } finally {
+      setUpdating(null);
+      setShowRejectDialog(false);
+      setRejectReason('');
+      setRejectingOrderId(null);
+    }
   };
 
   const handleSaveRefund = async () => {
