@@ -43,6 +43,8 @@ interface TrackingData {
 
 interface DelhiveryTrackingProps {
   waybill: string;
+  /** When true, auto-polling pauses (e.g. order is cancelled or delivered). */
+  paused?: boolean;
 }
 
 /* ── Meesho-style status detection ─────────────────────────── */
@@ -72,7 +74,7 @@ const formatDayMonth = (iso: string) =>
 const formatTime = (iso: string) =>
   new Date(iso).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true });
 
-const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
+const DelhiveryTracking = ({ waybill, paused = false }: DelhiveryTrackingProps) => {
   const [tracking, setTracking] = useState<TrackingData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
@@ -106,9 +108,11 @@ const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
 
   // Initial load + auto-poll every 60s for live updates without manual refresh.
   // Pauses while the tab is hidden to save bandwidth, resumes on visibility.
+  // Also pauses entirely when `paused` is true (e.g. order cancelled/delivered).
   useEffect(() => {
     if (!waybill) return;
     fetchTracking();
+    if (paused) return; // Skip interval setup — terminal state, no further updates expected
     let interval = window.setInterval(() => {
       if (document.visibilityState === 'visible') fetchTracking(true);
     }, 60000);
@@ -121,7 +125,7 @@ const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
       document.removeEventListener('visibilitychange', onVisible);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [waybill]);
+  }, [waybill, paused]);
 
 
   const handleShare = async () => {
@@ -261,8 +265,10 @@ const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
       {/* Auto-sync footer */}
       <div className="px-5 py-3 border-t border-border bg-muted/30 flex items-center justify-between">
         <p className="text-[10px] text-muted-foreground flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-          Live · auto-updates every minute{lastSync && ` · synced ${formatTime(lastSync.toISOString())}`}
+          <span className={`w-1.5 h-1.5 rounded-full ${paused ? 'bg-muted-foreground' : 'bg-success animate-pulse'}`} />
+          {paused
+            ? `Auto-sync paused${lastSync ? ` · last synced ${formatTime(lastSync.toISOString())}` : ''}`
+            : <>Live · auto-updates every minute{lastSync && ` · synced ${formatTime(lastSync.toISOString())}`}</>}
         </p>
         {shipment.ExpectedDeliveryDate && (
           <p className="text-[10px] text-muted-foreground">

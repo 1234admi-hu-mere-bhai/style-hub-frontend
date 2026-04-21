@@ -166,19 +166,50 @@ const OrderHistory = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [cancelDialogOrderId, setCancelDialogOrderId] = useState<string | null>(null);
   const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [verifyingCancel, setVerifyingCancel] = useState(false);
+
+  // Verify the order is still cancellable (status hasn't advanced) before opening the dialog.
+  const openCancelDialog = async (orderId: string) => {
+    setVerifyingCancel(true);
+    try {
+      const { data, error } = await supabase
+        .from('orders')
+        .select('status')
+        .eq('id', orderId)
+        .single();
+      if (error) throw error;
+      if (!CANCELLABLE_STATUSES.includes(data.status)) {
+        toast.error(`Cancellation no longer available — order is ${data.status.replace(/_/g, ' ')}.`);
+        // Sync local state with server truth
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: data.status } : o));
+        return;
+      }
+      setCancelReason('');
+      setCancelDialogOrderId(orderId);
+    } catch (err: any) {
+      toast.error('Could not verify order status. Please try again.');
+    } finally {
+      setVerifyingCancel(false);
+    }
+  };
 
   const handleCancelOrder = async () => {
     if (!cancelDialogOrderId) return;
     setCancellingOrderId(cancelDialogOrderId);
     try {
+      const updates: { status: string; cancellation_reason?: string } = { status: 'cancelled' };
+      if (cancelReason.trim()) updates.cancellation_reason = cancelReason.trim();
       const { error } = await supabase
         .from('orders')
-        .update({ status: 'cancelled' })
-        .eq('id', cancelDialogOrderId);
+        .update(updates)
+        .eq('id', cancelDialogOrderId)
+        .in('status', CANCELLABLE_STATUSES); // server-side guard against race conditions
       if (error) throw error;
       toast.success('Order cancelled successfully. Refund will be initiated within 5–7 business days.');
       setOrders(prev => prev.map(o => o.id === cancelDialogOrderId ? { ...o, status: 'cancelled' } : o));
       setCancelDialogOrderId(null);
+      setCancelReason('');
     } catch (err: any) {
       toast.error(err.message || 'Failed to cancel order. It may have already shipped.');
     } finally {
@@ -440,10 +471,10 @@ const OrderHistory = () => {
                       variant="outline"
                       size="sm"
                       className="text-destructive border-destructive/30 hover:bg-destructive/10"
-                      onClick={() => setCancelDialogOrderId(order.id)}
-                      disabled={cancellingOrderId === order.id}
+                      onClick={() => openCancelDialog(order.id)}
+                      disabled={cancellingOrderId === order.id || verifyingCancel}
                     >
-                      {cancellingOrderId === order.id ? (
+                      {cancellingOrderId === order.id || verifyingCancel ? (
                         <Loader2 size={16} className="mr-2 animate-spin" />
                       ) : (
                         <XCircle size={16} className="mr-2" />
@@ -522,7 +553,7 @@ const OrderHistory = () => {
       </Dialog>
 
       {/* Cancel Order Confirmation */}
-      <AlertDialog open={!!cancelDialogOrderId} onOpenChange={(open) => { if (!open) setCancelDialogOrderId(null); }}>
+      <AlertDialog open={!!cancelDialogOrderId} onOpenChange={(open) => { if (!open) { setCancelDialogOrderId(null); setCancelReason(''); } }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Cancel this order?</AlertDialogTitle>
@@ -530,6 +561,17 @@ const OrderHistory = () => {
               Once cancelled, this order cannot be reinstated. If payment was made, the refund will be initiated to your original payment method within 5–7 business days.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Reason for cancellation <span className="text-muted-foreground font-normal">(optional)</span></label>
+            <Textarea
+              placeholder="Tell us why you're cancelling — helps us improve."
+              value={cancelReason}
+              onChange={e => setCancelReason(e.target.value)}
+              rows={3}
+              maxLength={500}
+              disabled={!!cancellingOrderId}
+            />
+          </div>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={!!cancellingOrderId}>Keep Order</AlertDialogCancel>
             <AlertDialogAction
