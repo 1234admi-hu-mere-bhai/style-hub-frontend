@@ -164,6 +164,27 @@ const OrderHistory = () => {
   const [returnDialogOrderId, setReturnDialogOrderId] = useState<string | null>(null);
   const [returnReason, setReturnReason] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [cancelDialogOrderId, setCancelDialogOrderId] = useState<string | null>(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+
+  const handleCancelOrder = async () => {
+    if (!cancelDialogOrderId) return;
+    setCancellingOrderId(cancelDialogOrderId);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled' })
+        .eq('id', cancelDialogOrderId);
+      if (error) throw error;
+      toast.success('Order cancelled successfully. Refund will be initiated within 5–7 business days.');
+      setOrders(prev => prev.map(o => o.id === cancelDialogOrderId ? { ...o, status: 'cancelled' } : o));
+      setCancelDialogOrderId(null);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to cancel order. It may have already shipped.');
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
 
   const handleRequestReplacement = async (orderId: string) => {
     setRequestingReplacement(orderId);
