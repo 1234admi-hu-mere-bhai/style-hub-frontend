@@ -435,6 +435,22 @@ const OrderHistory = () => {
                       </a>
                     </Button>
                   )}
+                  {CANCELLABLE_STATUSES.includes(order.status) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                      onClick={() => setCancelDialogOrderId(order.id)}
+                      disabled={cancellingOrderId === order.id}
+                    >
+                      {cancellingOrderId === order.id ? (
+                        <Loader2 size={16} className="mr-2 animate-spin" />
+                      ) : (
+                        <XCircle size={16} className="mr-2" />
+                      )}
+                      Cancel Order
+                    </Button>
+                  )}
                   {order.status === 'delivered' && isWithin7Days(order.delivered_at) && (
                     <Button
                       variant="outline"
