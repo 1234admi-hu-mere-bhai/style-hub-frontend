@@ -13,6 +13,7 @@ import {
   Navigation,
   Undo2,
   IndianRupee,
+  XCircle,
 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -20,9 +21,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import DelhiveryTracking from '@/components/DelhiveryTracking';
+
+const CANCELLABLE_STATUSES = ['placed', 'confirmed'];
 
 interface OrderItem {
   id: string;
@@ -78,6 +92,27 @@ const TrackOrder = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [trackingMode, setTrackingMode] = useState<'order' | 'awb'>('order');
   const [awbQuery, setAwbQuery] = useState('');
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  const handleCancelOrder = async () => {
+    if (!order) return;
+    setIsCancelling(true);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled' })
+        .eq('id', order.id);
+      if (error) throw error;
+      toast.success('Order cancelled. Refund will be initiated within 5–7 business days.');
+      setOrder({ ...order, status: 'cancelled' });
+      setShowCancelDialog(false);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to cancel order. It may have already shipped.');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -259,6 +294,23 @@ const TrackOrder = () => {
                   </div>
                 ))}
               </div>
+
+              {/* Cancel order — only available before shipment */}
+              {CANCELLABLE_STATUSES.includes(order.status) && (
+                <div className="mt-4 pt-4 border-t border-border flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-xs text-muted-foreground">
+                    Need to cancel? You can cancel for free until the order is shipped.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                    onClick={() => setShowCancelDialog(true)}
+                  >
+                    <XCircle size={16} className="mr-2" /> Cancel Order
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* Delhivery Live Tracking (if AWB exists and not in return flow) */}
@@ -287,6 +339,29 @@ const TrackOrder = () => {
         )}
       </main>
       <Footer />
+
+      {/* Cancel Order Confirmation */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel this order?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Once cancelled, this order cannot be reinstated. If payment was made, the refund will be initiated to your original payment method within 5–7 business days.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isCancelling}>Keep Order</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleCancelOrder(); }}
+              disabled={isCancelling}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isCancelling ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
+              Yes, Cancel Order
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

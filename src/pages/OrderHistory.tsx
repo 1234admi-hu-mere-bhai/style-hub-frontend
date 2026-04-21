@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Package, FileText, Loader2, Eye, ChevronRight, RefreshCw, Search, Truck, MapPin, CheckCircle2, Undo2, IndianRupee } from 'lucide-react';
+import { Package, FileText, Loader2, Eye, ChevronRight, RefreshCw, Search, Truck, MapPin, CheckCircle2, Undo2, IndianRupee, XCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -8,10 +8,22 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+const CANCELLABLE_STATUSES = ['placed', 'confirmed'];
 
 interface OrderItem {
   id: string;
@@ -152,6 +164,27 @@ const OrderHistory = () => {
   const [returnDialogOrderId, setReturnDialogOrderId] = useState<string | null>(null);
   const [returnReason, setReturnReason] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [cancelDialogOrderId, setCancelDialogOrderId] = useState<string | null>(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+
+  const handleCancelOrder = async () => {
+    if (!cancelDialogOrderId) return;
+    setCancellingOrderId(cancelDialogOrderId);
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled' })
+        .eq('id', cancelDialogOrderId);
+      if (error) throw error;
+      toast.success('Order cancelled successfully. Refund will be initiated within 5–7 business days.');
+      setOrders(prev => prev.map(o => o.id === cancelDialogOrderId ? { ...o, status: 'cancelled' } : o));
+      setCancelDialogOrderId(null);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to cancel order. It may have already shipped.');
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
 
   const handleRequestReplacement = async (orderId: string) => {
     setRequestingReplacement(orderId);
@@ -402,6 +435,22 @@ const OrderHistory = () => {
                       </a>
                     </Button>
                   )}
+                  {CANCELLABLE_STATUSES.includes(order.status) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive border-destructive/30 hover:bg-destructive/10"
+                      onClick={() => setCancelDialogOrderId(order.id)}
+                      disabled={cancellingOrderId === order.id}
+                    >
+                      {cancellingOrderId === order.id ? (
+                        <Loader2 size={16} className="mr-2 animate-spin" />
+                      ) : (
+                        <XCircle size={16} className="mr-2" />
+                      )}
+                      Cancel Order
+                    </Button>
+                  )}
                   {order.status === 'delivered' && isWithin7Days(order.delivered_at) && (
                     <Button
                       variant="outline"
@@ -471,6 +520,29 @@ const OrderHistory = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Cancel Order Confirmation */}
+      <AlertDialog open={!!cancelDialogOrderId} onOpenChange={(open) => { if (!open) setCancelDialogOrderId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel this order?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Once cancelled, this order cannot be reinstated. If payment was made, the refund will be initiated to your original payment method within 5–7 business days.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={!!cancellingOrderId}>Keep Order</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => { e.preventDefault(); handleCancelOrder(); }}
+              disabled={!!cancellingOrderId}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {cancellingOrderId ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
+              Yes, Cancel Order
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

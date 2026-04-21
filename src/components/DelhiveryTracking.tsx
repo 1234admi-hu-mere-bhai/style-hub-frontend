@@ -76,10 +76,11 @@ const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
   const [tracking, setTracking] = useState<TrackingData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [lastSync, setLastSync] = useState<Date | null>(null);
 
-  const fetchTracking = async () => {
-    setIsLoading(true);
-    setError('');
+  const fetchTracking = async (silent = false) => {
+    if (!silent) setIsLoading(true);
+    if (!silent) setError('');
     try {
       const { data, error: fnError } = await supabase.functions.invoke('delhivery', {
         body: { action: 'track', waybill },
@@ -89,21 +90,39 @@ const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
 
       if (data?.ShipmentData?.[0]) {
         setTracking(data.ShipmentData[0]);
+        setLastSync(new Date());
+        if (silent) setError('');
       } else if (data?.Error) {
-        setError(data.Error);
+        if (!silent) setError(data.Error);
       } else {
-        setError('No tracking data found for this AWB number');
+        if (!silent) setError('No tracking data found for this AWB number');
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to fetch tracking data');
+      if (!silent) setError(err.message || 'Failed to fetch tracking data');
     } finally {
-      setIsLoading(false);
+      if (!silent) setIsLoading(false);
     }
   };
 
+  // Initial load + auto-poll every 60s for live updates without manual refresh.
+  // Pauses while the tab is hidden to save bandwidth, resumes on visibility.
   useEffect(() => {
-    if (waybill) fetchTracking();
+    if (!waybill) return;
+    fetchTracking();
+    let interval = window.setInterval(() => {
+      if (document.visibilityState === 'visible') fetchTracking(true);
+    }, 60000);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') fetchTracking(true);
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [waybill]);
+
 
   const handleShare = async () => {
     const shareText = `Track my order: AWB ${waybill}`;
@@ -137,7 +156,7 @@ const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
           </div>
           <h3 className="font-semibold text-lg mb-1">Tracking Unavailable</h3>
           <p className="text-sm text-muted-foreground mb-4 max-w-sm">{error}</p>
-          <Button variant="outline" size="sm" onClick={fetchTracking} className="rounded-full">
+          <Button variant="outline" size="sm" onClick={() => fetchTracking()} className="rounded-full">
             <RefreshCw size={14} className="mr-2" /> Retry
           </Button>
         </div>
@@ -165,7 +184,7 @@ const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
           </p>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
-          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" onClick={fetchTracking} aria-label="Refresh">
+          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" onClick={() => fetchTracking()} aria-label="Refresh">
             <RefreshCw size={16} />
           </Button>
           <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" onClick={handleShare} aria-label="Share">
@@ -243,7 +262,7 @@ const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
       <div className="px-5 py-3 border-t border-border bg-muted/30 flex items-center justify-between">
         <p className="text-[10px] text-muted-foreground flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-          Auto-syncs every 30 minutes
+          Live · auto-updates every minute{lastSync && ` · synced ${formatTime(lastSync.toISOString())}`}
         </p>
         {shipment.ExpectedDeliveryDate && (
           <p className="text-[10px] text-muted-foreground">
