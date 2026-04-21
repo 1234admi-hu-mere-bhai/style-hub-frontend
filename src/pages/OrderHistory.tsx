@@ -1,29 +1,35 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Package, FileText, Loader2, Eye, ChevronRight, RefreshCw, Search, Truck, MapPin, CheckCircle2, Undo2, IndianRupee, XCircle, ExternalLink, Copy } from 'lucide-react';
+import {
+  Package,
+  Loader2,
+  ChevronRight,
+  Search,
+  Truck,
+  CheckCircle2,
+  Undo2,
+  IndianRupee,
+  XCircle,
+  RefreshCw,
+  CreditCard,
+  Filter,
+} from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-const CANCELLABLE_STATUSES = ['placed', 'confirmed'];
 
 interface OrderItem {
   id: string;
@@ -65,93 +71,121 @@ interface Order {
   order_items: OrderItem[];
 }
 
-const isWithin7Days = (deliveredAt: string | null) => {
-  if (!deliveredAt) return true;
-  const days = (Date.now() - new Date(deliveredAt).getTime()) / (1000 * 60 * 60 * 24);
-  return days <= 7;
+// One row per item (Meesho-style)
+interface OrderItemRow {
+  order: Order;
+  item: OrderItem;
+}
+
+// Headline shown above the item title (e.g. "Refund Successful", "Order Cancelled", "Delivered")
+const getHeadline = (
+  order: Order,
+  formatPrice: (n: number) => string,
+): { label: string; sub: string | null; tone: 'success' | 'danger' | 'info' | 'muted' | 'warn' } => {
+  const status = order.status;
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' });
+
+  if (status === 'refund_processed') {
+    return {
+      label: 'Refund Successful',
+      sub: `${formatPrice(Number(order.refund_amount ?? order.total))} refunded${
+        order.refund_processed_at ? ` on ${formatDate(order.refund_processed_at)}` : ''
+      }`,
+      tone: 'success',
+    };
+  }
+  if (status === 'return_approved' || status === 'return_picked_up') {
+    return {
+      label: status === 'return_picked_up' ? 'Return Picked Up' : 'Return Approved',
+      sub: order.refund_eta
+        ? `Refund of ${formatPrice(Number(order.refund_amount ?? order.total))} expected by ${formatDate(
+            order.refund_eta,
+          )}`
+        : 'Refund will be initiated soon',
+      tone: 'info',
+    };
+  }
+  if (status === 'return_requested') {
+    return { label: 'Return Requested', sub: 'We will get in touch shortly', tone: 'info' };
+  }
+  if (status === 'return_rejected') {
+    return { label: 'Return Rejected', sub: 'Contact support for details', tone: 'danger' };
+  }
+  if (status === 'cancelled') {
+    return { label: 'Order Cancelled', sub: 'As per your request', tone: 'danger' };
+  }
+  if (status === 'delivered') {
+    return {
+      label: 'Delivered',
+      sub: order.delivered_at ? `On ${formatDate(order.delivered_at)}` : null,
+      tone: 'success',
+    };
+  }
+  if (status === 'out_for_delivery') {
+    return { label: 'Out for Delivery', sub: 'Arriving today', tone: 'info' };
+  }
+  if (status === 'shipped') {
+    return {
+      label: 'Shipped',
+      sub: order.tracking_awb ? `AWB ${order.tracking_awb}` : 'On its way',
+      tone: 'info',
+    };
+  }
+  if (status === 'confirmed') {
+    return { label: 'Order Confirmed', sub: 'Preparing for shipment', tone: 'info' };
+  }
+  if (status === 'placed') {
+    return { label: 'Order Placed', sub: 'Awaiting confirmation', tone: 'muted' };
+  }
+  if (status.startsWith('replacement')) {
+    return {
+      label: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+      sub: 'Replacement in progress',
+      tone: 'warn',
+    };
+  }
+  return {
+    label: status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+    sub: null,
+    tone: 'muted',
+  };
 };
 
-const DELIVERY_STEPS = [
-  { key: 'placed', label: 'Placed', icon: Package },
-  { key: 'confirmed', label: 'Confirmed', icon: CheckCircle2 },
-  { key: 'shipped', label: 'Shipped', icon: Truck },
-  { key: 'out_for_delivery', label: 'Out for Delivery', icon: MapPin },
-  { key: 'delivered', label: 'Delivered', icon: CheckCircle2 },
-];
+const toneClasses: Record<string, string> = {
+  success: 'text-success',
+  danger: 'text-destructive',
+  info: 'text-foreground',
+  warn: 'text-accent',
+  muted: 'text-foreground',
+};
 
-const RETURN_STEPS = [
-  { key: 'return_requested', label: 'Requested', icon: Undo2 },
-  { key: 'return_approved', label: 'Approved', icon: CheckCircle2 },
-  { key: 'return_picked_up', label: 'Picked Up', icon: Truck },
-  { key: 'refund_processed', label: 'Refunded', icon: IndianRupee },
-];
+const FILTER_OPTIONS = [
+  { key: 'active', label: 'In progress' },
+  { key: 'delivered', label: 'Delivered' },
+  { key: 'cancelled', label: 'Cancelled' },
+  { key: 'returns', label: 'Returns & refunds' },
+] as const;
 
-const RETURN_STATUSES = ['return_requested', 'return_approved', 'return_picked_up', 'refund_processed'];
+type FilterKey = (typeof FILTER_OPTIONS)[number]['key'];
 
-const MiniDeliveryProgress = ({ status }: { status: string }) => {
-  // Special standalone state for rejected returns — no timeline
-  if (status === 'return_rejected') {
-    return (
-      <div className="my-3 px-1">
-        <div className="flex items-center gap-2 bg-destructive/10 border border-destructive/20 rounded-md px-3 py-2">
-          <Undo2 size={14} className="text-destructive flex-shrink-0" />
-          <span className="text-[11px] font-semibold text-destructive">Return Request Rejected</span>
-        </div>
-      </div>
-    );
+const matchesFilter = (status: string, filter: FilterKey) => {
+  switch (filter) {
+    case 'active':
+      return ['placed', 'confirmed', 'shipped', 'out_for_delivery'].includes(status);
+    case 'delivered':
+      return status === 'delivered';
+    case 'cancelled':
+      return status === 'cancelled';
+    case 'returns':
+      return [
+        'return_requested',
+        'return_approved',
+        'return_picked_up',
+        'return_rejected',
+        'refund_processed',
+      ].includes(status);
   }
-
-  const isReturnFlow = RETURN_STATUSES.includes(status);
-  const steps = isReturnFlow ? RETURN_STEPS : DELIVERY_STEPS;
-  const statusOrder = isReturnFlow
-    ? RETURN_STATUSES
-    : ['placed', 'confirmed', 'shipped', 'out_for_delivery', 'delivered'];
-  const currentIdx = statusOrder.indexOf(status);
-  const accentClass = isReturnFlow ? 'bg-accent' : 'bg-primary';
-  const accentSoftClass = isReturnFlow ? 'bg-accent/80' : 'bg-primary/80';
-  const accentLineClass = isReturnFlow ? 'bg-accent/60' : 'bg-primary/60';
-  const shadowClass = isReturnFlow ? 'shadow-accent/25' : 'shadow-primary/25';
-
-  return (
-    <div className="my-3 px-1">
-      {isReturnFlow && (
-        <p className="text-[10px] font-semibold text-accent mb-2 uppercase tracking-wide">Return in progress</p>
-      )}
-      <div className="flex items-center gap-1">
-        {steps.map((step, idx) => {
-          const isCompleted = idx <= currentIdx;
-          const isCurrent = idx === currentIdx;
-          const StepIcon = step.icon;
-
-          return (
-            <div key={step.key} className="flex items-center flex-1 last:flex-none">
-              <div className="flex flex-col items-center">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
-                  isCompleted
-                    ? isCurrent
-                      ? `${accentClass} text-primary-foreground shadow-sm ${shadowClass} scale-110`
-                      : `${accentSoftClass} text-primary-foreground`
-                    : 'bg-muted text-muted-foreground'
-                }`}>
-                  <StepIcon size={13} />
-                </div>
-                <span className={`text-[9px] mt-1 font-medium leading-tight text-center ${
-                  isCompleted ? 'text-foreground' : 'text-muted-foreground'
-                }`}>
-                  {step.label}
-                </span>
-              </div>
-              {idx < steps.length - 1 && (
-                <div className={`h-0.5 flex-1 mx-0.5 rounded-full mt-[-14px] ${
-                  idx < currentIdx ? accentLineClass : 'bg-border'
-                }`} />
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
 };
 
 const OrderHistory = () => {
@@ -160,104 +194,8 @@ const OrderHistory = () => {
   const { formatPrice } = useCurrency();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [requestingReplacement, setRequestingReplacement] = useState<string | null>(null);
-  const [requestingReturn, setRequestingReturn] = useState<string | null>(null);
-  const [returnDialogOrderId, setReturnDialogOrderId] = useState<string | null>(null);
-  const [returnReason, setReturnReason] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [cancelDialogOrderId, setCancelDialogOrderId] = useState<string | null>(null);
-  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
-  const [cancelReason, setCancelReason] = useState('');
-  const [verifyingCancel, setVerifyingCancel] = useState(false);
-
-  // Verify the order is still cancellable (status hasn't advanced) before opening the dialog.
-  const openCancelDialog = async (orderId: string) => {
-    setVerifyingCancel(true);
-    try {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('status')
-        .eq('id', orderId)
-        .single();
-      if (error) throw error;
-      if (!CANCELLABLE_STATUSES.includes(data.status)) {
-        toast.error(`Cancellation no longer available — order is ${data.status.replace(/_/g, ' ')}.`);
-        // Sync local state with server truth
-        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: data.status } : o));
-        return;
-      }
-      setCancelReason('');
-      setCancelDialogOrderId(orderId);
-    } catch (err: any) {
-      toast.error('Could not verify order status. Please try again.');
-    } finally {
-      setVerifyingCancel(false);
-    }
-  };
-
-  const handleCancelOrder = async () => {
-    if (!cancelDialogOrderId) return;
-    setCancellingOrderId(cancelDialogOrderId);
-    try {
-      const updates: { status: string; cancellation_reason?: string } = { status: 'cancelled' };
-      if (cancelReason.trim()) updates.cancellation_reason = cancelReason.trim();
-      const { error } = await supabase
-        .from('orders')
-        .update(updates)
-        .eq('id', cancelDialogOrderId)
-        .in('status', CANCELLABLE_STATUSES); // server-side guard against race conditions
-      if (error) throw error;
-      toast.success('Order cancelled successfully. Refund will be initiated within 5–7 business days.');
-      setOrders(prev => prev.map(o => o.id === cancelDialogOrderId ? { ...o, status: 'cancelled' } : o));
-      setCancelDialogOrderId(null);
-      setCancelReason('');
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to cancel order. It may have already shipped.');
-    } finally {
-      setCancellingOrderId(null);
-    }
-  };
-
-  const handleRequestReplacement = async (orderId: string) => {
-    setRequestingReplacement(orderId);
-    try {
-      const { data, error } = await supabase.functions.invoke('request-replacement', {
-        body: { orderId },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      toast.success('Replacement request submitted successfully');
-      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'replacement_requested' } : o));
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to submit replacement request');
-    } finally {
-      setRequestingReplacement(null);
-    }
-  };
-
-  const handleRequestReturn = async () => {
-    if (!returnDialogOrderId) return;
-    if (returnReason.trim().length < 5) {
-      toast.error('Please provide a return reason (at least 5 characters)');
-      return;
-    }
-    setRequestingReturn(returnDialogOrderId);
-    try {
-      const { data, error } = await supabase.functions.invoke('request-return', {
-        body: { orderId: returnDialogOrderId, reason: returnReason.trim() },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      toast.success('Return request submitted successfully');
-      setOrders(prev => prev.map(o => o.id === returnDialogOrderId ? { ...o, status: 'return_requested' } : o));
-      setReturnDialogOrderId(null);
-      setReturnReason('');
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to submit return request');
-    } finally {
-      setRequestingReturn(null);
-    }
-  };
+  const [activeFilters, setActiveFilters] = useState<Set<FilterKey>>(new Set());
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -268,21 +206,15 @@ const OrderHistory = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       if (!user) return;
-      
       try {
         const { data, error } = await supabase
           .from('orders')
-          .select(`
-            *,
-            order_items (*)
-          `)
+          .select(`*, order_items (*)`)
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
-
         if (error) throw error;
-        
-        // Transform data to match our interface
-        const transformedOrders: Order[] = (data || []).map((order) => ({
+
+        const transformed: Order[] = (data || []).map((order: any) => ({
           id: order.id,
           order_number: order.order_number,
           status: order.status,
@@ -291,47 +223,60 @@ const OrderHistory = () => {
           subtotal: Number(order.subtotal),
           shipping_cost: Number(order.shipping_cost),
           total: Number(order.total),
-          shipping_address: order.shipping_address as unknown as ShippingAddress,
+          shipping_address: order.shipping_address as ShippingAddress,
           invoice_url: order.invoice_url,
           delivered_at: order.delivered_at,
-          refund_amount: (order as any).refund_amount != null ? Number((order as any).refund_amount) : null,
-          refund_eta: (order as any).refund_eta ?? null,
-          refund_processed_at: (order as any).refund_processed_at ?? null,
+          refund_amount: order.refund_amount != null ? Number(order.refund_amount) : null,
+          refund_eta: order.refund_eta ?? null,
+          refund_processed_at: order.refund_processed_at ?? null,
           created_at: order.created_at,
-          tracking_awb: (order as any).tracking_awb ?? null,
-          order_items: order.order_items as unknown as OrderItem[],
+          tracking_awb: order.tracking_awb ?? null,
+          order_items: order.order_items as OrderItem[],
         }));
-        
-        setOrders(transformedOrders);
-      } catch (error) {
-        console.error('Error fetching orders:', error);
+        setOrders(transformed);
+      } catch (err) {
+        console.error('Error fetching orders:', err);
         toast.error('Failed to load orders');
       } finally {
         setIsLoading(false);
       }
     };
-
-    if (user) {
-      fetchOrders();
-    }
+    if (user) fetchOrders();
   }, [user]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'delivered':
-        return 'bg-success/10 text-success border-success/20';
-      case 'shipped':
-      case 'out_for_delivery':
-        return 'bg-primary/10 text-primary border-primary/20';
-      case 'cancelled':
-        return 'bg-destructive/10 text-destructive border-destructive/20';
-      default:
-        return 'bg-secondary text-muted-foreground';
-    }
-  };
+  // Flatten orders → one row per item (Meesho-style list)
+  const allRows: OrderItemRow[] = useMemo(
+    () =>
+      orders.flatMap((order) =>
+        (order.order_items || []).map((item) => ({ order, item })),
+      ),
+    [orders],
+  );
 
-  const formatStatus = (status: string) => {
-    return status.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+  const filteredRows = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return allRows.filter(({ order, item }) => {
+      if (activeFilters.size > 0) {
+        const match = Array.from(activeFilters).some((f) => matchesFilter(order.status, f));
+        if (!match) return false;
+      }
+      if (!q) return true;
+      return (
+        order.order_number.toLowerCase().includes(q) ||
+        item.product_name.toLowerCase().includes(q) ||
+        order.status.replace(/_/g, ' ').toLowerCase().includes(q) ||
+        (order.tracking_awb || '').toLowerCase().includes(q)
+      );
+    });
+  }, [allRows, searchQuery, activeFilters]);
+
+  const toggleFilter = (key: FilterKey) => {
+    setActiveFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
   };
 
   if (authLoading || isLoading) {
@@ -346,277 +291,159 @@ const OrderHistory = () => {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-          <h1 className="font-serif text-3xl font-bold">Order History</h1>
-          <div className="relative w-full sm:w-80">
+      <main className="container mx-auto px-4 py-6 max-w-3xl">
+        <h1 className="font-serif text-2xl font-bold tracking-tight mb-4 uppercase">My Orders</h1>
+
+        {/* Search + Filter row */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by order number, product or status..."
+              placeholder="Search orders"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
+              className="pl-9 h-11 rounded-full bg-secondary/40"
             />
           </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="h-11 px-3 text-primary hover:text-primary hover:bg-primary/5 gap-2"
+              >
+                <Filter size={16} />
+                <span className="font-medium">
+                  Filters{activeFilters.size > 0 ? ` (${activeFilters.size})` : ''}
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Filter by status</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {FILTER_OPTIONS.map((opt) => (
+                <DropdownMenuCheckboxItem
+                  key={opt.key}
+                  checked={activeFilters.has(opt.key)}
+                  onCheckedChange={() => toggleFilter(opt.key)}
+                  onSelect={(e) => e.preventDefault()}
+                >
+                  {opt.label}
+                </DropdownMenuCheckboxItem>
+              ))}
+              {activeFilters.size > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <button
+                    type="button"
+                    onClick={() => setActiveFilters(new Set())}
+                    className="w-full text-left px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded"
+                  >
+                    Clear filters
+                  </button>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        {(() => {
-          const query = searchQuery.toLowerCase().trim();
-          const filteredOrders = query
-            ? orders.filter(order =>
-                order.order_number.toLowerCase().includes(query) ||
-                order.status.replace(/_/g, ' ').toLowerCase().includes(query) ||
-                order.order_items.some(item => item.product_name.toLowerCase().includes(query))
-              )
-            : orders;
-
-          return filteredOrders.length === 0 ? (
+        {/* Empty state */}
+        {filteredRows.length === 0 ? (
           <div className="text-center py-16 bg-card rounded-lg border border-border">
             <Package size={48} className="mx-auto text-muted-foreground mb-4" />
-            <h2 className="font-semibold text-lg mb-2">{searchQuery ? 'No matching orders' : 'No orders yet'}</h2>
+            <h2 className="font-semibold text-lg mb-2">
+              {searchQuery || activeFilters.size > 0 ? 'No matching orders' : 'No orders yet'}
+            </h2>
             <p className="text-muted-foreground mb-6">
-              {searchQuery ? 'Try a different search term' : 'Start shopping to see your orders here'}
+              {searchQuery || activeFilters.size > 0
+                ? 'Try a different search or clear filters'
+                : 'Start shopping to see your orders here'}
             </p>
-            {!searchQuery && (
+            {!searchQuery && activeFilters.size === 0 && (
               <Button asChild>
                 <Link to="/products">Browse Products</Link>
               </Button>
             )}
           </div>
         ) : (
-          <div className="space-y-4">
-            {filteredOrders.map((order) => (
-              <div
-                key={order.id}
-                className="bg-card rounded-lg border border-border p-6"
-              >
-                <div className="flex flex-wrap justify-between gap-4 mb-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Order Number</p>
-                    <p className="font-semibold font-mono">{order.order_number}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Order Date</p>
-                    <p className="font-semibold">
-                      {new Date(order.created_at).toLocaleDateString('en-IN', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total</p>
-                    <p className="font-semibold">{formatPrice(order.total)}</p>
-                  </div>
-                  <div>
-                    <Badge variant="outline" className={getStatusColor(order.status)}>
-                      {formatStatus(order.status)}
-                    </Badge>
-                  </div>
-                </div>
-
-                {/* Mini Delivery / Return Progress */}
-                {!['cancelled', 'replacement_requested', 'replacement_shipped', 'replacement_delivered'].includes(order.status) && (
-                  <MiniDeliveryProgress status={order.status} />
-                )}
-
-                {/* Refund summary chip (Meesho-style) */}
-                {['return_approved', 'return_picked_up', 'refund_processed'].includes(order.status) && (order.refund_amount || order.refund_eta || order.refund_processed_at) && (
-                  <div className="flex items-center justify-between gap-3 bg-success/10 border border-success/20 rounded-md px-3 py-2 mb-3">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <IndianRupee size={14} className="text-success shrink-0" />
-                      <p className="text-xs font-medium truncate">
-                        {order.status === 'refund_processed'
-                          ? `Refund of ${formatPrice(Number(order.refund_amount ?? order.total))} completed`
-                          : `Refund of ${formatPrice(Number(order.refund_amount ?? order.total))} expected by ${order.refund_eta ? new Date(order.refund_eta).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'soon'}`}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* AWB Tracking Chip — courier-agnostic */}
-                {order.tracking_awb && (
-                  <div className="bg-primary/5 border border-primary/20 rounded-md px-3 py-2.5 mb-3 space-y-2">
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <Truck size={14} className="text-primary shrink-0" />
-                        <div className="min-w-0">
-                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Tracking / AWB Number</p>
-                          <p className="text-sm font-mono font-semibold truncate">{order.tracking_awb}</p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 px-2.5 text-xs shrink-0"
-                        onClick={() => {
-                          navigator.clipboard?.writeText(order.tracking_awb!);
-                          toast.success('AWB copied to clipboard');
-                        }}
-                      >
-                        <Copy size={12} className="mr-1" />
-                        Copy
-                      </Button>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground leading-snug">
-                      Use this AWB number on your courier partner's official tracking website (e.g. Delhivery, Bluedart, DTDC, India Post) to view live shipment status.
-                    </p>
-                  </div>
-                )}
-
-                <div className="flex gap-3 overflow-x-auto pb-2 mb-4">
-                  {order.order_items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex-shrink-0 w-16 h-20 bg-secondary rounded overflow-hidden"
-                    >
+          <ul className="divide-y divide-border border-y border-border bg-card rounded-lg overflow-hidden">
+            {filteredRows.map(({ order, item }) => {
+              const headline = getHeadline(order, formatPrice);
+              const tone = toneClasses[headline.tone];
+              return (
+                <li key={`${order.id}-${item.id}`}>
+                  <Link
+                    to={`/track-order?id=${order.order_number}`}
+                    className="flex items-center gap-3 p-4 hover:bg-secondary/30 active:bg-secondary/50 transition-colors"
+                  >
+                    {/* Thumbnail */}
+                    <div className="w-20 h-24 flex-shrink-0 rounded-md overflow-hidden bg-secondary">
                       <img
                         src={item.image || '/placeholder.svg'}
                         alt={item.product_name}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          e.currentTarget.src = '/placeholder.svg';
+                          (e.currentTarget as HTMLImageElement).src = '/placeholder.svg';
                         }}
                       />
                     </div>
-                  ))}
-                </div>
 
-                <div className="flex flex-wrap gap-3">
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to={`/track-order?id=${order.order_number}`}>
-                      <Eye size={16} className="mr-2" />
-                      Track Order
-                    </Link>
-                  </Button>
-                  {order.invoice_url && (
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={order.invoice_url} target="_blank" rel="noopener noreferrer">
-                        <FileText size={16} className="mr-2" />
-                        Download Invoice
-                      </a>
-                    </Button>
-                  )}
-                  {CANCELLABLE_STATUSES.includes(order.status) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-destructive border-destructive/30 hover:bg-destructive/10"
-                      onClick={() => openCancelDialog(order.id)}
-                      disabled={cancellingOrderId === order.id || verifyingCancel}
-                    >
-                      {cancellingOrderId === order.id || verifyingCancel ? (
-                        <Loader2 size={16} className="mr-2 animate-spin" />
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-bold leading-snug ${tone}`}>{headline.label}</p>
+                      {headline.sub ? (
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                          {headline.sub}
+                        </p>
                       ) : (
-                        <XCircle size={16} className="mr-2" />
+                        <p className="text-sm font-medium text-foreground line-clamp-1 mt-0.5">
+                          {item.product_name}
+                        </p>
                       )}
-                      Cancel Order
-                    </Button>
-                  )}
-                  {order.status === 'delivered' && isWithin7Days(order.delivered_at) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-red-600 border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      onClick={() => setReturnDialogOrderId(order.id)}
-                    >
-                      <Undo2 size={16} className="mr-2" />
-                      Request Return
-                    </Button>
-                  )}
-                  {order.status === 'delivered' && isWithin7Days(order.delivered_at) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-orange-600 border-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20"
-                      onClick={() => handleRequestReplacement(order.id)}
-                      disabled={requestingReplacement === order.id}
-                    >
-                      {requestingReplacement === order.id ? (
-                        <Loader2 size={16} className="mr-2 animate-spin" />
-                      ) : (
-                        <RefreshCw size={16} className="mr-2" />
+                      <p className="text-[11px] text-muted-foreground mt-1.5 flex items-center gap-1.5 flex-wrap">
+                        <span>Size: {item.size || 'Free Size'}</span>
+                        <span className="w-1 h-1 rounded-full bg-muted-foreground/50 inline-block" />
+                        <span>Qty: {item.quantity}</span>
+                      </p>
+
+                      {/* Status-specific helper chip */}
+                      {order.status === 'refund_processed' && order.refund_processed_at && (
+                        <div className="flex items-center gap-1.5 mt-2 text-[11px] text-success font-medium">
+                          <CreditCard size={12} />
+                          <span>Refund credited to source</span>
+                        </div>
                       )}
-                      Request Replacement
-                    </Button>
-                  )}
-                  <Button variant="ghost" size="sm" asChild className="ml-auto">
-                    <Link to={`/track-order?id=${order.order_number}`}>
-                      View Details
-                      <ChevronRight size={16} className="ml-1" />
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        );
-        })()}
+                      {order.status === 'cancelled' && (
+                        <div className="flex items-center gap-1.5 mt-2 text-[11px] text-muted-foreground">
+                          <XCircle size={12} />
+                          <span>Order #{order.order_number}</span>
+                        </div>
+                      )}
+                      {order.status === 'shipped' && order.tracking_awb && (
+                        <div className="flex items-center gap-1.5 mt-2 text-[11px] text-primary font-medium">
+                          <Truck size={12} />
+                          <span className="font-mono truncate">{order.tracking_awb}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Chevron */}
+                    <ChevronRight size={20} className="text-muted-foreground flex-shrink-0" />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {/* Footer hint */}
+        {filteredRows.length > 0 && (
+          <p className="text-center text-xs text-muted-foreground mt-6">
+            Tap any order to track, cancel, return or download invoice.
+          </p>
+        )}
       </main>
 
       <Footer />
-
-      {/* Return Reason Dialog */}
-      <Dialog open={!!returnDialogOrderId} onOpenChange={(open) => { if (!open) { setReturnDialogOrderId(null); setReturnReason(''); } }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Request Return</DialogTitle>
-            <DialogDescription>Please tell us why you'd like to return this order.</DialogDescription>
-          </DialogHeader>
-          <Textarea
-            placeholder="Describe the reason for return (e.g., wrong size, defective item, not as described)..."
-            value={returnReason}
-            onChange={e => setReturnReason(e.target.value)}
-            rows={4}
-          />
-          <DialogFooter>
-            <Button variant="outline" onClick={() => { setReturnDialogOrderId(null); setReturnReason(''); }}>Cancel</Button>
-            <Button
-              variant="destructive"
-              onClick={handleRequestReturn}
-              disabled={requestingReturn === returnDialogOrderId || returnReason.trim().length < 5}
-            >
-              {requestingReturn === returnDialogOrderId ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
-              Submit Return Request
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Cancel Order Confirmation */}
-      <AlertDialog open={!!cancelDialogOrderId} onOpenChange={(open) => { if (!open) { setCancelDialogOrderId(null); setCancelReason(''); } }}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Cancel this order?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Once cancelled, this order cannot be reinstated. If payment was made, the refund will be initiated to your original payment method within 5–7 business days.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Reason for cancellation <span className="text-muted-foreground font-normal">(optional)</span></label>
-            <Textarea
-              placeholder="Tell us why you're cancelling — helps us improve."
-              value={cancelReason}
-              onChange={e => setCancelReason(e.target.value)}
-              rows={3}
-              maxLength={500}
-              disabled={!!cancellingOrderId}
-            />
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={!!cancellingOrderId}>Keep Order</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={(e) => { e.preventDefault(); handleCancelOrder(); }}
-              disabled={!!cancellingOrderId}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {cancellingOrderId ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
-              Yes, Cancel Order
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };
