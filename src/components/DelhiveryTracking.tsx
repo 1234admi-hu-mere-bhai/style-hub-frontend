@@ -202,13 +202,7 @@ const DelhiveryTracking = ({ waybill }: DelhiveryTrackingProps) => {
 
                   {/* Timeline rail */}
                   <div className="flex flex-col items-center self-stretch">
-                    <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        isDelivered
-                          ? 'bg-success text-success-foreground'
-                          : 'bg-success text-success-foreground'
-                      }`}
-                    >
+                    <div className="w-5 h-5 rounded-full bg-success flex items-center justify-center flex-shrink-0 text-white">
                       <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
