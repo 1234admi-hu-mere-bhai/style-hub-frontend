@@ -104,17 +104,25 @@ const CartDrawer = ({ onClose }: CartDrawerProps) => {
           <span>Subtotal</span>
           <span>{formatPrice(totalPrice)}</span>
         </div>
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Shipping</span>
-          <span className={totalPrice <= 1 || totalPrice >= 999 ? 'text-success font-medium' : 'text-foreground'}>
-            {totalPrice <= 1 || totalPrice >= 999 ? 'FREE' : formatPrice(99)}
-          </span>
-        </div>
-        {totalPrice > 1 && totalPrice < 999 && (
-          <p className="text-xs text-primary">
-            Add {formatPrice(999 - totalPrice)} more for free shipping!
-          </p>
-        )}
+        {(() => {
+          const hasTestItem = items.some(i => i.price <= 1);
+          const isFreeShipping = hasTestItem || totalPrice >= 999;
+          return (
+            <>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Shipping</span>
+                <span className={isFreeShipping ? 'text-success font-medium' : 'text-foreground'}>
+                  {isFreeShipping ? 'FREE' : formatPrice(99)}
+                </span>
+              </div>
+              {!isFreeShipping && (
+                <p className="text-xs text-primary">
+                  Add {formatPrice(999 - totalPrice)} more for free shipping!
+                </p>
+              )}
+            </>
+          );
+        })()}
         <Button className="w-full" size="lg" asChild>
           <Link to="/checkout" onClick={onClose}>
             Proceed to Checkout
