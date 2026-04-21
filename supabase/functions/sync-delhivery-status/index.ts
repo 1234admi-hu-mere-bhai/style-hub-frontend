@@ -14,6 +14,9 @@ function mapDelhiveryStatus(delhiveryStatus: string): string | null {
   if (s.includes('out for delivery') || s.includes('out_for_delivery')) return 'out_for_delivery';
   if (s.includes('in transit') || s.includes('dispatched') || s.includes('picked up') || s.includes('shipped')) return 'shipped';
   if (s.includes('cancelled') || s.includes('rto')) return 'cancelled';
+  // Manifested means Delhivery has accepted the shipment but pickup hasn't happened yet
+  // → auto-confirm the order so it moves out of "placed"
+  if (s.includes('manifested') || s.includes('pickup scheduled') || s.includes('pickup awaited')) return 'confirmed';
   return null;
 }
 
