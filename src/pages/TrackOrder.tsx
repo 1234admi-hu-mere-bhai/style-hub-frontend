@@ -306,19 +306,25 @@ const TrackOrder = () => {
                 </div>
                 {order.tracking_awb && (
                   <div>
-                    <p className="text-sm text-muted-foreground">AWB Number</p>
+                    <p className="text-sm text-muted-foreground">Tracking / AWB Number</p>
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-semibold font-mono text-sm text-primary">{order.tracking_awb}</p>
-                      <a
-                        href={`https://www.delhivery.com/track/package/${order.tracking_awb}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium"
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 px-2 text-xs"
+                        onClick={() => {
+                          navigator.clipboard?.writeText(order.tracking_awb!);
+                          toast({ title: 'AWB copied to clipboard' });
+                        }}
                       >
-                        View on Delhivery
-                        <ExternalLink size={11} />
-                      </a>
+                        <Copy size={11} className="mr-1" />
+                        Copy
+                      </Button>
                     </div>
+                    <p className="text-[11px] text-muted-foreground mt-1 max-w-xs">
+                      Track this AWB on your courier's official website (Delhivery, Bluedart, DTDC, etc.).
+                    </p>
                   </div>
                 )}
               </div>
