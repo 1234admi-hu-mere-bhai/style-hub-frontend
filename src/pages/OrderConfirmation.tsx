@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { CheckCircle2, Package, FileText, ArrowRight, Truck, MapPin } from 'lucide-react';
+import { CheckCircle2, Package, FileText, ArrowRight, Truck, MapPin, ExternalLink, Copy } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface OrderItem {
   id: string;
@@ -39,12 +41,50 @@ const OrderConfirmation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const orderDetails = location.state as OrderDetails | null;
+  const [awb, setAwb] = useState<string | null>(null);
 
   useEffect(() => {
     if (!orderDetails) {
       navigate('/');
     }
   }, [orderDetails, navigate]);
+
+  // Poll for AWB — Delhivery shipment is created shortly after order confirmation by admin/automation.
+  // Check immediately, then every 30s for up to 10 minutes.
+  useEffect(() => {
+    if (!orderDetails?.orderId) return;
+    let attempts = 0;
+    const maxAttempts = 20;
+    let cancelled = false;
+
+    const checkAwb = async () => {
+      const { data } = await supabase
+        .from('orders')
+        .select('tracking_awb')
+        .eq('order_number', orderDetails.orderId)
+        .maybeSingle();
+      if (cancelled) return;
+      if (data?.tracking_awb) {
+        setAwb(data.tracking_awb);
+        return true;
+      }
+      return false;
+    };
+
+    checkAwb().then((found) => {
+      if (found) return;
+      const id = window.setInterval(async () => {
+        attempts++;
+        const found = await checkAwb();
+        if (found || attempts >= maxAttempts) window.clearInterval(id);
+      }, 30000);
+      return () => window.clearInterval(id);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [orderDetails?.orderId]);
 
   if (!orderDetails) {
     return null;
