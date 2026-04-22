@@ -11,6 +11,50 @@ const ShippingPolicy = () => {
         <p className="text-muted-foreground mb-10">Everything you need to know about our delivery process</p>
 
         <div className="space-y-10 text-foreground/90 leading-relaxed">
+          {/* Quick Rules Summary */}
+          <section className="grid sm:grid-cols-2 gap-4">
+            <div className="rounded-xl border-2 border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <MapPin className="w-5 h-5 text-primary" />
+                <h3 className="font-serif text-lg font-semibold">West Bengal</h3>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-sm text-muted-foreground">Handling charge</span>
+                  <span className="font-semibold text-primary">₹20 flat</span>
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-sm text-muted-foreground">Delivery time</span>
+                  <span className="font-semibold">5–7 business days</span>
+                </div>
+                <p className="text-xs text-muted-foreground pt-2 border-t border-primary/10">
+                  Applies to all orders shipped within West Bengal.
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border-2 border-border bg-secondary/40 p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Truck className="w-5 h-5 text-foreground" />
+                <h3 className="font-serif text-lg font-semibold">Outside West Bengal</h3>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-baseline justify-between">
+                  <span className="text-sm text-muted-foreground">Orders ≥ ₹999</span>
+                  <span className="font-semibold text-primary">FREE</span>
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-sm text-muted-foreground">Orders &lt; ₹999</span>
+                  <span className="font-semibold">₹99</span>
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <span className="text-sm text-muted-foreground">Delivery time</span>
+                  <span className="font-semibold">7–10 business days</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
           {/* Shipping Charges */}
           <section className="bg-primary/5 border border-primary/20 rounded-xl p-6">
             <div className="flex items-center gap-3 mb-4">
