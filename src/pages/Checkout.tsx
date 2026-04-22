@@ -24,9 +24,10 @@ import { Address } from '@/data/user';
 import { checkoutAddressSchema } from '@/lib/validations';
 import { detectCurrentLocation } from '@/lib/geolocation';
 import { checkCodEligibility, COD_FEE } from '@/lib/codEligibility';
+import { calculateShipping } from '@/lib/shipping';
 
-const getEstimatedDeliveryDate = (days?: string) => {
-  const deliveryDays = days ? parseInt(days) : 5;
+const getEstimatedDeliveryDate = (days?: string | number) => {
+  const deliveryDays = typeof days === 'number' ? days : days ? parseInt(days) : 5;
   const date = new Date();
   date.setDate(date.getDate() + deliveryDays);
   return date.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
@@ -171,9 +172,18 @@ const Checkout = () => {
 
   const totalSavings = totalProductDiscount + discountAmount;
 
-  // Free shipping if cart contains a ₹1 test product or subtotal ≥ ₹999
+  // Shipping rules: WB intra-state ₹20 handling (7 days), Outside WB ₹99 / FREE ≥ ₹999 (10 days)
   const hasTestItem = items.some(i => i.price <= 1);
-  const shippingCost = hasTestItem || totalPrice >= 999 ? 0 : 99;
+  const shippingQuote = useMemo(
+    () => calculateShipping({
+      subtotal: totalPrice,
+      state: addressForm.state,
+      pincode: addressForm.pincode,
+      hasTestItem,
+    }),
+    [totalPrice, addressForm.state, addressForm.pincode, hasTestItem],
+  );
+  const shippingCost = shippingQuote.cost;
 
   // COD eligibility: subtotal after coupon, no flash items, serviceable pincode
   const postCouponSubtotal = totalPrice - discountAmount;
