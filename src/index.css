@@ -225,4 +225,55 @@
   .animate-marquee {
     animation: marquee 15s linear infinite;
   }
+
+  /* Coupon success modal entrance */
+  @keyframes couponPop {
+    0%   { opacity: 0; transform: scale(0.85); }
+    60%  { opacity: 1; transform: scale(1.03); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+  .coupon-success-pop {
+    animation: couponPop 360ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes couponBadgePop {
+    0%   { transform: scale(0) rotate(-180deg); opacity: 0; }
+    70%  { transform: scale(1.15) rotate(15deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  .coupon-badge-pop {
+    animation: couponBadgePop 600ms cubic-bezier(0.34, 1.56, 0.64, 1) 120ms both;
+  }
+
+  @keyframes couponTextFade {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .coupon-text-fade {
+    opacity: 0;
+    animation: couponTextFade 360ms ease-out both;
+  }
+
+  @keyframes confettiBurst {
+    0%   { opacity: 0; transform: translate(0, 0) rotate(0deg) scale(0.6); }
+    15%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1); }
+  }
+  .confetti-piece {
+    opacity: 0;
+    animation-name: confettiBurst;
+    animation-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
+    animation-fill-mode: forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .coupon-success-pop,
+    .coupon-badge-pop,
+    .coupon-text-fade,
+    .confetti-piece {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
 }
