@@ -529,9 +529,9 @@ const Checkout = () => {
       <div className="min-h-screen bg-background">
         <Header />
         <div className="container mx-auto px-4 py-16 text-center">
-          <h1 className="font-serif text-3xl font-bold mb-4">Your Cart is Empty</h1>
+          <h1 className="font-serif text-3xl font-bold mb-4">Your bag is empty</h1>
           <p className="text-muted-foreground mb-8">
-            Add some items to your cart before checking out.
+            Add items to your bag to continue to checkout.
           </p>
           <Button asChild>
             <Link to="/products">Continue Shopping</Link>
@@ -550,9 +550,9 @@ const Checkout = () => {
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-md mx-auto text-center">
             <LogIn size={48} className="mx-auto text-muted-foreground mb-4" />
-            <h1 className="font-serif text-3xl font-bold mb-4">Sign In Required</h1>
+            <h1 className="font-serif text-3xl font-bold mb-4">Sign in to continue</h1>
             <p className="text-muted-foreground mb-8">
-              Please sign in to your account to proceed with checkout. Your cart items will be saved.
+              Please sign in to your account to complete your purchase. Your bag will be saved.
             </p>
             <div className="flex flex-col gap-4">
               <Button asChild size="lg">
@@ -616,7 +616,7 @@ const Checkout = () => {
             <Zap size={20} className="text-destructive shrink-0" />
             <div>
               <p className="text-sm font-semibold text-foreground">⚡ Flash Sale has ended</p>
-              <p className="text-xs text-muted-foreground">Prices have been updated to their original values. Please review your order total.</p>
+              <p className="text-xs text-muted-foreground">Pricing has been reset to standard. Please review your order total before proceeding.</p>
             </div>
             <button onClick={() => setFlashSaleExpired(false)} className="ml-auto shrink-0 text-muted-foreground hover:text-foreground">
               <X size={16} />
@@ -662,7 +662,7 @@ const Checkout = () => {
                 {/* Saved Addresses List */}
                 {savedAddresses.length > 0 && !showNewAddressForm && (
                   <div className="space-y-3 mb-4">
-                    <p className="text-sm text-muted-foreground">Select a saved address to deliver to:</p>
+                    <p className="text-sm text-muted-foreground">Choose a saved address for delivery:</p>
                     {savedAddresses.map((addr) => (
                       <div
                         key={addr.id}

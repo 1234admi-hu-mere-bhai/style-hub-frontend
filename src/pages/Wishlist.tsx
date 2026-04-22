@@ -28,7 +28,7 @@ const Wishlist = () => {
         color: product.colors[0].name,
         quantity: 1,
       });
-      toast.success('Added to cart');
+      toast.success('Added to your bag');
     }
   };
 
@@ -53,10 +53,10 @@ const Wishlist = () => {
             </svg>
           </div>
           <h1 className="font-serif text-3xl font-bold mb-4">
-            Your Wishlist is Empty
+            Your wishlist is empty
           </h1>
           <p className="text-muted-foreground mb-8">
-            Start adding items you love to your wishlist
+            Save items you love to revisit them later.
           </p>
           <Button asChild>
             <Link to="/products">Continue Shopping</Link>
@@ -73,7 +73,7 @@ const Wishlist = () => {
 
       <main className="container mx-auto px-4 py-8">
         <h1 className="font-serif text-3xl font-bold mb-8">
-          My Wishlist ({items.length} items)
+          My Wishlist · {items.length} {items.length === 1 ? 'item' : 'items'}
         </h1>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
@@ -114,7 +114,7 @@ const Wishlist = () => {
                     onClick={() => handleAddToCart(item)}
                   >
                     <ShoppingBag size={16} className="mr-2" />
-                    Add to Cart
+                    Add to Bag
                   </Button>
                   <Button
                     size="sm"
