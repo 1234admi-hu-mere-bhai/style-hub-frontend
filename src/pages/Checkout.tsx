@@ -346,7 +346,44 @@ const Checkout = () => {
       return;
     }
 
-    // Store checkout data in sessionStorage for PayU callback
+    // ── Cash on Delivery branch ──
+    if (paymentMethod === 'cod') {
+      if (!codEligibility.eligible) {
+        toast.error(codEligibility.reason || 'Cash on Delivery is not available for this order.');
+        return;
+      }
+      try {
+        setIsPlacingOrder(true);
+        const order = await createOrder({
+          userId: user.id,
+          items: items.map(item => ({
+            product_id: item.id,
+            product_name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            size: item.size,
+            color: item.color,
+            image: item.image,
+          })),
+          subtotal: totalPrice,
+          shippingCost,
+          codFee,
+          total: finalTotal,
+          shippingAddress: addressForm,
+          paymentMethod: 'Cash on Delivery',
+        });
+        toast.success('Order placed — pay on delivery.');
+        navigateToConfirmation(order.order_number);
+      } catch (error) {
+        console.error('Failed to create COD order:', error);
+        toast.error('We could not place your order. Please try again.');
+      } finally {
+        setIsPlacingOrder(false);
+      }
+      return;
+    }
+
+    // ── PayU (online) branch ──
     sessionStorage.setItem('payu_checkout', JSON.stringify({
       items: items.map(item => ({
         product_id: item.id,
@@ -364,9 +401,6 @@ const Checkout = () => {
       isBuyNow,
     }));
 
-    // Initiate PayU payment — checkout payload is persisted server-side
-    // by payu-hash so order can be created via webhook even if browser
-    // session is lost.
     const checkoutItems = items.map(item => ({
       product_id: item.id,
       product_name: item.name,
