@@ -510,14 +510,17 @@ const TrackOrder = () => {
           )}
 
           {/* Refund info (return / refund flow) */}
-          {(isReturnFlow || isRefundDone) &&
-            (order.refund_amount != null || order.refund_eta || order.refund_processed_at) && (
-              <section className="bg-card border-b border-border px-4 py-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <IndianRupee size={18} className="text-success" />
-                  <h2 className="font-bold text-base">Refund Details</h2>
-                </div>
-                <div className="grid grid-cols-2 gap-3 text-sm">
+          {(isReturnFlow || status === 'picked_up' || isRefundDone) && (
+            <section className="bg-card border-b border-border px-4 py-4">
+              <div className="flex items-center gap-2 mb-3">
+                <IndianRupee size={18} className="text-success" />
+                <h2 className="font-bold text-base">Refund Status</h2>
+              </div>
+
+              <RefundTimeline order={order} />
+
+              {(order.refund_amount != null || order.refund_eta || order.refund_processed_at) && (
+                <div className="grid grid-cols-2 gap-3 text-sm mt-4">
                   {order.refund_amount != null && (
                     <div className="bg-secondary/40 rounded-md p-3">
                       <p className="text-xs text-muted-foreground mb-1">Refund Amount</p>
@@ -535,13 +538,14 @@ const TrackOrder = () => {
                     </p>
                   </div>
                 </div>
-                {!isRefundDone && order.refund_eta && (
-                  <p className="text-[11px] text-muted-foreground mt-3">
-                    Refunds usually reflect in 5–7 business days after pickup.
-                  </p>
-                )}
-              </section>
-            )}
+              )}
+              {!isRefundDone && (
+                <p className="text-[11px] text-muted-foreground mt-3">
+                  Refunds usually reflect in 5–7 business days after the package is picked up. You'll get a notification at every step.
+                </p>
+              )}
+            </section>
+          )}
 
           {/* Return rejection */}
           {isReturnRejected && (
