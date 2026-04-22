@@ -23,6 +23,13 @@ interface PaymentDetails {
   customerPhone?: string;
   description?: string;
   orderId?: string;
+  // Payment-method hint forwarded to PayU so its hosted page pre-selects
+  // the user's chosen option (UPI app / card / netbanking / wallet).
+  // pg: 'UPI' | 'CC' | 'DC' | 'NB' | 'CASH' | 'WALLET'
+  // bankcode: e.g. 'TEZ' (GPay), 'PHONEPE', 'PAYTM', 'AMAZONPAY', 'BHIM',
+  //           'UPI' (generic), 'PAYTMW', 'MOBIKWIK', etc.
+  pg?: string;
+  bankcode?: string;
   // Server-side persisted checkout payload (so order can be created via webhook
   // even if the browser session is lost during the PayU redirect).
   checkout?: {
