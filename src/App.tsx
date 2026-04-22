@@ -32,6 +32,7 @@ import Settings from "./pages/Settings";
 import Payments from "./pages/Payments";
 import Notifications from "./pages/Notifications";
 import PayUCallback from "./pages/PayUCallback";
+import Coupons from "./pages/Coupons";
 import NotFound from "./pages/NotFound";
 import VisitorTracker from "./components/VisitorTracker";
 import BottomNav from "./components/BottomNav";
