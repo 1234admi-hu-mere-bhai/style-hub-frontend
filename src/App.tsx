@@ -32,6 +32,7 @@ import Settings from "./pages/Settings";
 import Payments from "./pages/Payments";
 import Notifications from "./pages/Notifications";
 import PayUCallback from "./pages/PayUCallback";
+import Coupons from "./pages/Coupons";
 import NotFound from "./pages/NotFound";
 import VisitorTracker from "./components/VisitorTracker";
 import BottomNav from "./components/BottomNav";
@@ -74,6 +75,7 @@ const AppContent = () => {
         <Route path="/payments" element={<Payments />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/payu-callback" element={<PayUCallback />} />
+        <Route path="/coupons" element={<Coupons />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
