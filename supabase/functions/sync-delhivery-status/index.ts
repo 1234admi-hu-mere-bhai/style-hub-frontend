@@ -97,6 +97,40 @@ Deno.serve(async (req) => {
             .update({ status: 'picked_up', updated_at: new Date().toISOString() })
             .eq('id', order.id);
 
+          // Get order_number + user_id for notifications
+          const { data: notifOrder } = await serviceClient
+            .from('orders')
+            .select('order_number, user_id')
+            .eq('id', order.id)
+            .maybeSingle();
+
+          // Notify user that pickup happened
+          if (notifOrder?.user_id) {
+            try {
+              await serviceClient.from('notifications').insert({
+                title: 'Package Picked Up 📦',
+                message: `Your return for order ${notifOrder.order_number} has been picked up by our courier. Refund is being processed to your original payment method.`,
+                type: 'order',
+                user_id: notifOrder.user_id,
+              });
+            } catch (e) {
+              console.error('pickup notification insert failed:', e);
+            }
+            try {
+              await serviceClient.functions.invoke('send-push', {
+                body: {
+                  userId: notifOrder.user_id,
+                  title: 'Package Picked Up 📦',
+                  message: `Return for order ${notifOrder.order_number} collected. Refund being processed.`,
+                  url: `/track-order?id=${notifOrder.order_number}`,
+                  tag: `pickup-${order.id}`,
+                },
+              });
+            } catch (e) {
+              console.error('pickup push failed:', e);
+            }
+          }
+
           // Fire-and-forget refund (idempotent on the function side)
           try {
             await serviceClient.functions.invoke('payu-refund', {
