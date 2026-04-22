@@ -1185,39 +1185,10 @@ const Checkout = () => {
                 {/* Savings Corner (top) */}
                 <div className="space-y-3">
                   {allFlashSaleItems ? (
-                    <>
                     <div className="flex items-center gap-2 p-3 bg-accent/10 rounded-lg border border-accent/30">
                       <Zap size={16} className="text-accent" />
                       <span className="text-sm font-medium text-foreground">⚡ Flash Sale discount applied — coupons not available</span>
                     </div>
-                    {availableCoupons.length > 0 && (
-                      <div className="space-y-2 opacity-60">
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Available Offers</p>
-                        {availableCoupons.map((coupon) => (
-                          <div key={coupon.id} className="border border-border rounded-lg overflow-hidden">
-                            <div className="flex">
-                              <div className="w-16 bg-muted flex items-center justify-center shrink-0">
-                                <span className="text-[10px] font-bold text-muted-foreground -rotate-90 whitespace-nowrap">
-                                  {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% OFF` : `₹${coupon.discount_value} OFF`}
-                                </span>
-                              </div>
-                              <div className="flex-1 p-3">
-                                <div className="flex items-center justify-between">
-                                  <span className="font-bold text-sm">{coupon.code}</span>
-                                  <span className="text-xs font-semibold text-muted-foreground cursor-not-allowed">APPLY</span>
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {coupon.discount_type === 'percentage'
-                                    ? `Flat ${coupon.discount_value}% off on orders above ₹${coupon.min_order_value || 0}`
-                                    : `Flat ₹${coupon.discount_value} off on orders above ₹${coupon.min_order_value || 0}`}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    </>
                   ) : appliedCoupon ? (
                     <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg border border-success/30">
                       <div className="flex items-center gap-2">
@@ -1227,96 +1198,35 @@ const Checkout = () => {
                       <button onClick={removeCoupon} className="text-xs text-destructive hover:underline">Remove</button>
                     </div>
                   ) : (
-                    <>
-                      <button
-                        onClick={() => setSavingsOpen(!savingsOpen)}
-                        className="w-full flex items-center justify-between p-3 bg-secondary/50 rounded-lg hover:bg-secondary transition-colors"
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Tag size={16} className="text-primary" />
+                        <h3 className="font-semibold text-sm">Have a coupon code?</h3>
+                      </div>
+                      <div className="flex gap-2 items-stretch">
+                        <Input
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                          placeholder="Enter coupon code"
+                          className="flex-1 text-sm uppercase bg-background border-2 border-primary/40 focus-visible:border-primary placeholder:text-muted-foreground"
+                        />
+                        <Button
+                          size="default"
+                          onClick={() => handleApplyCoupon()}
+                          disabled={couponLoading}
+                          className="shrink-0 h-12 px-5"
+                        >
+                          {couponLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'APPLY'}
+                        </Button>
+                      </div>
+                      <Link
+                        to="/coupons"
+                        className="flex items-center justify-center gap-1 text-xs font-semibold text-primary hover:underline pt-1"
                       >
-                        <div className="flex items-center gap-2">
-                          <Tag size={16} className="text-primary" />
-                          <span className="text-sm font-medium">Apply Coupon</span>
-                        </div>
-                        <ChevronDown size={16} className={`text-muted-foreground transition-transform ${savingsOpen ? 'rotate-180' : ''}`} />
-                      </button>
-
-                      {savingsOpen && (
-                        <div className="space-y-3 animate-fade-in">
-                          <div className="flex gap-2 items-stretch">
-                            <Input
-                              value={couponCode}
-                              onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                              placeholder="Enter Coupon Code"
-                              className="flex-1 text-sm uppercase bg-background border-2 border-primary/40 focus-visible:border-primary placeholder:text-muted-foreground"
-                            />
-                            <Button
-                              size="default"
-                              onClick={() => handleApplyCoupon()}
-                              disabled={couponLoading}
-                              className="shrink-0 h-12 px-5"
-                            >
-                              {couponLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'APPLY'}
-                            </Button>
-                          </div>
-
-                          {availableCoupons.length > 0 && (
-                            <div className="space-y-2">
-                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Available Offers</p>
-                              {availableCoupons.map((coupon) => {
-                                const amountNeeded = getAmountNeeded(coupon);
-                                const isEligible = amountNeeded === 0;
-                                return (
-                                  <div key={coupon.id} className="border border-border rounded-lg overflow-hidden">
-                                    <div className="flex">
-                                      <div className="w-16 bg-muted flex items-center justify-center shrink-0">
-                                        <span className="text-[10px] font-bold text-muted-foreground -rotate-90 whitespace-nowrap">
-                                          {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% OFF` : `₹${coupon.discount_value} OFF`}
-                                        </span>
-                                      </div>
-                                      <div className="flex-1 p-3">
-                                        <div className="flex items-center justify-between">
-                                          <span className="font-bold text-sm">{coupon.code}</span>
-                                          <button
-                                            onClick={() => isEligible ? handleApplyCoupon(coupon.code) : null}
-                                            disabled={!isEligible || couponLoading}
-                                            className={`text-xs font-semibold ${isEligible ? 'text-primary hover:underline cursor-pointer' : 'text-muted-foreground cursor-not-allowed'}`}
-                                          >
-                                            APPLY
-                                          </button>
-                                        </div>
-                                        {!isEligible && (
-                                          <p className="text-xs text-primary mt-1">Add ₹{amountNeeded} more to avail this offer</p>
-                                        )}
-                                        {isEligible && (
-                                          <p className="text-xs text-success mt-1">You save ₹{getCouponSavings(coupon)}!</p>
-                                        )}
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                          {coupon.discount_type === 'percentage'
-                                            ? `Get FLAT ${coupon.discount_value}% off on orders above ₹${coupon.min_order_value || 0}`
-                                            : `Use code ${coupon.code} & get Flat ₹${coupon.discount_value} off on orders above ₹${coupon.min_order_value || 0}`}
-                                        </p>
-                                        {expandedCoupon === coupon.id && (
-                                          <div className="mt-2 pt-2 border-t border-dashed border-border text-xs text-muted-foreground space-y-1">
-                                            <p>• Only one coupon can be applied per order</p>
-                                            {coupon.min_order_value > 0 && <p>• Minimum order value: ₹{coupon.min_order_value}</p>}
-                                            {coupon.expires_at && <p>• Valid till: {new Date(coupon.expires_at).toLocaleDateString()}</p>}
-                                          </div>
-                                        )}
-                                        <button
-                                          onClick={() => setExpandedCoupon(expandedCoupon === coupon.id ? null : coupon.id)}
-                                          className="text-xs font-semibold text-foreground mt-1 hover:underline"
-                                        >
-                                          {expandedCoupon === coupon.id ? '- LESS' : '+ MORE'}
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </>
+                        View all coupons
+                        <ChevronRight size={14} />
+                      </Link>
+                    </div>
                   )}
                 </div>
 
