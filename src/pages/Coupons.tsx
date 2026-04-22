@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Tag, Loader2, Copy, Check, Sparkles } from 'lucide-react';
+import { ArrowLeft, Loader2, Copy, Check, Sparkles, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -19,8 +19,25 @@ const Coupons = () => {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [appliedCode, setAppliedCode] = useState<string | null>(null);
+
+  // Load currently applied coupon from localStorage (set by Checkout)
+  const refreshApplied = () => {
+    try {
+      const saved = localStorage.getItem('applied-coupon');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setAppliedCode(parsed?.code ?? null);
+      } else {
+        setAppliedCode(null);
+      }
+    } catch {
+      setAppliedCode(null);
+    }
+  };
 
   useEffect(() => {
+    refreshApplied();
     const fetchCoupons = async () => {
       setLoading(true);
       const { data } = await supabase
@@ -45,6 +62,12 @@ const Coupons = () => {
     navigate(`/checkout?coupon=${encodeURIComponent(code)}`);
   };
 
+  const handleRemove = (code: string) => {
+    localStorage.removeItem('applied-coupon');
+    setAppliedCode(null);
+    toast.info(`Coupon "${code}" removed.`);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -59,7 +82,9 @@ const Coupons = () => {
           </button>
           <div>
             <h1 className="font-serif text-lg font-bold leading-tight">Coupons & Offers</h1>
-            <p className="text-xs text-muted-foreground">Tap Apply to use at checkout</p>
+            <p className="text-xs text-muted-foreground">
+              {appliedCode ? `${appliedCode} is currently applied` : 'Tap Apply to use at checkout'}
+            </p>
           </div>
         </div>
       </header>
@@ -78,16 +103,23 @@ const Coupons = () => {
         ) : (
           <div className="space-y-3">
             {coupons.map((c) => {
+              const isApplied = appliedCode === c.code;
               const expiresSoon = c.expires_at && new Date(c.expires_at) > new Date();
               return (
                 <div
                   key={c.id}
-                  className="border-2 border-border rounded-2xl overflow-hidden bg-card hover:border-primary/40 transition-colors"
+                  className={`border-2 rounded-2xl overflow-hidden bg-card transition-colors ${
+                    isApplied ? 'border-success/60 bg-success/5' : 'border-border hover:border-primary/40'
+                  }`}
                 >
                   <div className="flex">
                     {/* Discount badge column */}
-                    <div className="w-20 bg-primary/10 flex items-center justify-center shrink-0 border-r-2 border-dashed border-border">
-                      <span className="text-xs font-bold text-primary -rotate-90 whitespace-nowrap tracking-wide">
+                    <div className={`w-20 flex items-center justify-center shrink-0 border-r-2 border-dashed border-border ${
+                      isApplied ? 'bg-success/10' : 'bg-primary/10'
+                    }`}>
+                      <span className={`text-xs font-bold -rotate-90 whitespace-nowrap tracking-wide ${
+                        isApplied ? 'text-success' : 'text-primary'
+                      }`}>
                         {c.discount_type === 'percentage'
                           ? `${c.discount_value}% OFF`
                           : `₹${c.discount_value} OFF`}
@@ -104,6 +136,11 @@ const Coupons = () => {
                             aria-label={`Copy code ${c.code}`}
                           >
                             <span className="font-mono font-bold text-base">{c.code}</span>
+                            {isApplied && (
+                              <span className="text-[10px] font-bold text-success bg-success/15 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
+                                Applied
+                              </span>
+                            )}
                             {copiedCode === c.code ? (
                               <Check size={14} className="text-success" />
                             ) : (
@@ -125,13 +162,25 @@ const Coupons = () => {
                           )}
                         </div>
 
-                        <Button
-                          size="sm"
-                          onClick={() => handleApply(c.code)}
-                          className="shrink-0 rounded-full px-4"
-                        >
-                          APPLY
-                        </Button>
+                        {isApplied ? (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleRemove(c.code)}
+                            className="shrink-0 rounded-full px-3 gap-1 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          >
+                            <X size={14} />
+                            REMOVE
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            onClick={() => handleApply(c.code)}
+                            className="shrink-0 rounded-full px-4"
+                          >
+                            APPLY
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </div>
