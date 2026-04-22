@@ -60,6 +60,7 @@ const Checkout = () => {
   const items = isBuyNow ? [buyNowItem!] : cartItems;
   const totalPrice = isBuyNow ? buyNowItem!.price * buyNowItem!.quantity : cartTotalPrice;
   const [paymentMethod, setPaymentMethod] = useState<'online' | 'cod'>('online');
+  const [onlineSubMethod, setOnlineSubMethod] = useState<PaymentSubMethod | null>(null);
   const [step, setStep] = useState<'address' | 'payment' | 'summary'>('address');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [showPriceDetails, setShowPriceDetails] = useState(false);
