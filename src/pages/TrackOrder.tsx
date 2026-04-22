@@ -130,6 +130,9 @@ const TrackOrder = () => {
   const [submittingReturn, setSubmittingReturn] = useState(false);
   const [submittingReplacement, setSubmittingReplacement] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [refundHelpOpen, setRefundHelpOpen] = useState(false);
+  const [refundMessage, setRefundMessage] = useState('');
+  const [submittingRefundHelp, setSubmittingRefundHelp] = useState(false);
   const [showFullTimeline, setShowFullTimeline] = useState(false);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
 
@@ -544,6 +547,25 @@ const TrackOrder = () => {
                   Refunds usually reflect in 5–7 business days after the package is picked up. You'll get a notification at every step.
                 </p>
               )}
+
+              {/* Refund-specific help */}
+              <div className="mt-4 pt-4 border-t border-border flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-bold">Need help with this refund?</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Chat with us or send a message — we usually reply within 1 hour.
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full shrink-0"
+                  onClick={() => setRefundHelpOpen(true)}
+                >
+                  <PhoneCall size={14} className="mr-1.5" />
+                  Get Help
+                </Button>
+              </div>
             </section>
           )}
 
@@ -732,6 +754,88 @@ const TrackOrder = () => {
               </Button>
               <Button asChild variant="ghost" className="w-full justify-start">
                 <Link to="/contact">View Contact Page</Link>
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Refund-specific help dialog */}
+        <Dialog
+          open={refundHelpOpen}
+          onOpenChange={(open) => {
+            setRefundHelpOpen(open);
+            if (!open) setRefundMessage('');
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Refund Help</DialogTitle>
+              <DialogDescription>
+                Tell us what's wrong with your refund for order #{order.order_number}. Our team will respond as soon as possible.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-3">
+              {/* Quick chat / call buttons */}
+              <Button asChild className="w-full justify-start">
+                <a
+                  href={`https://wa.me/919136354192?text=${encodeURIComponent(
+                    `Hi MUFFIGOUT support, I need help with my refund for order #${order.order_number}.\nCurrent status: ${order.status.replace(/_/g, ' ')}\nRefund amount: ₹${(order.refund_amount ?? order.total).toLocaleString('en-IN')}\n\nIssue: `,
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <PhoneCall size={16} className="mr-2" /> Chat on WhatsApp
+                </a>
+              </Button>
+              <Button asChild variant="outline" className="w-full justify-start">
+                <a href="tel:+919136354192">
+                  <PhoneCall size={16} className="mr-2" /> Call Support
+                </a>
+              </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
+                <div className="relative flex justify-center text-[11px] uppercase tracking-wide">
+                  <span className="bg-background px-2 text-muted-foreground">or send a message</span>
+                </div>
+              </div>
+
+              {/* Inline contact form */}
+              <Textarea
+                placeholder="Describe the issue (e.g. refund not received, wrong amount, taking too long)..."
+                value={refundMessage}
+                onChange={(e) => setRefundMessage(e.target.value)}
+                rows={4}
+              />
+              <Button
+                className="w-full"
+                disabled={refundMessage.trim().length < 5 || submittingRefundHelp}
+                onClick={async () => {
+                  if (!user) return;
+                  setSubmittingRefundHelp(true);
+                  try {
+                    const ctx = `[Refund Help — Order #${order.order_number} | Status: ${order.status} | Amount: ₹${(order.refund_amount ?? order.total).toLocaleString('en-IN')}]\n\n${refundMessage.trim()}`;
+                    const { error } = await supabase.from('chat_messages').insert({
+                      user_id: user.id,
+                      role: 'user',
+                      content: ctx,
+                    });
+                    if (error) throw error;
+                    toast.success('Message sent. Our support team will reach out shortly.');
+                    setRefundHelpOpen(false);
+                    setRefundMessage('');
+                  } catch (err: any) {
+                    toast.error(err.message || 'Failed to send message. Try WhatsApp instead.');
+                  } finally {
+                    setSubmittingRefundHelp(false);
+                  }
+                }}
+              >
+                {submittingRefundHelp ? (
+                  <Loader2 size={16} className="mr-2 animate-spin" />
+                ) : null}
+                Send Message
               </Button>
             </div>
           </DialogContent>
