@@ -58,7 +58,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="relative overflow-hidden bg-secondary rounded-lg aspect-[3/4]">
+      <div className="relative overflow-hidden bg-secondary rounded-none lg:rounded-lg aspect-[3/4]">
         <img
           src={product.images[0]}
           alt={product.name}
@@ -92,7 +92,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
       </div>
 
-      <div className="mt-4 space-y-1">
+      <div className="mt-2 lg:mt-4 px-2 lg:px-0 pb-2 lg:pb-0 space-y-1">
         {product.reviews > 0 && (
           <div className="flex items-center gap-1">
             <Star size={14} className="fill-gold text-gold" />
