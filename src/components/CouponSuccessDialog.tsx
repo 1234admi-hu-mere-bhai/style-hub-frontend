@@ -21,10 +21,7 @@ const CouponSuccessDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent
-        className="max-w-sm rounded-3xl border-0 p-0 bg-card overflow-visible"
-        showCloseButton
-      >
+      <DialogContent className="max-w-sm rounded-3xl border-0 p-0 bg-card overflow-visible">
         {/* Floating badge */}
         <div className="absolute left-1/2 -translate-x-1/2 -top-8 z-10">
           <div className="relative h-16 w-16 flex items-center justify-center">
