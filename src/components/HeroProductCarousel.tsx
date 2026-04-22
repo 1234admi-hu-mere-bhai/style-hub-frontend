@@ -50,7 +50,7 @@ const HeroProductCarousel = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-xl animate-slide-up">
             <span className="inline-block badge-new mb-4 rounded-full px-4 py-1.5">
-              NEW COLLECTION
+              NEW SEASON
             </span>
             <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-4">
               Crafted with Trust,
@@ -61,7 +61,7 @@ const HeroProductCarousel = () => {
             {/* Current product info */}
             {currentProduct && (
               <div className="mb-6 p-4 rounded-xl bg-background/60 backdrop-blur-sm border border-border/50 inline-block">
-                <p className="text-sm text-muted-foreground mb-1">Now Showing</p>
+                <p className="text-sm text-muted-foreground mb-1">Featured</p>
                 <h3 className="font-semibold text-lg text-foreground">{currentProduct.name}</h3>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="font-bold text-primary text-lg">₹{currentProduct.price.toLocaleString()}</span>
@@ -80,7 +80,7 @@ const HeroProductCarousel = () => {
             <div className="flex flex-wrap gap-4">
               <Button size="lg" asChild className="group">
                 <Link to={currentProduct ? `/product/${currentProduct.id}` : '/products'}>
-                  Shop Now
+                  Shop the Collection
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
