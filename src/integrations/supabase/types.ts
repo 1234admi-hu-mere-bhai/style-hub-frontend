@@ -738,45 +738,12 @@ export type Database = {
         }
         Relationships: []
       }
-      wallet_credits: {
-        Row: {
-          amount: number
-          created_at: string
-          description: string | null
-          id: string
-          order_id: string | null
-          return_id: string | null
-          type: string
-          user_id: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          description?: string | null
-          id?: string
-          order_id?: string | null
-          return_id?: string | null
-          type: string
-          user_id: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          description?: string | null
-          id?: string
-          order_id?: string | null
-          return_id?: string | null
-          type?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      get_wallet_balance: { Args: { p_user_id: string }; Returns: number }
+      get_email_by_phone: { Args: { p_phone: string }; Returns: string }
       is_owner_of_order: { Args: { order_id: string }; Returns: boolean }
     }
     Enums: {
