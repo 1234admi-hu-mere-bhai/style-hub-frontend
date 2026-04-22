@@ -85,6 +85,19 @@ const Checkout = () => {
       localStorage.removeItem('applied-coupon');
     }
   }, [appliedCoupon]);
+
+  // Sync if coupon was removed from /coupons page (on tab focus / navigation back)
+  useEffect(() => {
+    const sync = () => {
+      const saved = localStorage.getItem('applied-coupon');
+      if (!saved && appliedCoupon) {
+        setAppliedCoupon(null);
+        setCouponCode('');
+      }
+    };
+    window.addEventListener('focus', sync);
+    return () => window.removeEventListener('focus', sync);
+  }, [appliedCoupon]);
   
   // Saved addresses
   const { addresses: savedAddresses, setAddresses: setSavedAddresses } = useAddresses();
