@@ -1,4 +1,11 @@
 import { Smartphone, CreditCard, Building2, Wallet, ChevronRight } from 'lucide-react';
+import gpayLogo from '@/assets/payment-logos/gpay.svg';
+import phonepeLogo from '@/assets/payment-logos/phonepe.svg';
+import paytmLogo from '@/assets/payment-logos/paytm.svg';
+import bhimLogo from '@/assets/payment-logos/bhim.svg';
+import upiLogo from '@/assets/payment-logos/upi.svg';
+import amazonpayLogo from '@/assets/payment-logos/amazonpay.svg';
+import mobikwikLogo from '@/assets/payment-logos/mobikwik.svg';
 
 export type PaymentSubMethod = {
   id: string;
@@ -24,6 +31,20 @@ const WALLETS: PaymentSubMethod[] = [
   { id: 'amazonpay', label: 'Amazon Pay', pg: 'WALLET', bankcode: 'AMZNPAYW', category: 'wallet' },
 ];
 
+const UPI_LOGOS: Record<string, string> = {
+  gpay: gpayLogo,
+  phonepe: phonepeLogo,
+  'paytm-upi': paytmLogo,
+  bhim: bhimLogo,
+  'upi-other': upiLogo,
+};
+
+const WALLET_LOGOS: Record<string, string> = {
+  'paytm-wallet': paytmLogo,
+  mobikwik: mobikwikLogo,
+  amazonpay: amazonpayLogo,
+};
+
 interface Props {
   selectedId: string | null;
   onSelect: (method: PaymentSubMethod) => void;
@@ -44,12 +65,9 @@ const Tile = ({ active, onClick, children }: { active: boolean; onClick: () => v
   </button>
 );
 
-const Letter = ({ char, color }: { char: string; color: string }) => (
-  <div
-    className="w-10 h-10 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center text-white font-bold text-base sm:text-sm shrink-0"
-    style={{ background: color }}
-  >
-    {char}
+const LogoBox = ({ src, alt }: { src: string; alt: string }) => (
+  <div className="w-12 h-12 sm:w-11 sm:h-11 rounded-lg bg-white border border-border flex items-center justify-center shrink-0 overflow-hidden p-1.5">
+    <img src={src} alt={alt} className="max-w-full max-h-full object-contain" loading="lazy" />
   </div>
 );
 
@@ -66,31 +84,19 @@ export const PaymentMethodPicker = ({ selectedId, onSelect }: Props) => {
           <span className="text-[10px] font-bold px-1.5 py-0.5 bg-primary/10 text-primary rounded">RECOMMENDED</span>
         </div>
         <div className="space-y-2">
-          {UPI_APPS.map((app) => {
-            const colors: Record<string, string> = {
-              gpay: 'linear-gradient(135deg, #4285F4, #34A853)',
-              phonepe: '#5F259F',
-              'paytm-upi': '#00BAF2',
-              bhim: '#F7941D',
-              'upi-other': 'hsl(var(--muted-foreground))',
-            };
-            const initials: Record<string, string> = {
-              gpay: 'G', phonepe: 'Pe', 'paytm-upi': 'P', bhim: 'B', 'upi-other': '⋯',
-            };
-            return (
-              <Tile key={app.id} active={selectedId === app.id} onClick={() => onSelect(app)}>
-                <div className="flex items-center gap-3">
-                  <Letter char={initials[app.id]} color={colors[app.id]} />
-                  <div>
-                    <p className="font-semibold text-sm">{app.label}</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {app.id === 'upi-other' ? 'Choose from any installed UPI app' : 'Pay via UPI app'}
-                    </p>
-                  </div>
+          {UPI_APPS.map((app) => (
+            <Tile key={app.id} active={selectedId === app.id} onClick={() => onSelect(app)}>
+              <div className="flex items-center gap-3">
+                <LogoBox src={UPI_LOGOS[app.id]} alt={app.label} />
+                <div>
+                  <p className="font-semibold text-sm">{app.label}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {app.id === 'upi-other' ? 'Choose from any installed UPI app' : 'Pay via UPI app'}
+                  </p>
                 </div>
-              </Tile>
-            );
-          })}
+              </div>
+            </Tile>
+          ))}
         </div>
       </div>
 
@@ -107,8 +113,8 @@ export const PaymentMethodPicker = ({ selectedId, onSelect }: Props) => {
           onClick={() => onSelect({ id: 'card', label: 'Credit / Debit Card', pg: 'CC', category: 'card' })}
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shrink-0">
-              <CreditCard size={18} className="text-white" />
+            <div className="w-12 h-12 sm:w-11 sm:h-11 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shrink-0">
+              <CreditCard size={22} className="text-white" />
             </div>
             <div>
               <p className="font-semibold text-sm">Credit / Debit Card</p>
@@ -131,8 +137,8 @@ export const PaymentMethodPicker = ({ selectedId, onSelect }: Props) => {
           onClick={() => onSelect({ id: 'netbanking', label: 'Net Banking', pg: 'NB', category: 'netbanking' })}
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shrink-0">
-              <Building2 size={18} className="text-white" />
+            <div className="w-12 h-12 sm:w-11 sm:h-11 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shrink-0">
+              <Building2 size={22} className="text-white" />
             </div>
             <div>
               <p className="font-semibold text-sm">All Indian Banks</p>
@@ -151,27 +157,17 @@ export const PaymentMethodPicker = ({ selectedId, onSelect }: Props) => {
           </h4>
         </div>
         <div className="space-y-2">
-          {WALLETS.map((w) => {
-            const colors: Record<string, string> = {
-              'paytm-wallet': '#00BAF2',
-              mobikwik: '#2A2A72',
-              amazonpay: '#FF9900',
-            };
-            const initials: Record<string, string> = {
-              'paytm-wallet': 'P', mobikwik: 'M', amazonpay: 'a',
-            };
-            return (
-              <Tile key={w.id} active={selectedId === w.id} onClick={() => onSelect(w)}>
-                <div className="flex items-center gap-3">
-                  <Letter char={initials[w.id]} color={colors[w.id]} />
-                  <div>
-                    <p className="font-semibold text-sm">{w.label}</p>
-                    <p className="text-[11px] text-muted-foreground">Pay from wallet balance</p>
-                  </div>
+          {WALLETS.map((w) => (
+            <Tile key={w.id} active={selectedId === w.id} onClick={() => onSelect(w)}>
+              <div className="flex items-center gap-3">
+                <LogoBox src={WALLET_LOGOS[w.id]} alt={w.label} />
+                <div>
+                  <p className="font-semibold text-sm">{w.label}</p>
+                  <p className="text-[11px] text-muted-foreground">Pay from wallet balance</p>
                 </div>
-              </Tile>
-            );
-          })}
+              </div>
+            </Tile>
+          ))}
         </div>
       </div>
 
