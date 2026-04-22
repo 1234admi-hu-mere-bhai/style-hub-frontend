@@ -308,6 +308,7 @@ const Checkout = () => {
       paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment (PayU)',
     };
     if (isBuyNow) { setBuyNowItem(null); } else { clearCart(); }
+    setAppliedCoupon(null);
     navigate('/order-confirmation', { state: orderDetails });
   };
 
