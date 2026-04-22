@@ -279,8 +279,9 @@ const Checkout = () => {
       })),
       total: finalTotal,
       shippingCost,
+      codFee,
       address: addressForm,
-      paymentMethod: 'Online Payment (PayU)',
+      paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment (PayU)',
     };
     if (isBuyNow) { setBuyNowItem(null); } else { clearCart(); }
     navigate('/order-confirmation', { state: orderDetails });
