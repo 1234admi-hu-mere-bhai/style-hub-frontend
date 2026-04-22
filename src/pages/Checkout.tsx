@@ -76,6 +76,7 @@ const Checkout = () => {
     } catch { return null; }
   });
   const [couponLoading, setCouponLoading] = useState(false);
+  const [couponSuccess, setCouponSuccess] = useState<{ code: string; saved: number; note?: string } | null>(null);
   const autoApplyAttempted = useRef(false);
 
   // Persist applied coupon so /coupons page knows what's active
