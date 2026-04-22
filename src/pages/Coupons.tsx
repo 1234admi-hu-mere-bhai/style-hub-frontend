@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, Copy, Check, Sparkles, X } from 'lucide-react';
+import { ArrowLeft, Loader2, BadgePercent, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 
 interface Coupon {
@@ -18,19 +19,13 @@ const Coupons = () => {
   const navigate = useNavigate();
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [appliedCode, setAppliedCode] = useState<string | null>(null);
+  const [manualCode, setManualCode] = useState('');
 
-  // Load currently applied coupon from localStorage (set by Checkout)
   const refreshApplied = () => {
     try {
       const saved = localStorage.getItem('applied-coupon');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setAppliedCode(parsed?.code ?? null);
-      } else {
-        setAppliedCode(null);
-      }
+      setAppliedCode(saved ? JSON.parse(saved)?.code ?? null : null);
     } catch {
       setAppliedCode(null);
     }
@@ -51,15 +46,12 @@ const Coupons = () => {
     fetchCoupons();
   }, []);
 
-  const handleCopy = (code: string) => {
-    navigator.clipboard.writeText(code);
-    setCopiedCode(code);
-    toast.success(`Copied "${code}" to clipboard`);
-    setTimeout(() => setCopiedCode(null), 2000);
-  };
-
-  const handleApply = (code: string) => {
-    navigate(`/checkout?coupon=${encodeURIComponent(code)}`);
+  const goApply = (code: string) => {
+    if (!code.trim()) {
+      toast.error('Please enter a coupon code');
+      return;
+    }
+    navigate(`/checkout?coupon=${encodeURIComponent(code.trim().toUpperCase())}`);
   };
 
   const handleRemove = (code: string) => {
@@ -68,130 +60,153 @@ const Coupons = () => {
     toast.info(`Coupon "${code}" removed.`);
   };
 
+  const formatDiscount = (c: Coupon) =>
+    c.discount_type === 'percentage' ? `${c.discount_value}% OFF` : `₹${c.discount_value} OFF`;
+
+  const describe = (c: Coupon) => {
+    const base =
+      c.discount_type === 'percentage'
+        ? `Flat ${c.discount_value}% discount applied to your order.`
+        : `Flat ₹${c.discount_value} discount applied to your order.`;
+    const min =
+      c.min_order_value && c.min_order_value > 0
+        ? ` Valid on orders above ₹${c.min_order_value}.`
+        : '';
+    return base + min;
+  };
+
+  const best = coupons[0];
+  const others = coupons.slice(1);
+
+  const renderCard = (c: Coupon) => {
+    const isApplied = appliedCode === c.code;
+    return (
+      <div
+        key={c.id}
+        className={`rounded-2xl border bg-card p-4 transition-colors ${
+          isApplied ? 'border-success/50 bg-success/5' : 'border-border'
+        }`}
+      >
+        <div className="flex items-start gap-3">
+          <div
+            className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
+              isApplied ? 'bg-success/15 text-success' : 'bg-secondary text-muted-foreground'
+            }`}
+          >
+            <BadgePercent size={20} />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <h3 className="font-bold text-base leading-tight">{formatDiscount(c)}</h3>
+              <span className="font-mono text-xs text-muted-foreground">· {c.code}</span>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1 leading-snug">{describe(c)}</p>
+            {c.expires_at && (
+              <p className="text-[11px] text-muted-foreground mt-1.5">
+                Valid till{' '}
+                {new Date(c.expires_at).toLocaleDateString('en-IN', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </p>
+            )}
+          </div>
+
+          {isApplied ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleRemove(c.code)}
+              className="shrink-0 font-bold text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              REMOVE
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => goApply(c.code)}
+              className="shrink-0 font-bold text-primary hover:text-primary hover:bg-primary/10"
+            >
+              Apply
+            </Button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-muted/30">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center gap-3">
+      <header className="sticky top-0 z-50 bg-background border-b border-border">
+        <div className="container mx-auto px-4 h-16 flex items-center gap-3 max-w-2xl">
           <button
             onClick={() => navigate(-1)}
-            className="h-10 w-10 rounded-full flex items-center justify-center hover:bg-secondary transition-colors"
+            className="h-10 w-10 -ml-2 rounded-full flex items-center justify-center hover:bg-secondary transition-colors"
             aria-label="Go back"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={22} />
           </button>
-          <div>
-            <h1 className="font-serif text-lg font-bold leading-tight">Coupons & Offers</h1>
-            <p className="text-xs text-muted-foreground">
-              {appliedCode ? `${appliedCode} is currently applied` : 'Tap Apply to use at checkout'}
-            </p>
-          </div>
+          <h1 className="font-serif text-lg font-bold">Save more with coupons</h1>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6 max-w-2xl">
+      <main className="container mx-auto max-w-2xl">
+        {/* Manual code entry bar */}
+        <section className="bg-background px-4 py-4 border-b border-border">
+          <div className="flex items-center rounded-2xl border-2 border-dashed border-border bg-background overflow-hidden">
+            <Input
+              value={manualCode}
+              onChange={(e) => setManualCode(e.target.value.toUpperCase())}
+              placeholder="Enter coupon code"
+              className="h-12 flex-1 border-0 bg-transparent rounded-none px-4 focus-visible:ring-0 focus-visible:border-0 uppercase tracking-wider"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') goApply(manualCode);
+              }}
+            />
+            <button
+              onClick={() => goApply(manualCode)}
+              className="px-4 h-12 font-bold text-sm text-foreground hover:bg-secondary transition-colors whitespace-nowrap"
+            >
+              Add Coupon
+            </button>
+          </div>
+        </section>
+
+        {/* Coupon list */}
         {loading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : coupons.length === 0 ? (
-          <div className="text-center py-16">
+          <div className="text-center py-16 px-4">
             <Sparkles className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-50" />
             <p className="text-muted-foreground">No active coupons right now.</p>
             <p className="text-xs text-muted-foreground mt-1">Check back soon for new offers!</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {coupons.map((c) => {
-              const isApplied = appliedCode === c.code;
-              const expiresSoon = c.expires_at && new Date(c.expires_at) > new Date();
-              return (
-                <div
-                  key={c.id}
-                  className={`border-2 rounded-2xl overflow-hidden bg-card transition-colors ${
-                    isApplied ? 'border-success/60 bg-success/5' : 'border-border hover:border-primary/40'
-                  }`}
-                >
-                  <div className="flex">
-                    {/* Discount badge column */}
-                    <div className={`w-20 flex items-center justify-center shrink-0 border-r-2 border-dashed border-border ${
-                      isApplied ? 'bg-success/10' : 'bg-primary/10'
-                    }`}>
-                      <span className={`text-xs font-bold -rotate-90 whitespace-nowrap tracking-wide ${
-                        isApplied ? 'text-success' : 'text-primary'
-                      }`}>
-                        {c.discount_type === 'percentage'
-                          ? `${c.discount_value}% OFF`
-                          : `₹${c.discount_value} OFF`}
-                      </span>
-                    </div>
+          <>
+            {best && (
+              <section className="px-4 pt-5 pb-2">
+                <h2 className="font-bold text-sm mb-3">Best coupon for you</h2>
+                {renderCard(best)}
+              </section>
+            )}
 
-                    {/* Details column */}
-                    <div className="flex-1 p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <button
-                            onClick={() => handleCopy(c.code)}
-                            className="flex items-center gap-1.5 group"
-                            aria-label={`Copy code ${c.code}`}
-                          >
-                            <span className="font-mono font-bold text-base">{c.code}</span>
-                            {isApplied && (
-                              <span className="text-[10px] font-bold text-success bg-success/15 px-1.5 py-0.5 rounded-full uppercase tracking-wider">
-                                Applied
-                              </span>
-                            )}
-                            {copiedCode === c.code ? (
-                              <Check size={14} className="text-success" />
-                            ) : (
-                              <Copy size={13} className="text-muted-foreground group-hover:text-foreground transition-colors" />
-                            )}
-                          </button>
-                          <p className="text-sm text-muted-foreground mt-1.5">
-                            {c.discount_type === 'percentage'
-                              ? `Flat ${c.discount_value}% off`
-                              : `Flat ₹${c.discount_value} off`}
-                            {c.min_order_value && c.min_order_value > 0
-                              ? ` on orders above ₹${c.min_order_value}`
-                              : ''}
-                          </p>
-                          {expiresSoon && (
-                            <p className="text-[11px] text-muted-foreground mt-1">
-                              Valid till {new Date(c.expires_at!).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            </p>
-                          )}
-                        </div>
+            {others.length > 0 && (
+              <section className="px-4 pt-5 pb-6">
+                <h2 className="font-bold text-sm mb-3">Available coupons</h2>
+                <div className="space-y-3">{others.map(renderCard)}</div>
+              </section>
+            )}
 
-                        {isApplied ? (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleRemove(c.code)}
-                            className="shrink-0 rounded-full px-3 gap-1 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                          >
-                            <X size={14} />
-                            REMOVE
-                          </Button>
-                        ) : (
-                          <Button
-                            size="sm"
-                            onClick={() => handleApply(c.code)}
-                            className="shrink-0 rounded-full px-4"
-                          >
-                            APPLY
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
-            <p className="text-xs text-muted-foreground text-center pt-4 px-4">
+            <p className="text-xs text-muted-foreground text-center pb-8 px-4">
               Only one coupon can be applied per order. Coupons cannot be combined with Flash Sale items.
             </p>
-          </div>
+          </>
         )}
       </main>
     </div>
