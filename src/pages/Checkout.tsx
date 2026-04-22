@@ -226,6 +226,16 @@ const Checkout = () => {
 
   const removeCoupon = () => { setAppliedCoupon(null); setCouponCode(''); toast.info('Coupon removed.'); };
 
+  // Auto-apply coupon if arrived from /coupons page with ?coupon=CODE
+  useEffect(() => {
+    if (autoApplyAttempted.current) return;
+    const codeParam = searchParams.get('coupon');
+    if (codeParam && !appliedCoupon && items.length > 0 && !allFlashSaleItems) {
+      autoApplyAttempted.current = true;
+      handleApplyCoupon(codeParam);
+    }
+  }, [searchParams, appliedCoupon, items.length, allFlashSaleItems, handleApplyCoupon]);
+
   const getCouponSavings = (coupon: any) => {
     const base = hasFlashSaleItems ? nonFlashSaleTotal : totalPrice;
     if (coupon.discount_type === 'percentage') return Math.round(base * (coupon.discount_value / 100));
