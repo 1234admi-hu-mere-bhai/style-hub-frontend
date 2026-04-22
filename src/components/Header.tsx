@@ -119,6 +119,13 @@ const Header = () => {
 
             {/* Right icons */}
             <div className="flex items-center space-x-2 lg:space-x-4">
+              <button
+                onClick={() => setSearchOpen(true)}
+                className="sm:hidden p-2 hover:bg-secondary rounded-full transition-colors"
+                aria-label="Search"
+              >
+                <Search size={20} />
+              </button>
               <NotificationBell />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
