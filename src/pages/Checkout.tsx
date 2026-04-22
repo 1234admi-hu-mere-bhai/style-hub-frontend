@@ -174,7 +174,28 @@ const Checkout = () => {
   // Free shipping if cart contains a ₹1 test product or subtotal ≥ ₹999
   const hasTestItem = items.some(i => i.price <= 1);
   const shippingCost = hasTestItem || totalPrice >= 999 ? 0 : 99;
-  const finalTotal = totalPrice - discountAmount + shippingCost;
+
+  // COD eligibility: subtotal after coupon, no flash items, serviceable pincode
+  const postCouponSubtotal = totalPrice - discountAmount;
+  const codEligibility = useMemo(
+    () =>
+      checkCodEligibility({
+        postCouponSubtotal,
+        hasFlashSaleItems,
+        pincode: addressForm.pincode,
+      }),
+    [postCouponSubtotal, hasFlashSaleItems, addressForm.pincode],
+  );
+
+  // Auto-switch back to online if user picked COD then became ineligible
+  useEffect(() => {
+    if (paymentMethod === 'cod' && !codEligibility.eligible) {
+      setPaymentMethod('online');
+    }
+  }, [codEligibility.eligible, paymentMethod]);
+
+  const codFee = paymentMethod === 'cod' && codEligibility.eligible ? COD_FEE : 0;
+  const finalTotal = totalPrice - discountAmount + shippingCost + codFee;
 
   const handleApplyCoupon = useCallback(async (codeOverride?: string) => {
     if (allFlashSaleItems) { toast.error('Coupons cannot be combined with Flash Sale items.'); return; }
