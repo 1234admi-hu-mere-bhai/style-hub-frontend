@@ -307,7 +307,7 @@ const TrackOrder = () => {
     const isDelivered = status === 'delivered';
     const isCancelled = status === 'cancelled';
     const isRefundDone = status === 'refund_processed';
-    const isReturnFlow = ['return_requested', 'return_approved', 'return_picked_up'].includes(status);
+    const isReturnFlow = ['return_requested', 'return_approved', 'return_picked_up', 'picked_up'].includes(status);
     const isReturnRejected = status === 'return_rejected';
     const isReplacementFlow = status.startsWith('replacement');
     const canCancel = CANCELLABLE_STATUSES.includes(status);
@@ -988,6 +988,101 @@ const StatusBlock = ({
           </button>
         )}
     </section>
+  );
+};
+
+/* ── Refund Timeline (5-step visual progress) ─────────────────────── */
+const RefundTimeline = ({ order }: { order: Order }) => {
+  const status = order.status;
+
+  type StepKey = 'requested' | 'approved' | 'picked_up' | 'initiated' | 'refunded';
+
+  // Determine which step the order has reached
+  const reached: Record<StepKey, boolean> = {
+    requested: ['return_requested', 'return_approved', 'return_picked_up', 'picked_up', 'refund_processed'].includes(status),
+    approved: ['return_approved', 'return_picked_up', 'picked_up', 'refund_processed'].includes(status),
+    picked_up: ['return_picked_up', 'picked_up', 'refund_processed'].includes(status),
+    initiated: ['picked_up', 'refund_processed'].includes(status),
+    refunded: status === 'refund_processed',
+  };
+
+  // Best-effort timestamps
+  const ts: Record<StepKey, string | null> = {
+    requested: order.created_at, // request submitted (close enough — created_at of return)
+    approved: order.refund_eta ? null : null, // we don't track approval time separately
+    picked_up: null,
+    initiated: null,
+    refunded: order.refund_processed_at,
+  };
+
+  const steps: { key: StepKey; label: string; sub: string }[] = [
+    { key: 'requested', label: 'Return Requested', sub: 'We received your request' },
+    { key: 'approved', label: 'Return Approved', sub: 'Pickup will be scheduled' },
+    { key: 'picked_up', label: 'Package Picked Up', sub: 'Courier collected the package' },
+    { key: 'initiated', label: 'Refund Initiated', sub: 'Sent to your bank/PayU' },
+    { key: 'refunded', label: 'Refund Completed', sub: 'Money credited to source' },
+  ];
+
+  const formatStepDate = (iso: string | null) =>
+    iso
+      ? new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+      : '';
+
+  return (
+    <ol className="relative">
+      {steps.map((step, idx) => {
+        const isReached = reached[step.key];
+        const isCurrent =
+          isReached &&
+          (idx === steps.length - 1 || !reached[steps[idx + 1].key]);
+        const isLast = idx === steps.length - 1;
+        const date = formatStepDate(ts[step.key]);
+
+        return (
+          <li key={step.key} className="relative pl-8 pb-5 last:pb-0">
+            {/* connector line */}
+            {!isLast && (
+              <span
+                className={`absolute left-[11px] top-5 bottom-0 w-0.5 ${
+                  reached[steps[idx + 1].key] ? 'bg-success' : 'bg-border'
+                }`}
+                aria-hidden="true"
+              />
+            )}
+            {/* dot */}
+            <span
+              className={`absolute left-0 top-1 w-6 h-6 rounded-full flex items-center justify-center ${
+                isReached
+                  ? isCurrent
+                    ? 'bg-primary text-primary-foreground ring-4 ring-primary/20'
+                    : 'bg-success text-primary-foreground'
+                  : 'bg-secondary text-muted-foreground border border-border'
+              }`}
+              aria-hidden="true"
+            >
+              {isReached ? (
+                <CheckCircle2 size={14} />
+              ) : (
+                <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />
+              )}
+            </span>
+            <div className="min-w-0">
+              <p
+                className={`text-sm font-bold leading-tight ${
+                  isReached ? 'text-foreground' : 'text-muted-foreground'
+                }`}
+              >
+                {step.label}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">{step.sub}</p>
+              {isReached && date && (
+                <p className="text-[11px] text-muted-foreground mt-0.5">{date}</p>
+              )}
+            </div>
+          </li>
+        );
+      })}
+    </ol>
   );
 };
 
