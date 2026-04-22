@@ -233,23 +233,23 @@ const Index = () => {
       <FlashSaleBanner />
 
       {/* Categories */}
-      <section className="py-16 lg:py-24">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="font-serif text-3xl lg:text-4xl font-bold mb-4">
+      <section className="py-6 lg:py-16">
+        <div className="px-3 lg:container lg:mx-auto lg:px-4">
+          <div className="text-center mb-4 lg:mb-12">
+            <h2 className="font-serif text-2xl lg:text-4xl font-bold mb-1 lg:mb-4">
               Shop by Category
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
+            <p className="text-xs lg:text-base text-muted-foreground max-w-xl mx-auto">
               Discover our thoughtfully curated men's collection
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 max-w-2xl mx-auto">
+          <div className="grid grid-cols-1 gap-2 lg:gap-6 lg:max-w-2xl lg:mx-auto">
             {categories.map((cat) => (
               <Link
                 key={cat.name}
                 to={cat.href}
-                className="group relative h-[400px] lg:h-[500px] overflow-hidden rounded-lg"
+                className="group relative h-[260px] lg:h-[500px] overflow-hidden rounded-none lg:rounded-lg -mx-3 lg:mx-0"
               >
                 <img
                   src={cat.image}
@@ -271,21 +271,21 @@ const Index = () => {
       </section>
 
       {/* Featured Products */}
-      <section className="py-16 lg:py-24 bg-secondary/30">
-        <div className="container mx-auto px-4">
-          <div className="flex items-end justify-between mb-12">
+      <section className="py-6 lg:py-24 bg-secondary/30">
+        <div className="px-3 lg:container lg:mx-auto lg:px-4">
+          <div className="flex items-end justify-between mb-4 lg:mb-12">
             <div>
-              <h2 className="font-serif text-3xl lg:text-4xl font-bold mb-4">
+              <h2 className="font-serif text-2xl lg:text-4xl font-bold mb-1 lg:mb-4">
                 Featured Products
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-xs lg:text-base text-muted-foreground">
                 A selection of our most-loved styles
               </p>
             </div>
           </div>
 
           {/* Filter Button */}
-          <div className="flex flex-wrap items-center gap-3 mb-8">
+          <div className="flex flex-wrap items-center gap-2 mb-4 lg:mb-8">
             <Sheet open={filterOpen} onOpenChange={handleOpenFilter}>
               <SheetTrigger asChild>
                 <Button variant="outline" className="rounded-full gap-2">
@@ -439,9 +439,9 @@ const Index = () => {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : featuredProducts.length > 0 ? (
-            <div key={`${activeFilter}-${selectedSizes.join()}-${selectedColors.join()}-${priceRange.join()}`} className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            <div key={`${activeFilter}-${selectedSizes.join()}-${selectedColors.join()}-${priceRange.join()}`} className="grid grid-cols-2 lg:grid-cols-4 gap-px lg:gap-6 -mx-3 lg:mx-0 bg-border lg:bg-transparent">
               {featuredProducts.map((product, index) => (
-                <div key={product.id} className="animate-fade-in" style={{ animationDelay: `${index * 60}ms`, animationFillMode: 'backwards' }}>
+                <div key={product.id} className="animate-fade-in bg-background" style={{ animationDelay: `${index * 60}ms`, animationFillMode: 'backwards' }}>
                   <ProductCard product={product} />
                 </div>
               ))}
@@ -454,17 +454,17 @@ const Index = () => {
       </section>
 
       {/* Trust Badges */}
-      <section className="bg-secondary/20 py-8 lg:py-10">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
+      <section className="bg-secondary/20 py-6 lg:py-10">
+        <div className="px-3 lg:container lg:mx-auto lg:px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-8">
             {features.map((feature, index) => (
-              <div key={index} className="flex items-center gap-4 justify-center md:justify-start group cursor-default">
-                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20 group-hover:shadow-md group-hover:shadow-primary/20">
-                  <feature.icon className="w-6 h-6 text-primary transition-transform duration-300 group-hover:scale-110" />
+              <div key={index} className="flex items-center gap-3 lg:gap-4 justify-start group cursor-default">
+                <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20 group-hover:shadow-md group-hover:shadow-primary/20">
+                  <feature.icon className="w-5 h-5 lg:w-6 lg:h-6 text-primary transition-transform duration-300 group-hover:scale-110" />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-sm lg:text-base transition-colors duration-300 group-hover:text-primary">{feature.title}</h3>
-                  <p className="text-xs lg:text-sm text-muted-foreground">{feature.desc}</p>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-xs lg:text-base transition-colors duration-300 group-hover:text-primary">{feature.title}</h3>
+                  <p className="text-[10px] lg:text-sm text-muted-foreground">{feature.desc}</p>
                 </div>
               </div>
             ))}
@@ -473,9 +473,9 @@ const Index = () => {
       </section>
 
       {/* Discount Banner */}
-      <section className="py-16 lg:py-24">
-        <div className="container mx-auto px-4">
-          <div className="relative rounded-2xl overflow-hidden bg-primary p-8 lg:p-16 text-primary-foreground">
+      <section className="py-6 lg:py-24">
+        <div className="lg:container lg:mx-auto lg:px-4">
+          <div className="relative rounded-none lg:rounded-2xl overflow-hidden bg-primary p-6 lg:p-16 text-primary-foreground">
             <div className="relative z-10 max-w-xl">
               <span className="inline-block bg-primary-foreground/20 px-4 py-1 rounded-full text-sm font-medium mb-4">
                 EXCLUSIVE OFFER
