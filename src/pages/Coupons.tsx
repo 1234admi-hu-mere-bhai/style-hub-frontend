@@ -106,29 +106,30 @@ const Coupons = () => {
     const savings = calcSavings(c);
     const isOpen = expanded === c.id;
 
-    // Strip color: orange for best/eligible, muted for ineligible
-    const stripBg = isApplied
-      ? 'bg-success'
+    // Strip color: brand primary for best/eligible, success when applied, muted otherwise
+    const stripStyle: React.CSSProperties = isApplied
+      ? { background: 'hsl(var(--success))' }
       : variant === 'best' || eligible
-      ? 'bg-[hsl(18_95%_55%)]'
-      : 'bg-muted-foreground/40';
+      ? { background: 'var(--gradient-warm)' }
+      : { background: 'hsl(var(--muted-foreground) / 0.4)' };
 
     const applyColor = isApplied
       ? 'text-destructive'
       : eligible
-      ? 'text-[hsl(18_95%_55%)]'
+      ? 'text-primary'
       : 'text-muted-foreground';
 
     return (
       <div
         key={c.id}
-        className="relative rounded-2xl bg-card overflow-hidden shadow-sm border border-border/50"
+        className="relative rounded-2xl bg-card overflow-hidden shadow-[var(--shadow-card)] border border-border/50"
       >
         <div className="flex min-h-[140px]">
           {/* Vertical discount strip */}
           <div
-            className={`${stripBg} w-16 shrink-0 flex items-center justify-center relative`}
+            className="w-16 shrink-0 flex items-center justify-center relative"
             style={{
+              ...stripStyle,
               maskImage:
                 'radial-gradient(circle 6px at right 0%, transparent 99%, black 100%), radial-gradient(circle 6px at right 100%, transparent 99%, black 100%), linear-gradient(black, black)',
               maskComposite: 'intersect',
