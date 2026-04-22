@@ -85,6 +85,96 @@ const ShippingPolicy = () => {
             </div>
           </section>
 
+          {/* Shipping Calculator */}
+          <section className="rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-secondary/60 to-background p-5 sm:p-6 shadow-sm">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+                <Calculator className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="font-serif text-lg sm:text-xl font-semibold leading-tight">Shipping Calculator</h2>
+                <p className="text-xs text-muted-foreground">Estimate your handling charge & delivery range</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+              <div className="space-y-2">
+                <Label htmlFor="order-value" className="text-sm font-medium">Order value (₹)</Label>
+                <Input
+                  id="order-value"
+                  type="number"
+                  inputMode="numeric"
+                  min="0"
+                  placeholder="Enter amount"
+                  value={orderValue}
+                  onChange={(e) => setOrderValue(e.target.value)}
+                  className="h-12 bg-secondary/40"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Delivery zone</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setZone('west_bengal')}
+                    className={`h-12 rounded-md border-2 text-sm font-medium transition-colors ${
+                      zone === 'west_bengal'
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border bg-secondary/40 text-muted-foreground hover:bg-secondary/60'
+                    }`}
+                  >
+                    West Bengal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setZone('national')}
+                    className={`h-12 rounded-md border-2 text-sm font-medium transition-colors ${
+                      zone === 'national'
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border bg-secondary/40 text-muted-foreground hover:bg-secondary/60'
+                    }`}
+                  >
+                    Outside WB
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl bg-background border border-border p-4 sm:p-5 space-y-3">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-sm text-muted-foreground">Order subtotal</span>
+                <span className="font-semibold">₹{subtotalNum.toFixed(2)}</span>
+              </div>
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-sm text-muted-foreground">
+                  {zone === 'west_bengal' ? 'Handling charge' : 'Shipping charge'}
+                </span>
+                <span className={`font-semibold ${quote.isFree ? 'text-primary' : ''}`}>
+                  {quote.isFree ? 'FREE' : `₹${quote.cost.toFixed(2)}`}
+                </span>
+              </div>
+              <div className="flex items-baseline justify-between gap-3 pt-3 border-t border-border">
+                <span className="text-sm font-medium">Estimated total</span>
+                <span className="font-bold text-base text-primary">₹{total.toFixed(2)}</span>
+              </div>
+              <div className="flex items-baseline justify-between gap-3 pt-3 border-t border-border">
+                <span className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" />
+                  Delivery range
+                </span>
+                <span className="font-semibold text-sm">
+                  {zone === 'west_bengal' ? '5–7 business days' : '7–10 business days'}
+                </span>
+              </div>
+            </div>
+
+            {zone === 'national' && subtotalNum > 0 && subtotalNum < 999 && (
+              <p className="text-xs text-muted-foreground mt-3 px-1">
+                💡 Add ₹{(999 - subtotalNum).toFixed(2)} more to unlock <strong className="text-primary">FREE shipping</strong>.
+              </p>
+            )}
+          </section>
+
           {/* Shipping Charges */}
           <section className="bg-primary/5 border border-primary/20 rounded-xl p-6">
             <div className="flex items-center gap-3 mb-4">
