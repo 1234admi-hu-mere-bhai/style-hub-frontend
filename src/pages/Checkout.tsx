@@ -68,9 +68,36 @@ const Checkout = () => {
 
   // Coupon state
   const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_type: string; discount_value: number } | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_type: string; discount_value: number } | null>(() => {
+    try {
+      const saved = localStorage.getItem('applied-coupon');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
   const [couponLoading, setCouponLoading] = useState(false);
   const autoApplyAttempted = useRef(false);
+
+  // Persist applied coupon so /coupons page knows what's active
+  useEffect(() => {
+    if (appliedCoupon) {
+      localStorage.setItem('applied-coupon', JSON.stringify(appliedCoupon));
+    } else {
+      localStorage.removeItem('applied-coupon');
+    }
+  }, [appliedCoupon]);
+
+  // Sync if coupon was removed from /coupons page (on tab focus / navigation back)
+  useEffect(() => {
+    const sync = () => {
+      const saved = localStorage.getItem('applied-coupon');
+      if (!saved && appliedCoupon) {
+        setAppliedCoupon(null);
+        setCouponCode('');
+      }
+    };
+    window.addEventListener('focus', sync);
+    return () => window.removeEventListener('focus', sync);
+  }, [appliedCoupon]);
   
   // Saved addresses
   const { addresses: savedAddresses, setAddresses: setSavedAddresses } = useAddresses();
@@ -281,6 +308,7 @@ const Checkout = () => {
       paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment (PayU)',
     };
     if (isBuyNow) { setBuyNowItem(null); } else { clearCart(); }
+    setAppliedCoupon(null);
     navigate('/order-confirmation', { state: orderDetails });
   };
 
