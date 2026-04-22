@@ -429,6 +429,8 @@ const Checkout = () => {
       customerEmail: user.email,
       customerPhone: addressForm.phone,
       description: `Order of ${items.length} item(s) from MUFFIGOUT APPAREL HUB`,
+      pg: onlineSubMethod?.pg,
+      bankcode: onlineSubMethod?.bankcode,
       checkout: {
         items: checkoutItems,
         subtotal: totalPrice,
