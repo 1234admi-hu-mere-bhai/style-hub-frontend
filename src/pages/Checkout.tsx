@@ -720,8 +720,8 @@ const Checkout = () => {
           {/* Form */}
           <div className="lg:col-span-2 space-y-4">
 
-            {/* Delivery Address Bar (visible on summary/payment) */}
-            {(step === 'summary' || step === 'payment') && addressForm.firstName && (
+            {/* Delivery Address Bar (visible on payment step at top; on summary it renders between items and price details) */}
+            {step === 'payment' && addressForm.firstName && (
               <div className="bg-card p-4 rounded-lg border border-border">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-3">
