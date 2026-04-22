@@ -744,6 +744,82 @@ const Checkout = () => {
               </div>
             )}
 
+            {/* Cart Items shown ABOVE the address form on Address step */}
+            {step === 'address' && (
+              <div className="space-y-3">
+                <Link
+                  to="/wishlist"
+                  className="flex items-center justify-between bg-accent/50 border border-border rounded-lg px-4 py-3 hover:bg-accent transition-colors"
+                >
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Heart size={16} className="text-destructive" />
+                    <span>View your Wishlist</span>
+                  </div>
+                  <ChevronRight size={16} className="text-muted-foreground" />
+                </Link>
+                {items.map((item) => {
+                  const hasDiscount = item.originalPrice && item.originalPrice > item.price;
+                  const discountPercent = hasDiscount ? Math.round(((item.originalPrice! - item.price) / item.originalPrice!) * 100) : 0;
+                  return (
+                    <div key={`addr-${item.id}-${item.size}-${item.color}`} className="bg-card rounded-lg border border-border overflow-hidden">
+                      <div className="p-4 flex gap-4">
+                        <div className="relative">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-24 h-28 object-cover rounded"
+                          />
+                          {hasDiscount && (
+                            <span className="absolute top-1 left-1 bg-destructive text-destructive-foreground text-[10px] font-bold px-1.5 py-0.5 rounded">
+                              SALE ⚡
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm line-clamp-2">{item.name}</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="font-bold">{formatPrice(item.price)}</span>
+                            {hasDiscount && (
+                              <>
+                                <span className="text-muted-foreground line-through text-xs">{formatPrice(item.originalPrice!)}</span>
+                                <span className="text-success text-xs font-semibold">{discountPercent}% Off</span>
+                              </>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 mt-2">
+                            <span className="text-xs border border-border rounded px-2 py-1">Size: {item.size}</span>
+                            <span className="text-xs border border-border rounded px-2 py-1">Qty: {item.quantity}</span>
+                          </div>
+                          <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                            <Truck size={12} />
+                            <span>Estimated Delivery by {getEstimatedDeliveryDate(deliveryInfo?.estimatedDays)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      {!isBuyNow && (
+                        <div className="flex border-t border-border divide-x divide-border">
+                          <button
+                            onClick={() => handleMoveToWishlist(item)}
+                            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
+                          >
+                            <Heart size={14} />
+                            Move to Wishlist
+                          </button>
+                          <button
+                            onClick={() => handleRemoveItem(item)}
+                            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors"
+                          >
+                            <X size={14} />
+                            Remove
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             {step === 'address' && (
               <div className="bg-card p-6 rounded-lg border border-border">
                 <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
