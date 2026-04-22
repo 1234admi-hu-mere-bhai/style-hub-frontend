@@ -104,9 +104,9 @@ const OrderConfirmation = () => {
             <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="w-10 h-10 text-success" />
             </div>
-            <h1 className="font-serif text-3xl font-bold mb-2">Order Confirmed!</h1>
+            <h1 className="font-serif text-3xl font-bold mb-2">Order Confirmed</h1>
             <p className="text-muted-foreground">
-              Thank you for your order. We'll send you a confirmation email shortly.
+              Thank you for shopping with MUFFIGOUT. A confirmation email is on its way.
             </p>
           </div>
 
@@ -214,7 +214,7 @@ const OrderConfirmation = () => {
               <h3 className="font-semibold">Estimated Delivery</h3>
             </div>
             <p className="text-muted-foreground">
-              Your order will be delivered within 3-5 business days. You'll receive tracking updates via email and SMS.
+              Your order is expected to arrive within 3–5 business days. Tracking updates will be sent via email and SMS.
             </p>
           </div>
 
@@ -236,7 +236,7 @@ const OrderConfirmation = () => {
                       className="h-8"
                       onClick={() => {
                         navigator.clipboard?.writeText(awb);
-                        toast.success('AWB copied to clipboard');
+                        toast.success('Tracking number copied to clipboard');
                       }}
                     >
                       <Copy size={14} className="mr-1.5" /> Copy
@@ -244,12 +244,12 @@ const OrderConfirmation = () => {
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Use this AWB number on your courier partner's official tracking website (e.g. Delhivery, Bluedart, DTDC, India Post) to view live shipment status.
+                  Use this tracking number on your courier partner's official website (Delhivery, Bluedart, DTDC, India Post) to view live shipment status.
                 </p>
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Your tracking / AWB number will appear here once your order is shipped (usually within 24 hours). You can also view it later from your{' '}
+                Your tracking number will appear here once your order is dispatched (typically within 24 hours). It will also be available in your{' '}
                 <Link to="/orders" className="text-primary hover:underline font-medium">order history</Link>.
               </p>
             )}
@@ -263,8 +263,8 @@ const OrderConfirmation = () => {
                 <p className="font-medium">Invoice</p>
                 <p className="text-sm text-muted-foreground">
                   {orderDetails.paymentId 
-                    ? 'Your invoice will be generated shortly and available in your order history.'
-                    : 'Your invoice will be generated after your order is delivered.'}
+                    ? 'Your invoice is being generated and will be available shortly in your order history.'
+                    : 'Your invoice will be available in your order history once delivery is complete.'}
                 </p>
               </div>
             </div>

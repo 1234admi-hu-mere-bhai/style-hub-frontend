@@ -61,7 +61,7 @@ const Header = () => {
         {/* Announcement bar */}
         <div className="bg-primary text-primary-foreground py-2 text-sm font-medium overflow-hidden">
           <div className="animate-marquee whitespace-nowrap">
-            Free Shipping on orders above ₹999 | Use code MUFFIGOUT20 for 20% off on Men's Collection
+            Complimentary shipping on orders above ₹999  •  Apply code MUFFIGOUT20 for 20% off the Men's Collection
           </div>
         </div>
 
@@ -96,7 +96,7 @@ const Header = () => {
                 className="flex items-center gap-2 flex-1 px-4 py-2.5 rounded-full border border-border bg-secondary/40 text-muted-foreground text-sm hover:bg-secondary/80 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 active:scale-[0.98] transition-all duration-200 animate-search-glow"
               >
                 <Search size={16} className="text-primary/60" />
-                <span>Search products...</span>
+                <span>Search products, brands and more…</span>
                 <kbd className="ml-auto hidden lg:inline-flex items-center gap-0.5 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
                   ⌘K
                 </kbd>
@@ -167,7 +167,7 @@ const Header = () => {
                   ) : (
                     <>
                       <DropdownMenuItem asChild>
-                        <Link to="/auth">Login / Sign Up</Link>
+                        <Link to="/auth">Sign In / Create Account</Link>
                       </DropdownMenuItem>
                     </>
                   )}

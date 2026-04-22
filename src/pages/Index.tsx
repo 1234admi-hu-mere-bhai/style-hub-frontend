@@ -53,7 +53,7 @@ const Index = () => {
     setTimeout(() => {
       setDiscountCode(code);
       setSubscribing(false);
-      toast.success(`🎉 Your 20% discount code: ${code}`, { duration: 10000 });
+      toast.success(`🎉 Welcome offer unlocked — your code: ${code}`, { duration: 10000 });
     }, 800);
   }, [newsletterEmail]);
 
@@ -169,10 +169,10 @@ const Index = () => {
   ];
 
   const features = [
-    { icon: Truck, title: 'Free Shipping', desc: 'On orders above ₹999' },
-    { icon: RefreshCw, title: 'Easy Returns', desc: '7 days return policy' },
-    { icon: Shield, title: 'Secure Payment', desc: '100% secure checkout' },
-    { icon: Headphones, title: '24/7 Support', desc: 'Dedicated support' },
+    { icon: Truck, title: 'Complimentary Shipping', desc: 'On orders above ₹999' },
+    { icon: RefreshCw, title: 'Hassle-Free Returns', desc: '7-day return window' },
+    { icon: Shield, title: 'Secure Checkout', desc: 'Encrypted, PCI-compliant payments' },
+    { icon: Headphones, title: 'Dedicated Support', desc: 'Available 7 days a week' },
   ];
 
   return (
@@ -187,7 +187,7 @@ const Index = () => {
             className="flex-1 flex items-center gap-3 hover:bg-secondary/30 transition-colors rounded-md -mx-1 px-1"
           >
             <Search size={20} className="text-muted-foreground shrink-0" />
-            <span className="text-sm text-muted-foreground flex-1 text-left">Search by Keyword or Product ID</span>
+            <span className="text-sm text-muted-foreground flex-1 text-left">Search products, brands or product ID</span>
           </button>
           <div className="flex items-center gap-1 border-l border-border pl-2">
             <button
@@ -240,7 +240,7 @@ const Index = () => {
               Shop by Category
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Explore our curated men's collection
+              Discover our thoughtfully curated men's collection
             </p>
           </div>
 
@@ -260,7 +260,7 @@ const Index = () => {
                 <div className="absolute bottom-0 left-0 right-0 p-6 text-cream">
                   <h3 className="font-serif text-2xl font-bold mb-2">{cat.name}</h3>
                   <span className="inline-flex items-center text-sm font-medium uppercase tracking-wider group-hover:underline">
-                    Shop Now
+                    Explore Collection
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </span>
                 </div>
@@ -279,7 +279,7 @@ const Index = () => {
                 Featured Products
               </h2>
               <p className="text-muted-foreground">
-                Handpicked styles loved by our customers
+                A selection of our most-loved styles
               </p>
             </div>
           </div>
@@ -447,7 +447,7 @@ const Index = () => {
               ))}
             </div>
           ) : (
-            <p className="text-center text-muted-foreground py-16">No products available yet.</p>
+            <p className="text-center text-muted-foreground py-16">No products match your selection. Try adjusting the filters.</p>
           )}
 
         </div>
@@ -478,7 +478,7 @@ const Index = () => {
           <div className="relative rounded-2xl overflow-hidden bg-primary p-8 lg:p-16 text-primary-foreground">
             <div className="relative z-10 max-w-xl">
               <span className="inline-block bg-primary-foreground/20 px-4 py-1 rounded-full text-sm font-medium mb-4">
-                LIMITED TIME OFFER
+                EXCLUSIVE OFFER
               </span>
               <h2 className="font-serif text-3xl lg:text-5xl font-bold mb-4">
                 Unlock Your
@@ -486,7 +486,7 @@ const Index = () => {
                 MG Perks
               </h2>
               <p className="text-primary-foreground/80 mb-8">
-                Subscribe for insider access, early drops & a 20% welcome reward.
+                Subscribe for early access to new arrivals and a 20% welcome offer.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 {discountCode ? (
@@ -497,7 +497,7 @@ const Index = () => {
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(discountCode);
-                        toast.success('Code copied!');
+                        toast.success('Code copied to clipboard');
                       }}
                       className="px-4 py-3 rounded-lg bg-primary-foreground text-primary font-medium hover:bg-primary-foreground/90 transition-colors"
                     >

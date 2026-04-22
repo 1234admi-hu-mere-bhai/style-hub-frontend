@@ -20,8 +20,8 @@ const Footer = () => {
               </div>
             </div>
             <p className="text-cream/70 mb-6">
-              Where trust meets style. We craft premium men's fashion with uncompromising quality, 
-              ensuring every piece you wear reflects confidence, comfort, and lasting elegance.
+              Premium men's fashion crafted with care. Every piece is designed for lasting quality, refined comfort,
+              and confident, everyday style.
             </p>
             <div className="flex space-x-4">
               <a 
@@ -56,7 +56,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link to="/products?sale=true" className="hover:text-primary transition-colors">
-                  Sale & Offers
+                  Sale &amp; Special Offers
                 </Link>
               </li>
               <li>
@@ -93,7 +93,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link to="/return-exchange" className="hover:text-primary transition-colors">
-                  Returns & Exchange
+                  Returns &amp; Exchanges
                 </Link>
               </li>
               <li>
@@ -129,7 +129,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-cream/20 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-cream/50">
-          <p><p>© 2026 MUFFIGOUT APPAREL HUB. All rights reserved.</p>. All rights reserved.</p>
+          <p>© 2026 MUFFIGOUT APPAREL HUB. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link to="/privacy" className="hover:text-cream transition-colors">
               Privacy Policy

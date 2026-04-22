@@ -30,9 +30,9 @@ const CartDrawer = ({ onClose }: CartDrawerProps) => {
             />
           </svg>
         </div>
-        <h3 className="font-serif text-xl font-semibold mb-2">Your cart is empty</h3>
+        <h3 className="font-serif text-xl font-semibold mb-2">Your bag is empty</h3>
         <p className="text-muted-foreground mb-6">
-          Add items to your cart to continue shopping
+          Browse the collection to start adding pieces to your bag.
         </p>
         <Button onClick={onClose} asChild>
           <Link to="/products">Continue Shopping</Link>
@@ -117,7 +117,7 @@ const CartDrawer = ({ onClose }: CartDrawerProps) => {
               </div>
               {!isFreeShipping && (
                 <p className="text-xs text-primary">
-                  Add {formatPrice(999 - totalPrice)} more for free shipping!
+                  Add {formatPrice(999 - totalPrice)} more to qualify for complimentary shipping.
                 </p>
               )}
             </>
