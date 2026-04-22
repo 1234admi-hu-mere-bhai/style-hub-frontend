@@ -941,7 +941,7 @@ const Checkout = () => {
             )}
 
             {/* Cart Items with enhanced cards */}
-            {(step === 'address' || step === 'summary') && (
+            {step === 'summary' && (
               <div className="space-y-3">
                 {/* Wishlist shortcut */}
                 <Link
