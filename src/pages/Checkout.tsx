@@ -245,7 +245,11 @@ const Checkout = () => {
       setCouponCode(data.code);
       const couponBase = hasFlashSaleItems ? nonFlashSaleTotal : totalPrice;
       const savedAmount = data.discount_type === 'percentage' ? Math.round(couponBase * (data.discount_value / 100)) : Math.min(data.discount_value, couponBase);
-      toast.success(`Coupon "${data.code}" applied — you save ₹${savedAmount}${hasFlashSaleItems ? ' (on non-sale items)' : ''}.`);
+      setCouponSuccess({
+        code: data.code,
+        saved: savedAmount,
+        note: hasFlashSaleItems ? 'Discount applied to non-sale items only.' : undefined,
+      });
     } catch {
       toast.error('We could not validate this coupon. Please try again.');
     } finally {
