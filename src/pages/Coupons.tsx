@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Loader2, BadgePercent, Sparkles } from 'lucide-react';
+import { ArrowLeft, Loader2, Sparkles, Info } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useCart } from '@/contexts/CartContext';
+import { useCurrency } from '@/hooks/useCurrency';
 import { toast } from 'sonner';
 
 interface Coupon {
@@ -17,10 +18,13 @@ interface Coupon {
 
 const Coupons = () => {
   const navigate = useNavigate();
+  const { totalPrice } = useCart();
+  const { formatPrice } = useCurrency();
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [appliedCode, setAppliedCode] = useState<string | null>(null);
   const [manualCode, setManualCode] = useState('');
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   const refreshApplied = () => {
     try {
@@ -60,123 +64,190 @@ const Coupons = () => {
     toast.info(`Coupon "${code}" removed.`);
   };
 
-  const formatDiscount = (c: Coupon) =>
+  // Calculate savings for a coupon based on current cart
+  const calcSavings = (c: Coupon) => {
+    if (c.discount_type === 'percentage') {
+      return Math.round((totalPrice * c.discount_value) / 100);
+    }
+    return Math.min(c.discount_value, totalPrice);
+  };
+
+  const isEligible = (c: Coupon) => totalPrice >= (c.min_order_value || 0);
+  const amountNeeded = (c: Coupon) => Math.max(0, (c.min_order_value || 0) - totalPrice);
+
+  const stripLabel = (c: Coupon) =>
     c.discount_type === 'percentage' ? `${c.discount_value}% OFF` : `₹${c.discount_value} OFF`;
 
-  const describe = (c: Coupon) => {
+  const longDesc = (c: Coupon) => {
     const base =
       c.discount_type === 'percentage'
-        ? `Flat ${c.discount_value}% discount applied to your order.`
-        : `Flat ₹${c.discount_value} discount applied to your order.`;
+        ? `Use code ${c.code} & get ${c.discount_value}% off`
+        : `Use code ${c.code} & get flat ₹${c.discount_value} off`;
     const min =
       c.min_order_value && c.min_order_value > 0
-        ? ` Valid on orders above ₹${c.min_order_value}.`
-        : '';
-    return base + min;
+        ? ` on orders above ₹${c.min_order_value}.`
+        : ' on your order.';
+    const expiry = c.expires_at
+      ? ` Valid till ${new Date(c.expires_at).toLocaleDateString('en-IN', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        })}.`
+      : '';
+    return base + min + expiry;
   };
 
   const best = coupons[0];
   const others = coupons.slice(1);
 
-  const renderCard = (c: Coupon) => {
+  const renderCard = (c: Coupon, variant: 'best' | 'normal' = 'normal') => {
     const isApplied = appliedCode === c.code;
+    const eligible = isEligible(c);
+    const savings = calcSavings(c);
+    const isOpen = expanded === c.id;
+
+    // Strip color: orange for best/eligible, muted for ineligible
+    const stripBg = isApplied
+      ? 'bg-success'
+      : variant === 'best' || eligible
+      ? 'bg-[hsl(18_95%_55%)]'
+      : 'bg-muted-foreground/40';
+
+    const applyColor = isApplied
+      ? 'text-destructive'
+      : eligible
+      ? 'text-[hsl(18_95%_55%)]'
+      : 'text-muted-foreground';
+
     return (
       <div
         key={c.id}
-        className={`rounded-2xl border bg-card p-4 transition-colors ${
-          isApplied ? 'border-success/50 bg-success/5' : 'border-border'
-        }`}
+        className="relative rounded-2xl bg-card overflow-hidden shadow-sm border border-border/50"
       >
-        <div className="flex items-start gap-3">
+        <div className="flex min-h-[140px]">
+          {/* Vertical discount strip */}
           <div
-            className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${
-              isApplied ? 'bg-success/15 text-success' : 'bg-secondary text-muted-foreground'
-            }`}
+            className={`${stripBg} w-16 shrink-0 flex items-center justify-center relative`}
+            style={{
+              maskImage:
+                'radial-gradient(circle 6px at right 0%, transparent 99%, black 100%), radial-gradient(circle 6px at right 100%, transparent 99%, black 100%), linear-gradient(black, black)',
+              maskComposite: 'intersect',
+              WebkitMaskImage:
+                'radial-gradient(circle 6px at right 0%, transparent 99%, black 100%), radial-gradient(circle 6px at right 100%, transparent 99%, black 100%), linear-gradient(black, black)',
+            }}
           >
-            <BadgePercent size={20} />
+            <span className="text-primary-foreground font-extrabold text-base tracking-wider whitespace-nowrap -rotate-90">
+              {stripLabel(c)}
+            </span>
           </div>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-baseline gap-2 flex-wrap">
-              <h3 className="font-bold text-base leading-tight">{formatDiscount(c)}</h3>
-              <span className="font-mono text-xs text-muted-foreground">· {c.code}</span>
+          {/* Content */}
+          <div className="flex-1 p-4 flex flex-col">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-extrabold text-lg tracking-wide leading-tight">{c.code}</h3>
+                {isApplied ? (
+                  <p className="text-success font-semibold text-sm mt-1">
+                    Saved {formatPrice(savings)} on this order!
+                  </p>
+                ) : eligible ? (
+                  <p className="text-success font-semibold text-sm mt-1">
+                    Save {formatPrice(savings)} on this order!
+                  </p>
+                ) : (
+                  <p className="text-success font-semibold text-sm mt-1">
+                    Add ₹{amountNeeded(c)} more to avail this offer
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => (isApplied ? handleRemove(c.code) : goApply(c.code))}
+                disabled={!isApplied && !eligible}
+                className={`shrink-0 font-extrabold text-sm tracking-wide ${applyColor} disabled:cursor-not-allowed`}
+              >
+                {isApplied ? 'REMOVE' : 'APPLY'}
+              </button>
             </div>
-            <p className="text-sm text-muted-foreground mt-1 leading-snug">{describe(c)}</p>
-            {c.expires_at && (
-              <p className="text-[11px] text-muted-foreground mt-1.5">
-                Valid till{' '}
-                {new Date(c.expires_at).toLocaleDateString('en-IN', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-                })}
-              </p>
-            )}
-          </div>
 
-          {isApplied ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleRemove(c.code)}
-              className="shrink-0 font-bold text-destructive hover:text-destructive hover:bg-destructive/10"
+            <div className="border-t border-dashed border-border my-3" />
+
+            <p
+              className={`text-xs text-muted-foreground leading-relaxed ${
+                isOpen ? '' : 'line-clamp-2'
+              }`}
             >
-              REMOVE
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => goApply(c.code)}
-              className="shrink-0 font-bold text-primary hover:text-primary hover:bg-primary/10"
+              {longDesc(c)}
+            </p>
+
+            <button
+              onClick={() => setExpanded(isOpen ? null : c.id)}
+              className="text-xs font-bold text-foreground mt-2 self-start hover:underline"
             >
-              Apply
-            </Button>
-          )}
+              {isOpen ? '− LESS' : '+ MORE'}
+            </button>
+          </div>
         </div>
       </div>
     );
   };
 
+  const ineligibleCount = coupons.filter((c) => !isEligible(c)).length;
+
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-muted/40">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-background border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center gap-3 max-w-2xl">
+      <header className="bg-background">
+        <div className="container mx-auto px-4 pt-4 pb-3 max-w-2xl flex items-start gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="h-10 w-10 -ml-2 rounded-full flex items-center justify-center hover:bg-secondary transition-colors"
+            className="h-10 w-10 -ml-2 rounded-full flex items-center justify-center hover:bg-secondary transition-colors shrink-0"
             aria-label="Go back"
           >
             <ArrowLeft size={22} />
           </button>
-          <h1 className="font-serif text-lg font-bold">Save more with coupons</h1>
+          <div>
+            <h1 className="font-extrabold text-lg tracking-wider uppercase leading-tight">
+              Apply Coupon
+            </h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Your cart: {formatPrice(totalPrice)}
+            </p>
+          </div>
         </div>
-      </header>
 
-      <main className="container mx-auto max-w-2xl">
         {/* Manual code entry bar */}
-        <section className="bg-background px-4 py-4 border-b border-border">
-          <div className="flex items-center rounded-2xl border-2 border-dashed border-border bg-background overflow-hidden">
+        <div className="container mx-auto max-w-2xl px-4 pb-5">
+          <div className="flex items-center rounded-2xl border border-border bg-background overflow-hidden h-14">
             <Input
               value={manualCode}
               onChange={(e) => setManualCode(e.target.value.toUpperCase())}
-              placeholder="Enter coupon code"
-              className="h-12 flex-1 border-0 bg-transparent rounded-none px-4 focus-visible:ring-0 focus-visible:border-0 uppercase tracking-wider"
+              placeholder="Enter Coupon Code"
+              className="h-full flex-1 border-0 bg-transparent rounded-none px-5 focus-visible:ring-0 focus-visible:border-0 text-base"
               onKeyDown={(e) => {
                 if (e.key === 'Enter') goApply(manualCode);
               }}
             />
             <button
               onClick={() => goApply(manualCode)}
-              className="px-4 h-12 font-bold text-sm text-foreground hover:bg-secondary transition-colors whitespace-nowrap"
+              className="px-5 h-full font-extrabold text-sm tracking-wider text-muted-foreground hover:text-foreground transition-colors"
             >
-              Add Coupon
+              APPLY
             </button>
           </div>
-        </section>
+        </div>
+      </header>
 
-        {/* Coupon list */}
+      <main className="container mx-auto max-w-2xl pb-24">
+        {/* Info banner */}
+        {!loading && coupons.length > 0 && ineligibleCount > 0 && (
+          <div className="mx-4 mt-4 bg-background rounded-xl px-4 py-3 flex items-start gap-3 shadow-sm">
+            <Info size={18} className="text-[hsl(38_95%_55%)] shrink-0 mt-0.5" fill="hsl(38 95% 55%)" stroke="white" />
+            <p className="text-sm text-foreground leading-snug">
+              {ineligibleCount} coupon{ineligibleCount > 1 ? 's are' : ' is'} not eligible for your current cart value.
+            </p>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -191,19 +262,19 @@ const Coupons = () => {
           <>
             {best && (
               <section className="px-4 pt-5 pb-2">
-                <h2 className="font-bold text-sm mb-3">Best coupon for you</h2>
-                {renderCard(best)}
+                <h2 className="font-bold text-base mb-3">Best coupon</h2>
+                {renderCard(best, 'best')}
               </section>
             )}
 
             {others.length > 0 && (
               <section className="px-4 pt-5 pb-6">
-                <h2 className="font-bold text-sm mb-3">Available coupons</h2>
-                <div className="space-y-3">{others.map(renderCard)}</div>
+                <h2 className="font-bold text-base mb-3">More offers</h2>
+                <div className="space-y-3">{others.map((c) => renderCard(c))}</div>
               </section>
             )}
 
-            <p className="text-xs text-muted-foreground text-center pb-8 px-4">
+            <p className="text-xs text-muted-foreground text-center pb-6 px-4">
               Only one coupon can be applied per order. Coupons cannot be combined with Flash Sale items.
             </p>
           </>
