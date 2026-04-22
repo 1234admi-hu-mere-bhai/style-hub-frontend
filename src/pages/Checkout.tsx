@@ -1441,6 +1441,14 @@ const Checkout = () => {
       </div>
       )}
 
+      <CouponSuccessDialog
+        open={!!couponSuccess}
+        onClose={() => setCouponSuccess(null)}
+        code={couponSuccess?.code || ''}
+        savedAmount={couponSuccess?.saved || 0}
+        note={couponSuccess?.note}
+      />
+
       <Footer />
     </div>
   );
