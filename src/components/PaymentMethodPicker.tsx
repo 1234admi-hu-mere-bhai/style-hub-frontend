@@ -33,20 +33,20 @@ const Tile = ({ active, onClick, children }: { active: boolean; onClick: () => v
   <button
     type="button"
     onClick={onClick}
-    className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all text-left ${
+    className={`w-full min-h-[60px] sm:min-h-[56px] flex items-center justify-between gap-2 p-3.5 sm:p-3 rounded-xl border-2 transition-all text-left active:scale-[0.98] ${
       active
         ? 'border-primary bg-primary/5'
         : 'border-border hover:border-muted-foreground/40 bg-background'
     }`}
   >
     {children}
-    <ChevronRight size={16} className={active ? 'text-primary' : 'text-muted-foreground'} />
+    <ChevronRight size={18} className={`shrink-0 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
   </button>
 );
 
 const Letter = ({ char, color }: { char: string; color: string }) => (
   <div
-    className="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0"
+    className="w-10 h-10 sm:w-9 sm:h-9 rounded-lg flex items-center justify-center text-white font-bold text-base sm:text-sm shrink-0"
     style={{ background: color }}
   >
     {char}
