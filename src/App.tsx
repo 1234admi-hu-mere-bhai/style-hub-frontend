@@ -16,6 +16,7 @@ import Wishlist from "./pages/Wishlist";
 import Profile from "./pages/Profile";
 import TrackOrder from "./pages/TrackOrder";
 import Auth from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
 import OrderHistory from "./pages/OrderHistory";
 import Admin from "./pages/Admin";
 import ReturnExchange from "./pages/ReturnExchange";
@@ -57,6 +58,7 @@ const AppContent = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/track-order" element={<TrackOrder />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/orders" element={<OrderHistory />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/return-exchange" element={<ReturnExchange />} />

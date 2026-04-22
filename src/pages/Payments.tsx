@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, CreditCard, Wallet, Plus, Trash2, Loader2, ShieldCheck, Landmark, Smartphone, Pencil } from 'lucide-react';
+import { ArrowLeft, CreditCard, Plus, Trash2, Loader2, ShieldCheck, Landmark, Smartphone, Pencil } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -306,7 +306,7 @@ const Payments = () => {
       case 'bank':
         return <Landmark className="h-5 w-5 text-primary" />;
       default:
-        return <Wallet className="h-5 w-5 text-primary" />;
+        return <CreditCard className="h-5 w-5 text-primary" />;
     }
   };
 
