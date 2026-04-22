@@ -51,7 +51,7 @@ const Header = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    toast.success('Signed out successfully');
+    toast.success('Logged out successfully');
     navigate('/');
   };
 
@@ -161,7 +161,7 @@ const Header = () => {
                         className="text-destructive focus:text-destructive flex items-center gap-2"
                       >
                         <LogOut size={16} />
-                        Sign Out
+                        Log Out
                       </DropdownMenuItem>
                     </>
                   ) : (
