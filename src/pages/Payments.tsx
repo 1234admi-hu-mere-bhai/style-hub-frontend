@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, CreditCard, Wallet, Plus, Trash2, Loader2, ShieldCheck, Landmark, Smartphone, Pencil } from 'lucide-react';
+import { ArrowLeft, CreditCard, Plus, Trash2, Loader2, ShieldCheck, Landmark, Smartphone, Pencil } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -306,7 +306,7 @@ const Payments = () => {
       case 'bank':
         return <Landmark className="h-5 w-5 text-primary" />;
       default:
-        return <Wallet className="h-5 w-5 text-primary" />;
+        return <CreditCard className="h-5 w-5 text-primary" />;
     }
   };
 
@@ -464,7 +464,7 @@ const Payments = () => {
 
             {paymentMethods.length === 0 ? (
               <div className="text-center py-12 bg-card rounded-lg border border-border">
-                <Wallet size={48} className="mx-auto text-muted-foreground mb-4" />
+                <CreditCard size={48} className="mx-auto text-muted-foreground mb-4" />
                 <h3 className="font-semibold text-lg mb-2">No saved payment methods</h3>
                 <p className="text-muted-foreground mb-4">
                   Add a payment method for faster checkout

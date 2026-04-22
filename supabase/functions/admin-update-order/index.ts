@@ -109,6 +109,22 @@ Deno.serve(async (req) => {
       .eq('id', orderId)
       .maybeSingle()
 
+    // 🔁 Auto-trigger PayU refund when admin marks the package as picked up
+    if (
+      prevOrder &&
+      nextOrder &&
+      prevOrder.status !== nextOrder.status &&
+      nextOrder.status === 'picked_up'
+    ) {
+      try {
+        await adminClient.functions.invoke('payu-refund', {
+          body: { orderId: nextOrder.id },
+        })
+      } catch (e) {
+        console.error('payu-refund invoke failed:', e)
+      }
+    }
+
     // Detect refund-related status transitions and notify customer
     if (prevOrder && nextOrder && prevOrder.status !== nextOrder.status) {
       let notif: { title: string; message: string; tag: string } | null = null
@@ -122,6 +138,12 @@ Deno.serve(async (req) => {
           title: 'Refund Approved ✅',
           message: `Your refund of ₹${amt.toLocaleString('en-IN')} for order ${nextOrder.order_number} is approved. Expected by ${etaStr}.`,
           tag: `refund-${nextOrder.id}`,
+        }
+      } else if (nextOrder.status === 'picked_up') {
+        notif = {
+          title: 'Package Picked Up 📦',
+          message: `Your return for order ${nextOrder.order_number} has been picked up. Refund is being processed to your original payment method.`,
+          tag: `pickup-${nextOrder.id}`,
         }
       } else if (nextOrder.status === 'refund_processed') {
         const amt = Number(nextOrder.refund_amount ?? prevOrder.total ?? 0)

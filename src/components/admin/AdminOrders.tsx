@@ -58,7 +58,7 @@ const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-muted text-muted-foreground',
 };
 
-const ORDER_STATUSES = ['pending', 'placed', 'confirmed', 'shipped', 'out_for_delivery', 'delivered', 'cancelled', 'replacement_requested', 'replacement_shipped', 'replacement_delivered'];
+const ORDER_STATUSES = ['pending', 'placed', 'confirmed', 'shipped', 'out_for_delivery', 'delivered', 'cancelled', 'return_requested', 'return_approved', 'picked_up', 'refund_processed', 'return_rejected', 'replacement_requested', 'replacement_shipped', 'replacement_delivered'];
 
 const AdminOrders = ({ orders, onRefresh }: AdminOrdersProps) => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
