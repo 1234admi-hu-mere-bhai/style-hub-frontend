@@ -6,6 +6,15 @@ import bhimLogo from '@/assets/payment-logos/bhim.svg';
 import upiLogo from '@/assets/payment-logos/upi.svg';
 import amazonpayLogo from '@/assets/payment-logos/amazonpay.svg';
 import mobikwikLogo from '@/assets/payment-logos/mobikwik.svg';
+import visaLogo from '@/assets/payment-logos/visa.svg';
+import mastercardLogo from '@/assets/payment-logos/mastercard.svg';
+import rupayLogo from '@/assets/payment-logos/rupay.png';
+import amexLogo from '@/assets/payment-logos/amex.svg';
+import sbiLogo from '@/assets/payment-logos/sbi.svg';
+import hdfcLogo from '@/assets/payment-logos/hdfc.svg';
+import iciciLogo from '@/assets/payment-logos/icici.svg';
+import axisLogo from '@/assets/payment-logos/axis.svg';
+import kotakLogo from '@/assets/payment-logos/kotak.svg';
 
 export type PaymentSubMethod = {
   id: string;
