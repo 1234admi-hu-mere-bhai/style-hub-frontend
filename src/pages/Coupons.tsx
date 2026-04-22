@@ -241,8 +241,8 @@ const Coupons = () => {
       <main className="container mx-auto max-w-2xl pb-24">
         {/* Info banner */}
         {!loading && coupons.length > 0 && ineligibleCount > 0 && (
-          <div className="mx-4 mt-4 bg-background rounded-xl px-4 py-3 flex items-start gap-3 shadow-sm">
-            <Info size={18} className="text-[hsl(38_95%_55%)] shrink-0 mt-0.5" fill="hsl(38 95% 55%)" stroke="white" />
+          <div className="mx-4 mt-4 bg-card rounded-xl px-4 py-3 flex items-start gap-3 shadow-[var(--shadow-card)] border border-border/50">
+            <Info size={18} className="text-accent shrink-0 mt-0.5" fill="hsl(var(--accent))" stroke="hsl(var(--accent-foreground))" />
             <p className="text-sm text-foreground leading-snug">
               {ineligibleCount} coupon{ineligibleCount > 1 ? 's are' : ' is'} not eligible for your current cart value.
             </p>
