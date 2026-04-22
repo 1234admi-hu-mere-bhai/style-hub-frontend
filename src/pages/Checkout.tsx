@@ -26,6 +26,7 @@ import { checkoutAddressSchema } from '@/lib/validations';
 import { detectCurrentLocation } from '@/lib/geolocation';
 import { checkCodEligibility, COD_FEE } from '@/lib/codEligibility';
 import { calculateShipping } from '@/lib/shipping';
+import CouponSuccessDialog from '@/components/CouponSuccessDialog';
 
 const getEstimatedDeliveryDate = (days?: string | number) => {
   const deliveryDays = typeof days === 'number' ? days : days ? parseInt(days) : 5;
@@ -75,6 +76,7 @@ const Checkout = () => {
     } catch { return null; }
   });
   const [couponLoading, setCouponLoading] = useState(false);
+  const [couponSuccess, setCouponSuccess] = useState<{ code: string; saved: number; note?: string } | null>(null);
   const autoApplyAttempted = useRef(false);
 
   // Persist applied coupon so /coupons page knows what's active
@@ -243,7 +245,11 @@ const Checkout = () => {
       setCouponCode(data.code);
       const couponBase = hasFlashSaleItems ? nonFlashSaleTotal : totalPrice;
       const savedAmount = data.discount_type === 'percentage' ? Math.round(couponBase * (data.discount_value / 100)) : Math.min(data.discount_value, couponBase);
-      toast.success(`Coupon "${data.code}" applied — you save ₹${savedAmount}${hasFlashSaleItems ? ' (on non-sale items)' : ''}.`);
+      setCouponSuccess({
+        code: data.code,
+        saved: savedAmount,
+        note: hasFlashSaleItems ? 'Discount applied to non-sale items only.' : undefined,
+      });
     } catch {
       toast.error('We could not validate this coupon. Please try again.');
     } finally {
@@ -1434,6 +1440,14 @@ const Checkout = () => {
         </div>
       </div>
       )}
+
+      <CouponSuccessDialog
+        open={!!couponSuccess}
+        onClose={() => setCouponSuccess(null)}
+        code={couponSuccess?.code || ''}
+        savedAmount={couponSuccess?.saved || 0}
+        note={couponSuccess?.note}
+      />
 
       <Footer />
     </div>
