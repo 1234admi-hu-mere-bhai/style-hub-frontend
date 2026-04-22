@@ -1,8 +1,25 @@
+import { useState, useMemo } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Truck, Clock, MapPin, Package, AlertCircle, IndianRupee } from 'lucide-react';
+import { Truck, Clock, MapPin, Package, AlertCircle, IndianRupee, Calculator } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { calculateShipping } from '@/lib/shipping';
 
 const ShippingPolicy = () => {
+  const [orderValue, setOrderValue] = useState<string>('');
+  const [zone, setZone] = useState<'west_bengal' | 'national'>('national');
+
+  const quote = useMemo(() => {
+    const subtotal = Math.max(0, parseFloat(orderValue) || 0);
+    return calculateShipping({
+      subtotal,
+      state: zone === 'west_bengal' ? 'West Bengal' : 'Other',
+    });
+  }, [orderValue, zone]);
+
+  const subtotalNum = Math.max(0, parseFloat(orderValue) || 0);
+  const total = subtotalNum + quote.cost;
   return (
     <div className="min-h-screen bg-background">
       <Header />
