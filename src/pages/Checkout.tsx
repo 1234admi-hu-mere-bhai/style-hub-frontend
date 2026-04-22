@@ -60,7 +60,28 @@ const Checkout = () => {
   const items = isBuyNow ? [buyNowItem!] : cartItems;
   const totalPrice = isBuyNow ? buyNowItem!.price * buyNowItem!.quantity : cartTotalPrice;
   const [paymentMethod, setPaymentMethod] = useState<'online' | 'cod'>('online');
-  const [onlineSubMethod, setOnlineSubMethod] = useState<PaymentSubMethod | null>(null);
+  // Default to Google Pay (most-used UPI app in India). Falls back to Card
+  // if the user later switches manually.
+  const [onlineSubMethod, setOnlineSubMethod] = useState<PaymentSubMethod | null>({
+    id: 'gpay',
+    label: 'Google Pay',
+    pg: 'UPI',
+    bankcode: 'TEZ',
+    category: 'upi',
+  });
+
+  // Ensure a sensible default exists whenever Pay Online is active. If the user
+  // somehow clears the selection, snap back to GPay (UPI) — or to Card on
+  // desktop where UPI Intent isn't available.
+  useEffect(() => {
+    if (paymentMethod !== 'online' || onlineSubMethod) return;
+    const isMobile = typeof window !== 'undefined' && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    setOnlineSubMethod(
+      isMobile
+        ? { id: 'gpay', label: 'Google Pay', pg: 'UPI', bankcode: 'TEZ', category: 'upi' }
+        : { id: 'card', label: 'Credit / Debit Card', pg: 'CC', category: 'card' }
+    );
+  }, [paymentMethod, onlineSubMethod]);
   const [step, setStep] = useState<'address' | 'payment' | 'summary'>('address');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [showPriceDetails, setShowPriceDetails] = useState(false);
