@@ -570,7 +570,7 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24 lg:pb-8">
+    <div className="min-h-screen bg-background pb-32 lg:pb-28">
       <Header />
 
       <main className="container mx-auto px-4 py-8">
@@ -1285,7 +1285,7 @@ const Checkout = () => {
 
       {/* Sticky Bottom Bar (mobile & desktop) */}
       {step !== 'address' && (
-        <div className="fixed left-0 right-0 bottom-[3.75rem] md:bottom-0 bg-card border-t-2 border-border z-40 lg:hidden shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
+        <div className="fixed left-0 right-0 bottom-[3.75rem] md:bottom-0 bg-card border-t-2 border-border z-40 shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
