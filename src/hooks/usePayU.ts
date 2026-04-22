@@ -168,6 +168,10 @@ export const usePayU = ({ onSuccess, onError, onDismiss }: UsePayUProps) => {
         hash: hashData.hash,
       };
 
+      // Pre-select payment method on PayU's hosted page when provided.
+      if (details.pg) params.pg = details.pg;
+      if (details.bankcode) params.bankcode = details.bankcode;
+
       clearRetryState();
       submitToPayU(params);
       // Page will redirect to PayU — loading state stays true
