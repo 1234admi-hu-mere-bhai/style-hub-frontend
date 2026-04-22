@@ -1375,7 +1375,7 @@ const Checkout = () => {
 
       {/* Sticky Bottom Bar (mobile & desktop) */}
       {step !== 'address' && (
-        <div className="fixed left-0 right-0 bottom-[3.75rem] md:bottom-0 bg-card border-t-2 border-border z-40 shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
+        <div className="fixed left-0 right-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] md:bottom-0 bg-card border-t-2 border-border z-40 shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
