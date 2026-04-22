@@ -1301,7 +1301,7 @@ const Checkout = () => {
               <div className="w-full space-y-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Clock className="h-4 w-4 animate-pulse text-primary" />
-                  <span>PayU is busy. Retrying in <strong className="text-foreground">{retryCountdown}s</strong> (Attempt {retryAttempt}/{3})</span>
+                  <span>Payment gateway is busy. Retrying in <strong className="text-foreground">{retryCountdown}s</strong> · Attempt {retryAttempt} of 3</span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
                   <div 
@@ -1328,7 +1328,7 @@ const Checkout = () => {
                 {isPaymentLoading || isPlacingOrder ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
+                    Processing…
                   </>
                 ) : step === 'payment' ? (
                   `Pay ${formatPrice(finalTotal)}`
