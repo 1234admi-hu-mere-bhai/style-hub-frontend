@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { usePayU, PayUResponse } from '@/hooks/usePayU';
+import { PaymentMethodPicker, PaymentSubMethod } from '@/components/PaymentMethodPicker';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAddresses } from '@/hooks/useAddresses';
