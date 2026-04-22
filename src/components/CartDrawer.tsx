@@ -112,12 +112,17 @@ const CartDrawer = ({ onClose }: CartDrawerProps) => {
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Shipping</span>
                 <span className={isFreeShipping ? 'text-success font-medium' : 'text-foreground'}>
-                  {isFreeShipping ? 'FREE' : formatPrice(99)}
+                  {isFreeShipping ? 'FREE' : `from ${formatPrice(20)}`}
                 </span>
               </div>
               {!isFreeShipping && (
                 <p className="text-xs text-primary">
-                  Add {formatPrice(999 - totalPrice)} more to qualify for complimentary shipping.
+                  Add {formatPrice(999 - totalPrice)} more for free shipping (outside West Bengal). West Bengal: flat ₹20 handling.
+                </p>
+              )}
+              {isFreeShipping && (
+                <p className="text-xs text-muted-foreground">
+                  West Bengal: ₹20 handling charge applies at checkout.
                 </p>
               )}
             </>

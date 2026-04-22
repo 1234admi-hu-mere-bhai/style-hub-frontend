@@ -14,7 +14,7 @@ const faqSections = [
       },
       {
         q: 'What are the shipping charges?',
-        a: 'Shipping is FREE on orders above ₹999. For orders below ₹999, a standard shipping fee will be applied at checkout.',
+        a: 'For West Bengal addresses, a flat ₹20 handling charge applies on all orders (delivery in 7 business days). For addresses outside West Bengal, shipping is FREE on orders above ₹999, otherwise ₹99 (delivery in 10 business days).',
       },
       {
         q: 'Is Cash on Delivery (COD) available?',
@@ -75,7 +75,7 @@ const faqSections = [
       },
       {
         q: 'Are there any hidden charges?',
-        a: 'No, there are no hidden charges. The price you see on the product page is what you pay. Shipping is free above ₹999.',
+        a: 'No hidden charges. The price shown is what you pay, plus shipping at checkout (₹20 flat for West Bengal; free above ₹999 elsewhere, otherwise ₹99).',
       },
       {
         q: 'Do prices include GST?',

@@ -40,8 +40,9 @@ const TermsOfService = () => {
           <section>
             <h2 className="font-serif text-xl font-semibold mb-3">4. Shipping & Delivery</h2>
             <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-              <li>Free shipping on orders above ₹999.</li>
-              <li>Estimated delivery times are provided at checkout and may vary based on location.</li>
+              <li>West Bengal: ₹20 flat handling charge, delivery in 7 business days.</li>
+              <li>Outside West Bengal: free shipping on orders above ₹999 (₹99 otherwise), delivery in 10 business days.</li>
+              <li>Estimated delivery times may vary based on location and carrier.</li>
               <li>We are not responsible for delays caused by shipping carriers or unforeseen circumstances.</li>
             </ul>
           </section>

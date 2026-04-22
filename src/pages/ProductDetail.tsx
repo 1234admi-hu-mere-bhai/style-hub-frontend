@@ -348,7 +348,7 @@ const ProductDetail = () => {
             </TabsContent>
             <TabsContent value="shipping" className="mt-6">
               <div className="space-y-4">
-                <div><h4 className="font-semibold mb-2">Delivery</h4><p className="text-muted-foreground">Free standard shipping on orders over ₹999. Estimated delivery time: 3-5 business days.</p></div>
+                <div><h4 className="font-semibold mb-2">Delivery</h4><p className="text-muted-foreground">West Bengal: ₹20 flat handling, delivered in 7 business days. Outside West Bengal: free shipping on orders above ₹999 (₹99 otherwise), delivered in 10 business days.</p></div>
                 <div><h4 className="font-semibold mb-2">Returns</h4><p className="text-muted-foreground">Easy returns within 7 days of delivery. Items must be unused with original tags attached.</p></div>
               </div>
             </TabsContent>

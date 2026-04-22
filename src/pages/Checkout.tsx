@@ -24,9 +24,10 @@ import { Address } from '@/data/user';
 import { checkoutAddressSchema } from '@/lib/validations';
 import { detectCurrentLocation } from '@/lib/geolocation';
 import { checkCodEligibility, COD_FEE } from '@/lib/codEligibility';
+import { calculateShipping } from '@/lib/shipping';
 
-const getEstimatedDeliveryDate = (days?: string) => {
-  const deliveryDays = days ? parseInt(days) : 5;
+const getEstimatedDeliveryDate = (days?: string | number) => {
+  const deliveryDays = typeof days === 'number' ? days : days ? parseInt(days) : 5;
   const date = new Date();
   date.setDate(date.getDate() + deliveryDays);
   return date.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
@@ -171,9 +172,18 @@ const Checkout = () => {
 
   const totalSavings = totalProductDiscount + discountAmount;
 
-  // Free shipping if cart contains a ₹1 test product or subtotal ≥ ₹999
+  // Shipping rules: WB intra-state ₹20 handling (7 days), Outside WB ₹99 / FREE ≥ ₹999 (10 days)
   const hasTestItem = items.some(i => i.price <= 1);
-  const shippingCost = hasTestItem || totalPrice >= 999 ? 0 : 99;
+  const shippingQuote = useMemo(
+    () => calculateShipping({
+      subtotal: totalPrice,
+      state: addressForm.state,
+      pincode: addressForm.pincode,
+      hasTestItem,
+    }),
+    [totalPrice, addressForm.state, addressForm.pincode, hasTestItem],
+  );
+  const shippingCost = shippingQuote.cost;
 
   // COD eligibility: subtotal after coupon, no flash items, serviceable pincode
   const postCouponSubtotal = totalPrice - discountAmount;
@@ -1432,9 +1442,19 @@ const Checkout = () => {
                   <span>{formatPrice(finalTotal)}</span>
                 </div>
 
-                {shippingCost > 0 && (
+                {shippingQuote.zone === 'national' && shippingCost > 0 && totalPrice < 999 && (
                   <p className="text-xs text-muted-foreground mt-4">
                     Add {formatPrice(999 - totalPrice)} more for free shipping
+                  </p>
+                )}
+                {shippingQuote.zone === 'west_bengal' && (
+                  <p className="text-xs text-muted-foreground mt-4">
+                    West Bengal handling charge ₹{shippingCost} • Estimated delivery in {shippingQuote.deliveryDays} days
+                  </p>
+                )}
+                {shippingQuote.zone === 'national' && shippingCost === 0 && (
+                  <p className="text-xs text-success mt-4">
+                    🎉 Free shipping unlocked • Estimated delivery in {shippingQuote.deliveryDays} days
                   </p>
                 )}
 
