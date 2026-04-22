@@ -126,7 +126,7 @@ const ShippingPolicy = () => {
             <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
               <li>Please ensure your shipping address and phone number are correct to avoid delivery issues.</li>
               <li>All orders are prepaid via UPI, cards, or net banking.</li>
-              <li>In case of failed delivery attempts, the order will be returned to our warehouse.</li>
+              <li>Our courier partners will make up to <strong className="text-foreground">3 delivery attempts</strong>. If all attempts fail, the order will be returned to our warehouse.</li>
               <li>For bulk orders or special delivery requests, contact us at <span className="text-foreground">supportmuffigoutapparelhub@gmail.com</span>.</li>
             </ul>
           </section>
