@@ -214,7 +214,6 @@ const Checkout = () => {
 
       setAppliedCoupon({ code: data.code, discount_type: data.discount_type, discount_value: data.discount_value });
       setCouponCode(data.code);
-      setSavingsOpen(false);
       const couponBase = hasFlashSaleItems ? nonFlashSaleTotal : totalPrice;
       const savedAmount = data.discount_type === 'percentage' ? Math.round(couponBase * (data.discount_value / 100)) : Math.min(data.discount_value, couponBase);
       toast.success(`Coupon "${data.code}" applied — you save ₹${savedAmount}${hasFlashSaleItems ? ' (on non-sale items)' : ''}.`);
