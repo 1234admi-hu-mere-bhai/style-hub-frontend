@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn, Clock, Tag, X, ChevronDown, Heart, Check, Plus, Edit2, Zap } from 'lucide-react';
+import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn, Clock, Tag, X, ChevronDown, Heart, Check, Plus, Edit2, Zap, Banknote, LocateFixed } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { INDIAN_STATES, fetchCityStateFromPincode } from '@/data/indianStates';
 import Header from '@/components/Header';
@@ -22,6 +22,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAddresses } from '@/hooks/useAddresses';
 import { Address } from '@/data/user';
 import { checkoutAddressSchema } from '@/lib/validations';
+import { detectCurrentLocation } from '@/lib/geolocation';
+import { checkCodEligibility, COD_FEE } from '@/lib/codEligibility';
 
 const getEstimatedDeliveryDate = (days?: string) => {
   const deliveryDays = days ? parseInt(days) : 5;
