@@ -12,46 +12,59 @@ const ShippingPolicy = () => {
 
         <div className="space-y-10 text-foreground/90 leading-relaxed">
           {/* Quick Rules Summary */}
-          <section className="grid sm:grid-cols-2 gap-4">
-            <div className="rounded-xl border-2 border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <MapPin className="w-5 h-5 text-primary" />
-                <h3 className="font-serif text-lg font-semibold">West Bengal</h3>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-sm text-muted-foreground">Handling charge</span>
-                  <span className="font-semibold text-primary">₹20 flat</span>
+          <section className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+            <div className="rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5 p-5 sm:p-6 shadow-sm">
+              <div className="flex items-center gap-2.5 pb-3 mb-4 border-b border-primary/15">
+                <div className="w-9 h-9 rounded-full bg-primary/15 flex items-center justify-center shrink-0">
+                  <MapPin className="w-[18px] h-[18px] text-primary" />
                 </div>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-sm text-muted-foreground">Delivery time</span>
-                  <span className="font-semibold">5–7 business days</span>
+                <div>
+                  <p className="text-[11px] uppercase tracking-wider text-primary/80 font-medium">Zone 1</p>
+                  <h3 className="font-serif text-base sm:text-lg font-semibold leading-tight">West Bengal</h3>
                 </div>
-                <p className="text-xs text-muted-foreground pt-2 border-t border-primary/10">
-                  Applies to all orders shipped within West Bengal.
-                </p>
               </div>
+              <dl className="space-y-3">
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="text-sm text-muted-foreground">Handling charge</dt>
+                  <dd className="font-semibold text-primary text-base">₹20 flat</dd>
+                </div>
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="text-sm text-muted-foreground">Delivery time</dt>
+                  <dd className="font-semibold text-sm sm:text-base">5–7 business days</dd>
+                </div>
+              </dl>
+              <p className="text-xs text-muted-foreground mt-4 pt-3 border-t border-primary/10">
+                Applies to all orders shipped within West Bengal.
+              </p>
             </div>
 
-            <div className="rounded-xl border-2 border-border bg-secondary/40 p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <Truck className="w-5 h-5 text-foreground" />
-                <h3 className="font-serif text-lg font-semibold">Outside West Bengal</h3>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-baseline justify-between">
-                  <span className="text-sm text-muted-foreground">Orders ≥ ₹999</span>
-                  <span className="font-semibold text-primary">FREE</span>
+            <div className="rounded-2xl border-2 border-border bg-secondary/40 p-5 sm:p-6 shadow-sm">
+              <div className="flex items-center gap-2.5 pb-3 mb-4 border-b border-border">
+                <div className="w-9 h-9 rounded-full bg-foreground/10 flex items-center justify-center shrink-0">
+                  <Truck className="w-[18px] h-[18px] text-foreground" />
                 </div>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-sm text-muted-foreground">Orders &lt; ₹999</span>
-                  <span className="font-semibold">₹99</span>
-                </div>
-                <div className="flex items-baseline justify-between">
-                  <span className="text-sm text-muted-foreground">Delivery time</span>
-                  <span className="font-semibold">7–10 business days</span>
+                <div>
+                  <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">Zone 2</p>
+                  <h3 className="font-serif text-base sm:text-lg font-semibold leading-tight">Outside West Bengal</h3>
                 </div>
               </div>
+              <dl className="space-y-3">
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="text-sm text-muted-foreground">Orders ≥ ₹999</dt>
+                  <dd className="font-semibold text-primary text-base">FREE</dd>
+                </div>
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="text-sm text-muted-foreground">Orders &lt; ₹999</dt>
+                  <dd className="font-semibold text-sm sm:text-base">₹99</dd>
+                </div>
+                <div className="flex items-baseline justify-between gap-3">
+                  <dt className="text-sm text-muted-foreground">Delivery time</dt>
+                  <dd className="font-semibold text-sm sm:text-base">7–10 business days</dd>
+                </div>
+              </dl>
+              <p className="text-xs text-muted-foreground mt-4 pt-3 border-t border-border">
+                Standard pan-India shipping via trusted couriers.
+              </p>
             </div>
           </section>
 
