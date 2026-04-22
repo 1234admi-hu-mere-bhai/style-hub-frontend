@@ -6,6 +6,15 @@ import bhimLogo from '@/assets/payment-logos/bhim.svg';
 import upiLogo from '@/assets/payment-logos/upi.svg';
 import amazonpayLogo from '@/assets/payment-logos/amazonpay.svg';
 import mobikwikLogo from '@/assets/payment-logos/mobikwik.svg';
+import visaLogo from '@/assets/payment-logos/visa.svg';
+import mastercardLogo from '@/assets/payment-logos/mastercard.svg';
+import rupayLogo from '@/assets/payment-logos/rupay.png';
+import amexLogo from '@/assets/payment-logos/amex.svg';
+import sbiLogo from '@/assets/payment-logos/sbi.svg';
+import hdfcLogo from '@/assets/payment-logos/hdfc.svg';
+import iciciLogo from '@/assets/payment-logos/icici.svg';
+import axisLogo from '@/assets/payment-logos/axis.svg';
+import kotakLogo from '@/assets/payment-logos/kotak.svg';
 
 export type PaymentSubMethod = {
   id: string;
@@ -112,13 +121,18 @@ export const PaymentMethodPicker = ({ selectedId, onSelect }: Props) => {
           active={selectedId === 'card'}
           onClick={() => onSelect({ id: 'card', label: 'Credit / Debit Card', pg: 'CC', category: 'card' })}
         >
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 sm:w-11 sm:h-11 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shrink-0">
-              <CreditCard size={22} className="text-white" />
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="w-12 h-12 sm:w-11 sm:h-11 rounded-lg bg-white border border-border flex items-center justify-center shrink-0 p-1.5">
+              <CreditCard size={22} className="text-foreground" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="font-semibold text-sm">Credit / Debit Card</p>
-              <p className="text-[11px] text-muted-foreground">Visa, Mastercard, RuPay, Amex</p>
+              <div className="flex items-center gap-1.5 mt-1">
+                <img src={visaLogo} alt="Visa" className="h-4 w-auto object-contain" />
+                <img src={mastercardLogo} alt="Mastercard" className="h-5 w-auto object-contain" />
+                <img src={rupayLogo} alt="RuPay" className="h-3.5 w-auto object-contain" />
+                <img src={amexLogo} alt="Amex" className="h-5 w-auto object-contain" />
+              </div>
             </div>
           </div>
         </Tile>
@@ -136,13 +150,20 @@ export const PaymentMethodPicker = ({ selectedId, onSelect }: Props) => {
           active={selectedId === 'netbanking'}
           onClick={() => onSelect({ id: 'netbanking', label: 'Net Banking', pg: 'NB', category: 'netbanking' })}
         >
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 sm:w-11 sm:h-11 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center shrink-0">
-              <Building2 size={22} className="text-white" />
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="w-12 h-12 sm:w-11 sm:h-11 rounded-lg bg-white border border-border flex items-center justify-center shrink-0 p-1.5">
+              <Building2 size={22} className="text-foreground" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="font-semibold text-sm">All Indian Banks</p>
-              <p className="text-[11px] text-muted-foreground">SBI, HDFC, ICICI, Axis, Kotak & more</p>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                <img src={sbiLogo} alt="SBI" className="h-4 w-auto object-contain" />
+                <img src={hdfcLogo} alt="HDFC" className="h-3.5 w-auto object-contain" />
+                <img src={iciciLogo} alt="ICICI" className="h-3.5 w-auto object-contain" />
+                <img src={axisLogo} alt="Axis" className="h-3.5 w-auto object-contain" />
+                <img src={kotakLogo} alt="Kotak" className="h-4 w-auto object-contain" />
+                <span className="text-[10px] text-muted-foreground">+ more</span>
+              </div>
             </div>
           </div>
         </Tile>
