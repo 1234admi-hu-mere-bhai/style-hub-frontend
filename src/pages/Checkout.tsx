@@ -798,6 +798,39 @@ const Checkout = () => {
                         )}
                       </div>
                     )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={locatingUser}
+                      onClick={async () => {
+                        setLocatingUser(true);
+                        try {
+                          const loc = await detectCurrentLocation();
+                          setAddressForm(prev => ({
+                            ...prev,
+                            address: loc.address || prev.address,
+                            city: loc.city || prev.city,
+                            state: loc.state || prev.state,
+                            pincode: loc.pincode || prev.pincode,
+                          }));
+                          setAddressErrors({});
+                          toast.success('Location detected — please verify and fill remaining details.');
+                        } catch (err) {
+                          toast.error(err instanceof Error ? err.message : 'Could not detect your location.');
+                        } finally {
+                          setLocatingUser(false);
+                        }
+                      }}
+                      className="w-full sm:w-auto gap-2"
+                    >
+                      {locatingUser ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <LocateFixed className="h-4 w-4" />
+                      )}
+                      {locatingUser ? 'Detecting…' : 'Detect Current Location'}
+                    </Button>
                     <form className="space-y-4">
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
