@@ -42,7 +42,7 @@ const Checkout = () => {
       const ended = await revalidateCartPrices();
       if (ended) {
         setFlashSaleExpired(true);
-        toast.warning('⚡ Flash Sale has ended! Prices have been updated to original.', { duration: 8000 });
+        toast.warning('⚡ The Flash Sale has ended. Prices have been reset to standard.', { duration: 8000 });
       }
     };
     check();
@@ -174,9 +174,9 @@ const Checkout = () => {
   const finalTotal = totalPrice - discountAmount + shippingCost;
 
   const handleApplyCoupon = useCallback(async (codeOverride?: string) => {
-    if (allFlashSaleItems) { toast.error('All items are on Flash Sale — coupons not available'); return; }
+    if (allFlashSaleItems) { toast.error('Coupons cannot be combined with Flash Sale items.'); return; }
     const code = (codeOverride || couponCode).trim().toUpperCase();
-    if (!code) { toast.error('Please enter a coupon code'); return; }
+    if (!code) { toast.error('Please enter a coupon code.'); return; }
     setCouponLoading(true);
     try {
       const { data, error } = await supabase
@@ -186,25 +186,25 @@ const Checkout = () => {
         .eq('is_active', true)
         .single();
 
-      if (error || !data) { toast.error('Invalid coupon code'); setCouponLoading(false); return; }
-      if (data.expires_at && new Date(data.expires_at) < new Date()) { toast.error('This coupon has expired'); setCouponLoading(false); return; }
-      if (data.max_uses && data.used_count !== null && data.used_count >= data.max_uses) { toast.error('Coupon usage limit reached'); setCouponLoading(false); return; }
-      if (data.min_order_value && totalPrice < data.min_order_value) { toast.error(`Minimum order of ₹${data.min_order_value} required`); setCouponLoading(false); return; }
+      if (error || !data) { toast.error('This coupon code is not valid.'); setCouponLoading(false); return; }
+      if (data.expires_at && new Date(data.expires_at) < new Date()) { toast.error('This coupon has expired.'); setCouponLoading(false); return; }
+      if (data.max_uses && data.used_count !== null && data.used_count >= data.max_uses) { toast.error('This coupon has reached its usage limit.'); setCouponLoading(false); return; }
+      if (data.min_order_value && totalPrice < data.min_order_value) { toast.error(`A minimum order of ₹${data.min_order_value} is required for this coupon.`); setCouponLoading(false); return; }
 
       setAppliedCoupon({ code: data.code, discount_type: data.discount_type, discount_value: data.discount_value });
       setCouponCode(data.code);
       setSavingsOpen(false);
       const couponBase = hasFlashSaleItems ? nonFlashSaleTotal : totalPrice;
       const savedAmount = data.discount_type === 'percentage' ? Math.round(couponBase * (data.discount_value / 100)) : Math.min(data.discount_value, couponBase);
-      toast.success(`Coupon "${data.code}" applied! You save ₹${savedAmount}${hasFlashSaleItems ? ' (on non-sale items)' : ''}`);
+      toast.success(`Coupon "${data.code}" applied — you save ₹${savedAmount}${hasFlashSaleItems ? ' (on non-sale items)' : ''}.`);
     } catch {
-      toast.error('Failed to validate coupon');
+      toast.error('We could not validate this coupon. Please try again.');
     } finally {
       setCouponLoading(false);
     }
   }, [couponCode, totalPrice, allFlashSaleItems]);
 
-  const removeCoupon = () => { setAppliedCoupon(null); setCouponCode(''); toast.info('Coupon removed'); };
+  const removeCoupon = () => { setAppliedCoupon(null); setCouponCode(''); toast.info('Coupon removed.'); };
 
   const getCouponSavings = (coupon: any) => {
     const base = hasFlashSaleItems ? nonFlashSaleTotal : totalPrice;
@@ -265,7 +265,7 @@ const Checkout = () => {
   // PayU integration
   const { initiatePayment, isLoading: isPaymentLoading, isRateLimited, retryCountdown, retryAttempt, retryNow, cancelRetry } = usePayU({
     onSuccess: async (response: PayUResponse) => {
-      toast.success('Payment successful!', {
+      toast.success('Payment successful', {
         description: `Transaction ID: ${response.txnid}`,
       });
       
@@ -292,32 +292,32 @@ const Checkout = () => {
         navigateToConfirmation(order.order_number, response.txnid);
       } catch (error) {
         console.error('Failed to create order:', error);
-        toast.error('Failed to create order. Please contact support.');
+        toast.error('We could not create your order. Please contact support.');
       } finally {
         setIsPlacingOrder(false);
       }
     },
     onError: async (error) => {
-      toast.error('Payment failed', { description: error.message });
+      toast.error('Payment unsuccessful', { description: error.message });
       const ended = await revalidateCartPrices();
       if (ended) {
         setFlashSaleExpired(true);
-        toast.warning('⚡ Flash Sale has ended! Prices have been updated. Please review your order.', { duration: 10000 });
+        toast.warning('⚡ The Flash Sale has ended. Prices have been updated — please review your order.', { duration: 10000 });
       }
     },
     onDismiss: async () => {
-      toast.info('Payment cancelled');
+      toast.info('Payment cancelled.');
       const ended = await revalidateCartPrices();
       if (ended) {
         setFlashSaleExpired(true);
-        toast.warning('⚡ Flash Sale has ended! Prices have been updated. Please review your order.', { duration: 10000 });
+        toast.warning('⚡ The Flash Sale has ended. Prices have been updated — please review your order.', { duration: 10000 });
       }
     },
   });
 
   const handlePlaceOrder = async () => {
     if (!user) {
-      toast.error('Please log in to place an order');
+      toast.error('Please sign in to place your order.');
       navigate('/auth');
       return;
     }
@@ -425,7 +425,7 @@ const Checkout = () => {
     setSelectedAddressId(newAddr.id);
     setShowNewAddressForm(false);
     setEditingAddressId(null);
-    toast.success('Address saved!');
+    toast.success('Address saved.');
   };
 
   const handleEditAddress = (addr: Address) => {
@@ -472,7 +472,7 @@ const Checkout = () => {
     setSelectedAddressId(editingAddressId);
     setShowNewAddressForm(false);
     setEditingAddressId(null);
-    toast.success('Address updated!');
+    toast.success('Address updated.');
   };
 
   const stepLabels = ['Address', 'Review', 'Payment'];
@@ -482,12 +482,12 @@ const Checkout = () => {
   const handleContinue = () => {
     if (step === 'address') {
       if (showNewAddressForm) {
-        toast.error('Please save your new address first');
+        toast.error('Please save your new address before continuing.');
         return;
       }
       // If user has saved addresses, they must select one
       if (savedAddresses.length > 0 && !selectedAddressId) {
-        toast.error('Please select a delivery address');
+        toast.error('Please select a delivery address.');
         return;
       }
       // If no saved addresses, validate the inline form
