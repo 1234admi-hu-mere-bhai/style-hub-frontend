@@ -1142,14 +1142,26 @@ const Checkout = () => {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <CreditCard size={16} className="text-primary" />
-                          <span className="font-semibold text-sm">Pay Online (UPI / Cards / Net Banking)</span>
+                          <span className="font-semibold text-sm">Pay Online</span>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Secure payment via PayU. UPI, Credit/Debit Cards, Net Banking and Wallets supported.
+                          {onlineSubMethod
+                            ? `Selected: ${onlineSubMethod.label}`
+                            : 'Choose UPI, Cards, Net Banking, or Wallet below'}
                         </p>
                       </div>
                     </div>
                   </button>
+
+                  {/* Sub-method picker — visible when Online is selected */}
+                  {paymentMethod === 'online' && (
+                    <div className="ml-2 pl-4 border-l-2 border-primary/20 py-2">
+                      <PaymentMethodPicker
+                        selectedId={onlineSubMethod?.id ?? null}
+                        onSelect={setOnlineSubMethod}
+                      />
+                    </div>
+                  )}
 
                   {/* Cash on Delivery */}
                   <button
