@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { usePayU, PayUResponse } from '@/hooks/usePayU';
+import { PaymentMethodPicker, PaymentSubMethod } from '@/components/PaymentMethodPicker';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAddresses } from '@/hooks/useAddresses';
@@ -59,6 +60,7 @@ const Checkout = () => {
   const items = isBuyNow ? [buyNowItem!] : cartItems;
   const totalPrice = isBuyNow ? buyNowItem!.price * buyNowItem!.quantity : cartTotalPrice;
   const [paymentMethod, setPaymentMethod] = useState<'online' | 'cod'>('online');
+  const [onlineSubMethod, setOnlineSubMethod] = useState<PaymentSubMethod | null>(null);
   const [step, setStep] = useState<'address' | 'payment' | 'summary'>('address');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [showPriceDetails, setShowPriceDetails] = useState(false);
@@ -427,6 +429,8 @@ const Checkout = () => {
       customerEmail: user.email,
       customerPhone: addressForm.phone,
       description: `Order of ${items.length} item(s) from MUFFIGOUT APPAREL HUB`,
+      pg: onlineSubMethod?.pg,
+      bankcode: onlineSubMethod?.bankcode,
       checkout: {
         items: checkoutItems,
         subtotal: totalPrice,
@@ -1138,14 +1142,26 @@ const Checkout = () => {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <CreditCard size={16} className="text-primary" />
-                          <span className="font-semibold text-sm">Pay Online (UPI / Cards / Net Banking)</span>
+                          <span className="font-semibold text-sm">Pay Online</span>
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Secure payment via PayU. UPI, Credit/Debit Cards, Net Banking and Wallets supported.
+                          {onlineSubMethod
+                            ? `Selected: ${onlineSubMethod.label}`
+                            : 'Choose UPI, Cards, Net Banking, or Wallet below'}
                         </p>
                       </div>
                     </div>
                   </button>
+
+                  {/* Sub-method picker — visible when Online is selected */}
+                  {paymentMethod === 'online' && (
+                    <div className="ml-2 pl-4 border-l-2 border-primary/20 py-2">
+                      <PaymentMethodPicker
+                        selectedId={onlineSubMethod?.id ?? null}
+                        onSelect={setOnlineSubMethod}
+                      />
+                    </div>
+                  )}
 
                   {/* Cash on Delivery */}
                   <button
