@@ -1161,6 +1161,30 @@ const Checkout = () => {
               </div>
             )}
 
+            {/* Delivery Address Card — sits between cart items and Price Details on Review step */}
+            {step === 'summary' && addressForm.firstName && (
+              <div className="bg-card p-4 rounded-lg border border-border">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <MapPin size={18} className="text-primary mt-0.5 shrink-0" />
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-sm">Delivery Address</h3>
+                      <p className="text-sm font-medium mt-1 truncate">
+                        {addressForm.firstName} {addressForm.lastName}
+                        <span className="text-muted-foreground"> • {addressForm.phone}</span>
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {addressForm.address}{addressForm.landmark ? `, ${addressForm.landmark}` : ''}, {addressForm.city}, {addressForm.state}, {addressForm.pincode}
+                      </p>
+                    </div>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => setStep('address')} className="shrink-0">
+                    Change
+                  </Button>
+                </div>
+              </div>
+            )}
+
             {/* Price Details Section - only on summary/review step */}
             {step === 'summary' && (
               <div className="bg-card p-4 rounded-lg border border-border">
