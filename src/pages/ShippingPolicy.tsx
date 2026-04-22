@@ -19,14 +19,18 @@ const ShippingPolicy = () => {
               </div>
               <h2 className="font-serif text-xl font-semibold">Shipping Charges</h2>
             </div>
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-3 gap-4">
+              <div className="bg-background rounded-lg p-4 border">
+                <p className="font-semibold text-lg text-primary">₹20</p>
+                <p className="text-muted-foreground text-sm">West Bengal handling charge (flat, all orders)</p>
+              </div>
               <div className="bg-background rounded-lg p-4 border">
                 <p className="font-semibold text-lg text-primary">FREE</p>
-                <p className="text-muted-foreground text-sm">On orders above ₹999</p>
+                <p className="text-muted-foreground text-sm">Outside West Bengal, on orders above ₹999</p>
               </div>
               <div className="bg-background rounded-lg p-4 border">
                 <p className="font-semibold text-lg">₹99</p>
-                <p className="text-muted-foreground text-sm">Standard shipping for orders below ₹999</p>
+                <p className="text-muted-foreground text-sm">Outside West Bengal, on orders below ₹999</p>
               </div>
             </div>
           </section>
@@ -49,20 +53,12 @@ const ShippingPolicy = () => {
                 </thead>
                 <tbody className="divide-y divide-border">
                   <tr>
-                    <td className="px-4 py-3 text-sm">West Bengal (Local)</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">3–5 business days</td>
+                    <td className="px-4 py-3 text-sm">West Bengal (intra-state)</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">7 business days</td>
                   </tr>
                   <tr>
-                    <td className="px-4 py-3 text-sm">Metro Cities (Delhi, Mumbai, Bangalore, etc.)</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">7–10 business days</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-3 text-sm">Rest of India</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">10–15 business days</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-3 text-sm">Remote / Rural Areas</td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">15–20 business days</td>
+                    <td className="px-4 py-3 text-sm">Outside West Bengal (Rest of India)</td>
+                    <td className="px-4 py-3 text-sm text-muted-foreground">10 business days</td>
                   </tr>
                 </tbody>
               </table>
