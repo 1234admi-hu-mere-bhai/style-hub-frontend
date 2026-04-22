@@ -14,8 +14,8 @@ const AboutUs = () => {
             <img src={logoNew} alt="Muffigout Apparel Hub" className="h-20 w-20 rounded-full mx-auto mb-6 shadow-lg" />
             <h1 className="font-serif text-4xl lg:text-5xl font-bold mb-4">Our Story</h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Born from a passion for quality and a commitment to trust, Muffigout Apparel Hub was founded with one simple belief —
-              every man deserves clothing that's crafted with care, built to last, and priced fairly.
+              Built on a passion for quality and a commitment to trust, Muffigout Apparel Hub was founded on a single principle —
+              every man deserves clothing that is crafted with care, made to last, and priced with honesty.
             </p>
           </div>
         </section>
@@ -26,17 +26,17 @@ const AboutUs = () => {
             <h2 className="font-serif text-2xl lg:text-3xl font-bold mb-6 text-center">How It All Began</h2>
             <div className="space-y-5 text-muted-foreground leading-relaxed">
               <p>
-                Muffigout Apparel Hub started as a dream in the heart of Purba Bardhaman, West Bengal. We noticed a gap in the market —
-                men's fashion that was both stylish and affordable, without compromising on quality. Too often, customers had to choose
-                between looking good and getting value for their money.
+                Muffigout Apparel Hub began as a vision in Purba Bardhaman, West Bengal. We saw a clear gap in the market —
+                men's fashion that was both stylish and accessible, without compromising on quality. Customers were too often forced
+                to choose between great design and genuine value.
               </p>
               <p>
-                We set out to change that. Starting with a small collection of carefully curated men's clothing, we focused on what matters
-                most: <strong className="text-foreground">premium fabrics, impeccable craftsmanship, and designs that speak for themselves.</strong>
+                We set out to change that. Starting with a carefully curated range of men's essentials, we focused on what truly matters:
+                <strong className="text-foreground"> premium fabrics, refined craftsmanship, and designs that speak for themselves.</strong>
               </p>
               <p>
-                Today, Muffigout Apparel Hub has grown into a trusted destination for men who value quality and style. Every piece in our
-                collection is handpicked and tested to meet our high standards before it reaches your wardrobe.
+                Today, Muffigout Apparel Hub is a trusted destination for discerning men who value quality and style.
+                Every piece in our collection is handpicked and inspected to meet our standards before it reaches your wardrobe.
               </p>
             </div>
           </div>
@@ -52,8 +52,8 @@ const AboutUs = () => {
                 </div>
                 <h3 className="font-serif text-xl font-bold mb-3">Our Mission</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  To provide every man with access to high-quality, stylish clothing at honest prices — making fashion
-                  that's trustworthy, comfortable, and built to last.
+                  To make high-quality, considered menswear accessible to every customer — designed for comfort,
+                  built to last, and priced with integrity.
                 </p>
               </div>
               <div className="bg-card border border-border rounded-2xl p-8 text-center">
@@ -62,8 +62,8 @@ const AboutUs = () => {
                 </div>
                 <h3 className="font-serif text-xl font-bold mb-3">Our Vision</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  To become India's most trusted men's fashion brand — known for uncompromising quality, ethical practices,
-                  and a customer-first approach that sets new standards in the industry.
+                  To become India's most trusted men's fashion brand — recognised for uncompromising quality,
+                  ethical practices, and a customer-first approach that raises industry standards.
                 </p>
               </div>
               <div className="bg-card border border-border rounded-2xl p-8 text-center">
@@ -72,8 +72,8 @@ const AboutUs = () => {
                 </div>
                 <h3 className="font-serif text-xl font-bold mb-3">Our Promise</h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  Every product we sell carries our promise of quality. If it doesn't meet your expectations,
-                  we'll make it right — no questions asked. Your trust is everything to us.
+                  Every product carries our promise of quality. If anything falls short of your expectations,
+                  we'll make it right. Your trust is the foundation of everything we do.
                 </p>
               </div>
             </div>
@@ -126,14 +126,14 @@ const AboutUs = () => {
           <div className="container mx-auto px-4 text-center max-w-2xl">
             <h2 className="font-serif text-3xl lg:text-4xl font-bold mb-4">Crafted with Trust, Worn with Pride</h2>
             <p className="text-primary-foreground/80 mb-8">
-              Join thousands of customers who trust Muffigout Apparel Hub for quality men's fashion.
-              Experience the difference that genuine craftsmanship makes.
+              Join the customers who trust Muffigout Apparel Hub for considered men's fashion.
+              Experience the difference of genuine craftsmanship.
             </p>
             <a
               href="/products"
               className="inline-flex items-center gap-2 bg-primary-foreground text-primary font-semibold px-8 py-3 rounded-lg hover:bg-primary-foreground/90 transition-colors"
             >
-              Explore Our Collection
+              Explore the Collection
             </a>
           </div>
         </section>
