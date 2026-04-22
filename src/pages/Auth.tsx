@@ -65,14 +65,14 @@ const Auth = () => {
     
     if (error) {
       if (error.message.includes('Invalid login credentials') || error.message.includes('invalid_credentials')) {
-        toast.error('Invalid email or password. Please check and try again.');
+        toast.error('Incorrect email or password. Please try again.');
       } else if (error.message.includes('Email not confirmed')) {
-        toast.error('Please verify your email before signing in.');
+        toast.error('Please verify your email address before signing in.');
       } else {
         toast.error(error.message);
       }
     } else {
-      toast.success('Welcome back!');
+      toast.success('Welcome back to MUFFIGOUT.');
     }
   };
 
@@ -103,14 +103,14 @@ const Auth = () => {
     
     if (error) {
       if (error.message.includes('already registered') || error.message.includes('already been registered')) {
-        toast.error('This email is already registered. Please sign in instead.');
+        toast.error('An account with this email already exists. Please sign in instead.');
         setActiveTab('login');
         setLoginForm({ ...loginForm, email: trimmedEmail });
       } else {
         toast.error(error.message);
       }
     } else {
-      toast.success('Account created successfully!');
+      toast.success('Your account has been created successfully.');
     }
   };
 
@@ -120,7 +120,7 @@ const Auth = () => {
       redirect_uri: window.location.origin,
     });
     if (error) {
-      toast.error('Google sign-in failed. Please try again.');
+      toast.error('Google sign-in could not be completed. Please try again.');
       setGoogleLoading(false);
     }
   };
@@ -141,14 +141,14 @@ const Auth = () => {
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
             <h1 className="font-serif text-3xl font-bold mb-2">Welcome to MUFFIGOUT</h1>
-            <p className="text-muted-foreground">Sign in to your account or create a new one</p>
+            <p className="text-muted-foreground">Sign in to your account or create a new one to continue.</p>
           </div>
           
           <div className="bg-card p-6 rounded-lg border border-border">
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="login">Sign In</TabsTrigger>
-                <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                <TabsTrigger value="signup">Create Account</TabsTrigger>
               </TabsList>
               
               <TabsContent value="login">
@@ -190,7 +190,7 @@ const Auth = () => {
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Signing in...
+                        Signing you in…
                       </>
                     ) : (
                       'Sign In'
@@ -278,7 +278,7 @@ const Auth = () => {
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating account...
+                        Creating your account…
                       </>
                     ) : (
                       'Create Account'
