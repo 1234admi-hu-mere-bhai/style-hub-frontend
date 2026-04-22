@@ -68,9 +68,23 @@ const Checkout = () => {
 
   // Coupon state
   const [couponCode, setCouponCode] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_type: string; discount_value: number } | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_type: string; discount_value: number } | null>(() => {
+    try {
+      const saved = localStorage.getItem('applied-coupon');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
   const [couponLoading, setCouponLoading] = useState(false);
   const autoApplyAttempted = useRef(false);
+
+  // Persist applied coupon so /coupons page knows what's active
+  useEffect(() => {
+    if (appliedCoupon) {
+      localStorage.setItem('applied-coupon', JSON.stringify(appliedCoupon));
+    } else {
+      localStorage.removeItem('applied-coupon');
+    }
+  }, [appliedCoupon]);
   
   // Saved addresses
   const { addresses: savedAddresses, setAddresses: setSavedAddresses } = useAddresses();
