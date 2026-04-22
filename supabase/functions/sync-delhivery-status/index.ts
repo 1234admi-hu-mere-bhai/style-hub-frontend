@@ -12,7 +12,9 @@ function mapDelhiveryStatus(delhiveryStatus: string): string | null {
   const s = delhiveryStatus?.toLowerCase() || '';
   if (s.includes('delivered')) return 'delivered';
   if (s.includes('out for delivery') || s.includes('out_for_delivery')) return 'out_for_delivery';
-  if (s.includes('in transit') || s.includes('dispatched') || s.includes('picked up') || s.includes('shipped')) return 'shipped';
+  // Distinguish "picked up" (return courier collected) from generic in-transit
+  if (s.includes('picked up') || s.includes('picked_up') || s.includes('pickup done')) return 'picked_up';
+  if (s.includes('in transit') || s.includes('dispatched') || s.includes('shipped')) return 'shipped';
   if (s.includes('cancelled') || s.includes('rto')) return 'cancelled';
   // Manifested means Delhivery has accepted the shipment but pickup hasn't happened yet
   // → auto-confirm the order so it moves out of "placed"
@@ -38,12 +40,14 @@ Deno.serve(async (req) => {
   const serviceClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   try {
-    // Fetch all orders that have a tracking AWB and are not in a terminal state
+    // Fetch all orders that have a tracking AWB and are not in a terminal state.
+    // Includes return/replacement statuses so we can detect when courier picks the package up
+    // and auto-fire a refund.
     const { data: orders, error: fetchError } = await serviceClient
       .from('orders')
-      .select('id, tracking_awb, status')
+      .select('id, tracking_awb, status, payment_method, payment_status')
       .not('tracking_awb', 'is', null)
-      .not('status', 'in', '("delivered","cancelled","replacement_delivered")');
+      .not('status', 'in', '("delivered","cancelled","replacement_delivered","refund_processed")');
 
     if (fetchError) throw fetchError;
 
@@ -83,7 +87,29 @@ Deno.serve(async (req) => {
 
         if (!newStatus || newStatus === order.status) continue;
 
-        // Only progress forward (don't regress status)
+        // Special-case: if order is in return flow (return_approved / picked_up_pending),
+        // a Delhivery "picked up" status means the package was collected from customer →
+        // trigger automatic refund.
+        const inReturnFlow = ['return_approved', 'return_requested', 'picked_up_pending'].includes(order.status);
+        if (newStatus === 'picked_up' && inReturnFlow) {
+          await serviceClient
+            .from('orders')
+            .update({ status: 'picked_up', updated_at: new Date().toISOString() })
+            .eq('id', order.id);
+
+          // Fire-and-forget refund (idempotent on the function side)
+          try {
+            await serviceClient.functions.invoke('payu-refund', {
+              body: { orderId: order.id },
+            });
+          } catch (e) {
+            console.error(`Refund trigger failed for ${order.id}:`, e);
+          }
+          updated++;
+          continue;
+        }
+
+        // Only progress forward (don't regress status) for normal forward flow
         const statusOrder = ['placed', 'confirmed', 'shipped', 'out_for_delivery', 'delivered'];
         const currentIdx = statusOrder.indexOf(order.status);
         const newIdx = statusOrder.indexOf(newStatus);

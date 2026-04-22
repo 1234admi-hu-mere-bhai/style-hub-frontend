@@ -464,7 +464,7 @@ const Payments = () => {
 
             {paymentMethods.length === 0 ? (
               <div className="text-center py-12 bg-card rounded-lg border border-border">
-                <Wallet size={48} className="mx-auto text-muted-foreground mb-4" />
+                <CreditCard size={48} className="mx-auto text-muted-foreground mb-4" />
                 <h3 className="font-semibold text-lg mb-2">No saved payment methods</h3>
                 <p className="text-muted-foreground mb-4">
                   Add a payment method for faster checkout
