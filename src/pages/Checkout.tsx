@@ -236,16 +236,7 @@ const Checkout = () => {
     }
   }, [searchParams, appliedCoupon, items.length, allFlashSaleItems, handleApplyCoupon]);
 
-  const getCouponSavings = (coupon: any) => {
-    const base = hasFlashSaleItems ? nonFlashSaleTotal : totalPrice;
-    if (coupon.discount_type === 'percentage') return Math.round(base * (coupon.discount_value / 100));
-    return Math.min(coupon.discount_value, base);
-  };
 
-  const getAmountNeeded = (coupon: any) => {
-    if (coupon.min_order_value && totalPrice < coupon.min_order_value) return coupon.min_order_value - totalPrice;
-    return 0;
-  };
 
   const handleMoveToWishlist = (item: typeof items[0]) => {
     addToWishlist({ id: item.id, name: item.name, price: item.price, originalPrice: item.originalPrice, image: item.image });
