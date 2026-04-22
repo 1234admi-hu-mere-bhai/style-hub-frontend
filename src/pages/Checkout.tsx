@@ -1525,6 +1525,12 @@ const Checkout = () => {
                   {shippingCost === 0 ? 'FREE' : formatPrice(shippingCost)}
                 </span>
               </div>
+              {codFee > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">COD Fee</span>
+                  <span>{formatPrice(codFee)}</span>
+                </div>
+              )}
               <Separator />
               <div className="flex justify-between font-bold">
                 <span>Order Total</span>
