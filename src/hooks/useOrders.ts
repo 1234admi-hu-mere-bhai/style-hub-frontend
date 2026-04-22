@@ -26,6 +26,7 @@ interface CreateOrderParams {
   items: OrderItem[];
   subtotal: number;
   shippingCost: number;
+  codFee?: number;
   total: number;
   shippingAddress: ShippingAddress;
   paymentMethod: string;
@@ -43,15 +44,19 @@ export const generateOrderNumber = () => {
 export const createOrder = async (params: CreateOrderParams) => {
   const orderNumber = generateOrderNumber();
 
+  // For COD orders payment_status starts as 'cod_pending', for prepaid 'pending'.
+  const isCod = params.paymentMethod.toLowerCase().includes('cash');
+
   const orderData = {
     user_id: params.userId,
     order_number: orderNumber,
     status: 'placed',
     payment_method: params.paymentMethod,
-    payment_status: 'pending',
+    payment_status: isCod ? 'cod_pending' : 'pending',
     payment_id: params.paymentId || null,
     subtotal: params.subtotal,
     shipping_cost: params.shippingCost,
+    cod_fee: params.codFee || 0,
     total: params.total,
     shipping_address: JSON.parse(JSON.stringify(params.shippingAddress)),
   };

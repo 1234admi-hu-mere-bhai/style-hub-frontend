@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn, Clock, Tag, X, ChevronDown, Heart, Check, Plus, Edit2, Zap } from 'lucide-react';
+import { CreditCard, Truck, MapPin, ChevronRight, Loader2, LogIn, Clock, Tag, X, ChevronDown, Heart, Check, Plus, Edit2, Zap, Banknote, LocateFixed } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { INDIAN_STATES, fetchCityStateFromPincode } from '@/data/indianStates';
 import Header from '@/components/Header';
@@ -22,6 +22,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAddresses } from '@/hooks/useAddresses';
 import { Address } from '@/data/user';
 import { checkoutAddressSchema } from '@/lib/validations';
+import { detectCurrentLocation } from '@/lib/geolocation';
+import { checkCodEligibility, COD_FEE } from '@/lib/codEligibility';
 
 const getEstimatedDeliveryDate = (days?: string) => {
   const deliveryDays = days ? parseInt(days) : 5;
@@ -55,10 +57,11 @@ const Checkout = () => {
   const isBuyNow = searchParams.get('buyNow') === 'true' && buyNowItem !== null;
   const items = isBuyNow ? [buyNowItem!] : cartItems;
   const totalPrice = isBuyNow ? buyNowItem!.price * buyNowItem!.quantity : cartTotalPrice;
-  const [paymentMethod, setPaymentMethod] = useState('online');
+  const [paymentMethod, setPaymentMethod] = useState<'online' | 'cod'>('online');
   const [step, setStep] = useState<'address' | 'payment' | 'summary'>('address');
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [showPriceDetails, setShowPriceDetails] = useState(false);
+  const [locatingUser, setLocatingUser] = useState(false);
 
   // Coupon state
   const [couponCode, setCouponCode] = useState('');
@@ -171,7 +174,28 @@ const Checkout = () => {
   // Free shipping if cart contains a ₹1 test product or subtotal ≥ ₹999
   const hasTestItem = items.some(i => i.price <= 1);
   const shippingCost = hasTestItem || totalPrice >= 999 ? 0 : 99;
-  const finalTotal = totalPrice - discountAmount + shippingCost;
+
+  // COD eligibility: subtotal after coupon, no flash items, serviceable pincode
+  const postCouponSubtotal = totalPrice - discountAmount;
+  const codEligibility = useMemo(
+    () =>
+      checkCodEligibility({
+        postCouponSubtotal,
+        hasFlashSaleItems,
+        pincode: addressForm.pincode,
+      }),
+    [postCouponSubtotal, hasFlashSaleItems, addressForm.pincode],
+  );
+
+  // Auto-switch back to online if user picked COD then became ineligible
+  useEffect(() => {
+    if (paymentMethod === 'cod' && !codEligibility.eligible) {
+      setPaymentMethod('online');
+    }
+  }, [codEligibility.eligible, paymentMethod]);
+
+  const codFee = paymentMethod === 'cod' && codEligibility.eligible ? COD_FEE : 0;
+  const finalTotal = totalPrice - discountAmount + shippingCost + codFee;
 
   const handleApplyCoupon = useCallback(async (codeOverride?: string) => {
     if (allFlashSaleItems) { toast.error('Coupons cannot be combined with Flash Sale items.'); return; }
@@ -255,8 +279,9 @@ const Checkout = () => {
       })),
       total: finalTotal,
       shippingCost,
+      codFee,
       address: addressForm,
-      paymentMethod: 'Online Payment (PayU)',
+      paymentMethod: paymentMethod === 'cod' ? 'Cash on Delivery' : 'Online Payment (PayU)',
     };
     if (isBuyNow) { setBuyNowItem(null); } else { clearCart(); }
     navigate('/order-confirmation', { state: orderDetails });
@@ -322,7 +347,44 @@ const Checkout = () => {
       return;
     }
 
-    // Store checkout data in sessionStorage for PayU callback
+    // ── Cash on Delivery branch ──
+    if (paymentMethod === 'cod') {
+      if (!codEligibility.eligible) {
+        toast.error(codEligibility.reason || 'Cash on Delivery is not available for this order.');
+        return;
+      }
+      try {
+        setIsPlacingOrder(true);
+        const order = await createOrder({
+          userId: user.id,
+          items: items.map(item => ({
+            product_id: item.id,
+            product_name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            size: item.size,
+            color: item.color,
+            image: item.image,
+          })),
+          subtotal: totalPrice,
+          shippingCost,
+          codFee,
+          total: finalTotal,
+          shippingAddress: addressForm,
+          paymentMethod: 'Cash on Delivery',
+        });
+        toast.success('Order placed — pay on delivery.');
+        navigateToConfirmation(order.order_number);
+      } catch (error) {
+        console.error('Failed to create COD order:', error);
+        toast.error('We could not place your order. Please try again.');
+      } finally {
+        setIsPlacingOrder(false);
+      }
+      return;
+    }
+
+    // ── PayU (online) branch ──
     sessionStorage.setItem('payu_checkout', JSON.stringify({
       items: items.map(item => ({
         product_id: item.id,
@@ -340,9 +402,6 @@ const Checkout = () => {
       isBuyNow,
     }));
 
-    // Initiate PayU payment — checkout payload is persisted server-side
-    // by payu-hash so order can be created via webhook even if browser
-    // session is lost.
     const checkoutItems = items.map(item => ({
       product_id: item.id,
       product_name: item.name,
@@ -739,6 +798,39 @@ const Checkout = () => {
                         )}
                       </div>
                     )}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={locatingUser}
+                      onClick={async () => {
+                        setLocatingUser(true);
+                        try {
+                          const loc = await detectCurrentLocation();
+                          setAddressForm(prev => ({
+                            ...prev,
+                            address: loc.address || prev.address,
+                            city: loc.city || prev.city,
+                            state: loc.state || prev.state,
+                            pincode: loc.pincode || prev.pincode,
+                          }));
+                          setAddressErrors({});
+                          toast.success('Location detected — please verify and fill remaining details.');
+                        } catch (err) {
+                          toast.error(err instanceof Error ? err.message : 'Could not detect your location.');
+                        } finally {
+                          setLocatingUser(false);
+                        }
+                      }}
+                      className="w-full sm:w-auto gap-2"
+                    >
+                      {locatingUser ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <LocateFixed className="h-4 w-4" />
+                      )}
+                      {locatingUser ? 'Detecting…' : 'Detect Current Location'}
+                    </Button>
                     <form className="space-y-4">
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -1015,14 +1107,77 @@ const Checkout = () => {
                   <CreditCard size={20} />
                   Payment Method
                 </h2>
-                <div className="p-4 bg-secondary/50 rounded-lg">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="font-semibold text-primary text-lg">PayU</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    You'll be redirected to PayU's secure gateway to complete your payment.
-                    UPI, Credit/Debit Cards, Net Banking and Wallets are supported.
-                  </p>
+
+                <div className="space-y-3">
+                  {/* Online (PayU) */}
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('online')}
+                    className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                      paymentMethod === 'online'
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-muted-foreground/40'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        paymentMethod === 'online' ? 'border-primary bg-primary' : 'border-muted-foreground/40'
+                      }`}>
+                        {paymentMethod === 'online' && <Check size={12} className="text-primary-foreground" />}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <CreditCard size={16} className="text-primary" />
+                          <span className="font-semibold text-sm">Pay Online (UPI / Cards / Net Banking)</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Secure payment via PayU. UPI, Credit/Debit Cards, Net Banking and Wallets supported.
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Cash on Delivery */}
+                  <button
+                    type="button"
+                    disabled={!codEligibility.eligible}
+                    onClick={() => codEligibility.eligible && setPaymentMethod('cod')}
+                    className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                      !codEligibility.eligible
+                        ? 'border-border bg-muted/30 opacity-60 cursor-not-allowed'
+                        : paymentMethod === 'cod'
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-muted-foreground/40'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        paymentMethod === 'cod' && codEligibility.eligible
+                          ? 'border-primary bg-primary'
+                          : 'border-muted-foreground/40'
+                      }`}>
+                        {paymentMethod === 'cod' && codEligibility.eligible && (
+                          <Check size={12} className="text-primary-foreground" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Banknote size={16} className="text-primary" />
+                          <span className="font-semibold text-sm">Cash on Delivery</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-accent/15 text-accent rounded">
+                            +{formatPrice(COD_FEE)} fee
+                          </span>
+                        </div>
+                        {codEligibility.eligible ? (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Pay in cash when your order arrives. A {formatPrice(COD_FEE)} handling fee applies.
+                          </p>
+                        ) : (
+                          <p className="text-xs text-destructive mt-1">{codEligibility.reason}</p>
+                        )}
+                      </div>
+                    </div>
+                  </button>
                 </div>
               </div>
             )}
@@ -1057,6 +1212,12 @@ const Checkout = () => {
                       {shippingCost === 0 ? 'FREE' : `+ ${formatPrice(shippingCost)}`}
                     </span>
                   </div>
+                  {codFee > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">COD Handling Fee</span>
+                      <span>+ {formatPrice(codFee)}</span>
+                    </div>
+                  )}
                   <Separator className="my-2" />
                   <div className="flex justify-between font-bold text-base">
                     <span>Order Total</span>
@@ -1256,6 +1417,12 @@ const Checkout = () => {
                       {shippingCost === 0 ? 'FREE' : formatPrice(shippingCost)}
                     </span>
                   </div>
+                  {codFee > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">COD Fee</span>
+                      <span>{formatPrice(codFee)}</span>
+                    </div>
+                  )}
                 </div>
 
                 <Separator className="my-4" />
@@ -1331,7 +1498,7 @@ const Checkout = () => {
                     Processing…
                   </>
                 ) : step === 'payment' ? (
-                  `Pay ${formatPrice(finalTotal)}`
+                  paymentMethod === 'cod' ? `Place Order · ${formatPrice(finalTotal)}` : `Pay ${formatPrice(finalTotal)}`
                 ) : (
                   'Continue'
                 )}
@@ -1358,6 +1525,12 @@ const Checkout = () => {
                   {shippingCost === 0 ? 'FREE' : formatPrice(shippingCost)}
                 </span>
               </div>
+              {codFee > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">COD Fee</span>
+                  <span>{formatPrice(codFee)}</span>
+                </div>
+              )}
               <Separator />
               <div className="flex justify-between font-bold">
                 <span>Order Total</span>

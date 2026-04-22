@@ -289,6 +289,7 @@ export type Database = {
       orders: {
         Row: {
           cancellation_reason: string | null
+          cod_fee: number
           created_at: string
           delivered_at: string | null
           id: string
@@ -300,6 +301,7 @@ export type Database = {
           payment_status: string
           refund_amount: number | null
           refund_eta: string | null
+          refund_method: string | null
           refund_processed_at: string | null
           rejection_reason: string | null
           return_reason: string | null
@@ -314,6 +316,7 @@ export type Database = {
         }
         Insert: {
           cancellation_reason?: string | null
+          cod_fee?: number
           created_at?: string
           delivered_at?: string | null
           id?: string
@@ -325,6 +328,7 @@ export type Database = {
           payment_status?: string
           refund_amount?: number | null
           refund_eta?: string | null
+          refund_method?: string | null
           refund_processed_at?: string | null
           rejection_reason?: string | null
           return_reason?: string | null
@@ -339,6 +343,7 @@ export type Database = {
         }
         Update: {
           cancellation_reason?: string | null
+          cod_fee?: number
           created_at?: string
           delivered_at?: string | null
           id?: string
@@ -350,6 +355,7 @@ export type Database = {
           payment_status?: string
           refund_amount?: number | null
           refund_eta?: string | null
+          refund_method?: string | null
           refund_processed_at?: string | null
           rejection_reason?: string | null
           return_reason?: string | null
@@ -601,6 +607,63 @@ export type Database = {
         }
         Relationships: []
       }
+      returns: {
+        Row: {
+          auto_approved: boolean
+          created_at: string
+          id: string
+          images: string[] | null
+          manual_review_reason: string | null
+          order_id: string
+          payu_refund_id: string | null
+          picked_up_at: string | null
+          reason_code: string
+          reason_details: string | null
+          refund_amount: number
+          refund_method: string
+          refunded_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_approved?: boolean
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          manual_review_reason?: string | null
+          order_id: string
+          payu_refund_id?: string | null
+          picked_up_at?: string | null
+          reason_code: string
+          reason_details?: string | null
+          refund_amount?: number
+          refund_method?: string
+          refunded_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_approved?: boolean
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          manual_review_reason?: string | null
+          order_id?: string
+          payu_refund_id?: string | null
+          picked_up_at?: string | null
+          reason_code?: string
+          reason_details?: string | null
+          refund_amount?: number
+          refund_method?: string
+          refunded_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           comment: string
@@ -675,11 +738,45 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_credits: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          order_id: string | null
+          return_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          order_id?: string | null
+          return_id?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          order_id?: string | null
+          return_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      get_wallet_balance: { Args: { p_user_id: string }; Returns: number }
       is_owner_of_order: { Args: { order_id: string }; Returns: boolean }
     }
     Enums: {
