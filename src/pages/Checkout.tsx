@@ -1442,9 +1442,19 @@ const Checkout = () => {
                   <span>{formatPrice(finalTotal)}</span>
                 </div>
 
-                {shippingCost > 0 && (
+                {shippingQuote.zone === 'national' && shippingCost > 0 && totalPrice < 999 && (
                   <p className="text-xs text-muted-foreground mt-4">
                     Add {formatPrice(999 - totalPrice)} more for free shipping
+                  </p>
+                )}
+                {shippingQuote.zone === 'west_bengal' && (
+                  <p className="text-xs text-muted-foreground mt-4">
+                    West Bengal handling charge ₹{shippingCost} • Estimated delivery in {shippingQuote.deliveryDays} days
+                  </p>
+                )}
+                {shippingQuote.zone === 'national' && shippingCost === 0 && (
+                  <p className="text-xs text-success mt-4">
+                    🎉 Free shipping unlocked • Estimated delivery in {shippingQuote.deliveryDays} days
                   </p>
                 )}
 
