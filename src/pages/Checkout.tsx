@@ -1136,19 +1136,18 @@ const Checkout = () => {
 
                       {savingsOpen && (
                         <div className="space-y-3 animate-fade-in">
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 items-stretch">
                             <Input
                               value={couponCode}
                               onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                               placeholder="Enter Coupon Code"
-                              className="flex-1 text-sm uppercase"
+                              className="flex-1 text-sm uppercase bg-background border-2 border-primary/40 focus-visible:border-primary placeholder:text-muted-foreground"
                             />
                             <Button
-                              variant="outline"
-                              size="sm"
+                              size="default"
                               onClick={() => handleApplyCoupon()}
                               disabled={couponLoading}
-                              className="shrink-0"
+                              className="shrink-0 h-12 px-5"
                             >
                               {couponLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'APPLY'}
                             </Button>
