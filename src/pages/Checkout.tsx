@@ -1498,7 +1498,7 @@ const Checkout = () => {
                     Processing…
                   </>
                 ) : step === 'payment' ? (
-                  `Pay ${formatPrice(finalTotal)}`
+                  paymentMethod === 'cod' ? `Place Order · ${formatPrice(finalTotal)}` : `Pay ${formatPrice(finalTotal)}`
                 ) : (
                   'Continue'
                 )}
