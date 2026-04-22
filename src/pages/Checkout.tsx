@@ -987,39 +987,10 @@ const Checkout = () => {
             {step === 'summary' && (
               <div className="lg:hidden bg-card p-4 rounded-lg border border-border space-y-3">
                 {allFlashSaleItems ? (
-                  <>
                   <div className="flex items-center gap-2 p-3 bg-accent/10 rounded-lg border border-accent/30">
                     <Zap size={16} className="text-accent" />
-                     <span className="text-sm font-medium text-foreground">⚡ Flash Sale discount applied — coupons not available</span>
+                    <span className="text-sm font-medium text-foreground">⚡ Flash Sale discount applied — coupons not available</span>
                   </div>
-                  {availableCoupons.length > 0 && (
-                    <div className="space-y-2 pt-2 opacity-60">
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Available Offers</p>
-                      {availableCoupons.map((coupon) => (
-                        <div key={coupon.id} className="border border-border rounded-lg overflow-hidden">
-                          <div className="flex">
-                            <div className="w-14 bg-primary/10 flex items-center justify-center shrink-0">
-                              <span className="text-[10px] font-bold text-primary -rotate-90 whitespace-nowrap">
-                                {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% OFF` : `₹${coupon.discount_value} OFF`}
-                              </span>
-                            </div>
-                            <div className="flex-1 p-3">
-                              <div className="flex items-center justify-between">
-                                <span className="font-bold text-sm">{coupon.code}</span>
-                                <span className="text-xs font-semibold text-muted-foreground cursor-not-allowed">APPLY</span>
-                              </div>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {coupon.discount_type === 'percentage'
-                                  ? `Flat ${coupon.discount_value}% off on orders above ₹${coupon.min_order_value || 0}`
-                                  : `Flat ₹${coupon.discount_value} off on orders above ₹${coupon.min_order_value || 0}`}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  </>
                 ) : appliedCoupon ? (
                   <div className="flex items-center justify-between p-3 bg-success/10 rounded-lg border border-success/30">
                     <div className="flex items-center gap-2">
@@ -1032,13 +1003,13 @@ const Checkout = () => {
                   <>
                     <div className="flex items-center gap-2 mb-1">
                       <Tag size={18} className="text-primary" />
-                      <h3 className="font-semibold text-sm">Coupons & Offers</h3>
+                      <h3 className="font-semibold text-sm">Have a coupon code?</h3>
                     </div>
                     <div className="flex gap-2 items-stretch">
                       <Input
                         value={couponCode}
                         onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                        placeholder="Enter Coupon Code"
+                        placeholder="Enter coupon code"
                         className="flex-1 text-sm uppercase bg-background border-2 border-primary/40 focus-visible:border-primary placeholder:text-muted-foreground"
                       />
                       <Button
@@ -1050,50 +1021,13 @@ const Checkout = () => {
                         {couponLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'APPLY'}
                       </Button>
                     </div>
-
-                    {availableCoupons.length > 0 && (
-                      <div className="space-y-2 pt-2">
-                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Available Offers</p>
-                        {availableCoupons.map((coupon) => {
-                          const amountNeeded = getAmountNeeded(coupon);
-                          const isEligible = amountNeeded === 0;
-                          return (
-                            <div key={coupon.id} className="border border-border rounded-lg overflow-hidden">
-                              <div className="flex">
-                                <div className="w-14 bg-primary/10 flex items-center justify-center shrink-0">
-                                  <span className="text-[10px] font-bold text-primary -rotate-90 whitespace-nowrap">
-                                    {coupon.discount_type === 'percentage' ? `${coupon.discount_value}% OFF` : `₹${coupon.discount_value} OFF`}
-                                  </span>
-                                </div>
-                                <div className="flex-1 p-3">
-                                  <div className="flex items-center justify-between">
-                                    <span className="font-bold text-sm">{coupon.code}</span>
-                                    <button
-                                      onClick={() => isEligible ? handleApplyCoupon(coupon.code) : null}
-                                      disabled={!isEligible || couponLoading}
-                                      className={`text-xs font-semibold px-3 py-1 rounded ${isEligible ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground cursor-not-allowed'}`}
-                                    >
-                                      APPLY
-                                    </button>
-                                  </div>
-                                  {!isEligible && (
-                                    <p className="text-xs text-primary mt-1">Add ₹{amountNeeded} more to avail</p>
-                                  )}
-                                  {isEligible && (
-                                    <p className="text-xs text-success mt-1 font-medium">You save ₹{getCouponSavings(coupon)}!</p>
-                                  )}
-                                  <p className="text-xs text-muted-foreground mt-1">
-                                    {coupon.discount_type === 'percentage'
-                                      ? `Flat ${coupon.discount_value}% off on orders above ₹${coupon.min_order_value || 0}`
-                                      : `Flat ₹${coupon.discount_value} off on orders above ₹${coupon.min_order_value || 0}`}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                    <Link
+                      to="/coupons"
+                      className="flex items-center justify-center gap-1 text-xs font-semibold text-primary hover:underline pt-1"
+                    >
+                      View all coupons
+                      <ChevronRight size={14} />
+                    </Link>
                   </>
                 )}
               </div>
