@@ -1020,8 +1020,8 @@ const Checkout = () => {
                     <span className="font-semibold text-primary text-lg">PayU</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    You will be redirected to PayU's secure payment gateway to complete your payment.
-                    Supports UPI, Credit/Debit Cards, Net Banking, and Wallets.
+                    You'll be redirected to PayU's secure gateway to complete your payment.
+                    UPI, Credit/Debit Cards, Net Banking and Wallets are supported.
                   </p>
                 </div>
               </div>
