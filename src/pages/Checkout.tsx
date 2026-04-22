@@ -1107,14 +1107,77 @@ const Checkout = () => {
                   <CreditCard size={20} />
                   Payment Method
                 </h2>
-                <div className="p-4 bg-secondary/50 rounded-lg">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="font-semibold text-primary text-lg">PayU</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    You'll be redirected to PayU's secure gateway to complete your payment.
-                    UPI, Credit/Debit Cards, Net Banking and Wallets are supported.
-                  </p>
+
+                <div className="space-y-3">
+                  {/* Online (PayU) */}
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('online')}
+                    className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                      paymentMethod === 'online'
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-muted-foreground/40'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        paymentMethod === 'online' ? 'border-primary bg-primary' : 'border-muted-foreground/40'
+                      }`}>
+                        {paymentMethod === 'online' && <Check size={12} className="text-primary-foreground" />}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <CreditCard size={16} className="text-primary" />
+                          <span className="font-semibold text-sm">Pay Online (UPI / Cards / Net Banking)</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Secure payment via PayU. UPI, Credit/Debit Cards, Net Banking and Wallets supported.
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* Cash on Delivery */}
+                  <button
+                    type="button"
+                    disabled={!codEligibility.eligible}
+                    onClick={() => codEligibility.eligible && setPaymentMethod('cod')}
+                    className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                      !codEligibility.eligible
+                        ? 'border-border bg-muted/30 opacity-60 cursor-not-allowed'
+                        : paymentMethod === 'cod'
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-muted-foreground/40'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        paymentMethod === 'cod' && codEligibility.eligible
+                          ? 'border-primary bg-primary'
+                          : 'border-muted-foreground/40'
+                      }`}>
+                        {paymentMethod === 'cod' && codEligibility.eligible && (
+                          <Check size={12} className="text-primary-foreground" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Banknote size={16} className="text-primary" />
+                          <span className="font-semibold text-sm">Cash on Delivery</span>
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 bg-accent/15 text-accent rounded">
+                            +{formatPrice(COD_FEE)} fee
+                          </span>
+                        </div>
+                        {codEligibility.eligible ? (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Pay in cash when your order arrives. A {formatPrice(COD_FEE)} handling fee applies.
+                          </p>
+                        ) : (
+                          <p className="text-xs text-destructive mt-1">{codEligibility.reason}</p>
+                        )}
+                      </div>
+                    </div>
+                  </button>
                 </div>
               </div>
             )}
