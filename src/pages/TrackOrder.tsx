@@ -318,6 +318,17 @@ const TrackOrder = () => {
     const isReplacementFlow = status.startsWith('replacement');
     const canCancel = CANCELLABLE_STATUSES.includes(status);
     const canReturnOrReplace = isDelivered && isWithin7Days(order.delivered_at);
+    const canRateProduct =
+      !!firstItem?.product_id &&
+      !isCancelled &&
+      (
+        !!order.delivered_at ||
+        isDelivered ||
+        isRefundDone ||
+        isReturnFlow ||
+        isReturnRejected ||
+        status === 'picked_up'
+      );
 
     return (
       <div className="min-h-screen bg-background">
@@ -640,11 +651,11 @@ const TrackOrder = () => {
             </div>
           </section>
 
-          {/* Rate the product (only after delivery / refund completed) */}
-          {firstItem?.product_id && (isDelivered || isRefundDone) && (
+          {/* Rate the product */}
+          {canRateProduct && (
             <OrderRating
-              productId={firstItem.product_id}
-              productName={firstItem.product_name}
+              productId={firstItem!.product_id}
+              productName={firstItem!.product_name}
             />
           )}
 
