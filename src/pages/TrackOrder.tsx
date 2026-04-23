@@ -49,11 +49,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import DelhiveryTracking from '@/components/DelhiveryTracking';
 import InvoiceDialog from '@/components/InvoiceDialog';
+import OrderRating from '@/components/order/OrderRating';
+import YouMayAlsoLike from '@/components/order/YouMayAlsoLike';
 
 const CANCELLABLE_STATUSES = ['placed', 'confirmed'];
 
 interface OrderItem {
   id: string;
+  product_id: string;
   product_name: string;
   price: number;
   quantity: number;
