@@ -49,11 +49,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import DelhiveryTracking from '@/components/DelhiveryTracking';
 import InvoiceDialog from '@/components/InvoiceDialog';
+import OrderRating from '@/components/order/OrderRating';
+import YouMayAlsoLike from '@/components/order/YouMayAlsoLike';
 
 const CANCELLABLE_STATUSES = ['placed', 'confirmed'];
 
 interface OrderItem {
   id: string;
+  product_id: string;
   product_name: string;
   price: number;
   quantity: number;
@@ -636,6 +639,19 @@ const TrackOrder = () => {
               <span className="font-bold text-sm">{formatPrice(order.total)}</span>
             </div>
           </section>
+
+          {/* Rate the product (only after delivery / refund completed) */}
+          {firstItem?.product_id && (isDelivered || isRefundDone) && (
+            <OrderRating
+              productId={firstItem.product_id}
+              productName={firstItem.product_name}
+            />
+          )}
+
+          {/* Recommended products */}
+          {firstItem?.product_id && (
+            <YouMayAlsoLike excludeProductId={firstItem.product_id} />
+          )}
         </main>
 
         {/* Cancel dialog */}
