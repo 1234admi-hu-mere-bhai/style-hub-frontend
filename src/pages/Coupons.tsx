@@ -195,7 +195,7 @@ const Coupons = () => {
   const ineligibleCount = coupons.filter((c) => !isEligible(c)).length;
 
   return (
-    <div className="min-h-screen bg-muted/40">
+    <div className="min-h-screen flex flex-col bg-muted/40">
       {/* Header */}
       <header className="bg-background">
         <div className="container mx-auto px-4 pt-4 pb-3 max-w-2xl flex items-start gap-3">
@@ -238,7 +238,7 @@ const Coupons = () => {
         </div>
       </header>
 
-      <main className="container mx-auto max-w-2xl pb-24">
+      <main className="container mx-auto max-w-2xl flex-1 pb-24">
         {/* Info banner */}
         {!loading && coupons.length > 0 && ineligibleCount > 0 && (
           <div className="mx-4 mt-4 bg-card rounded-xl px-4 py-3 flex items-start gap-3 shadow-[var(--shadow-card)] border border-border/50">
@@ -281,6 +281,8 @@ const Coupons = () => {
           </>
         )}
       </main>
+
+      <div className="mt-auto" />
     </div>
   );
 };

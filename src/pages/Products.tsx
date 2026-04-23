@@ -151,9 +151,9 @@ const Products = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto flex-1 px-4 py-8">
         {/* Breadcrumb Navigation */}
         <nav className="flex items-center space-x-1.5 text-sm text-muted-foreground mb-6">
           <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
