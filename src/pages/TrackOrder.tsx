@@ -639,6 +639,19 @@ const TrackOrder = () => {
               <span className="font-bold text-sm">{formatPrice(order.total)}</span>
             </div>
           </section>
+
+          {/* Rate the product (only after delivery / refund completed) */}
+          {firstItem?.product_id && (isDelivered || isRefundDone) && (
+            <OrderRating
+              productId={firstItem.product_id}
+              productName={firstItem.product_name}
+            />
+          )}
+
+          {/* Recommended products */}
+          {firstItem?.product_id && (
+            <YouMayAlsoLike excludeProductId={firstItem.product_id} />
+          )}
         </main>
 
         {/* Cancel dialog */}
