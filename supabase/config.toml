@@ -1,19 +1,19 @@
 project_id = "zybjzfffkylezzvotcnn"
 
-[functions.support-chat]
-verify_jwt = false
-
-[functions.payu-hash]
-verify_jwt = false
-
-[functions.delhivery]
-verify_jwt = false
-
-[functions.sync-delhivery-status]
-verify_jwt = false
-
-[functions.payu-webhook]
-verify_jwt = false
-
-[functions.payu-refund]
-verify_jwt = false
+[functions]
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.delhivery]
+    verify_jwt = false
+  [functions.payu-hash]
+    verify_jwt = false
+  [functions.payu-refund]
+    verify_jwt = false
+  [functions.payu-webhook]
+    verify_jwt = false
+  [functions.process-email-queue]
+    verify_jwt = true
+  [functions.support-chat]
+    verify_jwt = false
+  [functions.sync-delhivery-status]
+    verify_jwt = false
