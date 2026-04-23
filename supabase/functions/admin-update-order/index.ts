@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
     // Fetch current order to detect transitions
     const { data: prevOrder } = await adminClient
       .from('orders')
-      .select('id, user_id, order_number, status, refund_amount, refund_eta, total, rejection_reason')
+      .select('id, user_id, order_number, status, refund_amount, refund_eta, total, rejection_reason, tracking_awb')
       .eq('id', orderId)
       .maybeSingle()
 
@@ -105,9 +105,62 @@ Deno.serve(async (req) => {
     // Re-fetch to get post-trigger values (refund_amount/eta auto-set on return_approved)
     const { data: nextOrder } = await adminClient
       .from('orders')
-      .select('id, user_id, order_number, status, refund_amount, refund_eta, rejection_reason')
+      .select('id, user_id, order_number, status, refund_amount, refund_eta, rejection_reason, tracking_awb')
       .eq('id', orderId)
       .maybeSingle()
+
+    // Helper: lookup recipient email + first name
+    const getRecipient = async (userId: string | null) => {
+      if (!userId) return { email: '', firstName: '' }
+      const { data: au } = await adminClient.auth.admin.getUserById(userId)
+      const { data: prof } = await adminClient.from('profiles').select('first_name').eq('id', userId).maybeSingle()
+      return { email: au?.user?.email || '', firstName: prof?.first_name || '' }
+    }
+
+    // 📦 Send "shipped" email when admin assigns/changes tracking_awb (and status moves to shipped)
+    const awbAssigned = updateData.tracking_awb && updateData.tracking_awb !== prevOrder?.tracking_awb
+    const movedToShipped = nextOrder && prevOrder && prevOrder.status !== 'shipped' && nextOrder.status === 'shipped'
+    if (nextOrder && (awbAssigned || movedToShipped)) {
+      try {
+        const { email: recipientEmail, firstName } = await getRecipient(nextOrder.user_id)
+        if (recipientEmail) {
+          await adminClient.functions.invoke('send-transactional-email', {
+            body: {
+              templateName: 'order-shipped',
+              recipientEmail,
+              idempotencyKey: `order-shipped-${nextOrder.id}-${nextOrder.tracking_awb || 'noawb'}`,
+              templateData: {
+                customerName: firstName,
+                orderNumber: nextOrder.order_number,
+                trackingAwb: nextOrder.tracking_awb || '',
+                courier: 'Delhivery',
+              },
+            },
+          })
+        }
+      } catch (e) {
+        console.error('order-shipped email failed:', e)
+      }
+    }
+
+    // ✅ Send "delivered" email when admin marks order delivered
+    if (nextOrder && prevOrder && prevOrder.status !== 'delivered' && nextOrder.status === 'delivered') {
+      try {
+        const { email: recipientEmail, firstName } = await getRecipient(nextOrder.user_id)
+        if (recipientEmail) {
+          await adminClient.functions.invoke('send-transactional-email', {
+            body: {
+              templateName: 'order-delivered',
+              recipientEmail,
+              idempotencyKey: `order-delivered-${nextOrder.id}`,
+              templateData: { customerName: firstName, orderNumber: nextOrder.order_number },
+            },
+          })
+        }
+      } catch (e) {
+        console.error('order-delivered email failed:', e)
+      }
+    }
 
     // 🔁 Auto-trigger PayU refund when admin marks the package as picked up
     if (
