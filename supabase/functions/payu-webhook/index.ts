@@ -165,9 +165,23 @@ Deno.serve(async (req) => {
           .select('first_name')
           .eq('id', pending.user_id)
           .maybeSingle();
-        const itemCount = Array.isArray(pending.items)
-          ? (pending.items as any[]).reduce((acc, it) => acc + (Number(it.quantity) || 1), 0)
-          : 0;
+        const itemsArr = Array.isArray(pending.items) ? (pending.items as any[]) : [];
+        const itemCount = itemsArr.reduce((acc, it) => acc + (Number(it.quantity) || 1), 0);
+        const emailItems = itemsArr.map((it: any) => ({
+          name: it.product_name || it.name || 'Item',
+          image: it.image || undefined,
+          size: it.size || undefined,
+          color: it.color || undefined,
+          quantity: Number(it.quantity) || 1,
+          price: Number(it.price) || 0,
+          originalPrice: it.original_price ? Number(it.original_price) : undefined,
+        }));
+        const orderDate = new Date(order.created_at || Date.now()).toLocaleDateString('en-IN', {
+          weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
+        });
+        const eta = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', {
+          weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
+        });
         await adminClient.functions.invoke('send-transactional-email', {
           body: {
             templateName: 'order-placed',
@@ -177,8 +191,14 @@ Deno.serve(async (req) => {
               customerName: prof?.first_name || firstname || '',
               orderNumber,
               orderTotal: order.total,
+              subtotal: order.subtotal,
+              shippingCost: order.shipping_cost,
               paymentMethod: 'Online Payment (PayU)',
               itemCount,
+              items: emailItems,
+              orderDate,
+              estimatedDelivery: eta,
+              shippingAddress: pending.shipping_address,
             },
           },
         });

@@ -188,7 +188,24 @@ Deno.serve(async (req) => {
                     .eq('id', full.user_id)
                     .maybeSingle();
                   const firstName = prof?.first_name || '';
+                  // Fetch order items for richer email content
+                  const { data: itemRows } = await serviceClient
+                    .from('order_items')
+                    .select('product_name, image, size, color, quantity, price')
+                    .eq('order_id', order.id);
+                  const items = (itemRows || []).map((r: any) => ({
+                    name: r.product_name || 'Item',
+                    image: r.image || undefined,
+                    size: r.size || undefined,
+                    color: r.color || undefined,
+                    quantity: Number(r.quantity) || 1,
+                    price: Number(r.price) || 0,
+                  }));
+
                   if (newStatus === 'shipped') {
+                    const eta = new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', {
+                      weekday: 'short', day: '2-digit', month: 'short',
+                    });
                     await serviceClient.functions.invoke('send-transactional-email', {
                       body: {
                         templateName: 'order-shipped',
@@ -199,16 +216,27 @@ Deno.serve(async (req) => {
                           orderNumber: full.order_number,
                           trackingAwb: full.tracking_awb || '',
                           courier: 'Delhivery',
+                          estimatedDelivery: eta,
+                          items,
                         },
                       },
                     });
                   } else {
+                    const deliveredDate = new Date().toLocaleDateString('en-IN', {
+                      weekday: 'short', day: '2-digit', month: 'short',
+                    });
                     await serviceClient.functions.invoke('send-transactional-email', {
                       body: {
                         templateName: 'order-delivered',
                         recipientEmail,
                         idempotencyKey: `order-delivered-${order.id}`,
-                        templateData: { customerName: firstName, orderNumber: full.order_number },
+                        templateData: {
+                          customerName: firstName,
+                          orderNumber: full.order_number,
+                          trackingAwb: full.tracking_awb || '',
+                          deliveredDate,
+                          items,
+                        },
                       },
                     });
                   }
