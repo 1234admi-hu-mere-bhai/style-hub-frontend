@@ -326,16 +326,47 @@ const Profile = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={profile.email}
-                      onChange={(e) =>
-                        setProfile({ ...profile, email: e.target.value })
-                      }
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        id="email"
+                        type="email"
+                        value={profile.email}
+                        onChange={(e) =>
+                          setProfile({ ...profile, email: e.target.value })
+                        }
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={async () => {
+                          const newEmail = profile.email.trim().toLowerCase();
+                          if (!newEmail || newEmail === user?.email) {
+                            toast.error('Enter a different email address to change it');
+                            return;
+                          }
+                          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+                            toast.error('Please enter a valid email address');
+                            return;
+                          }
+                          const { error } = await supabase.auth.updateUser(
+                            { email: newEmail },
+                            { emailRedirectTo: `${window.location.origin}/profile` },
+                          );
+                          if (error) {
+                            toast.error(error.message);
+                            return;
+                          }
+                          toast.success(
+                            `Verification link sent to ${newEmail}. Click it to complete the change.`,
+                            { duration: 8000 },
+                          );
+                        }}
+                      >
+                        Update Email
+                      </Button>
+                    </div>
                     <p className="text-xs text-muted-foreground">
-                      You'll need to verify your email if you change it
+                      We'll send a confirmation link to your new email. The change applies only after you click it.
                     </p>
                   </div>
                   <div className="space-y-2">
