@@ -119,6 +119,11 @@
     @apply border-border;
   }
 
+  .min-h-screen:has(> footer) {
+    display: flex;
+    flex-direction: column;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'DM Sans', sans-serif;
@@ -179,6 +184,11 @@
 }
 
 @layer utilities {
+  .min-h-screen {
+    min-height: 100vh;
+    min-height: 100svh;
+  }
+
   .animate-fade-in {
     animation: fadeIn 0.6s ease-out forwards;
   }

@@ -47,7 +47,7 @@ const AppContent = () => {
   const isAdmin = location.pathname.startsWith('/admin');
 
   return (
-    <>
+    <div className="min-h-screen bg-background">
       <ScrollToTop />
       <VisitorTracker />
       <Routes>
@@ -85,7 +85,7 @@ const AppContent = () => {
       {!isAdmin && <BottomNav />}
       {!isAdmin && <LiveSupportChat />}
       {!isAdmin && <PushNotificationPrompt />}
-    </>
+    </div>
   );
 };
 
