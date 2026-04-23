@@ -64,7 +64,16 @@ const OrderRating = ({ productId, productName }: OrderRatingProps) => {
       });
       if (error) throw error;
       setExisting({ rating });
-      toast.success('Thanks for your rating!');
+      setComment('');
+      toast.success(`Rating saved — ${rating} ${rating === 1 ? 'star' : 'stars'}`, {
+        description:
+          rating >= 4
+            ? "We're thrilled you loved it!"
+            : rating === 3
+              ? 'Thanks for the honest feedback.'
+              : "Sorry it wasn't perfect — your feedback helps us improve.",
+        duration: 4000,
+      });
     } catch (err: any) {
       toast.error(err.message || 'Could not submit rating');
     } finally {
@@ -80,24 +89,33 @@ const OrderRating = ({ productId, productName }: OrderRatingProps) => {
       <p className="text-xs text-muted-foreground line-clamp-1 mb-3">{productName}</p>
 
       {existing ? (
-        <div className="flex items-center gap-2 bg-success/10 border border-success/20 rounded-lg px-3 py-3">
-          <CheckCircle2 size={18} className="text-success shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">You rated this {existing.rating} / 5</p>
-            <p className="text-[11px] text-muted-foreground">Thanks for sharing your feedback.</p>
+        <div
+          key={existing.rating}
+          className="flex items-center gap-3 bg-success/10 border border-success/30 rounded-lg px-3 py-3 animate-fade-in"
+        >
+          <div className="w-9 h-9 rounded-full bg-success/20 flex items-center justify-center shrink-0">
+            <CheckCircle2 size={20} className="text-success" />
           </div>
-          <div className="flex gap-0.5">
-            {[1, 2, 3, 4, 5].map((s) => (
-              <Star
-                key={s}
-                size={16}
-                className={
-                  s <= existing.rating
-                    ? 'fill-gold text-gold'
-                    : 'text-muted-foreground/30'
-                }
-              />
-            ))}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-foreground">
+              Your rating: {existing.rating} / 5
+            </p>
+            <div className="flex items-center gap-1 mt-0.5">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star
+                  key={s}
+                  size={14}
+                  className={
+                    s <= existing.rating
+                      ? 'fill-gold text-gold'
+                      : 'text-muted-foreground/30'
+                  }
+                />
+              ))}
+              <span className="text-[11px] text-muted-foreground ml-1">
+                Saved
+              </span>
+            </div>
           </div>
         </div>
       ) : (
