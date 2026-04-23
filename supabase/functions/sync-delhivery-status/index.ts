@@ -169,6 +169,55 @@ Deno.serve(async (req) => {
         } else {
           updated++;
           console.log(`Order ${order.id}: ${order.status} → ${newStatus}`);
+
+          // 📧 Send shipped/delivered email when status transitions
+          if (newStatus === 'shipped' || newStatus === 'delivered') {
+            try {
+              const { data: full } = await serviceClient
+                .from('orders')
+                .select('order_number, user_id, tracking_awb')
+                .eq('id', order.id)
+                .maybeSingle();
+              if (full?.user_id) {
+                const { data: au } = await serviceClient.auth.admin.getUserById(full.user_id);
+                const recipientEmail = au?.user?.email || '';
+                if (recipientEmail) {
+                  const { data: prof } = await serviceClient
+                    .from('profiles')
+                    .select('first_name')
+                    .eq('id', full.user_id)
+                    .maybeSingle();
+                  const firstName = prof?.first_name || '';
+                  if (newStatus === 'shipped') {
+                    await serviceClient.functions.invoke('send-transactional-email', {
+                      body: {
+                        templateName: 'order-shipped',
+                        recipientEmail,
+                        idempotencyKey: `order-shipped-${order.id}-${full.tracking_awb || 'noawb'}`,
+                        templateData: {
+                          customerName: firstName,
+                          orderNumber: full.order_number,
+                          trackingAwb: full.tracking_awb || '',
+                          courier: 'Delhivery',
+                        },
+                      },
+                    });
+                  } else {
+                    await serviceClient.functions.invoke('send-transactional-email', {
+                      body: {
+                        templateName: 'order-delivered',
+                        recipientEmail,
+                        idempotencyKey: `order-delivered-${order.id}`,
+                        templateData: { customerName: firstName, orderNumber: full.order_number },
+                      },
+                    });
+                  }
+                }
+              }
+            } catch (e) {
+              console.error(`${newStatus} email failed for ${order.id}:`, e);
+            }
+          }
         }
       } catch (e) {
         errors.push(`AWB ${order.tracking_awb}: ${e instanceof Error ? e.message : 'unknown'}`);
