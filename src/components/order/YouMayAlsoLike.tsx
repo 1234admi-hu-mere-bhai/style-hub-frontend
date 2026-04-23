@@ -66,7 +66,10 @@ const YouMayAlsoLike = ({ excludeProductId }: YouMayAlsoLikeProps) => {
   return (
     <section className="bg-card border-b border-border px-4 py-5">
       <h2 className="font-bold text-base mb-3">You May Also Like</h2>
-      <div className="-mx-4 px-4 overflow-x-auto scrollbar-none">
+      <div
+        className="-mx-4 px-4 overflow-x-auto [&::-webkit-scrollbar]:hidden"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
         <div className="flex gap-3 pb-1">
           {products.map((p) => (
             <Link
