@@ -3,7 +3,7 @@ import { Instagram, Facebook, Mail, Phone, MapPin } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="bg-charcoal text-cream pb-16 md:pb-0">
+    <footer className="sticky top-[100vh] bg-charcoal text-cream pb-16 md:pb-0">
       <div className="container mx-auto px-4 py-12 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
