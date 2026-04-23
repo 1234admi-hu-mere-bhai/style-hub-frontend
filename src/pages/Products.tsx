@@ -258,7 +258,7 @@ const Products = () => {
             )}
 
             {loading ? (
-              <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+              <div className="flex justify-center items-center min-h-[60vh] lg:min-h-[600px] py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
             ) : filteredProducts.length > 0 ? (
               <div className={`grid gap-4 lg:gap-6 ${gridCols === 2 ? 'grid-cols-2' : gridCols === 3 ? 'grid-cols-2 lg:grid-cols-3' : 'grid-cols-2 lg:grid-cols-4'}`}>
                 {filteredProducts.map((product) => (

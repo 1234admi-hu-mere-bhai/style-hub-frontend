@@ -400,7 +400,7 @@ const Index = () => {
             </div>
           )}
           {loading ? (
-            <div className="flex justify-center py-16">
+            <div className="flex justify-center items-center min-h-[60vh] lg:min-h-[600px] py-16">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : featuredProducts.length > 0 ? (
