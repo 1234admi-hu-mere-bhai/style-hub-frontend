@@ -20,6 +20,10 @@ const BottomNav = () => {
   if (pathname.startsWith('/admin')) return null;
 
   const handleTabClick = (path: string) => {
+    const isCurrentRoute = path === '/' ? pathname === '/' : pathname.startsWith(path);
+
+    if (isCurrentRoute) return;
+
     if (path === '/profile' && !user) {
       navigate('/auth');
     } else {
