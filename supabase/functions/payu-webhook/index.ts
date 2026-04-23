@@ -156,6 +156,37 @@ Deno.serve(async (req) => {
       type: 'success',
     });
 
+    // Send order confirmation email (best-effort)
+    try {
+      const recipientEmail = (pending.user_email || email || '').toString().trim();
+      if (recipientEmail) {
+        const { data: prof } = await adminClient
+          .from('profiles')
+          .select('first_name')
+          .eq('id', pending.user_id)
+          .maybeSingle();
+        const itemCount = Array.isArray(pending.items)
+          ? (pending.items as any[]).reduce((acc, it) => acc + (Number(it.quantity) || 1), 0)
+          : 0;
+        await adminClient.functions.invoke('send-transactional-email', {
+          body: {
+            templateName: 'order-placed',
+            recipientEmail,
+            idempotencyKey: `order-placed-${order.id}`,
+            templateData: {
+              customerName: prof?.first_name || firstname || '',
+              orderNumber,
+              orderTotal: order.total,
+              paymentMethod: 'Online Payment (PayU)',
+              itemCount,
+            },
+          },
+        });
+      }
+    } catch (e) {
+      console.error('order-placed email send failed:', e);
+    }
+
     return Response.redirect(`${baseRedirect}?status=success&txnid=${txnid}&order=${orderNumber}`, 303);
   } catch (err) {
     console.error('payu-webhook error:', err);
