@@ -120,10 +120,30 @@ Deno.serve(async (req) => {
     // 📦 Send "shipped" email when admin assigns/changes tracking_awb (and status moves to shipped)
     const awbAssigned = updateData.tracking_awb && updateData.tracking_awb !== prevOrder?.tracking_awb
     const movedToShipped = nextOrder && prevOrder && prevOrder.status !== 'shipped' && nextOrder.status === 'shipped'
+    // Helper to fetch order items formatted for emails
+    const fetchEmailItems = async (orderId: string) => {
+      const { data: rows } = await adminClient
+        .from('order_items')
+        .select('product_name, image, size, color, quantity, price')
+        .eq('order_id', orderId)
+      return (rows || []).map((r: any) => ({
+        name: r.product_name || 'Item',
+        image: r.image || undefined,
+        size: r.size || undefined,
+        color: r.color || undefined,
+        quantity: Number(r.quantity) || 1,
+        price: Number(r.price) || 0,
+      }))
+    }
+
     if (nextOrder && (awbAssigned || movedToShipped)) {
       try {
         const { email: recipientEmail, firstName } = await getRecipient(nextOrder.user_id)
         if (recipientEmail) {
+          const items = await fetchEmailItems(nextOrder.id)
+          const eta = new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', {
+            weekday: 'short', day: '2-digit', month: 'short',
+          })
           await adminClient.functions.invoke('send-transactional-email', {
             body: {
               templateName: 'order-shipped',
@@ -134,6 +154,8 @@ Deno.serve(async (req) => {
                 orderNumber: nextOrder.order_number,
                 trackingAwb: nextOrder.tracking_awb || '',
                 courier: 'Delhivery',
+                estimatedDelivery: eta,
+                items,
               },
             },
           })
@@ -148,12 +170,22 @@ Deno.serve(async (req) => {
       try {
         const { email: recipientEmail, firstName } = await getRecipient(nextOrder.user_id)
         if (recipientEmail) {
+          const items = await fetchEmailItems(nextOrder.id)
+          const deliveredDate = new Date(nextOrder.delivered_at || Date.now()).toLocaleDateString('en-IN', {
+            weekday: 'short', day: '2-digit', month: 'short',
+          })
           await adminClient.functions.invoke('send-transactional-email', {
             body: {
               templateName: 'order-delivered',
               recipientEmail,
               idempotencyKey: `order-delivered-${nextOrder.id}`,
-              templateData: { customerName: firstName, orderNumber: nextOrder.order_number },
+              templateData: {
+                customerName: firstName,
+                orderNumber: nextOrder.order_number,
+                trackingAwb: nextOrder.tracking_awb || '',
+                deliveredDate,
+                items,
+              },
             },
           })
         }
