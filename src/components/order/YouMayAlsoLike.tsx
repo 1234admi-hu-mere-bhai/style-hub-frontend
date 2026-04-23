@@ -7,10 +7,9 @@ import { dbToStoreProduct, type DbProduct, type StoreProduct } from '@/hooks/use
 
 interface YouMayAlsoLikeProps {
   excludeProductId: string;
-  subcategory?: string;
 }
 
-const YouMayAlsoLike = ({ excludeProductId, subcategory }: YouMayAlsoLikeProps) => {
+const YouMayAlsoLike = ({ excludeProductId }: YouMayAlsoLikeProps) => {
   const [products, setProducts] = useState<StoreProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const { formatPrice } = useCurrency();
@@ -18,18 +17,27 @@ const YouMayAlsoLike = ({ excludeProductId, subcategory }: YouMayAlsoLikeProps) 
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      // First try same subcategory
-      let query = supabase
+      // Look up the source product's subcategory (best-effort)
+      let subcategory: string | null = null;
+      const { data: src } = await supabase
         .from('products')
-        .select('*')
-        .eq('in_stock', true)
-        .neq('id', excludeProductId)
-        .limit(10);
+        .select('subcategory')
+        .eq('id', excludeProductId)
+        .maybeSingle();
+      if (src) subcategory = (src as any).subcategory || null;
 
-      if (subcategory) query = query.eq('subcategory', subcategory);
-
-      const { data } = await query;
-      let rows = (data || []) as unknown as DbProduct[];
+      // First try same subcategory
+      let rows: DbProduct[] = [];
+      if (subcategory) {
+        const { data } = await supabase
+          .from('products')
+          .select('*')
+          .eq('in_stock', true)
+          .eq('subcategory', subcategory)
+          .neq('id', excludeProductId)
+          .limit(10);
+        rows = (data || []) as unknown as DbProduct[];
+      }
 
       // Fallback: if not enough, fetch any products
       if (rows.length < 4) {
@@ -51,7 +59,7 @@ const YouMayAlsoLike = ({ excludeProductId, subcategory }: YouMayAlsoLikeProps) 
     return () => {
       cancelled = true;
     };
-  }, [excludeProductId, subcategory]);
+  }, [excludeProductId]);
 
   if (loading || products.length === 0) return null;
 
