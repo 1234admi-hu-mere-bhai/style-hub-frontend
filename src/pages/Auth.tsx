@@ -179,7 +179,16 @@ const Auth = () => {
     }
 
     setIsLoading(false);
-    toast.success('Your account has been created successfully.');
+    // Email verification is enforced — sign out any partial session and prompt user
+    try { await supabase.auth.signOut(); } catch { /* ignore */ }
+    toast.success(
+      `Account created! We've sent a verification link to ${trimmedEmail}. Please verify your email before signing in.`,
+      { duration: 8000 },
+    );
+    setActiveTab('login');
+    setLoginMethod('email');
+    setLoginForm({ email: trimmedEmail, phone: '', password: '' });
+    setSignupForm({ email: '', phone: '', password: '', confirmPassword: '' });
   };
 
   const handleGoogleSignIn = async () => {

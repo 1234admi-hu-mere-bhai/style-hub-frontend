@@ -84,6 +84,8 @@ Deno.serve(async (req) => {
           updated_at: new Date().toISOString(),
         })
         .eq('id', orderId);
+      // Send refund email (best-effort)
+      await sendRefundEmail(admin, order, Number(order.refund_amount ?? order.total ?? 0), order.refund_method || 'bank_transfer');
       return new Response(
         JSON.stringify({ success: true, message: 'COD order — offline refund recorded', orderId }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
@@ -192,6 +194,9 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Send refund processed email (best-effort)
+    await sendRefundEmail(admin, order, refundAmount, 'source');
+
     return new Response(
       JSON.stringify({ success: true, refundAmount, payuResponse: payuJson }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
@@ -204,3 +209,37 @@ Deno.serve(async (req) => {
     );
   }
 });
+
+async function sendRefundEmail(
+  admin: any,
+  order: { id: string; user_id: string | null; order_number: string },
+  refundAmount: number,
+  refundMethod: string,
+) {
+  if (!order.user_id) return;
+  try {
+    const { data: au } = await admin.auth.admin.getUserById(order.user_id);
+    const recipientEmail = au?.user?.email || '';
+    if (!recipientEmail) return;
+    const { data: prof } = await admin
+      .from('profiles')
+      .select('first_name')
+      .eq('id', order.user_id)
+      .maybeSingle();
+    await admin.functions.invoke('send-transactional-email', {
+      body: {
+        templateName: 'refund-processed',
+        recipientEmail,
+        idempotencyKey: `refund-processed-${order.id}`,
+        templateData: {
+          customerName: prof?.first_name || '',
+          orderNumber: order.order_number,
+          refundAmount,
+          refundMethod,
+        },
+      },
+    });
+  } catch (e) {
+    console.error('refund email failed:', e);
+  }
+}

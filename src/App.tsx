@@ -33,6 +33,7 @@ import Payments from "./pages/Payments";
 import Notifications from "./pages/Notifications";
 import PayUCallback from "./pages/PayUCallback";
 import Coupons from "./pages/Coupons";
+import Unsubscribe from "./pages/Unsubscribe";
 import NotFound from "./pages/NotFound";
 import VisitorTracker from "./components/VisitorTracker";
 import BottomNav from "./components/BottomNav";
@@ -76,6 +77,7 @@ const AppContent = () => {
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/payu-callback" element={<PayUCallback />} />
         <Route path="/coupons" element={<Coupons />} />
+        <Route path="/unsubscribe" element={<Unsubscribe />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
