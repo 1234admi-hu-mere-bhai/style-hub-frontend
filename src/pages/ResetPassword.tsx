@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,15 @@ const passwordSchema = z
   .regex(/[a-z]/, 'Include at least one lowercase letter')
   .regex(/[0-9]/, 'Include at least one number');
 
+const parseHashParams = (hash: string): Record<string, string> => {
+  const clean = hash.startsWith('#') ? hash.slice(1) : hash;
+  const params: Record<string, string> = {};
+  new URLSearchParams(clean).forEach((v, k) => {
+    params[k] = v;
+  });
+  return params;
+};
+
 const ResetPassword = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -26,28 +35,54 @@ const ResetPassword = () => {
   const [submitting, setSubmitting] = useState(false);
   const [sessionReady, setSessionReady] = useState(false);
   const [invalidLink, setInvalidLink] = useState(false);
+  const [linkErrorMsg, setLinkErrorMsg] = useState<string | null>(null);
+  const [resetSuccess, setResetSuccess] = useState(false);
 
   useEffect(() => {
     let ready = false;
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-    const hash = window.location.hash || '';
-    const search = window.location.search || '';
+    // 1. Check URL for explicit Supabase auth errors
+    const hashParams = parseHashParams(window.location.hash || '');
+    const searchParams = new URLSearchParams(window.location.search || '');
+    const urlError =
+      hashParams.error || searchParams.get('error');
+    const urlErrorDesc =
+      hashParams.error_description ||
+      searchParams.get('error_description');
+
+    if (urlError) {
+      setInvalidLink(true);
+      setLinkErrorMsg(
+        urlErrorDesc?.replace(/\+/g, ' ') ||
+          'This password reset link is invalid or has expired.'
+      );
+      // Clean URL
+      window.history.replaceState(null, '', window.location.pathname);
+      return;
+    }
+
     const isRecovery =
-      hash.includes('type=recovery') || search.includes('type=recovery');
-    const hasError =
-      hash.includes('error=') || search.includes('error=');
+      hashParams.type === 'recovery' ||
+      searchParams.get('type') === 'recovery' ||
+      !!hashParams.access_token;
 
-    // Listen for auth events (PASSWORD_RECOVERY fires when Supabase parses the hash)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
-      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && sess)) {
-        ready = true;
-        setSessionReady(true);
-        setInvalidLink(false);
+    // 2. Listen for PASSWORD_RECOVERY / SIGNED_IN events
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, sess) => {
+        if (
+          event === 'PASSWORD_RECOVERY' ||
+          (event === 'SIGNED_IN' && sess) ||
+          (event === 'INITIAL_SESSION' && sess)
+        ) {
+          ready = true;
+          setSessionReady(true);
+          setInvalidLink(false);
+        }
       }
-    });
+    );
 
-    // Also check for an existing session immediately
+    // 3. Check existing session immediately
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         ready = true;
@@ -55,20 +90,18 @@ const ResetPassword = () => {
       }
     });
 
-    // If link contains an explicit error, mark invalid right away
-    if (hasError) {
-      setInvalidLink(true);
-    } else if (!isRecovery) {
-      // Give Supabase a moment to process the URL; if no session arrives, mark invalid
-      timeoutId = setTimeout(() => {
-        if (!ready) setInvalidLink(true);
-      }, 4000);
-    } else {
-      // It's a recovery link — wait longer for the session to be established
-      timeoutId = setTimeout(() => {
-        if (!ready) setInvalidLink(true);
-      }, 8000);
-    }
+    // 4. If no session arrives in time, show invalid-link state
+    timeoutId = setTimeout(
+      () => {
+        if (!ready) {
+          setInvalidLink(true);
+          setLinkErrorMsg(
+            'This password reset link is invalid or has expired. Please request a new one.'
+          );
+        }
+      },
+      isRecovery ? 8000 : 3000
+    );
 
     return () => {
       subscription.unsubscribe();
@@ -99,10 +132,16 @@ const ResetPassword = () => {
       return;
     }
 
-    toast.success('Password updated. You are now signed in.');
-    // Sign out so user must log in fresh with the new password (extra safety)
+    toast.success('Password updated successfully!');
+    setResetSuccess(true);
+
+    // Sign out so the user must log in fresh with the new password
     await supabase.auth.signOut();
-    navigate('/auth');
+
+    // Redirect after showing success state
+    setTimeout(() => {
+      navigate('/auth');
+    }, 2200);
   };
 
   return (
@@ -112,19 +151,53 @@ const ResetPassword = () => {
         <div className="max-w-md mx-auto">
           <div className="text-center mb-8">
             <ShieldCheck className="h-10 w-10 text-primary mx-auto mb-3" />
-            <h1 className="font-serif text-3xl font-bold mb-2">Set a new password</h1>
+            <h1 className="font-serif text-3xl font-bold mb-2">
+              Set a new password
+            </h1>
             <p className="text-muted-foreground">
               Choose a strong password to secure your MUFFIGOUT account.
             </p>
           </div>
 
           <div className="bg-card p-6 rounded-lg border border-border">
-            {invalidLink ? (
+            {resetSuccess ? (
+              <div className="text-center space-y-4 py-4">
+                <CheckCircle2 className="h-12 w-12 text-primary mx-auto" />
+                <div>
+                  <h2 className="font-serif text-xl font-bold mb-1">
+                    Password updated!
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    Your password has been changed successfully. Redirecting
+                    you to sign in…
+                  </p>
+                </div>
+                <Loader2 className="h-5 w-5 animate-spin text-primary mx-auto" />
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigate('/auth')}
+                >
+                  Go to Sign In now
+                </Button>
+              </div>
+            ) : invalidLink ? (
               <div className="text-center space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  This password reset link is invalid or has expired. Please request a new one.
+                  {linkErrorMsg ||
+                    'This password reset link is invalid or has expired. Please request a new one.'}
                 </p>
-                <Button className="w-full" onClick={() => navigate('/auth')}>
+                <Button
+                  className="w-full"
+                  onClick={() => navigate('/auth?forgot=1')}
+                >
+                  Request a new reset link
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigate('/auth')}
+                >
                   Back to Sign In
                 </Button>
               </div>
@@ -153,7 +226,9 @@ const ResetPassword = () => {
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
-                  {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+                  {errors.password && (
+                    <p className="text-xs text-destructive">{errors.password}</p>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     Min 8 characters with uppercase, lowercase, and a number.
                   </p>
@@ -169,7 +244,9 @@ const ResetPassword = () => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
                   {errors.confirmPassword && (
-                    <p className="text-xs text-destructive">{errors.confirmPassword}</p>
+                    <p className="text-xs text-destructive">
+                      {errors.confirmPassword}
+                    </p>
                   )}
                 </div>
 
