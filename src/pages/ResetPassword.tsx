@@ -28,33 +28,52 @@ const ResetPassword = () => {
   const [invalidLink, setInvalidLink] = useState(false);
 
   useEffect(() => {
-    // Supabase puts the recovery token in the URL hash and creates a session
-    // automatically when the user clicks the email link.
-    const checkSession = async () => {
-      const hash = window.location.hash || '';
-      const isRecovery = hash.includes('type=recovery');
+    let ready = false;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+    const hash = window.location.hash || '';
+    const search = window.location.search || '';
+    const isRecovery =
+      hash.includes('type=recovery') || search.includes('type=recovery');
+    const hasError =
+      hash.includes('error=') || search.includes('error=');
+
+    // Listen for auth events (PASSWORD_RECOVERY fires when Supabase parses the hash)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && sess)) {
+        ready = true;
         setSessionReady(true);
-        return;
+        setInvalidLink(false);
       }
+    });
 
-      // Listen for the PASSWORD_RECOVERY event in case the session is being established async
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, sess) => {
-        if (event === 'PASSWORD_RECOVERY' || sess) {
-          setSessionReady(true);
-        }
-      });
+    // Also check for an existing session immediately
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        ready = true;
+        setSessionReady(true);
+      }
+    });
 
-      // If neither hash nor session, the link is invalid/expired
-      setTimeout(() => {
-        if (!session && !isRecovery) setInvalidLink(true);
-      }, 1500);
+    // If link contains an explicit error, mark invalid right away
+    if (hasError) {
+      setInvalidLink(true);
+    } else if (!isRecovery) {
+      // Give Supabase a moment to process the URL; if no session arrives, mark invalid
+      timeoutId = setTimeout(() => {
+        if (!ready) setInvalidLink(true);
+      }, 4000);
+    } else {
+      // It's a recovery link — wait longer for the session to be established
+      timeoutId = setTimeout(() => {
+        if (!ready) setInvalidLink(true);
+      }, 8000);
+    }
 
-      return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      if (timeoutId) clearTimeout(timeoutId);
     };
-    checkSession();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
