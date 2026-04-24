@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { CheckCircle2, Package, FileText, ArrowRight, Truck, MapPin, ExternalLink, Copy } from 'lucide-react';
+import { Package, FileText, ArrowRight, Truck, MapPin, Copy } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import OrderSuccessHero from '@/components/OrderSuccessHero';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
@@ -99,16 +100,8 @@ const OrderConfirmation = () => {
 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-          {/* Success Header */}
-          <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <CheckCircle2 className="w-10 h-10 text-success" />
-            </div>
-            <h1 className="font-serif text-3xl font-bold mb-2">Order Confirmed</h1>
-            <p className="text-muted-foreground">
-              Thank you for shopping with MUFFIGOUT. A confirmation email is on its way.
-            </p>
-          </div>
+          {/* Success Hero — animated badge, sparkles, and chime */}
+          <OrderSuccessHero />
 
           {/* Order Info Card */}
           <div className="bg-card p-6 rounded-lg border border-border mb-6">
