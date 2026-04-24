@@ -25,3 +25,11 @@ project_id = "zybjzfffkylezzvotcnn"
     verify_jwt = false
   [functions.sync-delhivery-status]
     verify_jwt = false
+  [functions.push-track]
+    verify_jwt = false
+  [functions.cart-abandonment-check]
+    verify_jwt = false
+  [functions.wishlist-alerts-check]
+    verify_jwt = false
+  [functions.flash-sale-broadcast]
+    verify_jwt = false
