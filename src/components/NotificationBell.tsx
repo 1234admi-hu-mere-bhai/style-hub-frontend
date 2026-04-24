@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { formatDistanceToNow, format } from 'date-fns';
 import { useState } from 'react';
+import { maskOrderRefsInText } from '@/lib/maskOrder';
 
 const typeIcons: Record<string, string> = {
   info: '💡',
@@ -87,8 +88,8 @@ const NotificationBell = () => {
                   <div className="flex gap-2">
                     <span className="text-base mt-0.5">{typeIcons[n.type] || '🔔'}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{n.title}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-2">{n.message}</p>
+                      <p className="text-sm font-medium truncate">{maskOrderRefsInText(n.title)}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{maskOrderRefsInText(n.message)}</p>
                       <div className="flex items-center justify-between mt-1">
                         <p className="text-[10px] text-muted-foreground">
                           {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
@@ -126,7 +127,7 @@ const NotificationBell = () => {
           <DialogHeader>
             <div className="flex items-center gap-2">
               <span className="text-2xl">{typeIcons[selected?.type || ''] || '🔔'}</span>
-              <DialogTitle className="text-lg">{selected?.title}</DialogTitle>
+              <DialogTitle className="text-lg">{maskOrderRefsInText(selected?.title)}</DialogTitle>
             </div>
           </DialogHeader>
           <div className="space-y-4">
@@ -134,7 +135,7 @@ const NotificationBell = () => {
               {selected?.type}
             </span>
             <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-              {selected?.message}
+              {maskOrderRefsInText(selected?.message)}
             </p>
             <p className="text-xs text-muted-foreground">
               {selected?.created_at && format(new Date(selected.created_at), 'PPpp')}
