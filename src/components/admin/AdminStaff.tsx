@@ -100,7 +100,7 @@ const AdminStaff = () => {
         body: { action: 'create-invite', ...inviteForm },
       });
       if (error || data?.error) throw new Error(data?.error || error?.message);
-      setGenerated({ url: inviteUrl(data.invite.token), email: data.invite.email });
+      setGenerated({ email: data.invite.email });
       setShowInvite(false);
       setInviteForm({ email: '', display_name: '', permissions: { ...DEFAULT_NEW_STAFF_PERMS, dashboard: true } });
       load();
@@ -157,10 +157,6 @@ const AdminStaff = () => {
     }
   };
 
-  const copyLink = (url: string) => {
-    navigator.clipboard.writeText(url);
-    toast({ title: 'Invite link copied' });
-  };
 
   const filteredActivity = activityFilter
     ? activity.filter((a) => a.actor_email === activityFilter)
@@ -261,19 +257,11 @@ const AdminStaff = () => {
                         {used ? 'accepted' : expired ? 'expired' : 'pending'}
                       </Badge>
                     </div>
-                    <p className="text-[10px] text-muted-foreground mt-1 break-all">
-                      {inviteUrl(inv.token)}
-                    </p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">
                       Expires {new Date(inv.expires_at).toLocaleString('en-IN')}
                     </p>
                   </div>
                   <div className="flex gap-1.5">
-                    {!used && !expired && (
-                      <Button variant="outline" size="sm" onClick={() => copyLink(inviteUrl(inv.token))}>
-                        <Copy className="h-3.5 w-3.5 mr-1" /> Copy link
-                      </Button>
-                    )}
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive"
                       onClick={() => handleRevokeInvite(inv.id)}>
                       <Trash2 className="h-4 w-4" />
@@ -345,7 +333,7 @@ const AdminStaff = () => {
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Invite staff member</DialogTitle>
-            <DialogDescription>Generate an invite link to share via email/WhatsApp.</DialogDescription>
+            <DialogDescription>We'll email an invite to the address below — they sign in with that email and join the admin panel.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
