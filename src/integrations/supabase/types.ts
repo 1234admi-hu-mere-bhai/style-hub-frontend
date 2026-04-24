@@ -101,6 +101,33 @@ export type Database = {
         }
         Relationships: []
       }
+      cart_snapshots: {
+        Row: {
+          item_count: number
+          items: Json
+          last_reminder_sent_at: string | null
+          total: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          item_count?: number
+          items?: Json
+          last_reminder_sent_at?: string | null
+          total?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          item_count?: number
+          items?: Json
+          last_reminder_sent_at?: string | null
+          total?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string
@@ -293,6 +320,45 @@ export type Database = {
           start_time?: string
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      notification_preferences: {
+        Row: {
+          announcements: boolean
+          cart_reminders: boolean
+          created_at: string
+          flash_sales: boolean
+          new_arrivals: boolean
+          offers: boolean
+          orders: boolean
+          updated_at: string
+          user_id: string
+          wishlist: boolean
+        }
+        Insert: {
+          announcements?: boolean
+          cart_reminders?: boolean
+          created_at?: string
+          flash_sales?: boolean
+          new_arrivals?: boolean
+          offers?: boolean
+          orders?: boolean
+          updated_at?: string
+          user_id: string
+          wishlist?: boolean
+        }
+        Update: {
+          announcements?: boolean
+          cart_reminders?: boolean
+          created_at?: string
+          flash_sales?: boolean
+          new_arrivals?: boolean
+          offers?: boolean
+          orders?: boolean
+          updated_at?: string
+          user_id?: string
+          wishlist?: boolean
         }
         Relationships: []
       }
@@ -604,6 +670,54 @@ export type Database = {
         }
         Relationships: []
       }
+      push_campaigns: {
+        Row: {
+          audience: string
+          category: string
+          created_at: string
+          created_by: string | null
+          id: string
+          message: string
+          recipients_count: number | null
+          scheduled_at: string | null
+          sent_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          audience?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          message: string
+          recipients_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          audience?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          message?: string
+          recipients_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
       push_config: {
         Row: {
           created_at: string
@@ -625,6 +739,30 @@ export type Database = {
           private_key?: string
           public_key?: string
           subject?: string
+        }
+        Relationships: []
+      }
+      push_send_log: {
+        Row: {
+          category: string
+          dedupe_key: string
+          id: string
+          sent_at: string
+          user_id: string | null
+        }
+        Insert: {
+          category: string
+          dedupe_key: string
+          id?: string
+          sent_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          dedupe_key?: string
+          id?: string
+          sent_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -846,6 +984,33 @@ export type Database = {
           id?: string
           metadata?: Json | null
           reason?: string
+        }
+        Relationships: []
+      }
+      wishlist_items: {
+        Row: {
+          created_at: string
+          id: string
+          last_seen_in_stock: boolean
+          last_seen_price: number
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_seen_in_stock?: boolean
+          last_seen_price: number
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_seen_in_stock?: boolean
+          last_seen_price?: number
+          product_id?: string
+          user_id?: string
         }
         Relationships: []
       }
