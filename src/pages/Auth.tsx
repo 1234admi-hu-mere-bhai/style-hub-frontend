@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Loader2, Mail, Phone } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -23,12 +23,6 @@ import { supabase } from '@/integrations/supabase/client';
 
 const emailSchema = z.string().trim().min(1, 'Email is required').email('Please enter a valid email address');
 const passwordSchema = z.string().min(1, 'Password is required').min(6, 'Password must be at least 6 characters');
-const phoneSchema = z
-  .string()
-  .trim()
-  .regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number');
-
-const normalisePhone = (raw: string) => raw.replace(/\D/g, '').replace(/^91(?=\d{10}$)/, '').slice(-10);
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -36,11 +30,10 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
-  const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  const [loginForm, setLoginForm] = useState({ email: '', phone: '', password: '' });
-  const [signupForm, setSignupForm] = useState({ email: '', phone: '', password: '', confirmPassword: '' });
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [signupForm, setSignupForm] = useState({ email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Forgot password dialog
@@ -61,53 +54,24 @@ const Auth = () => {
     const result = passwordSchema.safeParse(password);
     return result.success ? null : result.error.errors[0].message;
   };
-  const validatePhone = (raw: string) => {
-    const phone = normalisePhone(raw);
-    const result = phoneSchema.safeParse(phone);
-    return result.success ? null : result.error.errors[0].message;
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
 
-    let emailToUse = '';
-    if (loginMethod === 'email') {
-      const trimmedEmail = loginForm.email.trim().toLowerCase();
-      const emailError = validateEmail(trimmedEmail);
-      const passwordError = validatePassword(loginForm.password);
-      if (emailError || passwordError) {
-        setErrors({
-          ...(emailError && { email: emailError }),
-          ...(passwordError && { password: passwordError }),
-        });
-        return;
-      }
-      emailToUse = trimmedEmail;
-    } else {
-      const phone = normalisePhone(loginForm.phone);
-      const phoneError = validatePhone(loginForm.phone);
-      const passwordError = validatePassword(loginForm.password);
-      if (phoneError || passwordError) {
-        setErrors({
-          ...(phoneError && { phone: phoneError }),
-          ...(passwordError && { password: passwordError }),
-        });
-        return;
-      }
-      // Look up email by phone
-      setIsLoading(true);
-      const { data: lookupEmail, error: lookupErr } = await supabase.rpc('get_email_by_phone' as any, { p_phone: phone });
-      if (lookupErr || !lookupEmail) {
-        setIsLoading(false);
-        toast.error('No account found for this mobile number. Please sign up first.');
-        return;
-      }
-      emailToUse = lookupEmail as string;
+    const trimmedEmail = loginForm.email.trim().toLowerCase();
+    const emailError = validateEmail(trimmedEmail);
+    const passwordError = validatePassword(loginForm.password);
+    if (emailError || passwordError) {
+      setErrors({
+        ...(emailError && { email: emailError }),
+        ...(passwordError && { password: passwordError }),
+      });
+      return;
     }
 
     setIsLoading(true);
-    const { error } = await signIn(emailToUse, loginForm.password);
+    const { error } = await signIn(trimmedEmail, loginForm.password);
     setIsLoading(false);
 
     if (error) {
