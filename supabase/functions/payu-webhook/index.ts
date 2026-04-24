@@ -156,6 +156,23 @@ Deno.serve(async (req) => {
       type: 'success',
     });
 
+    // 🔔 Push notification: Order placed
+    try {
+      await adminClient.functions.invoke('send-push', {
+        body: {
+          userId: pending.user_id,
+          title: '✅ Order Placed Successfully',
+          message: `Order ${orderNumber} confirmed (₹${order.total}). Track it anytime in your account.`,
+          url: `/track-order?id=${orderNumber}`,
+          tag: `order-placed-${order.id}`,
+          category: 'orders',
+          dedupeKey: `order-placed-${order.id}`,
+        },
+      });
+    } catch (e) {
+      console.error('order placed push failed:', e);
+    }
+
     // Send order confirmation email (best-effort)
     try {
       const recipientEmail = (pending.user_email || email || '').toString().trim();
