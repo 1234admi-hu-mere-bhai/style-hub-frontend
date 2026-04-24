@@ -220,6 +220,39 @@ Deno.serve(async (req) => {
             },
           },
         });
+
+        // Send tax invoice email (best-effort, separate template)
+        try {
+          const invoiceItems = itemsArr.map((it: any) => ({
+            name: it.product_name || it.name || 'Item',
+            size: it.size || undefined,
+            color: it.color || undefined,
+            quantity: Number(it.quantity) || 1,
+            price: Number(it.price) || 0,
+          }));
+          await adminClient.functions.invoke('send-transactional-email', {
+            body: {
+              templateName: 'order-invoice',
+              recipientEmail,
+              idempotencyKey: `order-invoice-${order.id}`,
+              templateData: {
+                customerName: prof?.first_name || firstname || '',
+                orderNumber,
+                invoiceNumber: `INV-${orderNumber.slice(-8)}`,
+                orderDate,
+                paymentMethod: 'Online Payment (PayU)',
+                paymentId: mihpayid || txnid,
+                subtotal: order.subtotal,
+                shippingCost: order.shipping_cost,
+                total: order.total,
+                items: invoiceItems,
+                shippingAddress: pending.shipping_address,
+              },
+            },
+          });
+        } catch (e) {
+          console.error('order-invoice email send failed:', e);
+        }
       }
     } catch (e) {
       console.error('order-placed email send failed:', e);
