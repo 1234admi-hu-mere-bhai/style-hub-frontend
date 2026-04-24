@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { maskOrderRefsInText } from '@/lib/maskOrder';
 
 const typeIcons: Record<string, string> = {
   info: '💡',
@@ -104,7 +105,7 @@ const Notifications = () => {
                   <span className="text-xl mt-0.5">{typeIcons[n.type] || '🔔'}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="font-semibold text-sm">{n.title}</p>
+                      <p className="font-semibold text-sm">{maskOrderRefsInText(n.title)}</p>
                       <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${typeBadgeColors[n.type] || 'bg-muted text-muted-foreground'}`}>
                         {n.type}
                       </span>
@@ -112,7 +113,7 @@ const Notifications = () => {
                         <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{n.message}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{maskOrderRefsInText(n.message)}</p>
                     <div className="flex items-center justify-between mt-2">
                       <p className="text-xs text-muted-foreground">
                         {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
@@ -136,7 +137,7 @@ const Notifications = () => {
           <DialogHeader>
             <div className="flex items-center gap-2">
               <span className="text-2xl">{typeIcons[selected?.type || ''] || '🔔'}</span>
-              <DialogTitle className="text-lg">{selected?.title}</DialogTitle>
+              <DialogTitle className="text-lg">{maskOrderRefsInText(selected?.title)}</DialogTitle>
             </div>
           </DialogHeader>
           <div className="space-y-4">
@@ -144,7 +145,7 @@ const Notifications = () => {
               {selected?.type}
             </span>
             <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-              {selected?.message}
+              {maskOrderRefsInText(selected?.message)}
             </p>
             <p className="text-xs text-muted-foreground">
               {selected?.created_at && format(new Date(selected.created_at), 'PPpp')}
