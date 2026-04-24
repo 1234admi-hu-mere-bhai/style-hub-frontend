@@ -93,6 +93,7 @@ const AppContent = () => {
       {!isAdmin && <BottomNav />}
       {!isAdmin && <LiveSupportChat />}
       {!isAdmin && <PushNotificationPrompt />}
+      {!isAdmin && <InAppNotificationListener />}
     </div>
   );
 };
