@@ -148,11 +148,12 @@ Deno.serve(async (req) => {
       console.error('Invoice generation failed:', e);
     }
 
-    // Notify user
+    // Notify user (mask order id for privacy on lock screens / previews)
+    const maskedOrder = `••••${orderNumber.slice(-4)}`;
     await adminClient.from('notifications').insert({
       user_id: pending.user_id,
       title: 'Order Placed',
-      message: `Your order ${orderNumber} (₹${order.total}) has been confirmed. We'll notify you when it ships.`,
+      message: `Your order ${maskedOrder} (₹${order.total}) has been confirmed. We'll notify you when it ships.`,
       type: 'success',
     });
 
@@ -162,7 +163,7 @@ Deno.serve(async (req) => {
         body: {
           userId: pending.user_id,
           title: '✅ Order Placed Successfully',
-          message: `Order ${orderNumber} confirmed (₹${order.total}). Track it anytime in your account.`,
+          message: `Order ${maskedOrder} confirmed (₹${order.total}). Track it anytime in your account.`,
           url: `/track-order?id=${orderNumber}`,
           tag: `order-placed-${order.id}`,
           category: 'orders',

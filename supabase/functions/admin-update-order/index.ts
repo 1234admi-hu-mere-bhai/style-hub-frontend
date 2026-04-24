@@ -217,21 +217,21 @@ Deno.serve(async (req) => {
       if (nextOrder.status === 'shipped') {
         notif = {
           title: '📦 Order Shipped',
-          message: `Your order ${nextOrder.order_number} is on its way! Track it live.`,
+          message: `Your order ${maskedOrder} is on its way! Track it live.`,
           tag: `shipped-${nextOrder.id}`,
           url: `/track-order?id=${nextOrder.order_number}`,
         };
       } else if (nextOrder.status === 'out_for_delivery') {
         notif = {
           title: '🚚 Out for Delivery',
-          message: `Your order ${nextOrder.order_number} arrives today. Keep your phone handy!`,
+          message: `Your order ${maskedOrder} arrives today. Keep your phone handy!`,
           tag: `ofd-${nextOrder.id}`,
           url: `/track-order?id=${nextOrder.order_number}`,
         };
       } else if (nextOrder.status === 'delivered') {
         notif = {
           title: '🎉 Delivered!',
-          message: `Order ${nextOrder.order_number} has been delivered. Rate your experience!`,
+          message: `Order ${maskedOrder} has been delivered. Rate your experience!`,
           tag: `delivered-${nextOrder.id}`,
           url: `/track-order?id=${nextOrder.order_number}`,
         };
