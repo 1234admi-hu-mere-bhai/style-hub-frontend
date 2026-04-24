@@ -210,68 +210,88 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Detect refund-related status transitions and notify customer
+    // Detect status transitions and notify customer
     if (prevOrder && nextOrder && prevOrder.status !== nextOrder.status) {
-      let notif: { title: string; message: string; tag: string } | null = null
+      let notif: { title: string; message: string; tag: string; url: string } | null = null;
 
-      if (nextOrder.status === 'return_approved') {
-        const amt = Number(nextOrder.refund_amount ?? prevOrder.total ?? 0)
+      if (nextOrder.status === 'shipped') {
+        notif = {
+          title: '📦 Order Shipped',
+          message: `Your order ${nextOrder.order_number} is on its way! Track it live.`,
+          tag: `shipped-${nextOrder.id}`,
+          url: `/track-order?id=${nextOrder.order_number}`,
+        };
+      } else if (nextOrder.status === 'out_for_delivery') {
+        notif = {
+          title: '🚚 Out for Delivery',
+          message: `Your order ${nextOrder.order_number} arrives today. Keep your phone handy!`,
+          tag: `ofd-${nextOrder.id}`,
+          url: `/track-order?id=${nextOrder.order_number}`,
+        };
+      } else if (nextOrder.status === 'delivered') {
+        notif = {
+          title: '🎉 Delivered!',
+          message: `Order ${nextOrder.order_number} has been delivered. Rate your experience!`,
+          tag: `delivered-${nextOrder.id}`,
+          url: `/track-order?id=${nextOrder.order_number}`,
+        };
+      } else if (nextOrder.status === 'return_approved') {
+        const amt = Number(nextOrder.refund_amount ?? prevOrder.total ?? 0);
         const etaStr = nextOrder.refund_eta
           ? new Date(nextOrder.refund_eta).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-          : 'soon'
+          : 'soon';
         notif = {
           title: 'Refund Approved ✅',
           message: `Your refund of ₹${amt.toLocaleString('en-IN')} for order ${nextOrder.order_number} is approved. Expected by ${etaStr}.`,
           tag: `refund-${nextOrder.id}`,
-        }
+          url: `/track-order?id=${nextOrder.order_number}`,
+        };
       } else if (nextOrder.status === 'picked_up') {
         notif = {
           title: 'Package Picked Up 📦',
-          message: `Your return for order ${nextOrder.order_number} has been picked up. Refund is being processed to your original payment method.`,
+          message: `Your return for order ${nextOrder.order_number} has been picked up. Refund is being processed.`,
           tag: `pickup-${nextOrder.id}`,
-        }
+          url: `/track-order?id=${nextOrder.order_number}`,
+        };
       } else if (nextOrder.status === 'refund_processed') {
-        const amt = Number(nextOrder.refund_amount ?? prevOrder.total ?? 0)
+        const amt = Number(nextOrder.refund_amount ?? prevOrder.total ?? 0);
         notif = {
           title: 'Refund Processed 💸',
-          message: `Your refund of ₹${amt.toLocaleString('en-IN')} for order ${nextOrder.order_number} has been issued to your original payment method.`,
+          message: `Your refund of ₹${amt.toLocaleString('en-IN')} for order ${nextOrder.order_number} has been issued.`,
           tag: `refund-${nextOrder.id}`,
-        }
+          url: `/track-order?id=${nextOrder.order_number}`,
+        };
       } else if (nextOrder.status === 'return_rejected') {
-        const reason = nextOrder.rejection_reason || 'Please contact support for details.'
+        const reason = nextOrder.rejection_reason || 'Please contact support for details.';
         notif = {
           title: 'Return Request Rejected ❌',
           message: `Your return request for order ${nextOrder.order_number} was rejected. Reason: ${reason}`,
           tag: `return-rejected-${nextOrder.id}`,
-        }
+          url: `/track-order?id=${nextOrder.order_number}`,
+        };
       }
 
       if (notif && nextOrder.user_id) {
-        // Insert in-app notification scoped to this user (best effort)
         try {
           await adminClient.from('notifications').insert({
-            title: notif.title,
-            message: notif.message,
-            type: 'order',
-            user_id: nextOrder.user_id,
-          })
-        } catch (e) {
-          console.error('notifications insert failed:', e)
-        }
+            title: notif.title, message: notif.message, type: 'order', user_id: nextOrder.user_id,
+          });
+        } catch (e) { console.error('notifications insert failed:', e); }
 
-        // Send push to that user (best effort)
         try {
-          await anonClient.functions.invoke('send-push', {
+          await adminClient.functions.invoke('send-push', {
             body: {
               userId: nextOrder.user_id,
               title: notif.title,
               message: notif.message,
-              url: '/track-order',
+              url: notif.url,
               tag: notif.tag,
+              category: 'orders',
+              dedupeKey: `${notif.tag}`,
             },
-          })
+          });
         } catch (e) {
-          console.error('send-push invoke failed:', e)
+          console.error('send-push invoke failed:', e);
         }
       }
     }
