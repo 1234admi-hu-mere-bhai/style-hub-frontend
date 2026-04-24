@@ -8,6 +8,7 @@ import {
   Heading,
   Hr,
   Html,
+  Img,
   Preview,
   Section,
   Text,
@@ -16,6 +17,7 @@ import type { TemplateEntry } from './registry.ts'
 
 const SITE_NAME = 'MUFFIGOUT APPAREL HUB'
 const SITE_URL = 'https://muffigoutapparelhub.com'
+const LOGO_URL = 'https://www.muffigoutapparelhub.com/assets/logo-new.png'
 
 interface RefundProcessedProps {
   customerName?: string
