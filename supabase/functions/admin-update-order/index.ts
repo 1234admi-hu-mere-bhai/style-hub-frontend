@@ -213,6 +213,10 @@ Deno.serve(async (req) => {
     // Detect status transitions and notify customer
     if (prevOrder && nextOrder && prevOrder.status !== nextOrder.status) {
       let notif: { title: string; message: string; tag: string; url: string } | null = null;
+      // Mask order number for lock-screen / preview privacy (last 4 only)
+      const maskedOrder = nextOrder.order_number
+        ? `••••${String(nextOrder.order_number).slice(-4)}`
+        : '';
 
       if (nextOrder.status === 'shipped') {
         notif = {
@@ -242,14 +246,14 @@ Deno.serve(async (req) => {
           : 'soon';
         notif = {
           title: 'Refund Approved ✅',
-          message: `Your refund of ₹${amt.toLocaleString('en-IN')} for order ${nextOrder.order_number} is approved. Expected by ${etaStr}.`,
+          message: `Your refund of ₹${amt.toLocaleString('en-IN')} for order ${maskedOrder} is approved. Expected by ${etaStr}.`,
           tag: `refund-${nextOrder.id}`,
           url: `/track-order?id=${nextOrder.order_number}`,
         };
       } else if (nextOrder.status === 'picked_up') {
         notif = {
           title: 'Package Picked Up 📦',
-          message: `Your return for order ${nextOrder.order_number} has been picked up. Refund is being processed.`,
+          message: `Your return for order ${maskedOrder} has been picked up. Refund is being processed.`,
           tag: `pickup-${nextOrder.id}`,
           url: `/track-order?id=${nextOrder.order_number}`,
         };
@@ -257,7 +261,7 @@ Deno.serve(async (req) => {
         const amt = Number(nextOrder.refund_amount ?? prevOrder.total ?? 0);
         notif = {
           title: 'Refund Processed 💸',
-          message: `Your refund of ₹${amt.toLocaleString('en-IN')} for order ${nextOrder.order_number} has been issued.`,
+          message: `Your refund of ₹${amt.toLocaleString('en-IN')} for order ${maskedOrder} has been issued.`,
           tag: `refund-${nextOrder.id}`,
           url: `/track-order?id=${nextOrder.order_number}`,
         };
@@ -265,7 +269,7 @@ Deno.serve(async (req) => {
         const reason = nextOrder.rejection_reason || 'Please contact support for details.';
         notif = {
           title: 'Return Request Rejected ❌',
-          message: `Your return request for order ${nextOrder.order_number} was rejected. Reason: ${reason}`,
+          message: `Your return request for order ${maskedOrder} was rejected. Reason: ${reason}`,
           tag: `return-rejected-${nextOrder.id}`,
           url: `/track-order?id=${nextOrder.order_number}`,
         };
