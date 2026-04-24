@@ -283,7 +283,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    const payload = JSON.stringify({ title, message, url: url || "/notifications", tag: tag || "notification" });
+    const payload = JSON.stringify({
+      title,
+      message,
+      url: url || "/notifications",
+      tag: tag || "muffigout",
+      dedupeKey: dedupeKey || null,
+    });
 
     let sent = 0;
     let failed = 0;
