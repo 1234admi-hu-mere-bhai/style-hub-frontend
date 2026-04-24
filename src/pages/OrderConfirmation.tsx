@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { CheckCircle2, Package, FileText, ArrowRight, Truck, MapPin, ExternalLink, Copy } from 'lucide-react';
+import { Package, FileText, ArrowRight, Truck, MapPin, Copy } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import OrderSuccessHero from '@/components/OrderSuccessHero';
