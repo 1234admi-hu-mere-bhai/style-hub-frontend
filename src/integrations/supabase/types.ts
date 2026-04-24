@@ -1004,6 +1004,126 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_activity_log: {
+        Row: {
+          action: string
+          actor_email: string
+          actor_role: string
+          actor_user_id: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          module: string
+          summary: string
+          target_id: string | null
+          target_table: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string
+          actor_role?: string
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          module: string
+          summary?: string
+          target_id?: string | null
+          target_table?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string
+          actor_role?: string
+          actor_user_id?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          module?: string
+          summary?: string
+          target_id?: string | null
+          target_table?: string | null
+        }
+        Relationships: []
+      }
+      staff_invites: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          created_by: string
+          display_name: string
+          email: string
+          expires_at: string
+          id: string
+          permissions: Json
+          token: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          created_by: string
+          display_name?: string
+          email: string
+          expires_at?: string
+          id?: string
+          permissions?: Json
+          token: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          created_by?: string
+          display_name?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          permissions?: Json
+          token?: string
+        }
+        Relationships: []
+      }
+      staff_members: {
+        Row: {
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          invited_by: string | null
+          joined_at: string
+          permissions: Json
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string
+          email: string
+          id?: string
+          invited_by?: string | null
+          joined_at?: string
+          permissions?: Json
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          email?: string
+          id?: string
+          invited_by?: string | null
+          joined_at?: string
+          permissions?: Json
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -1069,7 +1189,23 @@ export type Database = {
         Returns: number
       }
       get_email_by_phone: { Args: { p_phone: string }; Returns: string }
+      is_active_staff: { Args: { _uid: string }; Returns: boolean }
+      is_owner: { Args: { _uid: string }; Returns: boolean }
       is_owner_of_order: { Args: { order_id: string }; Returns: boolean }
+      log_staff_activity: {
+        Args: {
+          _action: string
+          _actor_email: string
+          _actor_role: string
+          _actor_user_id: string
+          _metadata: Json
+          _module: string
+          _summary: string
+          _target_id: string
+          _target_table: string
+        }
+        Returns: string
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -1086,6 +1222,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      staff_has_module: {
+        Args: { _module: string; _uid: string }
+        Returns: boolean
       }
     }
     Enums: {
