@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import {
-  Loader2, Plus, Trash2, Copy, RefreshCw, Activity, ShieldCheck, UserCog, X, Users as UsersIcon,
+  Loader2, Plus, Trash2, RefreshCw, Activity, ShieldCheck, UserCog, X, Users as UsersIcon, MailCheck,
 } from 'lucide-react';
 import { STAFF_MODULES, DEFAULT_NEW_STAFF_PERMS } from '@/lib/staffModules';
 
