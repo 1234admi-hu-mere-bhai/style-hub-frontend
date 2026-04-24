@@ -193,30 +193,35 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Verify admin auth
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Auth: allow either authenticated user OR service-role (for backend triggers)
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+    const isServiceRole = token === serviceRoleKey;
 
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const { data: { user }, error: userError } = await userClient.auth.getUser();
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    if (!isServiceRole) {
+      if (!authHeader.startsWith("Bearer ")) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
       });
+      const { data: { user }, error: userError } = await userClient.auth.getUser();
+      if (userError || !user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
 
-    const { title, message, url, tag, userId } = await req.json();
+    // category: orders | offers | wishlist | cart_reminders | flash_sales | new_arrivals | announcements
+    // dedupeKey: optional — prevents same notification firing twice for same user
+    const { title, message, url, tag, userId, category, dedupeKey } = await req.json();
 
     // Get VAPID keys
     const { data: config } = await adminClient
@@ -239,10 +244,41 @@ Deno.serve(async (req) => {
     if (userId) {
       subQuery = subQuery.eq("user_id", userId);
     }
-    const { data: subscriptions } = await subQuery;
+    const { data: rawSubscriptions } = await subQuery;
 
-    if (!subscriptions || subscriptions.length === 0) {
-      return new Response(JSON.stringify({ sent: 0, message: "No subscribers" }), {
+    let subscriptions = rawSubscriptions || [];
+
+    // Per-user category preference filtering
+    if (category && subscriptions.length > 0) {
+      const userIds = [...new Set(subscriptions.map((s: any) => s.user_id))];
+      const { data: prefs } = await adminClient
+        .from("notification_preferences")
+        .select("*")
+        .in("user_id", userIds);
+
+      const allowedUserIds = new Set<string>();
+      for (const uid of userIds) {
+        const pref = (prefs || []).find((p: any) => p.user_id === uid);
+        const allowed = pref ? pref[category] !== false : true; // default ON
+        if (allowed) allowedUserIds.add(uid as string);
+      }
+      subscriptions = subscriptions.filter((s: any) => allowedUserIds.has(s.user_id));
+    }
+
+    // Dedupe: skip users who already got this notification
+    if (dedupeKey && subscriptions.length > 0) {
+      const userIds = [...new Set(subscriptions.map((s: any) => s.user_id))];
+      const { data: alreadySent } = await adminClient
+        .from("push_send_log")
+        .select("user_id")
+        .eq("dedupe_key", dedupeKey)
+        .in("user_id", userIds);
+      const skipSet = new Set((alreadySent || []).map((r: any) => r.user_id));
+      subscriptions = subscriptions.filter((s: any) => !skipSet.has(s.user_id));
+    }
+
+    if (subscriptions.length === 0) {
+      return new Response(JSON.stringify({ sent: 0, message: "No eligible subscribers" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -295,6 +331,23 @@ Deno.serve(async (req) => {
       } catch (err) {
         console.error(`Push error for ${sub.id}:`, err);
         failed++;
+      }
+    }
+
+    // Log dedupe entries for users who received it (best-effort)
+    if (dedupeKey) {
+      try {
+        const sentUserIds = [...new Set(subscriptions.map((s: any) => s.user_id))];
+        const rows = sentUserIds.map((uid) => ({
+          user_id: uid,
+          category: category || 'announcements',
+          dedupe_key: dedupeKey,
+        }));
+        if (rows.length > 0) {
+          await adminClient.from('push_send_log').upsert(rows, { onConflict: 'user_id,dedupe_key', ignoreDuplicates: true });
+        }
+      } catch (e) {
+        console.error('push_send_log insert failed:', e);
       }
     }
 

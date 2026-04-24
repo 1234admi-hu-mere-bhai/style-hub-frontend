@@ -87,6 +87,9 @@ Deno.serve(async (req) => {
       }
     }
 
+    const { data: orderRow } = await adminClient
+      .from('orders').select('order_number').eq('id', orderId).maybeSingle()
+
     // Update order status
     const { error: updateError } = await adminClient
       .from('orders')
@@ -97,6 +100,20 @@ Deno.serve(async (req) => {
       .eq('id', orderId)
 
     if (updateError) throw updateError
+
+    try {
+      await adminClient.functions.invoke('send-push', {
+        body: {
+          userId: order.user_id,
+          title: '🔁 Replacement Requested',
+          message: `Your replacement request for order ${orderRow?.order_number || ''} is being reviewed.`,
+          url: `/track-order?id=${orderRow?.order_number || ''}`,
+          tag: `replace-req-${orderId}`,
+          category: 'orders',
+          dedupeKey: `replace-req-${orderId}`,
+        },
+      })
+    } catch (e) { console.error('replacement push failed:', e) }
 
     return new Response(
       JSON.stringify({ success: true, message: 'Replacement request submitted' }),

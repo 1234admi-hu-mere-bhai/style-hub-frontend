@@ -90,6 +90,12 @@ Deno.serve(async (req) => {
       }
     }
 
+    const { data: orderRow } = await adminClient
+      .from('orders')
+      .select('order_number')
+      .eq('id', orderId)
+      .maybeSingle()
+
     const { error: updateError } = await adminClient
       .from('orders')
       .update({
@@ -100,6 +106,21 @@ Deno.serve(async (req) => {
       .eq('id', orderId)
 
     if (updateError) throw updateError
+
+    // 🔔 Push notification: return submitted
+    try {
+      await adminClient.functions.invoke('send-push', {
+        body: {
+          userId: order.user_id,
+          title: '↩️ Return Request Submitted',
+          message: `Your return for order ${orderRow?.order_number || ''} is being reviewed. We'll update you soon.`,
+          url: `/track-order?id=${orderRow?.order_number || ''}`,
+          tag: `return-req-${orderId}`,
+          category: 'orders',
+          dedupeKey: `return-req-${orderId}`,
+        },
+      })
+    } catch (e) { console.error('return push failed:', e) }
 
     return new Response(
       JSON.stringify({ success: true, message: 'Return request submitted successfully' }),
