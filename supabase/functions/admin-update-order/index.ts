@@ -114,6 +114,25 @@ Deno.serve(async (req) => {
 
     if (updateError) throw updateError
 
+    // Activity log (fire and forget)
+    try {
+      const changes = Object.entries(updateData)
+        .filter(([k]) => k !== 'updated_at')
+        .map(([k, v]) => `${k}=${typeof v === 'string' ? v : JSON.stringify(v)}`)
+        .join(', ')
+      adminClient.rpc('log_staff_activity', {
+        _actor_user_id: user.id,
+        _actor_email: userEmail,
+        _actor_role: actorRole,
+        _module: 'orders',
+        _action: 'update',
+        _target_table: 'orders',
+        _target_id: orderId,
+        _summary: `Updated order ${prevOrder?.order_number || orderId}: ${changes || '(no fields)'}`,
+        _metadata: updateData,
+      }).then(() => {}).catch(() => {})
+    } catch (_) { /* swallow */ }
+
     // Re-fetch to get post-trigger values (refund_amount/eta auto-set on return_approved)
     const { data: nextOrder } = await adminClient
       .from('orders')
