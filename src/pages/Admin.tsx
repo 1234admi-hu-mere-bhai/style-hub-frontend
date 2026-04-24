@@ -2,13 +2,16 @@ import { useEffect, useState } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useStaffContext } from '@/hooks/useStaffContext';
 import {
   Loader2, ShieldAlert, LayoutDashboard, ShoppingCart, Users,
   CreditCard, BarChart3, LogOut, Package, Warehouse,
-  Tag, Bell, FileText, Menu, X, ChevronRight, Store, MessageSquare, Zap, Undo2, Megaphone
+  Tag, Bell, FileText, Menu, X, ChevronRight, Store, MessageSquare, Zap, Undo2, Megaphone,
+  UsersRound, ClipboardList,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import logoNew from '@/assets/logo-new.png';
 import AdminDashboard from '@/components/admin/AdminDashboard';
 import AdminOrders from '@/components/admin/AdminOrders';
@@ -24,6 +27,8 @@ import AdminReviews from '@/components/admin/AdminReviews';
 import AdminFlashSales from '@/components/admin/AdminFlashSales';
 import AdminReturns from '@/components/admin/AdminReturns';
 import AdminPushCampaigns from '@/components/admin/AdminPushCampaigns';
+import AdminStaff from '@/components/admin/AdminStaff';
+import AdminPendingApprovals from '@/components/admin/AdminPendingApprovals';
 
 interface Analytics {
   totalOrders: number;
@@ -42,20 +47,22 @@ interface Analytics {
 }
 
 const TABS = [
-  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { key: 'orders', label: 'Orders', icon: ShoppingCart },
-  { key: 'returns', label: 'Returns', icon: Undo2 },
-  { key: 'products', label: 'Products', icon: Package },
-  { key: 'customers', label: 'Client Data', icon: Users },
-  { key: 'payments', label: 'Payments', icon: CreditCard },
-  { key: 'inventory', label: 'Inventory', icon: Warehouse },
-  { key: 'analytics', label: 'Analytics', icon: BarChart3 },
-  { key: 'coupons', label: 'Coupons', icon: Tag },
-  { key: 'flash-sales', label: 'Flash Sales', icon: Zap },
-  { key: 'reviews', label: 'Reviews', icon: MessageSquare },
-  { key: 'notifications', label: 'Notifications', icon: Bell },
-  { key: 'push-campaigns', label: 'Push Campaigns', icon: Megaphone },
-  { key: 'blog', label: 'Blog', icon: FileText },
+  { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, ownerOnly: false },
+  { key: 'orders', label: 'Orders', icon: ShoppingCart, ownerOnly: false },
+  { key: 'returns', label: 'Returns', icon: Undo2, ownerOnly: false },
+  { key: 'products', label: 'Products', icon: Package, ownerOnly: false },
+  { key: 'customers', label: 'Client Data', icon: Users, ownerOnly: false },
+  { key: 'payments', label: 'Payments', icon: CreditCard, ownerOnly: false },
+  { key: 'inventory', label: 'Inventory', icon: Warehouse, ownerOnly: false },
+  { key: 'analytics', label: 'Analytics', icon: BarChart3, ownerOnly: false },
+  { key: 'coupons', label: 'Coupons', icon: Tag, ownerOnly: false },
+  { key: 'flash-sales', label: 'Flash Sales', icon: Zap, ownerOnly: false },
+  { key: 'reviews', label: 'Reviews', icon: MessageSquare, ownerOnly: false },
+  { key: 'notifications', label: 'Notifications', icon: Bell, ownerOnly: false },
+  { key: 'push-campaigns', label: 'Push Campaigns', icon: Megaphone, ownerOnly: false },
+  { key: 'blog', label: 'Blog', icon: FileText, ownerOnly: false },
+  { key: 'pending-approvals', label: 'Pending Approvals', icon: ClipboardList, ownerOnly: true },
+  { key: 'staff', label: 'Staff', icon: UsersRound, ownerOnly: true },
 ] as const;
 
 type TabKey = typeof TABS[number]['key'];
@@ -64,12 +71,14 @@ const Admin = () => {
   const { user, signOut, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const staffCtx = useStaffContext();
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>((searchParams.get('tab') as TabKey) || 'dashboard');
   const [dbProducts, setDbProducts] = useState<any[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
 
   // Admin login state
   const [loginEmail, setLoginEmail] = useState('');
@@ -86,6 +95,23 @@ const Admin = () => {
       fetchAnalytics();
     }
   }, [user, authLoading]);
+
+  // Pending count for owner badge
+  useEffect(() => {
+    if (!staffCtx.isOwner) return;
+    let cancelled = false;
+    const fetchCount = async () => {
+      try {
+        const { data } = await supabase.functions.invoke('staff-pending-changes', {
+          body: { action: 'count' },
+        });
+        if (!cancelled && typeof data?.count === 'number') setPendingCount(data.count);
+      } catch {}
+    };
+    fetchCount();
+    const id = setInterval(fetchCount, 30000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [staffCtx.isOwner, activeTab]);
 
   useEffect(() => {
     if (activeTab === 'inventory' && analytics) {
@@ -154,7 +180,6 @@ const Admin = () => {
     }
   };
 
-  // Show admin login screen if not authenticated
   if (!authLoading && !user) {
     return (
       <div className="min-h-screen bg-muted flex items-center justify-center p-4">
@@ -205,7 +230,7 @@ const Admin = () => {
     );
   }
 
-  if (authLoading || loading) {
+  if (authLoading || loading || staffCtx.loading) {
     return (
       <div className="min-h-screen bg-muted flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -230,51 +255,63 @@ const Admin = () => {
 
   if (!analytics) return null;
 
+  // Filter tabs based on staff permissions / owner status
+  const visibleTabs = TABS.filter((t) => {
+    if (t.ownerOnly) return staffCtx.isOwner;
+    if (staffCtx.isOwner) return true;
+    return staffCtx.can(t.key);
+  });
+
+  // If current tab is hidden for this user, fall back to first visible
+  const currentTab = visibleTabs.some((t) => t.key === activeTab) ? activeTab : visibleTabs[0]?.key ?? 'dashboard';
+
   return (
     <div className="min-h-screen bg-muted flex">
-      {/* Sidebar Overlay for mobile */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar */}
       <aside className={`
         fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-card border-r border-border
         flex flex-col transition-transform duration-200 ease-in-out
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        {/* Sidebar Header */}
         <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
           <img src={logoNew} alt="Muffigout" className="h-9 w-9 rounded-full" />
           <div className="flex-1 min-w-0">
             <p className="font-serif text-sm font-bold truncate">MUFFIGOUT</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Admin Panel</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+              {staffCtx.isOwner ? 'Owner' : 'Staff'} Panel
+            </p>
           </div>
           <button className="lg:hidden p-1 hover:bg-muted rounded" onClick={() => setSidebarOpen(false)}>
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-0.5">
-          {TABS.map(({ key, label, icon: Icon }) => (
+          {visibleTabs.map(({ key, label, icon: Icon }) => (
             <button
               key={key}
               onClick={() => handleTabChange(key)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === key
+                currentTab === key
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
             >
               <Icon className="h-4 w-4 flex-shrink-0" />
-              {label}
-              {activeTab === key && <ChevronRight className="h-3.5 w-3.5 ml-auto" />}
+              <span className="flex-1 text-left">{label}</span>
+              {key === 'pending-approvals' && pendingCount > 0 && (
+                <Badge variant={currentTab === key ? 'secondary' : 'destructive'} className="text-[10px] h-5 px-1.5">
+                  {pendingCount}
+                </Badge>
+              )}
+              {currentTab === key && <ChevronRight className="h-3.5 w-3.5" />}
             </button>
           ))}
         </nav>
 
-        {/* Sidebar Footer */}
         <div className="border-t border-border p-3 space-y-1">
           <Link
             to="/"
@@ -292,36 +329,36 @@ const Admin = () => {
           </button>
         </div>
 
-        {/* User info */}
         <div className="border-t border-border px-4 py-3">
-          <p className="text-xs font-medium truncate text-foreground">{user?.email}</p>
-          <p className="text-[10px] text-muted-foreground">Administrator</p>
+          <p className="text-xs font-medium truncate text-foreground">
+            {staffCtx.displayName || user?.email}
+          </p>
+          <p className="text-[10px] text-muted-foreground">
+            {staffCtx.isOwner ? 'Owner' : 'Staff'}{staffCtx.displayName ? ` · ${user?.email}` : ''}
+          </p>
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen min-w-0">
-        {/* Top Bar */}
         <header className="sticky top-0 z-30 bg-card border-b border-border px-4 lg:px-6 py-3 flex items-center gap-3">
           <button className="lg:hidden p-2 -ml-2 hover:bg-muted rounded-lg" onClick={() => setSidebarOpen(true)}>
             <Menu className="h-5 w-5" />
           </button>
           <h1 className="font-serif text-lg font-bold text-foreground">
-            {TABS.find(t => t.key === activeTab)?.label}
+            {visibleTabs.find(t => t.key === currentTab)?.label}
           </h1>
           <Button variant="ghost" size="sm" onClick={fetchAnalytics} className="ml-auto text-xs">
             Refresh
           </Button>
         </header>
 
-        {/* Page Content */}
         <main className="flex-1 p-4 lg:p-6 max-w-5xl mx-auto w-full">
-          {activeTab === 'dashboard' && <AdminDashboard analytics={analytics} />}
-          {activeTab === 'orders' && <AdminOrders orders={analytics.allOrders} onRefresh={fetchAnalytics} />}
-          {activeTab === 'returns' && <AdminReturns orders={analytics.allOrders} onRefresh={fetchAnalytics} />}
-          {activeTab === 'products' && <AdminProducts />}
-          {activeTab === 'customers' && <AdminCustomers customers={analytics.customers} />}
-          {activeTab === 'payments' && (
+          {currentTab === 'dashboard' && <AdminDashboard analytics={analytics} />}
+          {currentTab === 'orders' && <AdminOrders orders={analytics.allOrders} onRefresh={fetchAnalytics} />}
+          {currentTab === 'returns' && <AdminReturns orders={analytics.allOrders} onRefresh={fetchAnalytics} />}
+          {currentTab === 'products' && <AdminProducts />}
+          {currentTab === 'customers' && <AdminCustomers customers={analytics.customers} />}
+          {currentTab === 'payments' && (
             <AdminPayments
               orders={analytics.allOrders}
               paymentMethods={analytics.paymentMethods}
@@ -329,20 +366,22 @@ const Admin = () => {
               paidRevenue={analytics.paidRevenue}
             />
           )}
-          {activeTab === 'inventory' && <AdminInventory products={dbProducts} />}
-          {activeTab === 'analytics' && (
+          {currentTab === 'inventory' && <AdminInventory products={dbProducts} />}
+          {currentTab === 'analytics' && (
             <AdminAnalytics
               revenueByDay={analytics.revenueByDay}
               statusCounts={analytics.statusCounts}
               totalOrders={analytics.totalOrders}
             />
           )}
-          {activeTab === 'coupons' && <AdminCoupons />}
-          {activeTab === 'flash-sales' && <AdminFlashSales />}
-          {activeTab === 'reviews' && <AdminReviews />}
-          {activeTab === 'notifications' && <AdminNotifications />}
-          {activeTab === 'push-campaigns' && <AdminPushCampaigns />}
-          {activeTab === 'blog' && <AdminBlog />}
+          {currentTab === 'coupons' && <AdminCoupons />}
+          {currentTab === 'flash-sales' && <AdminFlashSales />}
+          {currentTab === 'reviews' && <AdminReviews />}
+          {currentTab === 'notifications' && <AdminNotifications />}
+          {currentTab === 'push-campaigns' && <AdminPushCampaigns />}
+          {currentTab === 'blog' && <AdminBlog />}
+          {currentTab === 'pending-approvals' && staffCtx.isOwner && <AdminPendingApprovals />}
+          {currentTab === 'staff' && staffCtx.isOwner && <AdminStaff />}
         </main>
       </div>
     </div>
