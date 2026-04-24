@@ -376,27 +376,22 @@ const AdminStaff = () => {
         </DialogContent>
       </Dialog>
 
-      {/* GENERATED LINK DIALOG */}
+      {/* INVITE SENT DIALOG */}
       <Dialog open={!!generated} onOpenChange={(o) => !o && setGenerated(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Invite sent ✉️</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <MailCheck className="h-5 w-5 text-primary" /> Invite sent
+            </DialogTitle>
             <DialogDescription>
               An invite email has been sent to{' '}
               <span className="font-medium text-foreground">{generated?.email}</span>.
               Ask them to check their inbox (and Spam/Promotions folder). They must sign
-              in with this email to accept.
+              in with this email to accept and join the admin panel.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">Backup link (in case email doesn't arrive):</p>
-            <div className="bg-muted p-3 rounded-md text-xs break-all font-mono">{generated?.url}</div>
-          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setGenerated(null)}>Done</Button>
-            <Button onClick={() => copyLink(generated!.url)}>
-              <Copy className="h-3.5 w-3.5 mr-1" /> Copy link
-            </Button>
+            <Button onClick={() => setGenerated(null)}>Done</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
