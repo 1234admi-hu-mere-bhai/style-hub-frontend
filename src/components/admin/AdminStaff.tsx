@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import {
-  Loader2, Plus, Trash2, Copy, RefreshCw, Activity, ShieldCheck, UserCog, X, Users as UsersIcon,
+  Loader2, Plus, Trash2, RefreshCw, Activity, ShieldCheck, UserCog, X, Users as UsersIcon, MailCheck,
 } from 'lucide-react';
 import { STAFF_MODULES, DEFAULT_NEW_STAFF_PERMS } from '@/lib/staffModules';
 
@@ -48,8 +48,6 @@ interface ActivityRow {
   created_at: string;
 }
 
-const inviteUrl = (token: string) =>
-  `${window.location.origin}/staff-invite/${token}`;
 
 const AdminStaff = () => {
   const [tab, setTab] = useState<'team' | 'invites' | 'activity'>('team');
@@ -64,7 +62,7 @@ const AdminStaff = () => {
     permissions: { ...DEFAULT_NEW_STAFF_PERMS, dashboard: true },
   });
   const [creating, setCreating] = useState(false);
-  const [generated, setGenerated] = useState<{ url: string; email: string } | null>(null);
+  const [generated, setGenerated] = useState<{ email: string } | null>(null);
 
   const [editStaff, setEditStaff] = useState<StaffRow | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
@@ -102,7 +100,7 @@ const AdminStaff = () => {
         body: { action: 'create-invite', ...inviteForm },
       });
       if (error || data?.error) throw new Error(data?.error || error?.message);
-      setGenerated({ url: inviteUrl(data.invite.token), email: data.invite.email });
+      setGenerated({ email: data.invite.email });
       setShowInvite(false);
       setInviteForm({ email: '', display_name: '', permissions: { ...DEFAULT_NEW_STAFF_PERMS, dashboard: true } });
       load();
@@ -159,10 +157,6 @@ const AdminStaff = () => {
     }
   };
 
-  const copyLink = (url: string) => {
-    navigator.clipboard.writeText(url);
-    toast({ title: 'Invite link copied' });
-  };
 
   const filteredActivity = activityFilter
     ? activity.filter((a) => a.actor_email === activityFilter)
@@ -263,19 +257,11 @@ const AdminStaff = () => {
                         {used ? 'accepted' : expired ? 'expired' : 'pending'}
                       </Badge>
                     </div>
-                    <p className="text-[10px] text-muted-foreground mt-1 break-all">
-                      {inviteUrl(inv.token)}
-                    </p>
                     <p className="text-[10px] text-muted-foreground mt-0.5">
                       Expires {new Date(inv.expires_at).toLocaleString('en-IN')}
                     </p>
                   </div>
                   <div className="flex gap-1.5">
-                    {!used && !expired && (
-                      <Button variant="outline" size="sm" onClick={() => copyLink(inviteUrl(inv.token))}>
-                        <Copy className="h-3.5 w-3.5 mr-1" /> Copy link
-                      </Button>
-                    )}
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive"
                       onClick={() => handleRevokeInvite(inv.id)}>
                       <Trash2 className="h-4 w-4" />
@@ -347,7 +333,7 @@ const AdminStaff = () => {
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Invite staff member</DialogTitle>
-            <DialogDescription>Generate an invite link to share via email/WhatsApp.</DialogDescription>
+            <DialogDescription>We'll email an invite to the address below — they sign in with that email and join the admin panel.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
@@ -390,27 +376,22 @@ const AdminStaff = () => {
         </DialogContent>
       </Dialog>
 
-      {/* GENERATED LINK DIALOG */}
+      {/* INVITE SENT DIALOG */}
       <Dialog open={!!generated} onOpenChange={(o) => !o && setGenerated(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Invite sent ✉️</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <MailCheck className="h-5 w-5 text-primary" /> Invite sent
+            </DialogTitle>
             <DialogDescription>
               An invite email has been sent to{' '}
               <span className="font-medium text-foreground">{generated?.email}</span>.
               Ask them to check their inbox (and Spam/Promotions folder). They must sign
-              in with this email to accept.
+              in with this email to accept and join the admin panel.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">Backup link (in case email doesn't arrive):</p>
-            <div className="bg-muted p-3 rounded-md text-xs break-all font-mono">{generated?.url}</div>
-          </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setGenerated(null)}>Done</Button>
-            <Button onClick={() => copyLink(generated!.url)}>
-              <Copy className="h-3.5 w-3.5 mr-1" /> Copy link
-            </Button>
+            <Button onClick={() => setGenerated(null)}>Done</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
