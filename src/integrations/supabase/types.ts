@@ -674,8 +674,10 @@ export type Database = {
         Row: {
           audience: string
           category: string
+          clicked_count: number
           created_at: string
           created_by: string | null
+          delivered_count: number
           id: string
           message: string
           recipients_count: number | null
@@ -689,8 +691,10 @@ export type Database = {
         Insert: {
           audience?: string
           category?: string
+          clicked_count?: number
           created_at?: string
           created_by?: string | null
+          delivered_count?: number
           id?: string
           message: string
           recipients_count?: number | null
@@ -704,8 +708,10 @@ export type Database = {
         Update: {
           audience?: string
           category?: string
+          clicked_count?: number
           created_at?: string
           created_by?: string | null
+          delivered_count?: number
           id?: string
           message?: string
           recipients_count?: number | null
@@ -741,6 +747,41 @@ export type Database = {
           subject?: string
         }
         Relationships: []
+      }
+      push_events: {
+        Row: {
+          campaign_id: string | null
+          created_at: string
+          dedupe_key: string | null
+          event_type: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          campaign_id?: string | null
+          created_at?: string
+          dedupe_key?: string | null
+          event_type: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          campaign_id?: string | null
+          created_at?: string
+          dedupe_key?: string | null
+          event_type?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "push_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_send_log: {
         Row: {
