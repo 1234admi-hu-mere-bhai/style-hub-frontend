@@ -1,7 +1,7 @@
 // Staff management edge function
 // Actions: create-invite | accept-invite | list-invites | revoke-invite
 //          list-staff | update-staff | remove-staff | me | list-activity
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.95.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
