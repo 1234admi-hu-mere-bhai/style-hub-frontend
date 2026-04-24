@@ -48,8 +48,6 @@ interface ActivityRow {
   created_at: string;
 }
 
-const inviteUrl = (token: string) =>
-  `${window.location.origin}/staff-invite/${token}`;
 
 const AdminStaff = () => {
   const [tab, setTab] = useState<'team' | 'invites' | 'activity'>('team');
