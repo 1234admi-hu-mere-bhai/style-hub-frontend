@@ -81,7 +81,7 @@ const OrderPlacedEmail = ({
     <Html lang="en" dir="ltr">
       <Head />
       <Preview>
-        Order confirmed! Your {SITE_NAME} order {orderNumber || ''} is on its way.
+        Order confirmed! Your {SITE_NAME} order {orderNumber ? `••••${orderNumber.slice(-4)}` : ''} is on its way.
       </Preview>
       <Body style={main}>
         <Container style={outer}>
