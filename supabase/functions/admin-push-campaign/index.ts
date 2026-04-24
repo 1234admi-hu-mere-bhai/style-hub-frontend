@@ -36,6 +36,22 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { action } = body;
 
+    // Stats: total push subscribers
+    if (action === 'stats') {
+      const { count: subscriberCount } = await adminClient
+        .from('push_subscriptions')
+        .select('user_id', { count: 'exact', head: true });
+      const { count: uniqueUsers } = await adminClient
+        .rpc('count_distinct_push_users' as any).single().then(() => ({ count: 0 } as any))
+        .catch(() => ({ count: 0 } as any));
+      return new Response(JSON.stringify({
+        subscriberCount: subscriberCount || 0,
+        uniqueUsers: uniqueUsers || 0,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // List campaigns
     if (action === 'list') {
       const { data, error } = await adminClient
