@@ -94,10 +94,8 @@ const NotificationPreferences = () => {
           disabled={pushLoading || permission === 'denied'}
           onCheckedChange={(checked) => {
             if (checked) {
-              localStorage.removeItem('push-notifications-off');
               subscribe();
             } else {
-              localStorage.setItem('push-notifications-off', 'true');
               unsubscribe();
             }
           }}
