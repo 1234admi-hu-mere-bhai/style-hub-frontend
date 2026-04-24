@@ -35,6 +35,7 @@ import PayUCallback from "./pages/PayUCallback";
 import Coupons from "./pages/Coupons";
 import Unsubscribe from "./pages/Unsubscribe";
 import NotFound from "./pages/NotFound";
+import StaffInvite from "./pages/StaffInvite";
 import VisitorTracker from "./components/VisitorTracker";
 import BottomNav from "./components/BottomNav";
 import LiveSupportChat from "./components/LiveSupportChat";
@@ -78,6 +79,7 @@ const AppContent = () => {
         <Route path="/payu-callback" element={<PayUCallback />} />
         <Route path="/coupons" element={<Coupons />} />
         <Route path="/unsubscribe" element={<Unsubscribe />} />
+        <Route path="/staff-invite/:token" element={<StaffInvite />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

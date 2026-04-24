@@ -61,6 +61,62 @@ Deno.serve(async (req) => {
 
     if (action === 'create' || action === 'update' || action === 'delete') {
       checkPerm(ctx, 'products')
+
+      // ===== STAFF: route through pending changes queue =====
+      if (ctx.role === 'staff') {
+        let proposed: any = null
+        let previous: any = null
+        let targetId: string | null = null
+        let summary = ''
+
+        if (action === 'create') {
+          proposed = product
+          summary = `Proposed new product "${product?.name ?? ''}"`.trim()
+        } else if (action === 'update') {
+          const { id, ...updates } = product
+          targetId = id
+          proposed = updates
+          const { data: prev } = await adminClient.from('products').select('*').eq('id', id).maybeSingle()
+          previous = prev
+          summary = `Proposed update to product "${prev?.name ?? id}"`
+        } else {
+          targetId = product.id
+          const { data: prev } = await adminClient.from('products').select('*').eq('id', product.id).maybeSingle()
+          previous = prev
+          summary = `Proposed deletion of product "${prev?.name ?? product.id}"`
+        }
+
+        const { data: pending, error: pErr } = await adminClient
+          .from('staff_pending_changes')
+          .insert({
+            staff_user_id: ctx.user.id,
+            staff_email: ctx.email,
+            module: 'products',
+            target_table: 'products',
+            action,
+            target_id: targetId,
+            proposed_data: proposed,
+            previous_data: previous,
+            summary,
+          })
+          .select()
+          .single()
+        if (pErr) throw pErr
+
+        adminClient.rpc('log_staff_activity', {
+          _actor_user_id: ctx.user.id, _actor_email: ctx.email, _actor_role: ctx.role,
+          _module: 'products', _action: `pending-${action}`, _target_table: 'products',
+          _target_id: targetId, _summary: summary,
+          _metadata: action === 'delete' ? null : product,
+        }).then(() => {}).catch((e: any) => console.error('log failed', e))
+
+        return new Response(
+          JSON.stringify({ pending: true, change_id: pending.id, message: 'Submitted for owner approval' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        )
+      }
+
+      // ===== OWNER: apply directly =====
       let result: any, targetId: string | null = null, summary = ''
 
       if (action === 'create') {

@@ -6,10 +6,8 @@ const corsHeaders = {
 }
 
 const OWNER_EMAILS = ['otw2003@gmail.com', 'kaliasgar776@gmail.com']
-// Legacy admin emails kept for backward compatibility
 const LEGACY_ADMIN_EMAILS = ['muffigout@gmail.com', ...OWNER_EMAILS]
 
-// Map admin-crud table → staff permission module key
 const TABLE_TO_MODULE: Record<string, string> = {
   coupons: 'coupons',
   notifications: 'notifications',
@@ -41,7 +39,6 @@ async function verifyAdminAndGetContext(req: Request, adminClient: any): Promise
     return { user, email, role: 'owner', permissions: '*' }
   }
 
-  // Staff lookup
   const { data: staff } = await adminClient
     .from('staff_members')
     .select('status, permissions')
@@ -82,7 +79,6 @@ Deno.serve(async (req) => {
 
     const moduleKey = TABLE_TO_MODULE[table]
 
-    // Read-only actions: list — staff need module access too (owners always pass)
     if (action === 'list') {
       checkPermission(ctx, moduleKey)
       const { data, error } = await adminClient.from(table).select('*').order('created_at', { ascending: false })
@@ -90,10 +86,73 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ data }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    // Write actions: enforce permission + log
     if (action === 'create' || action === 'update' || action === 'delete') {
       checkPermission(ctx, moduleKey)
 
+      // ===== STAFF: queue for owner approval =====
+      // Notifications are excluded from approval queue (transient broadcast messages)
+      const requiresApproval = ctx.role === 'staff' && table !== 'notifications'
+
+      if (requiresApproval) {
+        let proposed: any = null
+        let previous: any = null
+        let targetId: string | null = null
+        let summary = ''
+        const labelOf = (r: any) => r?.code || r?.title || r?.name || r?.id || ''
+
+        if (action === 'create') {
+          proposed = record
+          summary = `Proposed new ${table.replace(/_/g, ' ')} ${labelOf(record)}`.trim()
+        } else if (action === 'update') {
+          const { id, ...updates } = record
+          targetId = id
+          proposed = updates
+          const { data: prev } = await adminClient.from(table).select('*').eq('id', id).maybeSingle()
+          previous = prev
+          summary = `Proposed update to ${table.replace(/_/g, ' ')} ${labelOf(prev) || id}`
+        } else {
+          targetId = record.id
+          const { data: prev } = await adminClient.from(table).select('*').eq('id', record.id).maybeSingle()
+          previous = prev
+          summary = `Proposed deletion of ${table.replace(/_/g, ' ')} ${labelOf(prev) || record.id}`
+        }
+
+        const { data: pending, error: pErr } = await adminClient
+          .from('staff_pending_changes')
+          .insert({
+            staff_user_id: ctx.user.id,
+            staff_email: ctx.email,
+            module: moduleKey,
+            target_table: table,
+            action,
+            target_id: targetId,
+            proposed_data: proposed,
+            previous_data: previous,
+            summary,
+          })
+          .select()
+          .single()
+        if (pErr) throw pErr
+
+        adminClient.rpc('log_staff_activity', {
+          _actor_user_id: ctx.user.id,
+          _actor_email: ctx.email,
+          _actor_role: ctx.role,
+          _module: moduleKey,
+          _action: `pending-${action}`,
+          _target_table: table,
+          _target_id: targetId,
+          _summary: summary,
+          _metadata: action === 'delete' ? null : record,
+        }).then(() => {}).catch((e: any) => console.error('log failed', e))
+
+        return new Response(
+          JSON.stringify({ pending: true, change_id: pending.id, message: 'Submitted for owner approval' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        )
+      }
+
+      // ===== OWNER (or notifications): apply directly =====
       let result: any
       let targetId: string | null = null
       let summary = ''
@@ -122,7 +181,6 @@ Deno.serve(async (req) => {
         summary = `Deleted ${table.replace(/_/g, ' ')} ${record.id}`
       }
 
-      // Fire-and-forget activity log
       adminClient.rpc('log_staff_activity', {
         _actor_user_id: ctx.user.id,
         _actor_email: ctx.email,

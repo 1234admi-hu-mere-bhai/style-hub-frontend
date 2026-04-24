@@ -1124,6 +1124,66 @@ export type Database = {
         }
         Relationships: []
       }
+      staff_pending_changes: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          module: string
+          previous_data: Json | null
+          proposed_data: Json | null
+          reviewed_at: string | null
+          reviewer_email: string | null
+          reviewer_id: string | null
+          reviewer_notes: string | null
+          staff_email: string
+          staff_user_id: string
+          status: string
+          summary: string
+          target_id: string | null
+          target_table: string
+          updated_at: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          module: string
+          previous_data?: Json | null
+          proposed_data?: Json | null
+          reviewed_at?: string | null
+          reviewer_email?: string | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          staff_email?: string
+          staff_user_id: string
+          status?: string
+          summary?: string
+          target_id?: string | null
+          target_table: string
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          module?: string
+          previous_data?: Json | null
+          proposed_data?: Json | null
+          reviewed_at?: string | null
+          reviewer_email?: string | null
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          staff_email?: string
+          staff_user_id?: string
+          status?: string
+          summary?: string
+          target_id?: string | null
+          target_table?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
