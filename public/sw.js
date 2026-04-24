@@ -27,8 +27,8 @@ self.addEventListener('push', (event) => {
   const title = data.title || 'MUFFIGOUT APPAREL HUB';
   const options = {
     body: data.message || data.body || 'You have a new update',
-    icon: '/assets/logo-new.png',           // brand logo on left
-    badge: '/assets/logo-new.png',          // small monochrome badge (Android status bar)
+    icon: '/notification-icon.png',         // brand MG monogram on left
+    badge: '/notification-icon.png',        // small badge (Android status bar)
     image: data.image || undefined,         // optional hero image (Android big-picture)
     data: {
       url: data.url || '/',
