@@ -106,10 +106,11 @@ Deno.serve(async (req) => {
 
           // Notify user that pickup happened
           if (notifOrder?.user_id) {
+            const maskedOrder = `••••${String(notifOrder.order_number).slice(-4)}`;
             try {
               await serviceClient.from('notifications').insert({
                 title: 'Package Picked Up 📦',
-                message: `Your return for order ${notifOrder.order_number} has been picked up by our courier. Refund is being processed to your original payment method.`,
+                message: `Your return for order ${maskedOrder} has been picked up by our courier. Refund is being processed to your original payment method.`,
                 type: 'order',
                 user_id: notifOrder.user_id,
               });
@@ -121,7 +122,7 @@ Deno.serve(async (req) => {
                 body: {
                   userId: notifOrder.user_id,
                   title: 'Package Picked Up 📦',
-                  message: `Return for order ${notifOrder.order_number} collected. Refund being processed.`,
+                  message: `Return for order ${maskedOrder} collected. Refund being processed.`,
                   url: `/track-order?id=${notifOrder.order_number}`,
                   tag: `pickup-${order.id}`,
                   category: 'orders',

@@ -54,7 +54,7 @@ const OrderShippedEmail = ({
     <Html lang="en" dir="ltr">
       <Head />
       <Preview>
-        Your {SITE_NAME} order {orderNumber || ''} has shipped and is on its way 📦
+        Your {SITE_NAME} order {orderNumber ? `••••${orderNumber.slice(-4)}` : ''} has shipped and is on its way 📦
       </Preview>
       <Body style={main}>
         <Container style={outer}>

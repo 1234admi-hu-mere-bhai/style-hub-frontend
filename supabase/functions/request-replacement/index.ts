@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
         body: {
           userId: order.user_id,
           title: '🔁 Replacement Requested',
-          message: `Your replacement request for order ${orderRow?.order_number || ''} is being reviewed.`,
+          message: `Your replacement request for order ${orderRow?.order_number ? `••••${String(orderRow.order_number).slice(-4)}` : ''} is being reviewed.`,
           url: `/track-order?id=${orderRow?.order_number || ''}`,
           tag: `replace-req-${orderId}`,
           category: 'orders',

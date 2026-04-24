@@ -88,7 +88,7 @@ const RefundProcessedEmail = ({
 export const template = {
   component: RefundProcessedEmail,
   subject: (data: Record<string, any>) =>
-    `Refund processed for order ${data.orderNumber || ''} — ${SITE_NAME}`,
+    `Refund processed for order ${data.orderNumber ? `••••${String(data.orderNumber).slice(-4)}` : ''} — ${SITE_NAME}`,
   displayName: 'Refund processed notification',
   previewData: {
     customerName: 'Aliasgar',
