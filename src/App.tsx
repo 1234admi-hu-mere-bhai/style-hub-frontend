@@ -43,31 +43,12 @@ import PushNotificationPrompt from "./components/PushNotificationPrompt";
 
 const queryClient = new QueryClient();
 
-// Detect admin subdomain (e.g. admin.muffigoutapparelhub.com or admin.localhost)
-const isAdminHost = () => {
-  if (typeof window === 'undefined') return false;
-  const host = window.location.hostname;
-  return host === 'admin.muffigoutapparelhub.com' || host.startsWith('admin.');
-};
+// Secret admin path — replaces /admin to hide the management panel from the public
+const ADMIN_PATH = '/muffigout-control-panel';
 
 const AppContent = () => {
   const location = useLocation();
-  const adminHost = isAdminHost();
-  const isAdmin = adminHost || location.pathname.startsWith('/admin');
-
-  // On admin subdomain: serve Admin for ALL routes (sidebar uses ?tab= params)
-  if (adminHost) {
-    return (
-      <div className="min-h-screen bg-background">
-        <ScrollToTop />
-        <Routes>
-          <Route path="/staff-invite/:token" element={<StaffInvite />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="*" element={<Admin />} />
-        </Routes>
-      </div>
-    );
-  }
+  const isAdmin = location.pathname.startsWith(ADMIN_PATH);
 
   return (
     <div className="min-h-screen bg-background">
@@ -85,7 +66,9 @@ const AppContent = () => {
         <Route path="/auth" element={<Auth />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/orders" element={<OrderHistory />} />
-        {/* /admin is intentionally NOT routed on the main domain — shows 404 via catch-all */}
+        {/* Secret admin path — /admin is intentionally NOT routed and shows 404 */}
+        <Route path={ADMIN_PATH} element={<Admin />} />
+        <Route path={`${ADMIN_PATH}/*`} element={<Admin />} />
         <Route path="/return-exchange" element={<ReturnExchange />} />
         <Route path="/faq" element={<FAQ />} />
         <Route path="/size-guide" element={<SizeGuide />} />

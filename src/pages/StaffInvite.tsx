@@ -29,7 +29,7 @@ const StaffInvite = () => {
       if (error || data?.error) throw new Error(data?.error || error?.message);
       sessionStorage.removeItem('pending_staff_invite_token');
       setStatus('success');
-      setTimeout(() => navigate('/admin'), 1500);
+      setTimeout(() => navigate('/muffigout-control-panel'), 1500);
     } catch (e: any) {
       setError(e.message || 'Could not accept invite');
       setStatus('error');

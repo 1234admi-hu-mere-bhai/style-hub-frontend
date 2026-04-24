@@ -151,7 +151,7 @@ const Admin = () => {
 
   const handleLogout = async () => {
     await signOut();
-    navigate('/admin');
+    navigate('/muffigout-control-panel');
   };
 
   const [adminFieldErrors, setAdminFieldErrors] = useState<Record<string, string>>({});
