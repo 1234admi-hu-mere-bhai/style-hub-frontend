@@ -113,7 +113,7 @@ Deno.serve(async (req) => {
         body: {
           userId: order.user_id,
           title: '↩️ Return Request Submitted',
-          message: `Your return for order ${orderRow?.order_number || ''} is being reviewed. We'll update you soon.`,
+          message: `Your return for order ${orderRow?.order_number ? `••••${String(orderRow.order_number).slice(-4)}` : ''} is being reviewed. We'll update you soon.`,
           url: `/track-order?id=${orderRow?.order_number || ''}`,
           tag: `return-req-${orderId}`,
           category: 'orders',

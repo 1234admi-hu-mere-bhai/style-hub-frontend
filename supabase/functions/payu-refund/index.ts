@@ -170,9 +170,10 @@ Deno.serve(async (req) => {
     // Notify user
     if (order.user_id) {
       try {
+        const maskedOrder = `••••${String(order.order_number).slice(-4)}`;
         await admin.from('notifications').insert({
           title: 'Refund Processed 💸',
-          message: `Your refund of ₹${refundAmount.toLocaleString('en-IN')} for order ${order.order_number} has been issued to your original payment method. It should reflect in 5-7 business days.`,
+          message: `Your refund of ₹${refundAmount.toLocaleString('en-IN')} for order ${maskedOrder} has been issued to your original payment method. It should reflect in 5-7 business days.`,
           type: 'order',
           user_id: order.user_id,
         });
