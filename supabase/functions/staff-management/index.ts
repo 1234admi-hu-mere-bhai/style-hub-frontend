@@ -85,6 +85,31 @@ Deno.serve(async (req) => {
         .select()
         .single();
       if (error) return json({ error: error.message }, 400);
+
+      // Send branded invite email (best-effort; fail silently if it doesn't go through)
+      try {
+        const origin =
+          req.headers.get('origin') ||
+          req.headers.get('referer')?.replace(/\/[^/]*$/, '') ||
+          'https://muffigoutapparelhub.com';
+        const inviteUrl = `${origin.replace(/\/$/, '')}/staff-invite/${invite.token}`;
+        await admin.functions.invoke('send-transactional-email', {
+          body: {
+            templateName: 'staff-invite',
+            recipientEmail: invite.email,
+            idempotencyKey: `staff-invite-${invite.id}`,
+            templateData: {
+              inviteUrl,
+              invitedBy: userEmail,
+              displayName: display_name || undefined,
+              expiresAt: invite.expires_at,
+            },
+          },
+        });
+      } catch (e) {
+        console.error('staff-invite email failed', e);
+      }
+
       return json({ invite });
     }
 
