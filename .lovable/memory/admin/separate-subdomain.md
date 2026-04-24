@@ -1,20 +1,22 @@
 ---
-name: Separate Admin Subdomain
-description: Admin panel served on admin.muffigoutapparelhub.com; /admin path on main domain is blocked (404)
+name: Secret Admin Path
+description: Admin panel served at /muffigout-control-panel on the main domain; /admin returns 404
 type: feature
 ---
-The admin panel runs on a dedicated subdomain `admin.muffigoutapparelhub.com`.
+The admin panel is reachable only at the secret path **`/muffigout-control-panel`** on the main domain (`muffigoutapparelhub.com`).
 
 ## Routing logic (src/App.tsx)
-- `isAdminHost()` checks `window.location.hostname` for `admin.muffigoutapparelhub.com` (or any `admin.*` host for previews).
-- When on the admin host, ALL paths render `<Admin />` via a catch-all route. Only `/staff-invite/:token` and `/reset-password` are kept as separate routes (so staff invite emails still work).
-- On the main domain, `/admin` is intentionally NOT in the route table — visitors get the standard NotFound (404).
+- `ADMIN_PATH = '/muffigout-control-panel'` constant.
+- Routes `/muffigout-control-panel` and `/muffigout-control-panel/*` render `<Admin />`.
+- `/admin` is intentionally NOT in the route table → visitors see standard NotFound (404).
+- `isAdmin` flag (used to hide BottomNav, LiveSupportChat, PushNotificationPrompt) is true when pathname starts with `ADMIN_PATH`.
 
-## DNS setup required (one-time, by owner)
-1. Lovable → Project Settings → Domains → Connect Domain
-2. Enter `admin.muffigoutapparelhub.com`
-3. Add the A record shown by Lovable (typically `185.158.133.1`) for the `admin` subdomain at the registrar
-4. Wait for verification + SSL provisioning
+## Internal navigation
+- `Admin.tsx` logout → `navigate('/muffigout-control-panel')`
+- `StaffInvite.tsx` post-accept redirect → `navigate('/muffigout-control-panel')`
 
-## Internal `navigate('/admin')` calls
-Used in Admin logout and StaffInvite redirect. On the admin subdomain these resolve to `https://admin.muffigoutapparelhub.com/admin` which still hits the catch-all `<Admin />` route — works correctly.
+## Why a secret path (not subdomain)?
+Tried `admin.muffigoutapparelhub.com` first. Lovable's primary-domain redirect forces all connected custom domains to redirect to the starred Primary domain, so the subdomain could not serve the admin panel independently. Secret path is the working solution.
+
+## If the path is ever leaked
+Change `ADMIN_PATH` constant in `src/App.tsx` and the two `navigate()` calls above to a new obscure value.
