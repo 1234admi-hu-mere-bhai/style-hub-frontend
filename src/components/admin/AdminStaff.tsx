@@ -62,7 +62,7 @@ const AdminStaff = () => {
     permissions: { ...DEFAULT_NEW_STAFF_PERMS, dashboard: true },
   });
   const [creating, setCreating] = useState(false);
-  const [generated, setGenerated] = useState<{ url: string; email: string } | null>(null);
+  const [generated, setGenerated] = useState<{ email: string } | null>(null);
 
   const [editStaff, setEditStaff] = useState<StaffRow | null>(null);
   const [savingEdit, setSavingEdit] = useState(false);
