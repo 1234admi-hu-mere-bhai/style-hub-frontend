@@ -76,15 +76,15 @@ const Header = () => {
                 {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
               
-              <Link to="/" className="flex items-center gap-2">
+              <Link to="/" className="flex items-center gap-2 min-w-0">
                 <img 
                   src="/assets/logo-new.png" 
                   alt="MUFFIGOUT APPAREL HUB" 
-                  className="h-10 lg:h-12 w-auto rounded-full shadow-sm"
+                  className="h-9 lg:h-12 w-auto rounded-full shadow-sm shrink-0"
                 />
-                <div className="flex flex-col items-start leading-none">
-                  <span className="font-serif text-base lg:text-lg font-bold tracking-tight text-foreground">MUFFIGOUT</span>
-                  <span className="text-[9px] lg:text-[10px] font-semibold uppercase tracking-[0.2em] text-primary mt-0.5">Apparel Hub</span>
+                <div className="hidden xs:flex sm:flex flex-col items-start leading-none min-w-0">
+                  <span className="font-serif text-sm lg:text-lg font-bold tracking-tight text-foreground truncate">MUFFIGOUT</span>
+                  <span className="text-[8px] lg:text-[10px] font-semibold uppercase tracking-[0.2em] text-primary mt-0.5 truncate">Apparel Hub</span>
                 </div>
               </Link>
             </div>
@@ -118,7 +118,7 @@ const Header = () => {
             </div>
 
             {/* Right icons */}
-            <div className="flex items-center space-x-2 lg:space-x-4">
+            <div className="flex items-center space-x-0.5 sm:space-x-2 lg:space-x-4 shrink-0">
               <button
                 onClick={() => setSearchOpen(true)}
                 className="sm:hidden p-2 hover:bg-secondary rounded-full transition-colors"
