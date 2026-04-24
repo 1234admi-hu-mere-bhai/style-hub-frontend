@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Loader2, Mail, Phone } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -23,12 +23,6 @@ import { supabase } from '@/integrations/supabase/client';
 
 const emailSchema = z.string().trim().min(1, 'Email is required').email('Please enter a valid email address');
 const passwordSchema = z.string().min(1, 'Password is required').min(6, 'Password must be at least 6 characters');
-const phoneSchema = z
-  .string()
-  .trim()
-  .regex(/^[6-9]\d{9}$/, 'Please enter a valid 10-digit Indian mobile number');
-
-const normalisePhone = (raw: string) => raw.replace(/\D/g, '').replace(/^91(?=\d{10}$)/, '').slice(-10);
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -36,11 +30,10 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
-  const [loginMethod, setLoginMethod] = useState<'email' | 'phone'>('email');
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  const [loginForm, setLoginForm] = useState({ email: '', phone: '', password: '' });
-  const [signupForm, setSignupForm] = useState({ email: '', phone: '', password: '', confirmPassword: '' });
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [signupForm, setSignupForm] = useState({ email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Forgot password dialog
@@ -61,53 +54,24 @@ const Auth = () => {
     const result = passwordSchema.safeParse(password);
     return result.success ? null : result.error.errors[0].message;
   };
-  const validatePhone = (raw: string) => {
-    const phone = normalisePhone(raw);
-    const result = phoneSchema.safeParse(phone);
-    return result.success ? null : result.error.errors[0].message;
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
 
-    let emailToUse = '';
-    if (loginMethod === 'email') {
-      const trimmedEmail = loginForm.email.trim().toLowerCase();
-      const emailError = validateEmail(trimmedEmail);
-      const passwordError = validatePassword(loginForm.password);
-      if (emailError || passwordError) {
-        setErrors({
-          ...(emailError && { email: emailError }),
-          ...(passwordError && { password: passwordError }),
-        });
-        return;
-      }
-      emailToUse = trimmedEmail;
-    } else {
-      const phone = normalisePhone(loginForm.phone);
-      const phoneError = validatePhone(loginForm.phone);
-      const passwordError = validatePassword(loginForm.password);
-      if (phoneError || passwordError) {
-        setErrors({
-          ...(phoneError && { phone: phoneError }),
-          ...(passwordError && { password: passwordError }),
-        });
-        return;
-      }
-      // Look up email by phone
-      setIsLoading(true);
-      const { data: lookupEmail, error: lookupErr } = await supabase.rpc('get_email_by_phone' as any, { p_phone: phone });
-      if (lookupErr || !lookupEmail) {
-        setIsLoading(false);
-        toast.error('No account found for this mobile number. Please sign up first.');
-        return;
-      }
-      emailToUse = lookupEmail as string;
+    const trimmedEmail = loginForm.email.trim().toLowerCase();
+    const emailError = validateEmail(trimmedEmail);
+    const passwordError = validatePassword(loginForm.password);
+    if (emailError || passwordError) {
+      setErrors({
+        ...(emailError && { email: emailError }),
+        ...(passwordError && { password: passwordError }),
+      });
+      return;
     }
 
     setIsLoading(true);
-    const { error } = await signIn(emailToUse, loginForm.password);
+    const { error } = await signIn(trimmedEmail, loginForm.password);
     setIsLoading(false);
 
     if (error) {
@@ -128,28 +92,18 @@ const Auth = () => {
     setErrors({});
 
     const trimmedEmail = signupForm.email.trim().toLowerCase();
-    const phone = normalisePhone(signupForm.phone);
     const emailError = validateEmail(trimmedEmail);
-    const phoneError = validatePhone(signupForm.phone);
     const passwordError = validatePassword(signupForm.password);
 
     if (signupForm.password !== signupForm.confirmPassword) {
       setErrors({ confirmPassword: 'Passwords do not match' });
       return;
     }
-    if (emailError || phoneError || passwordError) {
+    if (emailError || passwordError) {
       setErrors({
         ...(emailError && { email: emailError }),
-        ...(phoneError && { phone: phoneError }),
         ...(passwordError && { password: passwordError }),
       });
-      return;
-    }
-
-    // Pre-check if phone already in use
-    const { data: existingEmail } = await supabase.rpc('get_email_by_phone' as any, { p_phone: phone });
-    if (existingEmail) {
-      setErrors({ phone: 'This mobile number is already registered. Try signing in instead.' });
       return;
     }
 
@@ -160,22 +114,11 @@ const Auth = () => {
       if (error.message.includes('already registered') || error.message.includes('already been registered')) {
         toast.error('An account with this email already exists. Please sign in instead.');
         setActiveTab('login');
-        setLoginMethod('email');
         setLoginForm({ ...loginForm, email: trimmedEmail });
       } else {
         toast.error(error.message);
       }
       return;
-    }
-
-    // Save phone to profile (best-effort; profile row is auto-created by trigger)
-    try {
-      const { data: { user: newUser } } = await supabase.auth.getUser();
-      if (newUser?.id) {
-        await supabase.from('profiles').update({ phone }).eq('id', newUser.id);
-      }
-    } catch (e) {
-      console.warn('Could not save phone to profile:', e);
     }
 
     setIsLoading(false);
@@ -186,9 +129,8 @@ const Auth = () => {
       { duration: 8000 },
     );
     setActiveTab('login');
-    setLoginMethod('email');
-    setLoginForm({ email: trimmedEmail, phone: '', password: '' });
-    setSignupForm({ email: '', phone: '', password: '', confirmPassword: '' });
+    setLoginForm({ email: trimmedEmail, password: '' });
+    setSignupForm({ email: '', password: '', confirmPassword: '' });
   };
 
   const handleGoogleSignIn = async () => {
@@ -268,55 +210,18 @@ const Auth = () => {
               </TabsList>
 
               <TabsContent value="login">
-                {/* Method toggle */}
-                <div className="flex gap-2 mb-4">
-                  <Button
-                    type="button"
-                    variant={loginMethod === 'email' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => { setLoginMethod('email'); setErrors({}); }}
-                    className="flex-1"
-                  >
-                    <Mail size={16} className="mr-2" /> Email
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={loginMethod === 'phone' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => { setLoginMethod('phone'); setErrors({}); }}
-                    className="flex-1"
-                  >
-                    <Phone size={16} className="mr-2" /> Mobile
-                  </Button>
-                </div>
-
                 <form onSubmit={handleLogin} className="space-y-4">
-                  {loginMethod === 'email' ? (
-                    <div className="space-y-2">
-                      <Label htmlFor="login-email">Email</Label>
-                      <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="Email Address"
-                        value={loginForm.email}
-                        onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                      />
-                      {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <Label htmlFor="login-phone">Mobile Number</Label>
-                      <Input
-                        id="login-phone"
-                        type="tel"
-                        inputMode="numeric"
-                        placeholder="10-digit mobile number"
-                        value={loginForm.phone}
-                        onChange={(e) => setLoginForm({ ...loginForm, phone: e.target.value })}
-                      />
-                      {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
-                    </div>
-                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="login-email">Email</Label>
+                    <Input
+                      id="login-email"
+                      type="email"
+                      placeholder="Email Address"
+                      value={loginForm.email}
+                      onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                    />
+                    {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                  </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="login-password">Password</Label>
@@ -387,18 +292,7 @@ const Auth = () => {
                     {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-phone">Mobile Number</Label>
-                    <Input
-                      id="signup-phone"
-                      type="tel"
-                      inputMode="numeric"
-                      placeholder="10-digit mobile number"
-                      value={signupForm.phone}
-                      onChange={(e) => setSignupForm({ ...signupForm, phone: e.target.value })}
-                    />
-                    {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
-                  </div>
+
 
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
