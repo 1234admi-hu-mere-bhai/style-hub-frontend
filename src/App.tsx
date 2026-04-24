@@ -40,6 +40,7 @@ import VisitorTracker from "./components/VisitorTracker";
 import BottomNav from "./components/BottomNav";
 import LiveSupportChat from "./components/LiveSupportChat";
 import PushNotificationPrompt from "./components/PushNotificationPrompt";
+import InAppNotificationListener from "./components/InAppNotificationListener";
 
 const queryClient = new QueryClient();
 
