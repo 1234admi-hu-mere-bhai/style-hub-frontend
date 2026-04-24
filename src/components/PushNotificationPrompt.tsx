@@ -11,11 +11,9 @@ const PushNotificationPrompt = () => {
     if (!user || !supported || isSubscribed || loading || attempted.current) return;
     if (permission === 'denied') return;
 
-    // If user explicitly turned off, don't auto-subscribe
-    const explicitlyOff = localStorage.getItem('push-notifications-off');
-    if (explicitlyOff === 'true') return;
-
-    // Auto-subscribe after a short delay
+    // Always auto-subscribe on every login/visit. Users who want to stop
+    // notifications must toggle off in Settings (which calls unsubscribe()
+    // for the current session) or block them in browser settings.
     const timer = setTimeout(() => {
       attempted.current = true;
       subscribe();
