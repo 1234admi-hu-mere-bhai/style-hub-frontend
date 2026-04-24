@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Loader2,
   RefreshCw,
@@ -47,32 +47,69 @@ interface DelhiveryTrackingProps {
   paused?: boolean;
 }
 
-/* ── Meesho-style status detection ─────────────────────────── */
-// Identifies "milestone" scans that should render as a pill badge
-// instead of a plain text row, matching the screenshots provided.
-const MILESTONE_KEYWORDS: { match: RegExp; label: string }[] = [
-  { match: /manifested|order placed|pickup scheduled/i, label: 'Order Placed' },
-  { match: /picked up|pickup done|pickup complete/i, label: 'Picked Up' },
-  { match: /in[-\s]?transit|dispatched|bag added|shipped/i, label: 'Shipped' },
-  { match: /out for delivery/i, label: 'Out for Delivery' },
-  { match: /delivered/i, label: 'Delivered' },
-  { match: /rto|return to origin/i, label: 'Return to Origin' },
-  { match: /undelivered|delivery attempt failed/i, label: 'Delivery Attempted' },
+/* ── Milestone definitions ─────────────────────────────────────
+   Flipkart-style: 4 fixed stages on the rail. Each granular scan
+   maps to ONE milestone and is rendered as an indented sub-event
+   underneath the matching header. Future stages render hollow. */
+type MilestoneKey = 'placed' | 'shipped' | 'out_for_delivery' | 'delivered';
+
+interface MilestoneDef {
+  key: MilestoneKey;
+  label: string;
+  match: RegExp;
+}
+
+const MILESTONES: MilestoneDef[] = [
+  {
+    key: 'placed',
+    label: 'Order Confirmed',
+    match: /manifested|order placed|pickup scheduled|picked up|pickup done|pickup complete|received at facility/i,
+  },
+  {
+    key: 'shipped',
+    label: 'Shipped',
+    match: /in[-\s]?transit|dispatched|bag added|shipped|arrived|departed|left|reached|connected|misroute|rto/i,
+  },
+  {
+    key: 'out_for_delivery',
+    label: 'Out for Delivery',
+    match: /out for delivery|undelivered|delivery attempt/i,
+  },
+  {
+    key: 'delivered',
+    label: 'Delivered',
+    match: /^delivered$|delivered to|consignee/i,
+  },
 ];
 
-const detectMilestone = (scan: TrackingScan): string | null => {
+const classifyScan = (scan: TrackingScan): MilestoneKey => {
   const haystack = `${scan.Scan || ''} ${scan.Instructions || ''} ${scan.ScanType || ''}`;
-  for (const { match, label } of MILESTONE_KEYWORDS) {
-    if (match.test(haystack)) return label;
+  // Check from most-specific (delivered) backwards so a scan saying
+  // "delivered" doesn't get caught by "shipped" rules.
+  for (let i = MILESTONES.length - 1; i >= 0; i--) {
+    if (MILESTONES[i].match.test(haystack)) return MILESTONES[i].key;
   }
-  return null;
+  // Default: anything unrecognized falls into "shipped" (in-transit chatter)
+  return 'shipped';
 };
 
 const formatDayMonth = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+
+const formatDayMonthShort = (iso: string) =>
   new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 
 const formatTime = (iso: string) =>
   new Date(iso).toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+/** Strip noisy prefixes from Delhivery scan instructions for cleaner sentences. */
+const cleanInstruction = (text: string): string => {
+  if (!text) return '';
+  return text
+    .replace(/^#+\s*/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
 
 const DelhiveryTracking = ({ waybill, paused = false }: DelhiveryTrackingProps) => {
   const [tracking, setTracking] = useState<TrackingData | null>(null);
@@ -106,14 +143,11 @@ const DelhiveryTracking = ({ waybill, paused = false }: DelhiveryTrackingProps) 
     }
   };
 
-  // Initial load + auto-poll every 60s for live updates without manual refresh.
-  // Pauses while the tab is hidden to save bandwidth, resumes on visibility.
-  // Also pauses entirely when `paused` is true (e.g. order cancelled/delivered).
   useEffect(() => {
     if (!waybill) return;
     fetchTracking();
-    if (paused) return; // Skip interval setup — terminal state, no further updates expected
-    let interval = window.setInterval(() => {
+    if (paused) return;
+    const interval = window.setInterval(() => {
       if (document.visibilityState === 'visible') fetchTracking(true);
     }, 60000);
     const onVisible = () => {
@@ -127,7 +161,6 @@ const DelhiveryTracking = ({ waybill, paused = false }: DelhiveryTrackingProps) 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [waybill, paused]);
 
-
   const handleShare = async () => {
     const shareText = `Track my order: AWB ${waybill}`;
     if (navigator.share) {
@@ -140,6 +173,29 @@ const DelhiveryTracking = ({ waybill, paused = false }: DelhiveryTrackingProps) 
       } catch { /* clipboard blocked */ }
     }
   };
+
+  /* ── Group scans under milestone headers ──────────────────── */
+  const grouped = useMemo(() => {
+    if (!tracking) return null;
+    const scans = (tracking.Shipment.Scans?.map(s => s.ScanDetail) || [])
+      .slice()
+      .sort((a, b) => {
+        const ta = new Date(a.ScanDateTime || a.StatusDateTime).getTime();
+        const tb = new Date(b.ScanDateTime || b.StatusDateTime).getTime();
+        return ta - tb; // oldest → newest (Flipkart order)
+      });
+
+    const buckets: Record<MilestoneKey, TrackingScan[]> = {
+      placed: [],
+      shipped: [],
+      out_for_delivery: [],
+      delivered: [],
+    };
+    for (const scan of scans) {
+      buckets[classifyScan(scan)].push(scan);
+    }
+    return buckets;
+  }, [tracking]);
 
   if (isLoading) {
     return (
@@ -168,16 +224,26 @@ const DelhiveryTracking = ({ waybill, paused = false }: DelhiveryTrackingProps) 
     );
   }
 
-  if (!tracking) return null;
+  if (!tracking || !grouped) return null;
 
   const shipment = tracking.Shipment;
-  // Delhivery returns scans oldest first; reverse so newest sits at the TOP
-  // (matches Meesho's "See all updates" view).
-  const scans = (shipment.Scans?.map(s => s.ScanDetail) || []).slice().reverse();
+
+  // Determine reached state of each milestone (any scan present = reached).
+  // Highest reached milestone determines what's "current".
+  const reachedFlags: Record<MilestoneKey, boolean> = {
+    placed: grouped.placed.length > 0,
+    shipped: grouped.shipped.length > 0,
+    out_for_delivery: grouped.out_for_delivery.length > 0,
+    delivered: grouped.delivered.length > 0,
+  };
+
+  // The expected-delivery row is always shown last as a future placeholder
+  // unless `delivered` is already true.
+  const isDelivered = reachedFlags.delivered;
 
   return (
     <div className="bg-card rounded-2xl border border-border overflow-hidden mb-8">
-      {/* Header — courier + tracking ID + share */}
+      {/* Header */}
       <div className="px-5 py-4 border-b border-border flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm text-muted-foreground">
@@ -197,9 +263,9 @@ const DelhiveryTracking = ({ waybill, paused = false }: DelhiveryTrackingProps) 
         </div>
       </div>
 
-      {/* Timeline */}
+      {/* Milestone timeline */}
       <div className="px-5 py-5">
-        {scans.length === 0 ? (
+        {Object.values(reachedFlags).every(v => !v) ? (
           <div className="text-center py-8">
             <Truck size={32} className="mx-auto text-muted-foreground mb-3" />
             <p className="text-sm text-muted-foreground">
@@ -208,56 +274,106 @@ const DelhiveryTracking = ({ waybill, paused = false }: DelhiveryTrackingProps) 
           </div>
         ) : (
           <ol className="relative">
-            {scans.map((scan, idx) => {
-              const isLast = idx === scans.length - 1;
-              const milestone = detectMilestone(scan);
-              const dateTime = scan.ScanDateTime || scan.StatusDateTime;
-              const dateLabel = formatDayMonth(dateTime);
-              const timeLabel = formatTime(dateTime);
-              const isDelivered = milestone === 'Delivered';
+            {MILESTONES.map((milestone, mIdx) => {
+              const reached = reachedFlags[milestone.key];
+              const subEvents = grouped[milestone.key];
+              const headerScan = subEvents[0]; // earliest scan = milestone reached time
+              const isLastMilestone = mIdx === MILESTONES.length - 1;
 
               return (
-                <li key={idx} className="grid grid-cols-[3.25rem_1.5rem_1fr] gap-x-3 items-start">
-                  {/* Date column */}
-                  <div className="pt-0.5 text-xs text-muted-foreground font-medium tabular-nums text-right">
-                    {dateLabel}
-                  </div>
-
-                  {/* Timeline rail */}
-                  <div className="flex flex-col items-center self-stretch">
-                    <div className="w-5 h-5 rounded-full bg-success flex items-center justify-center flex-shrink-0 text-white">
-                      <svg viewBox="0 0 24 24" className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    </div>
-                    {!isLast && <div className="w-0.5 flex-1 min-h-[1.75rem] bg-success/60 my-0.5" />}
+                <li key={milestone.key} className="grid grid-cols-[1.5rem_1fr] gap-x-3">
+                  {/* Rail */}
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`w-4 h-4 rounded-full flex-shrink-0 mt-1 transition-colors ${
+                        reached
+                          ? 'bg-success ring-4 ring-success/20'
+                          : 'bg-card border-2 border-muted-foreground/30'
+                      }`}
+                    />
+                    {!isLastMilestone && (
+                      <div
+                        className={`w-0.5 flex-1 min-h-[2rem] my-1 ${
+                          reached ? 'bg-success/60' : 'bg-muted-foreground/20'
+                        }`}
+                      />
+                    )}
                   </div>
 
                   {/* Content */}
-                  <div className={`pb-5 min-w-0 ${isLast ? 'pb-0' : ''}`}>
-                    {milestone ? (
-                      <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                          isDelivered
-                            ? 'bg-success/15 text-success'
-                            : 'bg-primary/10 text-primary'
+                  <div className="pb-6 min-w-0">
+                    {/* Milestone header */}
+                    <div className="flex items-baseline justify-between gap-2 flex-wrap">
+                      <h4
+                        className={`font-bold text-sm ${
+                          reached ? 'text-foreground' : 'text-muted-foreground/70'
                         }`}
                       >
-                        {milestone}
-                      </span>
-                    ) : (
-                      <p className="text-sm text-foreground leading-snug">
-                        {scan.Instructions || scan.Scan}
-                        {scan.ScannedLocation && !/(at|reached)/i.test(scan.Instructions || scan.Scan || '') && (
-                          <> at <span className="font-medium">{scan.ScannedLocation}</span></>
+                        {milestone.label}
+                      </h4>
+                      {reached && headerScan && (
+                        <span className="text-xs text-muted-foreground font-medium">
+                          {formatDayMonth(headerScan.ScanDateTime || headerScan.StatusDateTime)}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Sub-events — only when reached */}
+                    {reached && subEvents.length > 0 ? (
+                      <div className="mt-2 space-y-2.5">
+                        {/* Inline courier label under "Shipped" — Flipkart parity */}
+                        {milestone.key === 'shipped' && (
+                          <p className="text-xs text-muted-foreground font-mono">
+                            Delhivery — {waybill}
+                          </p>
                         )}
+                        {subEvents.map((scan, idx) => {
+                          const dateTime = scan.ScanDateTime || scan.StatusDateTime;
+                          const text = cleanInstruction(scan.Instructions || scan.Scan);
+                          return (
+                            <div key={idx} className="text-sm leading-snug">
+                              <p className="text-foreground/90">{text}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {formatDayMonthShort(dateTime)} · {formatTime(dateTime)}
+                                {scan.ScannedLocation && (
+                                  <>
+                                    {' · '}
+                                    <span className="font-medium text-foreground/80">
+                                      {scan.ScannedLocation}
+                                    </span>
+                                  </>
+                                )}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : !reached ? (
+                      <p className="text-xs text-muted-foreground/70 mt-1">
+                        {milestone.key === 'delivered' && shipment.ExpectedDeliveryDate
+                          ? `Expected by ${formatDayMonth(shipment.ExpectedDeliveryDate)}`
+                          : 'Pending'}
                       </p>
-                    )}
-                    <p className="text-xs text-muted-foreground mt-1">{timeLabel}</p>
+                    ) : null}
                   </div>
                 </li>
               );
             })}
+
+            {/* Optional: explicit "Delivery Expected" pending row when not yet delivered */}
+            {!isDelivered && shipment.ExpectedDeliveryDate && (
+              <li className="grid grid-cols-[1.5rem_1fr] gap-x-3">
+                <div className="flex flex-col items-center">
+                  <div className="w-4 h-4 rounded-full bg-card border-2 border-muted-foreground/30 mt-1" />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="font-bold text-sm text-muted-foreground/70">
+                    Delivery Expected By {formatDayMonthShort(shipment.ExpectedDeliveryDate)}
+                  </h4>
+                  <p className="text-xs text-muted-foreground/70 mt-1">Item yet to be delivered.</p>
+                </div>
+              </li>
+            )}
           </ol>
         )}
       </div>
@@ -272,7 +388,7 @@ const DelhiveryTracking = ({ waybill, paused = false }: DelhiveryTrackingProps) 
         </p>
         {shipment.ExpectedDeliveryDate && (
           <p className="text-[10px] text-muted-foreground">
-            Expected: <span className="font-medium text-foreground">{formatDayMonth(shipment.ExpectedDeliveryDate)}</span>
+            Expected: <span className="font-medium text-foreground">{formatDayMonthShort(shipment.ExpectedDeliveryDate)}</span>
           </p>
         )}
       </div>
