@@ -210,55 +210,18 @@ const Auth = () => {
               </TabsList>
 
               <TabsContent value="login">
-                {/* Method toggle */}
-                <div className="flex gap-2 mb-4">
-                  <Button
-                    type="button"
-                    variant={loginMethod === 'email' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => { setLoginMethod('email'); setErrors({}); }}
-                    className="flex-1"
-                  >
-                    <Mail size={16} className="mr-2" /> Email
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={loginMethod === 'phone' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => { setLoginMethod('phone'); setErrors({}); }}
-                    className="flex-1"
-                  >
-                    <Phone size={16} className="mr-2" /> Mobile
-                  </Button>
-                </div>
-
                 <form onSubmit={handleLogin} className="space-y-4">
-                  {loginMethod === 'email' ? (
-                    <div className="space-y-2">
-                      <Label htmlFor="login-email">Email</Label>
-                      <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="Email Address"
-                        value={loginForm.email}
-                        onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
-                      />
-                      {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <Label htmlFor="login-phone">Mobile Number</Label>
-                      <Input
-                        id="login-phone"
-                        type="tel"
-                        inputMode="numeric"
-                        placeholder="10-digit mobile number"
-                        value={loginForm.phone}
-                        onChange={(e) => setLoginForm({ ...loginForm, phone: e.target.value })}
-                      />
-                      {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
-                    </div>
-                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="login-email">Email</Label>
+                    <Input
+                      id="login-email"
+                      type="email"
+                      placeholder="Email Address"
+                      value={loginForm.email}
+                      onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                    />
+                    {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+                  </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="login-password">Password</Label>
@@ -329,18 +292,7 @@ const Auth = () => {
                     {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-phone">Mobile Number</Label>
-                    <Input
-                      id="signup-phone"
-                      type="tel"
-                      inputMode="numeric"
-                      placeholder="10-digit mobile number"
-                      value={signupForm.phone}
-                      onChange={(e) => setSignupForm({ ...signupForm, phone: e.target.value })}
-                    />
-                    {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
-                  </div>
+
 
                   <div className="space-y-2">
                     <Label htmlFor="signup-password">Password</Label>
