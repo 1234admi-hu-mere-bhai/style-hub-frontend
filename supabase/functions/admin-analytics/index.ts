@@ -66,42 +66,44 @@ Deno.serve(async (req) => {
     const allOrders = orders || []
     const allProfiles = profiles || []
 
-    // KPI computations
-    const totalOrders = allOrders.length
-    const totalRevenue = allOrders.reduce((sum: number, o: any) => sum + Number(o.total || 0), 0)
-    const paidOrders = allOrders.filter((o: any) => o.payment_status === 'paid')
-    const paidRevenue = paidOrders.reduce((sum: number, o: any) => sum + Number(o.total || 0), 0)
+    // Only paid orders count toward revenue/AOV/charts (real picture)
+    const paidOrdersList = allOrders.filter((o: any) => o.payment_status === 'paid')
+
+    // KPI computations — based on paid orders
+    const totalOrders = paidOrdersList.length
+    const totalRevenue = paidOrdersList.reduce((sum: number, o: any) => sum + Number(o.total || 0), 0)
+    const paidRevenue = totalRevenue
     const pendingOrders = allOrders.filter((o: any) => o.status === 'pending' || o.status === 'placed').length
-    // Count only customers who have placed orders
-    const uniqueCustomerIds = new Set(allOrders.map((o: any) => o.user_id))
+    // Count only customers who have actually paid for at least one order
+    const uniqueCustomerIds = new Set(paidOrdersList.map((o: any) => o.user_id))
     const totalCustomers = uniqueCustomerIds.size
 
-    // Status breakdown
+    // Status breakdown (paid orders only)
     const statusCounts: Record<string, number> = {}
-    allOrders.forEach((o: any) => {
+    paidOrdersList.forEach((o: any) => {
       statusCounts[o.status] = (statusCounts[o.status] || 0) + 1
     })
 
-    // Payment method breakdown
+    // Payment method breakdown (paid orders only)
     const paymentMethods: Record<string, number> = {}
-    allOrders.forEach((o: any) => {
+    paidOrdersList.forEach((o: any) => {
       paymentMethods[o.payment_method] = (paymentMethods[o.payment_method] || 0) + 1
     })
 
-    // Revenue by day (last 30 days)
+    // Revenue by day (last 30 days, paid only)
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
     const revenueByDay: Record<string, number> = {}
-    allOrders
+    paidOrdersList
       .filter((o: any) => new Date(o.created_at) >= thirtyDaysAgo)
       .forEach((o: any) => {
         const day = o.created_at.split('T')[0]
         revenueByDay[day] = (revenueByDay[day] || 0) + Number(o.total || 0)
       })
 
-    // Top products
+    // Top products (paid orders only)
     const productSales: Record<string, { name: string; quantity: number; revenue: number }> = {}
-    allOrders.forEach((o: any) => {
+    paidOrdersList.forEach((o: any) => {
       (o.order_items || []).forEach((item: any) => {
         const key = item.product_id
         if (!productSales[key]) {
