@@ -66,7 +66,7 @@ const StaffInvite = () => {
           </div>
         ) : status === 'success' ? (
           <div className="text-center space-y-3">
-            <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto" />
+            <CheckCircle2 className="h-12 w-12 text-primary mx-auto" />
             <p className="font-medium">You're in! Redirecting to the admin panel…</p>
           </div>
         ) : status === 'error' ? (
