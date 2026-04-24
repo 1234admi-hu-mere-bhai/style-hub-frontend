@@ -105,6 +105,32 @@ Deno.serve(async (req) => {
 
       const sent = pushResult?.sent || 0;
 
+      // Also create in-app notifications (bell icon) for every subscribed user.
+      // This is what powers the live realtime bell update via the `notifications` table.
+      try {
+        const { data: subs } = await adminClient
+          .from('push_subscriptions')
+          .select('user_id');
+        const uniqueUserIds = Array.from(new Set((subs || []).map((s: any) => s.user_id).filter(Boolean)));
+        if (uniqueUserIds.length > 0) {
+          const rows = uniqueUserIds.map((uid: string) => ({
+            user_id: uid,
+            title: String(title).slice(0, 200),
+            message: String(message).slice(0, 500),
+            type: category === 'offers' || category === 'flash_sales' ? 'sale'
+                : category === 'announcements' ? 'info'
+                : 'info',
+            is_read: false,
+          }));
+          // Insert in chunks of 500 to stay safe
+          for (let i = 0; i < rows.length; i += 500) {
+            await adminClient.from('notifications').insert(rows.slice(i, i + 500));
+          }
+        }
+      } catch (e) {
+        console.error('Failed to create in-app notifications:', e);
+      }
+
       // Update campaign with results
       await adminClient
         .from('push_campaigns')
