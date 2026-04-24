@@ -118,7 +118,7 @@ const Header = () => {
             </div>
 
             {/* Right icons */}
-            <div className="flex items-center space-x-2 lg:space-x-4">
+            <div className="flex items-center space-x-0.5 sm:space-x-2 lg:space-x-4 shrink-0">
               <button
                 onClick={() => setSearchOpen(true)}
                 className="sm:hidden p-2 hover:bg-secondary rounded-full transition-colors"
