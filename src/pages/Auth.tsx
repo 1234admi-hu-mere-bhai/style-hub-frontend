@@ -92,28 +92,18 @@ const Auth = () => {
     setErrors({});
 
     const trimmedEmail = signupForm.email.trim().toLowerCase();
-    const phone = normalisePhone(signupForm.phone);
     const emailError = validateEmail(trimmedEmail);
-    const phoneError = validatePhone(signupForm.phone);
     const passwordError = validatePassword(signupForm.password);
 
     if (signupForm.password !== signupForm.confirmPassword) {
       setErrors({ confirmPassword: 'Passwords do not match' });
       return;
     }
-    if (emailError || phoneError || passwordError) {
+    if (emailError || passwordError) {
       setErrors({
         ...(emailError && { email: emailError }),
-        ...(phoneError && { phone: phoneError }),
         ...(passwordError && { password: passwordError }),
       });
-      return;
-    }
-
-    // Pre-check if phone already in use
-    const { data: existingEmail } = await supabase.rpc('get_email_by_phone' as any, { p_phone: phone });
-    if (existingEmail) {
-      setErrors({ phone: 'This mobile number is already registered. Try signing in instead.' });
       return;
     }
 
@@ -124,22 +114,11 @@ const Auth = () => {
       if (error.message.includes('already registered') || error.message.includes('already been registered')) {
         toast.error('An account with this email already exists. Please sign in instead.');
         setActiveTab('login');
-        setLoginMethod('email');
         setLoginForm({ ...loginForm, email: trimmedEmail });
       } else {
         toast.error(error.message);
       }
       return;
-    }
-
-    // Save phone to profile (best-effort; profile row is auto-created by trigger)
-    try {
-      const { data: { user: newUser } } = await supabase.auth.getUser();
-      if (newUser?.id) {
-        await supabase.from('profiles').update({ phone }).eq('id', newUser.id);
-      }
-    } catch (e) {
-      console.warn('Could not save phone to profile:', e);
     }
 
     setIsLoading(false);
@@ -150,9 +129,8 @@ const Auth = () => {
       { duration: 8000 },
     );
     setActiveTab('login');
-    setLoginMethod('email');
-    setLoginForm({ email: trimmedEmail, phone: '', password: '' });
-    setSignupForm({ email: '', phone: '', password: '', confirmPassword: '' });
+    setLoginForm({ email: trimmedEmail, password: '' });
+    setSignupForm({ email: '', password: '', confirmPassword: '' });
   };
 
   const handleGoogleSignIn = async () => {
