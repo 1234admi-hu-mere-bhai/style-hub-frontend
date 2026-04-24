@@ -20,6 +20,26 @@ export const useWebPush = () => {
   const [loading, setLoading] = useState(false);
   const supported = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
 
+  const syncSubscriptionToBackend = useCallback(async (subscription: PushSubscription) => {
+    const subJson = subscription.toJSON();
+    const endpoint = subJson.endpoint;
+    const p256dh = subJson.keys?.p256dh;
+    const auth = subJson.keys?.auth;
+
+    if (!endpoint || !p256dh || !auth) {
+      throw new Error('Incomplete push subscription');
+    }
+
+    const { error } = await supabase.functions.invoke('push-subscribe', {
+      body: {
+        action: 'subscribe',
+        subscription: { endpoint, p256dh, auth },
+      },
+    });
+
+    if (error) throw error;
+  }, []);
+
   useEffect(() => {
     if ('Notification' in window) {
       setPermission(Notification.permission);
@@ -35,6 +55,9 @@ export const useWebPush = () => {
       if (registration) {
         const sub = await registration.pushManager.getSubscription();
         setIsSubscribed(!!sub);
+        if (user && sub) {
+          await syncSubscriptionToBackend(sub);
+        }
       }
     } catch {
       // silently fail
@@ -63,34 +86,20 @@ export const useWebPush = () => {
         return;
       }
 
-      // Subscribe to push
-      const subscription = await registration.pushManager.subscribe({
+      const existingSubscription = await registration.pushManager.getSubscription();
+      const subscription = existingSubscription ?? await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(keyData.publicKey),
       });
 
-      const subJson = subscription.toJSON();
-
-      // Store subscription in backend
-      const { error } = await supabase.functions.invoke('push-subscribe', {
-        body: {
-          action: 'subscribe',
-          subscription: {
-            endpoint: subJson.endpoint,
-            p256dh: subJson.keys?.p256dh,
-            auth: subJson.keys?.auth,
-          },
-        },
-      });
-
-      if (error) throw error;
+      await syncSubscriptionToBackend(subscription);
       setIsSubscribed(true);
     } catch (err) {
       console.error('Push subscription failed:', err);
     } finally {
       setLoading(false);
     }
-  }, [user, loading, supported]);
+  }, [user, loading, supported, syncSubscriptionToBackend]);
 
   const unsubscribe = useCallback(async () => {
     if (!user) return;
