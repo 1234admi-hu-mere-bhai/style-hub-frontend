@@ -334,6 +334,23 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Log dedupe entries for users who received it (best-effort)
+    if (dedupeKey) {
+      try {
+        const sentUserIds = [...new Set(subscriptions.map((s: any) => s.user_id))];
+        const rows = sentUserIds.map((uid) => ({
+          user_id: uid,
+          category: category || 'announcements',
+          dedupe_key: dedupeKey,
+        }));
+        if (rows.length > 0) {
+          await adminClient.from('push_send_log').upsert(rows, { onConflict: 'user_id,dedupe_key', ignoreDuplicates: true });
+        }
+      } catch (e) {
+        console.error('push_send_log insert failed:', e);
+      }
+    }
+
     return new Response(JSON.stringify({ sent, failed, total: subscriptions.length }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
