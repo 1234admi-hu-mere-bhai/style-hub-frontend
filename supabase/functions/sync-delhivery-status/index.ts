@@ -124,6 +124,8 @@ Deno.serve(async (req) => {
                   message: `Return for order ${notifOrder.order_number} collected. Refund being processed.`,
                   url: `/track-order?id=${notifOrder.order_number}`,
                   tag: `pickup-${order.id}`,
+                  category: 'orders',
+                  dedupeKey: `pickup-${order.id}`,
                 },
               });
             } catch (e) {
