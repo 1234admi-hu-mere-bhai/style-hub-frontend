@@ -9,7 +9,9 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Preview,
+  Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
@@ -17,6 +19,8 @@ interface MagicLinkEmailProps {
   siteName: string
   confirmationUrl: string
 }
+
+const LOGO_URL = 'https://www.muffigoutapparelhub.com/assets/logo-new.png'
 
 export const MagicLinkEmail = ({
   siteName,
@@ -27,6 +31,9 @@ export const MagicLinkEmail = ({
     <Preview>Your login link for {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={logoSection}>
+          <Img src={LOGO_URL} width="56" height="56" alt={siteName} style={logo} />
+        </Section>
         <Heading style={h1}>Your login link</Heading>
         <Text style={text}>
           Click the button below to log in to {siteName}. This link will expire
@@ -47,6 +54,8 @@ export default MagicLinkEmail
 
 const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
 const container = { padding: '20px 25px' }
+const logoSection = { textAlign: 'center' as const, margin: '0 0 16px' }
+const logo = { display: 'block', margin: '0 auto', borderRadius: '50%' }
 const h1 = {
   fontSize: '22px',
   fontWeight: 'bold' as const,

@@ -23,7 +23,7 @@ interface RecoveryEmailProps {
 }
 
 const LOGO_URL =
-  'https://zybjzfffkylezzvotcnn.supabase.co/storage/v1/object/public/email-assets/muffigout-logo.png'
+  'https://www.muffigoutapparelhub.com/assets/logo-new.png'
 
 export const RecoveryEmail = ({
   siteName,

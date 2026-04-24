@@ -8,6 +8,7 @@ import {
   Heading,
   Hr,
   Html,
+  Img,
   Preview,
   Section,
   Text,
@@ -16,6 +17,7 @@ import type { TemplateEntry } from './registry.ts'
 
 const SITE_NAME = 'MUFFIGOUT APPAREL HUB'
 const SITE_URL = 'https://muffigoutapparelhub.com'
+const LOGO_URL = 'https://www.muffigoutapparelhub.com/assets/logo-new.png'
 
 interface RefundProcessedProps {
   customerName?: string
@@ -35,6 +37,9 @@ const RefundProcessedEmail = ({
     <Preview>Your refund has been processed 💸</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={{ textAlign: 'center', margin: '0 0 12px' }}>
+          <Img src={LOGO_URL} width="64" height="64" alt={SITE_NAME} style={{ display: 'block', margin: '0 auto', borderRadius: '50%' }} />
+        </Section>
         <Heading style={brand}>MUFFIGOUT</Heading>
         <Text style={tagline}>Crafted with Trust, Worn with Pride</Text>
 

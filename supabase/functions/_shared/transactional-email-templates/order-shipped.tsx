@@ -20,7 +20,7 @@ import type { TemplateEntry } from './registry.ts'
 const SITE_NAME = 'MUFFIGOUT APPAREL HUB'
 const SITE_URL = 'https://muffigoutapparelhub.com'
 const LOGO_URL =
-  'https://zybjzfffkylezzvotcnn.supabase.co/storage/v1/object/public/email-assets/muffigout-logo.png'
+  'https://www.muffigoutapparelhub.com/assets/logo-new.png'
 
 interface OrderItem {
   name: string
@@ -234,13 +234,13 @@ export const template = {
     items: [
       {
         name: 'MUFFIGOUT Relaxed Fit Jeans',
-        image: 'https://zybjzfffkylezzvotcnn.supabase.co/storage/v1/object/public/email-assets/muffigout-logo.png',
+        image: 'https://www.muffigoutapparelhub.com/assets/logo-new.png',
         size: '46',
         quantity: 1,
       },
       {
         name: 'MUFFIGOUT Straight Track Pants with Cargo Pockets',
-        image: 'https://zybjzfffkylezzvotcnn.supabase.co/storage/v1/object/public/email-assets/muffigout-logo.png',
+        image: 'https://www.muffigoutapparelhub.com/assets/logo-new.png',
         size: '3XL',
         quantity: 1,
       },

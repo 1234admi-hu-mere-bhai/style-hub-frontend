@@ -1,11 +1,12 @@
 /// <reference types="npm:@types/react@18.3.1" />
 import * as React from 'npm:react@18.3.1'
 import {
-  Body, Button, Container, Head, Heading, Html, Preview, Section, Text,
+  Body, Button, Container, Head, Heading, Html, Img, Preview, Section, Text,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
 const SITE_NAME = 'MUFFIGOUT APPAREL HUB'
+const LOGO_URL = 'https://www.muffigoutapparelhub.com/assets/logo-new.png'
 
 interface StaffInviteProps {
   inviteUrl?: string
@@ -25,6 +26,9 @@ const StaffInviteEmail = ({
     <Preview>You've been invited to join {SITE_NAME}'s admin team</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={{ textAlign: 'center', margin: '0 0 16px' }}>
+          <Img src={LOGO_URL} width="56" height="56" alt={SITE_NAME} style={{ display: 'block', margin: '0 auto', borderRadius: '50%' }} />
+        </Section>
         <Heading style={h1}>
           {displayName ? `Hey ${displayName},` : 'You\u2019re invited!'}
         </Heading>
