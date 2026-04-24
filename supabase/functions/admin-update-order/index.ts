@@ -5,7 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
-const ADMIN_EMAILS = ['muffigout@gmail.com', 'otw2003@gmail.com', 'kaliasgar776@gmail.com']
+const OWNER_EMAILS = ['otw2003@gmail.com', 'kaliasgar776@gmail.com']
+const LEGACY_ADMIN_EMAILS = ['muffigout@gmail.com', ...OWNER_EMAILS]
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -29,12 +30,25 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     })
     const { data: { user }, error: userError } = await anonClient.auth.getUser()
-
-    if (userError || !user || !ADMIN_EMAILS.includes(user.email ?? '')) {
-      return new Response(JSON.stringify({ error: 'Forbidden: Admin access only' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
+    }
+
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey)
+    const userEmail = (user.email ?? '').toLowerCase()
+    const isOwner = OWNER_EMAILS.includes(userEmail) || LEGACY_ADMIN_EMAILS.includes(userEmail)
+    let actorRole: 'owner' | 'staff' = isOwner ? 'owner' : 'staff'
+    if (!isOwner) {
+      const { data: staff } = await adminClient
+        .from('staff_members').select('status, permissions').eq('user_id', user.id).maybeSingle()
+      const perms = (staff?.permissions || {}) as Record<string, boolean>
+      if (!staff || staff.status !== 'active' || !perms.orders) {
+        return new Response(JSON.stringify({ error: 'Forbidden: missing permission for orders' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
     }
 
     const body = await req.json()
@@ -45,8 +59,6 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
-
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey)
 
     const updateData: any = { updated_at: new Date().toISOString() }
     if (status) {
