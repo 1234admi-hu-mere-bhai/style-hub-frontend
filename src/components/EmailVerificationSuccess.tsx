@@ -11,34 +11,18 @@ import { Button } from '@/components/ui/button';
  * and shows a celebratory success dialog with confetti.
  */
 const fireConfetti = () => {
-  const duration = 2500;
-  const end = Date.now() + duration;
-  const colors = ['#22c55e', '#a855f7', '#14b8a6', '#fbbf24'];
+  const colors = ['#22c55e', '#a855f7', '#14b8a6'];
 
-  (function frame() {
-    confetti({
-      particleCount: 4,
-      angle: 60,
-      spread: 70,
-      origin: { x: 0, y: 0.7 },
-      colors,
-    });
-    confetti({
-      particleCount: 4,
-      angle: 120,
-      spread: 70,
-      origin: { x: 1, y: 0.7 },
-      colors,
-    });
-    if (Date.now() < end) requestAnimationFrame(frame);
-  })();
-
-  // Initial centred burst
+  // Single small, gentle burst near the dialog
   confetti({
-    particleCount: 120,
-    spread: 90,
-    origin: { y: 0.55 },
+    particleCount: 35,
+    spread: 55,
+    startVelocity: 25,
+    gravity: 0.9,
+    ticks: 80,
+    origin: { y: 0.4 },
     colors,
+    scalar: 0.8,
   });
 };
 
