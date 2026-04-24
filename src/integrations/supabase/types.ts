@@ -595,6 +595,7 @@ export type Database = {
           subcategory: string
           tags: string[] | null
           updated_at: string
+          visible_to_emails: string[] | null
         }
         Insert: {
           additional_images?: string[] | null
@@ -616,6 +617,7 @@ export type Database = {
           subcategory?: string
           tags?: string[] | null
           updated_at?: string
+          visible_to_emails?: string[] | null
         }
         Update: {
           additional_images?: string[] | null
@@ -637,6 +639,7 @@ export type Database = {
           subcategory?: string
           tags?: string[] | null
           updated_at?: string
+          visible_to_emails?: string[] | null
         }
         Relationships: []
       }
