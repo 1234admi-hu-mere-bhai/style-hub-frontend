@@ -418,19 +418,54 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Trust Badges */}
-      <section className="bg-secondary/20 py-6 lg:py-10">
-        <div className="px-3 lg:container lg:mx-auto lg:px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-8">
+      {/* Trust Badges — premium & airy */}
+      <section className="relative py-16 lg:py-24 overflow-hidden">
+        {/* Soft gradient backdrop */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/30 to-background" aria-hidden="true" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] rounded-full bg-primary/5 blur-3xl" aria-hidden="true" />
+
+        <div className="relative px-4 lg:container lg:mx-auto lg:px-4">
+          {/* Section heading */}
+          <div className="text-center mb-12 lg:mb-16">
+            <span className="inline-block text-[11px] lg:text-xs font-semibold tracking-[0.2em] uppercase text-primary mb-3">
+              The MUFFIGOUT Promise
+            </span>
+            <h2 className="text-2xl lg:text-4xl font-bold tracking-tight">
+              Crafted with Trust,{' '}
+              <span className="text-gradient-vibrant">Worn with Pride</span>
+            </h2>
+            <p className="mt-3 text-sm lg:text-base text-muted-foreground max-w-xl mx-auto">
+              Everything you need for a confident shopping experience — built around quality, care, and convenience.
+            </p>
+          </div>
+
+          {/* Feature cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
             {features.map((feature, index) => (
-              <div key={index} className="flex items-center gap-3 lg:gap-4 justify-start group cursor-default">
-                <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20 group-hover:shadow-md group-hover:shadow-primary/20">
-                  <feature.icon className="w-5 h-5 lg:w-6 lg:h-6 text-primary transition-transform duration-300 group-hover:scale-110" />
+              <div
+                key={index}
+                className="group relative bg-card border border-border/60 rounded-2xl p-6 lg:p-7 text-center transition-all duration-500 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_20px_50px_-20px_hsl(var(--primary)/0.35)]"
+              >
+                {/* Subtle hover gradient overlay */}
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/[0.03] to-accent/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" aria-hidden="true" />
+
+                {/* Icon */}
+                <div className="relative mx-auto mb-5 w-16 h-16 lg:w-[72px] lg:h-[72px]">
+                  {/* Outer glow ring */}
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500" aria-hidden="true" />
+                  {/* Icon background */}
+                  <div className="relative w-full h-full rounded-full bg-gradient-to-br from-primary/10 via-primary/5 to-accent/10 flex items-center justify-center transition-transform duration-500 group-hover:scale-110">
+                    <feature.icon className="w-7 h-7 lg:w-8 lg:h-8 text-primary transition-colors duration-300 group-hover:text-primary" strokeWidth={1.75} />
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <h3 className="font-semibold text-xs lg:text-base transition-colors duration-300 group-hover:text-primary">{feature.title}</h3>
-                  <p className="text-[10px] lg:text-sm text-muted-foreground">{feature.desc}</p>
-                </div>
+
+                {/* Text */}
+                <h3 className="relative font-semibold text-base lg:text-lg leading-tight mb-2 transition-colors duration-300 group-hover:text-primary">
+                  {feature.title}
+                </h3>
+                <p className="relative text-xs lg:text-sm text-muted-foreground leading-relaxed">
+                  {feature.desc}
+                </p>
               </div>
             ))}
           </div>
