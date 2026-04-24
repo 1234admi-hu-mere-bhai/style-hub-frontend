@@ -244,10 +244,41 @@ Deno.serve(async (req) => {
     if (userId) {
       subQuery = subQuery.eq("user_id", userId);
     }
-    const { data: subscriptions } = await subQuery;
+    const { data: rawSubscriptions } = await subQuery;
 
-    if (!subscriptions || subscriptions.length === 0) {
-      return new Response(JSON.stringify({ sent: 0, message: "No subscribers" }), {
+    let subscriptions = rawSubscriptions || [];
+
+    // Per-user category preference filtering
+    if (category && subscriptions.length > 0) {
+      const userIds = [...new Set(subscriptions.map((s: any) => s.user_id))];
+      const { data: prefs } = await adminClient
+        .from("notification_preferences")
+        .select("*")
+        .in("user_id", userIds);
+
+      const allowedUserIds = new Set<string>();
+      for (const uid of userIds) {
+        const pref = (prefs || []).find((p: any) => p.user_id === uid);
+        const allowed = pref ? pref[category] !== false : true; // default ON
+        if (allowed) allowedUserIds.add(uid as string);
+      }
+      subscriptions = subscriptions.filter((s: any) => allowedUserIds.has(s.user_id));
+    }
+
+    // Dedupe: skip users who already got this notification
+    if (dedupeKey && subscriptions.length > 0) {
+      const userIds = [...new Set(subscriptions.map((s: any) => s.user_id))];
+      const { data: alreadySent } = await adminClient
+        .from("push_send_log")
+        .select("user_id")
+        .eq("dedupe_key", dedupeKey)
+        .in("user_id", userIds);
+      const skipSet = new Set((alreadySent || []).map((r: any) => r.user_id));
+      subscriptions = subscriptions.filter((s: any) => !skipSet.has(s.user_id));
+    }
+
+    if (subscriptions.length === 0) {
+      return new Response(JSON.stringify({ sent: 0, message: "No eligible subscribers" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
