@@ -10,6 +10,7 @@ import {
   Heading,
   Hr,
   Html,
+  Img,
   Link,
   Preview,
   Section,
@@ -26,6 +27,7 @@ interface SignupEmailProps {
 const BRAND_NAME = 'MUFFIGOUT'
 const BRAND_TAGLINE = 'Apparel Hub'
 const BRAND_DOMAIN = 'muffigoutapparelhub.com'
+const LOGO_URL = 'https://www.muffigoutapparelhub.com/assets/logo-new.png'
 
 // Brand palette (HSL → hex equivalents from index.css design tokens)
 // --primary 250 85% 60% → #6D3FED (vibrant purple)
@@ -53,6 +55,13 @@ export const SignupEmail = ({
       <Container style={outerContainer}>
         {/* Gradient brand header (purple → teal) */}
         <Section style={header}>
+          <Img
+            src={LOGO_URL}
+            width="72"
+            height="72"
+            alt={`${BRAND_NAME} ${BRAND_TAGLINE}`}
+            style={logo}
+          />
           <Heading style={brandTitle}>{BRAND_NAME}</Heading>
           <Text style={brandSubtitle}>{BRAND_TAGLINE}</Text>
         </Section>
@@ -142,8 +151,17 @@ const outerContainer = {
 
 const header = {
   background: `linear-gradient(135deg, ${PURPLE} 0%, #8B5CF6 50%, ${TEAL} 100%)`,
-  padding: '44px 24px 36px',
+  padding: '36px 24px 32px',
   textAlign: 'center' as const,
+}
+
+const logo = {
+  display: 'block',
+  margin: '0 auto 14px',
+  borderRadius: '50%',
+  border: '3px solid rgba(255,255,255,0.85)',
+  boxShadow: '0 6px 18px rgba(0,0,0,0.15)',
+  backgroundColor: '#ffffff',
 }
 
 const brandTitle = {
