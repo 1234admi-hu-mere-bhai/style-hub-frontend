@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import {
   Loader2, ShieldAlert, LayoutDashboard, ShoppingCart, Users,
   CreditCard, BarChart3, LogOut, Package, Warehouse,
-  Tag, Bell, FileText, Menu, X, ChevronRight, Store, MessageSquare, Zap, Undo2
+  Tag, Bell, FileText, Menu, X, ChevronRight, Store, MessageSquare, Zap, Undo2, Megaphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,7 @@ import AdminBlog from '@/components/admin/AdminBlog';
 import AdminReviews from '@/components/admin/AdminReviews';
 import AdminFlashSales from '@/components/admin/AdminFlashSales';
 import AdminReturns from '@/components/admin/AdminReturns';
+import AdminPushCampaigns from '@/components/admin/AdminPushCampaigns';
 
 interface Analytics {
   totalOrders: number;
@@ -53,6 +54,7 @@ const TABS = [
   { key: 'flash-sales', label: 'Flash Sales', icon: Zap },
   { key: 'reviews', label: 'Reviews', icon: MessageSquare },
   { key: 'notifications', label: 'Notifications', icon: Bell },
+  { key: 'push-campaigns', label: 'Push Campaigns', icon: Megaphone },
   { key: 'blog', label: 'Blog', icon: FileText },
 ] as const;
 
@@ -339,6 +341,7 @@ const Admin = () => {
           {activeTab === 'flash-sales' && <AdminFlashSales />}
           {activeTab === 'reviews' && <AdminReviews />}
           {activeTab === 'notifications' && <AdminNotifications />}
+          {activeTab === 'push-campaigns' && <AdminPushCampaigns />}
           {activeTab === 'blog' && <AdminBlog />}
         </main>
       </div>

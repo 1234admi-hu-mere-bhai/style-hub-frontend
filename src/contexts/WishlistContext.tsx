@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface WishlistItem {
   id: string;
@@ -28,6 +30,20 @@ export const WishlistProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     localStorage.setItem('wishlist-items', JSON.stringify(items));
   }, [items]);
+
+  // Silent server-side sync for price-drop / back-in-stock alerts
+  const { user } = useAuth();
+  const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!user) return;
+    if (syncTimer.current) clearTimeout(syncTimer.current);
+    syncTimer.current = setTimeout(() => {
+      supabase.functions
+        .invoke('sync-wishlist', { body: { items } })
+        .catch(() => { /* silent */ });
+    }, 1500);
+    return () => { if (syncTimer.current) clearTimeout(syncTimer.current); };
+  }, [items, user]);
 
   const addToWishlist = (item: WishlistItem) => {
     setItems(prev => {

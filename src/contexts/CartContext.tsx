@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 export interface CartItem {
   id: string;
@@ -52,6 +53,20 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     localStorage.setItem('cart-items', JSON.stringify(items));
   }, [items]);
+
+  // Silent server-side sync of cart for abandonment-trigger cron
+  const { user } = useAuth();
+  const syncTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!user) return;
+    if (syncTimer.current) clearTimeout(syncTimer.current);
+    syncTimer.current = setTimeout(() => {
+      supabase.functions
+        .invoke('sync-cart', { body: { items } })
+        .catch(() => { /* silent */ });
+    }, 1500);
+    return () => { if (syncTimer.current) clearTimeout(syncTimer.current); };
+  }, [items, user]);
 
   useEffect(() => {
     if (buyNowItem) {

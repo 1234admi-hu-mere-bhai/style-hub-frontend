@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Anyone can insert push events" ON public.push_events;
