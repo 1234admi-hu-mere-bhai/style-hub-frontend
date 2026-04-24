@@ -9,8 +9,10 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Link,
   Preview,
+  Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
@@ -20,6 +22,8 @@ interface EmailChangeEmailProps {
   newEmail: string
   confirmationUrl: string
 }
+
+const LOGO_URL = 'https://www.muffigoutapparelhub.com/assets/logo-new.png'
 
 export const EmailChangeEmail = ({
   siteName,
@@ -32,6 +36,9 @@ export const EmailChangeEmail = ({
     <Preview>Confirm your email change for {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={logoSection}>
+          <Img src={LOGO_URL} width="56" height="56" alt={siteName} style={logo} />
+        </Section>
         <Heading style={h1}>Confirm your email change</Heading>
         <Text style={text}>
           You requested to change your email address for {siteName} from{' '}
@@ -63,6 +70,8 @@ export default EmailChangeEmail
 
 const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
 const container = { padding: '20px 25px' }
+const logoSection = { textAlign: 'center' as const, margin: '0 0 16px' }
+const logo = { display: 'block', margin: '0 auto', borderRadius: '50%' }
 const h1 = {
   fontSize: '22px',
   fontWeight: 'bold' as const,
