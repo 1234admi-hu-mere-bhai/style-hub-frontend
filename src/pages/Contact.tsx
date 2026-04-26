@@ -137,12 +137,14 @@ const Contact = () => {
       });
     } catch (err) {
       console.error('Contact submit failed:', err);
+      const msg =
+        err instanceof Error
+          ? err.message
+          : 'Please try again or call us directly at +91 91363 54192.';
+      setSubmitError(msg);
       toast({
         title: 'Could not send your message',
-        description:
-          err instanceof Error
-            ? err.message
-            : 'Please try again or call us directly at +91 91363 54192.',
+        description: msg,
         variant: 'destructive',
       });
     } finally {
