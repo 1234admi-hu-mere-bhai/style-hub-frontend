@@ -313,7 +313,8 @@ Deno.serve(async (req) => {
     payload: {
       message_id: messageId,
       to: effectiveRecipient,
-      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
+      from: `MUFFIGOUT APPAREL HUB <support@${FROM_DOMAIN}>`,
+      reply_to: 'supportmuffigoutapparelhub@gmail.com',
       sender_domain: SENDER_DOMAIN,
       subject: resolvedSubject,
       html,
