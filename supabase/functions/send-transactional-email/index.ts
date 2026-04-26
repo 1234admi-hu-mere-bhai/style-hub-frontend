@@ -60,6 +60,7 @@ Deno.serve(async (req) => {
   let idempotencyKey: string
   let messageId: string
   let templateData: Record<string, any> = {}
+  let replyToOverride: string | undefined
   try {
     const body = await req.json()
     templateName = body.templateName || body.template_name
@@ -68,6 +69,12 @@ Deno.serve(async (req) => {
     idempotencyKey = body.idempotencyKey || body.idempotency_key || messageId
     if (body.templateData && typeof body.templateData === 'object') {
       templateData = body.templateData
+    }
+    // Allow caller to override the Reply-To header (e.g., contact form
+    // notifications should reply to the customer, not our support inbox).
+    const rawReplyTo = body.replyTo || body.reply_to
+    if (typeof rawReplyTo === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawReplyTo.trim())) {
+      replyToOverride = rawReplyTo.trim()
     }
   } catch {
     return new Response(
