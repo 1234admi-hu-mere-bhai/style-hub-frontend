@@ -255,112 +255,169 @@ const Contact = () => {
               </Button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Name */}
                 <div className="space-y-2">
-                  <Label htmlFor="contact-name">Name</Label>
-                  <Input
-                    id="contact-name"
-                    type="text"
-                    autoComplete="name"
-                    value={form.name}
-                    onChange={handleChange('name')}
-                    className={`h-12 bg-secondary/40 ${
-                      errors.name ? 'border-destructive' : ''
-                    }`}
-                    placeholder="Your full name"
-                  />
+                  <Label htmlFor="contact-name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Name
+                  </Label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" strokeWidth={1.8} />
+                    <Input
+                      id="contact-name"
+                      type="text"
+                      autoComplete="name"
+                      value={form.name}
+                      onChange={handleChange('name')}
+                      className={`h-12 pl-11 bg-secondary/40 rounded-xl transition-colors focus-visible:bg-background ${
+                        errors.name ? 'border-destructive focus-visible:ring-destructive/30' : ''
+                      }`}
+                      placeholder="Your full name"
+                      aria-invalid={!!errors.name}
+                    />
+                  </div>
                   {errors.name && (
-                    <p className="text-xs text-destructive">{errors.name}</p>
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" /> {errors.name}
+                    </p>
                   )}
                 </div>
 
+                {/* Email */}
                 <div className="space-y-2">
-                  <Label htmlFor="contact-email">Email</Label>
-                  <Input
-                    id="contact-email"
-                    type="email"
-                    autoComplete="email"
-                    value={form.email}
-                    onChange={handleChange('email')}
-                    className={`h-12 bg-secondary/40 ${
-                      errors.email ? 'border-destructive' : ''
-                    }`}
-                    placeholder="you@example.com"
-                  />
+                  <Label htmlFor="contact-email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Email
+                  </Label>
+                  <div className="relative">
+                    <AtSign className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" strokeWidth={1.8} />
+                    <Input
+                      id="contact-email"
+                      type="email"
+                      autoComplete="email"
+                      value={form.email}
+                      onChange={handleChange('email')}
+                      className={`h-12 pl-11 bg-secondary/40 rounded-xl transition-colors focus-visible:bg-background ${
+                        errors.email ? 'border-destructive focus-visible:ring-destructive/30' : ''
+                      }`}
+                      placeholder="you@example.com"
+                      aria-invalid={!!errors.email}
+                    />
+                  </div>
                   {errors.email && (
-                    <p className="text-xs text-destructive">{errors.email}</p>
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" /> {errors.email}
+                    </p>
                   )}
                 </div>
               </div>
 
+              {/* Phone */}
               <div className="space-y-2">
-                <Label htmlFor="contact-phone">
-                  Phone <span className="text-muted-foreground">(optional)</span>
+                <Label htmlFor="contact-phone" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Phone <span className="normal-case font-normal text-muted-foreground/70">(optional)</span>
                 </Label>
-                <Input
-                  id="contact-phone"
-                  type="tel"
-                  autoComplete="tel"
-                  value={form.phone}
-                  onChange={handleChange('phone')}
-                  className={`h-12 bg-secondary/40 ${
-                    errors.phone ? 'border-destructive' : ''
-                  }`}
-                  placeholder="+91 ..."
-                />
+                <div className="relative">
+                  <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" strokeWidth={1.8} />
+                  <Input
+                    id="contact-phone"
+                    type="tel"
+                    autoComplete="tel"
+                    value={form.phone}
+                    onChange={handleChange('phone')}
+                    className={`h-12 pl-11 bg-secondary/40 rounded-xl transition-colors focus-visible:bg-background ${
+                      errors.phone ? 'border-destructive focus-visible:ring-destructive/30' : ''
+                    }`}
+                    placeholder="+91 ..."
+                    aria-invalid={!!errors.phone}
+                  />
+                </div>
                 {errors.phone && (
-                  <p className="text-xs text-destructive">{errors.phone}</p>
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" /> {errors.phone}
+                  </p>
                 )}
               </div>
 
+              {/* Subject */}
               <div className="space-y-2">
-                <Label htmlFor="contact-subject">Subject</Label>
-                <Input
-                  id="contact-subject"
-                  type="text"
-                  value={form.subject}
-                  onChange={handleChange('subject')}
-                  className={`h-12 bg-secondary/40 ${
-                    errors.subject ? 'border-destructive' : ''
-                  }`}
-                  placeholder="What is your query about?"
-                />
+                <Label htmlFor="contact-subject" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Subject
+                </Label>
+                <div className="relative">
+                  <Type className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" strokeWidth={1.8} />
+                  <Input
+                    id="contact-subject"
+                    type="text"
+                    value={form.subject}
+                    onChange={handleChange('subject')}
+                    className={`h-12 pl-11 bg-secondary/40 rounded-xl transition-colors focus-visible:bg-background ${
+                      errors.subject ? 'border-destructive focus-visible:ring-destructive/30' : ''
+                    }`}
+                    placeholder="What is your query about?"
+                    aria-invalid={!!errors.subject}
+                  />
+                </div>
                 {errors.subject && (
-                  <p className="text-xs text-destructive">{errors.subject}</p>
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" /> {errors.subject}
+                  </p>
                 )}
               </div>
 
+              {/* Message */}
               <div className="space-y-2">
-                <Label htmlFor="contact-message">Message</Label>
-                <Textarea
-                  id="contact-message"
-                  value={form.message}
-                  onChange={handleChange('message')}
-                  rows={6}
-                  className={`bg-secondary/40 resize-none ${
-                    errors.message ? 'border-destructive' : ''
-                  }`}
-                  placeholder="Share details about your query..."
-                />
+                <Label htmlFor="contact-message" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Message
+                </Label>
+                <div className="relative">
+                  <MessageSquareText className="absolute left-4 top-4 w-4 h-4 text-muted-foreground pointer-events-none" strokeWidth={1.8} />
+                  <Textarea
+                    id="contact-message"
+                    value={form.message}
+                    onChange={handleChange('message')}
+                    rows={6}
+                    className={`bg-secondary/40 pl-11 pt-3.5 rounded-xl resize-none transition-colors focus-visible:bg-background ${
+                      errors.message ? 'border-destructive focus-visible:ring-destructive/30' : ''
+                    }`}
+                    placeholder="Share details about your query..."
+                    aria-invalid={!!errors.message}
+                  />
+                </div>
                 <div className="flex items-center justify-between">
                   {errors.message ? (
-                    <p className="text-xs text-destructive">{errors.message}</p>
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" /> {errors.message}
+                    </p>
                   ) : (
                     <span className="text-xs text-muted-foreground">
                       Min 10 characters
                     </span>
                   )}
-                  <span className="text-xs text-muted-foreground">
+                  <span className={`text-xs tabular-nums ${form.message.length > 1900 ? 'text-destructive' : 'text-muted-foreground'}`}>
                     {form.message.length} / 2000
                   </span>
                 </div>
               </div>
 
+              {/* Inline submit error */}
+              {submitError && (
+                <div
+                  role="alert"
+                  className="flex items-start gap-3 p-4 rounded-xl border border-destructive/30 bg-destructive/5 text-destructive"
+                >
+                  <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" strokeWidth={1.8} />
+                  <div className="text-sm">
+                    <p className="font-semibold">Couldn't send your message</p>
+                    <p className="text-destructive/80 mt-0.5">{submitError}</p>
+                  </div>
+                </div>
+              )}
+
               <Button
                 type="submit"
                 disabled={submitting}
-                className="w-full h-12 rounded-full text-base font-semibold"
+                className="w-full h-12 rounded-full text-base font-semibold shadow-[0_8px_24px_-8px_hsl(var(--primary)/0.5)] hover:shadow-[0_10px_28px_-8px_hsl(var(--primary)/0.6)] transition-shadow"
               >
                 {submitting ? (
                   <>
