@@ -1,19 +1,17 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, ShoppingBag, Heart, User } from 'lucide-react';
-import { useWishlist } from '@/contexts/WishlistContext';
+import { Home, ShoppingBag, Headphones, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const tabs = [
   { label: 'Home', icon: Home, path: '/' },
   { label: 'Shop', icon: ShoppingBag, path: '/products' },
-  { label: 'Wishlist', icon: Heart, path: '/wishlist' },
+  { label: 'Contact', icon: Headphones, path: '/contact' },
   { label: 'Account', icon: User, path: '/profile' },
 ];
 
 const BottomNav = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { items } = useWishlist();
   const { user } = useAuth();
 
   // Hide on admin pages
@@ -52,11 +50,6 @@ const BottomNav = () => {
             >
               <div className="relative">
                 <tab.icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
-                {tab.label === 'Wishlist' && items.length > 0 && (
-                  <span className="absolute -top-1.5 -right-2 w-4 h-4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
-                    {items.length}
-                  </span>
-                )}
               </div>
               <span className="text-[10px] font-medium">{tab.label}</span>
             </button>
