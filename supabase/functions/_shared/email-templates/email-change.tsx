@@ -8,7 +8,6 @@ import {
   Container,
   Head,
   Heading,
-  Hr,
   Html,
   Img,
   Link,
@@ -25,6 +24,9 @@ interface EmailChangeEmailProps {
 }
 
 const LOGO_URL = 'https://www.muffigoutapparelhub.com/assets/logo-new.png'
+const HEX_ENVELOPE_URL = 'https://zybjzfffkylezzvotcnn.supabase.co/storage/v1/object/public/email-assets/email-change/hex-envelope.png'
+const LOCK_3D_URL = 'https://zybjzfffkylezzvotcnn.supabase.co/storage/v1/object/public/email-assets/email-change/lock-3d.png'
+const HEADSET_3D_URL = 'https://zybjzfffkylezzvotcnn.supabase.co/storage/v1/object/public/email-assets/email-change/headset-3d.png'
 const SUPPORT_EMAIL = 'support@muffigoutapparelhub.com'
 const SITE_URL = 'https://www.muffigoutapparelhub.com'
 
@@ -39,127 +41,213 @@ export const EmailChangeEmail = ({
     <Preview>Confirm your email change for {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        {/* Header / Logo */}
-        <Section style={logoSection}>
-          <Img src={LOGO_URL} width="64" height="64" alt={siteName} style={logo} />
-          <Text style={brandName}>MUFFIGOUT</Text>
-          <Text style={brandSub}>— APPAREL HUB —</Text>
-        </Section>
-
-        {/* Hero icon */}
-        <Section style={heroIconSection}>
-          <div style={heroIconCircle}>
-            <Text style={heroIconEmoji}>✉️</Text>
-          </div>
-        </Section>
-
-        {/* Title */}
-        <Heading style={h1}>
-          Confirm Your <span style={h1Accent}>Email Change</span>
-        </Heading>
-        <div style={accentDivider} />
-        <Text style={subText}>
-          We received a request to update the email address associated with your account.
-        </Text>
-
-        {/* Change details card with horizontal Current → New */}
-        <Section style={detailsCard}>
-          <div style={detailsBadge}>
-            <Text style={detailsBadgeText}>CHANGE DETAILS</Text>
-          </div>
-
-          <table width="100%" cellPadding={0} cellSpacing={0} role="presentation" style={comparisonTable}>
-            <tr>
-              <td style={comparisonCell} align="left">
-                <div style={emailIconCircleCurrent}>
-                  <Text style={emailIconEmoji}>📧</Text>
-                </div>
-                <Text style={emailLabel}>Current Email</Text>
-                <Text style={emailValue}>{email}</Text>
-              </td>
-              <td style={arrowCell} align="center">
-                <div style={arrowCircle}>
-                  <Text style={arrowText}>→</Text>
-                </div>
-              </td>
-              <td style={comparisonCell} align="right">
-                <div style={emailIconCircleNew}>
-                  <Text style={emailIconEmoji}>📨</Text>
-                </div>
-                <Text style={emailLabel}>New Email</Text>
-                <Text style={emailValue}>{newEmail}</Text>
-              </td>
-            </tr>
-          </table>
-        </Section>
-
-        {/* CTA grouped card */}
-        <Section style={ctaCard}>
+        {/* Gradient hero band with logo */}
+        <Section style={heroBand}>
           <table width="100%" cellPadding={0} cellSpacing={0} role="presentation">
             <tr>
-              <td width="60" valign="middle" style={{ paddingRight: '14px' }}>
-                <div style={lockIconCircle}>
-                  <Text style={lockIconEmoji}>🔒</Text>
-                </div>
-              </td>
-              <td valign="middle">
-                <Text style={ctaHelperText}>
-                  To confirm this change, please click the button.
+              <td align="right" style={{ paddingBottom: '8px' }}>
+                <Text style={browserText}>
+                  Can't see this email?{' '}
+                  <Link href={confirmationUrl} style={browserLink}>
+                    View in browser
+                  </Link>
                 </Text>
               </td>
             </tr>
+            <tr>
+              <td align="center" style={{ paddingTop: '6px' }}>
+                <Img
+                  src={LOGO_URL}
+                  width="56"
+                  height="56"
+                  alt={siteName}
+                  style={logoImg}
+                />
+                <Text style={brandName}>Muffi Gout</Text>
+                <Text style={brandSub}>— APPAREL HUB —</Text>
+              </td>
+            </tr>
           </table>
-          <Section style={{ textAlign: 'center', marginTop: '18px' }}>
-            <Button style={button} href={confirmationUrl}>
-              CONFIRM EMAIL CHANGE  →
-            </Button>
+        </Section>
+
+        {/* Wave divider into white */}
+        <Section style={waveSection}>
+          <table width="100%" cellPadding={0} cellSpacing={0} role="presentation">
+            <tr>
+              <td align="center" style={waveTop}></td>
+            </tr>
+          </table>
+
+          {/* Hex envelope icon overlapping wave */}
+          <Section style={{ textAlign: 'center', marginTop: '-46px' }}>
+            <Img
+              src={HEX_ENVELOPE_URL}
+              width="96"
+              height="96"
+              alt=""
+              style={hexImg}
+            />
           </Section>
         </Section>
 
-        {/* Two-column safety + help footer */}
-        <table width="100%" cellPadding={0} cellSpacing={0} role="presentation" style={{ marginTop: '28px' }}>
-          <tr>
-            <td width="48%" valign="top" style={safetyCell}>
-              <div style={warningIconWrap}>
-                <Text style={warningEmoji}>⚠️</Text>
-              </div>
-              <Text style={safetyTitle}>Didn't request this?</Text>
-              <Text style={safetyText}>
-                If you didn't make this request, please ignore this email or{' '}
-                <span style={accentDanger}>secure your account</span> immediately.
-              </Text>
-            </td>
-            <td width="4%"></td>
-            <td width="48%" valign="top" style={helpCell}>
-              <div style={helpIconWrap}>
-                <Text style={helpEmoji}>🎧</Text>
-              </div>
-              <Text style={helpTitle}>Need help?</Text>
-              <Text style={helpText}>
-                If you have any questions or concerns, our support team is here to help.
-              </Text>
-              <Text style={contactRow}>
-                <Link href={`mailto:${SUPPORT_EMAIL}`} style={contactLink}>
-                  ✉  {SUPPORT_EMAIL}
+        {/* Title block */}
+        <Section style={{ textAlign: 'center', padding: '12px 24px 0' }}>
+          <Heading style={h1}>
+            Confirm Your<br />
+            <span style={h1Accent}>Email Change</span>
+          </Heading>
+          <Text style={subText}>
+            We received a request to update the email address associated with your account.
+          </Text>
+          <div style={accentDivider} />
+        </Section>
+
+        {/* Account update card — vertical Current → New */}
+        <Section style={detailsCard}>
+          <Text style={detailsHeader}>
+            <span style={detailsDash}>—</span>{' '}
+            <span style={detailsHeaderText}>ACCOUNT UPDATE</span>{' '}
+            <span style={detailsDash}>—</span>
+          </Text>
+
+          {/* Current email row */}
+          <table width="100%" cellPadding={0} cellSpacing={0} role="presentation">
+            <tr>
+              <td width="64" valign="middle" style={{ paddingRight: '12px' }}>
+                <div style={emailIconCircleCurrent}>
+                  <Text style={emailIconEmoji}>✉</Text>
+                </div>
+              </td>
+              <td valign="middle">
+                <Text style={emailLabel}>Current Email</Text>
+                <Text style={emailValue}>{email}</Text>
+              </td>
+            </tr>
+          </table>
+
+          {/* Connector line */}
+          <div style={connectorLineWrap}>
+            <div style={connectorLine} />
+          </div>
+
+          {/* New email row */}
+          <table width="100%" cellPadding={0} cellSpacing={0} role="presentation">
+            <tr>
+              <td width="64" valign="middle" style={{ paddingRight: '12px' }}>
+                <div style={emailIconCircleNew}>
+                  <Text style={emailIconEmoji}>✉</Text>
+                </div>
+              </td>
+              <td valign="middle">
+                <Text style={emailLabel}>New Email</Text>
+                <Text style={emailValueNew}>{newEmail}</Text>
+              </td>
+            </tr>
+          </table>
+        </Section>
+
+        {/* Pill CTA with lock icon inside */}
+        <Section style={{ textAlign: 'center', padding: '8px 24px 4px' }}>
+          <Button style={button} href={confirmationUrl}>
+            <span style={buttonLockIcon}>🔒</span>
+            <span style={buttonLabel}>CONFIRM EMAIL CHANGE</span>
+            <span style={buttonArrow}>→</span>
+          </Button>
+        </Section>
+
+        {/* Security Comes First — dark card with 3D lock */}
+        <Section style={securityCard}>
+          <table width="100%" cellPadding={0} cellSpacing={0} role="presentation">
+            <tr>
+              <td valign="top" style={{ paddingRight: '8px' }}>
+                <Text style={securityTitle}>Security Comes First</Text>
+                <Text style={securityText}>
+                  If you didn't request this change, please ignore this email or{' '}
+                  <Link href={SITE_URL} style={securityLink}>
+                    secure your account
+                  </Link>{' '}
+                  immediately.
+                </Text>
+              </td>
+              <td width="110" align="right" valign="middle">
+                <Img
+                  src={LOCK_3D_URL}
+                  width="100"
+                  height="100"
+                  alt=""
+                  style={{ display: 'block' }}
+                />
+              </td>
+            </tr>
+          </table>
+        </Section>
+
+        {/* Need help — light card with 3D headset */}
+        <Section style={helpCard}>
+          <table width="100%" cellPadding={0} cellSpacing={0} role="presentation">
+            <tr>
+              <td valign="top" style={{ paddingRight: '8px' }}>
+                <Text style={helpTitle}>Need Help? We're Here!</Text>
+                <Text style={helpText}>
+                  If you have any questions or concerns, our support team is ready to assist you.
+                </Text>
+              </td>
+              <td width="110" align="right" valign="middle">
+                <Img
+                  src={HEADSET_3D_URL}
+                  width="100"
+                  height="100"
+                  alt=""
+                  style={{ display: 'block' }}
+                />
+              </td>
+            </tr>
+          </table>
+
+          {/* Two-column contact pills */}
+          <table width="100%" cellPadding={0} cellSpacing={0} role="presentation" style={{ marginTop: '14px' }}>
+            <tr>
+              <td width="49%" style={{ paddingRight: '6px' }}>
+                <Link href={`mailto:${SUPPORT_EMAIL}`} style={contactPill}>
+                  <span style={contactPillIcon}>✉</span>
+                  <span style={contactPillText}>{SUPPORT_EMAIL}</span>
                 </Link>
-              </Text>
-              <Text style={contactRow}>
-                <Link href={SITE_URL} style={contactLink}>
-                  🌐  www.muffigoutapparelhub.com
+              </td>
+              <td width="2%"></td>
+              <td width="49%" style={{ paddingLeft: '6px' }}>
+                <Link href={SITE_URL} style={contactPill}>
+                  <span style={contactPillIcon}>🌐</span>
+                  <span style={contactPillText}>www.muffigoutapparelhub.com</span>
                 </Link>
-              </Text>
-            </td>
-          </tr>
-        </table>
+              </td>
+            </tr>
+          </table>
+        </Section>
 
         {/* Sign-off */}
-        <Hr style={signoffHr} />
-        <Section style={{ textAlign: 'center' }}>
-          <Text style={thanksScript}>Thanks,</Text>
-          <Text style={signOffName}>The Muffigout Apparel Hub Team</Text>
+        <Section style={{ textAlign: 'center', padding: '24px 24px 8px' }}>
+          <div style={shieldDot}>
+            <Text style={shieldEmoji}>🛡</Text>
+          </div>
+          <Text style={thanksScript}>Thank you,</Text>
+          <Text style={signOffName}>The Muffi Gout Apparel Hub Team</Text>
           <Text style={securityNote}>
-            <span style={shieldDot}>🛡</span>  Your security is our priority.
+            <span style={shieldInline}>🛡</span> Your security is our priority.
           </Text>
+        </Section>
+
+        {/* Gradient footer band with social icons */}
+        <Section style={footerBand}>
+          <table width="100%" cellPadding={0} cellSpacing={0} role="presentation">
+            <tr>
+              <td align="center">
+                <Link href="https://facebook.com" style={socialIcon}>f</Link>
+                <Link href="https://instagram.com" style={socialIcon}>◉</Link>
+                <Link href={SITE_URL} style={socialIcon}>◎</Link>
+                <Link href={SITE_URL} style={socialIcon}>▶</Link>
+              </td>
+            </tr>
+          </table>
         </Section>
       </Container>
     </Body>
@@ -172,12 +260,15 @@ export default EmailChangeEmail
 
 const PURPLE = '#6E56F8'
 const PURPLE_DEEP = '#4B33C9'
-const PINK = '#E8456D'
-const TEAL = '#14B8A6'
+const BLUE = '#4F8BF6'
+const PINK_HINT = '#A855F7'
 const INK = '#0F172A'
-const MUTED = '#55575d'
-const SOFT_BG = '#F7F6FE'
-const BORDER = '#EAE7FB'
+const NAVY = '#0B1228'
+const MUTED = '#5B6172'
+const SOFT_BG = '#F4F2FE'
+const BORDER = '#E6E3F7'
+const PURPLE_TINT = '#EFEBFE'
+const BLUE_TINT = '#E3EEFE'
 
 const main: React.CSSProperties = {
   backgroundColor: '#ffffff',
@@ -189,335 +280,322 @@ const main: React.CSSProperties = {
 const container: React.CSSProperties = {
   maxWidth: '600px',
   margin: '0 auto',
-  padding: '24px 24px 32px',
+  padding: 0,
   backgroundColor: '#ffffff',
 }
 
-const logoSection: React.CSSProperties = {
-  textAlign: 'center',
-  paddingTop: '8px',
-  paddingBottom: '4px',
+/* Hero gradient band */
+const heroBand: React.CSSProperties = {
+  background: `linear-gradient(120deg, ${BLUE} 0%, ${PURPLE} 60%, ${PINK_HINT} 100%)`,
+  padding: '18px 24px 60px',
+  borderTopLeftRadius: '16px',
+  borderTopRightRadius: '16px',
 }
 
-const logo: React.CSSProperties = {
+const browserText: React.CSSProperties = {
+  fontSize: '11px',
+  color: 'rgba(255,255,255,0.85)',
+  margin: 0,
+}
+
+const browserLink: React.CSSProperties = {
+  color: '#ffffff',
+  textDecoration: 'underline',
+  fontWeight: 600,
+}
+
+const logoImg: React.CSSProperties = {
   display: 'block',
   margin: '0 auto 6px',
-  borderRadius: '14px',
+  borderRadius: '12px',
+  background: 'rgba(255,255,255,0.15)',
+  padding: '4px',
 }
 
 const brandName: React.CSSProperties = {
-  fontSize: '20px',
+  fontSize: '22px',
   fontWeight: 800,
-  letterSpacing: '2px',
-  color: INK,
+  color: '#ffffff',
   margin: '4px 0 0',
+  letterSpacing: '0.5px',
   textAlign: 'center',
 }
 
 const brandSub: React.CSSProperties = {
   fontSize: '11px',
   letterSpacing: '4px',
-  color: PURPLE,
-  margin: '2px 0 18px',
+  color: 'rgba(255,255,255,0.85)',
+  margin: '2px 0 0',
   textAlign: 'center',
   fontWeight: 600,
 }
 
-const heroIconSection: React.CSSProperties = {
-  textAlign: 'center',
-  margin: '8px 0 18px',
+/* Wave area + hex icon */
+const waveSection: React.CSSProperties = {
+  position: 'relative',
+  marginTop: '-30px',
 }
 
-const heroIconCircle: React.CSSProperties = {
-  display: 'inline-block',
-  width: '78px',
-  height: '78px',
-  lineHeight: '78px',
-  borderRadius: '50%',
+const waveTop: React.CSSProperties = {
+  height: '40px',
   background: '#ffffff',
-  border: `3px solid ${BORDER}`,
-  textAlign: 'center',
-  boxShadow: '0 8px 24px rgba(110,86,248,0.18)',
+  borderTopLeftRadius: '50% 100%',
+  borderTopRightRadius: '50% 100%',
 }
 
-const heroIconEmoji: React.CSSProperties = {
-  fontSize: '36px',
-  margin: 0,
-  lineHeight: '78px',
+const hexImg: React.CSSProperties = {
+  display: 'inline-block',
+  margin: '0 auto',
+  filter: 'drop-shadow(0 12px 24px rgba(110,86,248,0.35))',
 }
 
+/* Title */
 const h1: React.CSSProperties = {
-  fontSize: '26px',
+  fontSize: '28px',
   fontWeight: 800,
   color: INK,
-  margin: '8px 0 6px',
+  margin: '12px 0 8px',
   textAlign: 'center',
-  letterSpacing: '-0.3px',
+  letterSpacing: '-0.4px',
+  lineHeight: '1.2',
 }
 
 const h1Accent: React.CSSProperties = {
+  background: `linear-gradient(90deg, ${BLUE}, ${PURPLE})`,
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
   color: PURPLE,
-}
-
-const accentDivider: React.CSSProperties = {
-  width: '54px',
-  height: '3px',
-  background: `linear-gradient(90deg, ${PURPLE}, ${PINK})`,
-  margin: '6px auto 14px',
-  borderRadius: '2px',
 }
 
 const subText: React.CSSProperties = {
   fontSize: '14px',
   color: MUTED,
   lineHeight: '1.6',
-  margin: '0 auto 24px',
+  margin: '8px auto 0',
   textAlign: 'center',
-  maxWidth: '460px',
+  maxWidth: '440px',
 }
 
+const accentDivider: React.CSSProperties = {
+  width: '60px',
+  height: '3px',
+  background: `linear-gradient(90deg, ${BLUE}, ${PURPLE})`,
+  margin: '14px auto 0',
+  borderRadius: '2px',
+}
+
+/* Account update card */
 const detailsCard: React.CSSProperties = {
+  margin: '20px 24px 18px',
+  padding: '18px 18px 16px',
   border: `1px solid ${BORDER}`,
   borderRadius: '14px',
-  padding: '28px 18px 18px',
   backgroundColor: '#ffffff',
-  position: 'relative',
-  marginBottom: '20px',
-  boxShadow: '0 4px 14px rgba(15,23,42,0.04)',
+  boxShadow: '0 4px 16px rgba(15,23,42,0.05)',
 }
 
-const detailsBadge: React.CSSProperties = {
-  position: 'absolute',
-  top: '-14px',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  background: `linear-gradient(90deg, ${PURPLE}, ${PINK})`,
-  borderRadius: '999px',
-  padding: '6px 18px',
-  boxShadow: '0 4px 12px rgba(110,86,248,0.35)',
-}
-
-const detailsBadgeText: React.CSSProperties = {
-  color: '#ffffff',
-  fontSize: '11px',
-  fontWeight: 800,
-  letterSpacing: '1.5px',
-  margin: 0,
-}
-
-const comparisonTable: React.CSSProperties = {
-  marginTop: '8px',
-}
-
-const comparisonCell: React.CSSProperties = {
-  padding: '8px',
-  verticalAlign: 'middle',
-  width: '42%',
-}
-
-const arrowCell: React.CSSProperties = {
-  width: '16%',
+const detailsHeader: React.CSSProperties = {
   textAlign: 'center',
-  verticalAlign: 'middle',
+  margin: '0 0 14px',
 }
 
-const arrowCircle: React.CSSProperties = {
-  display: 'inline-block',
-  width: '32px',
-  height: '32px',
-  lineHeight: '30px',
-  borderRadius: '50%',
-  border: `1.5px dashed ${PINK}`,
-  textAlign: 'center',
-  color: PINK,
-}
-
-const arrowText: React.CSSProperties = {
-  margin: 0,
-  color: PINK,
-  fontSize: '16px',
+const detailsDash: React.CSSProperties = {
+  color: PURPLE,
   fontWeight: 700,
-  lineHeight: '30px',
+  fontSize: '14px',
+  margin: '0 6px',
+}
+
+const detailsHeaderText: React.CSSProperties = {
+  color: PURPLE,
+  fontWeight: 800,
+  fontSize: '12px',
+  letterSpacing: '2px',
 }
 
 const emailIconCircleCurrent: React.CSSProperties = {
-  display: 'inline-block',
-  width: '46px',
-  height: '46px',
-  lineHeight: '46px',
+  width: '48px',
+  height: '48px',
+  lineHeight: '48px',
   borderRadius: '50%',
-  backgroundColor: '#EFEBFE',
+  backgroundColor: PURPLE_TINT,
   textAlign: 'center',
-  marginBottom: '8px',
+  display: 'inline-block',
 }
 
 const emailIconCircleNew: React.CSSProperties = {
-  display: 'inline-block',
-  width: '46px',
-  height: '46px',
-  lineHeight: '46px',
+  width: '48px',
+  height: '48px',
+  lineHeight: '48px',
   borderRadius: '50%',
-  backgroundColor: '#FDE7EE',
+  backgroundColor: BLUE_TINT,
   textAlign: 'center',
-  marginBottom: '8px',
+  display: 'inline-block',
 }
 
 const emailIconEmoji: React.CSSProperties = {
   fontSize: '20px',
   margin: 0,
-  lineHeight: '46px',
+  lineHeight: '48px',
+  color: PURPLE,
+  fontWeight: 700,
 }
 
 const emailLabel: React.CSSProperties = {
   fontSize: '12px',
   color: MUTED,
-  margin: '0 0 4px',
+  margin: '0 0 2px',
   fontWeight: 500,
 }
 
 const emailValue: React.CSSProperties = {
-  fontSize: '14px',
+  fontSize: '15px',
   color: INK,
   margin: 0,
   fontWeight: 700,
   wordBreak: 'break-all',
 }
 
-const ctaCard: React.CSSProperties = {
-  border: `1.5px dashed ${BORDER}`,
-  borderRadius: '14px',
-  padding: '18px',
-  backgroundColor: SOFT_BG,
-}
-
-const lockIconCircle: React.CSSProperties = {
-  display: 'inline-block',
-  width: '46px',
-  height: '46px',
-  lineHeight: '46px',
-  borderRadius: '12px',
-  background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DEEP})`,
-  textAlign: 'center',
-  boxShadow: '0 6px 16px rgba(75,51,201,0.35)',
-}
-
-const lockIconEmoji: React.CSSProperties = {
-  fontSize: '20px',
-  color: '#ffffff',
-  margin: 0,
-  lineHeight: '46px',
-}
-
-const ctaHelperText: React.CSSProperties = {
-  fontSize: '14px',
+const emailValueNew: React.CSSProperties = {
+  fontSize: '15px',
   color: INK,
   margin: 0,
-  fontWeight: 500,
-  lineHeight: '1.45',
+  fontWeight: 700,
+  wordBreak: 'break-all',
 }
 
+const connectorLineWrap: React.CSSProperties = {
+  paddingLeft: '24px',
+  margin: '4px 0',
+}
+
+const connectorLine: React.CSSProperties = {
+  width: '2px',
+  height: '20px',
+  background: `linear-gradient(180deg, ${PURPLE}, ${BLUE})`,
+  marginLeft: '12px',
+}
+
+/* Pill CTA */
 const button: React.CSSProperties = {
-  background: `linear-gradient(90deg, ${PURPLE}, ${PINK})`,
+  background: `linear-gradient(90deg, ${BLUE} 0%, ${PURPLE} 60%, ${PINK_HINT} 100%)`,
   color: '#ffffff',
   fontSize: '13px',
   fontWeight: 800,
   letterSpacing: '1px',
   borderRadius: '999px',
-  padding: '14px 28px',
+  padding: '14px 26px',
   textDecoration: 'none',
   display: 'inline-block',
-  boxShadow: '0 10px 24px rgba(110,86,248,0.4)',
+  boxShadow: '0 12px 28px rgba(110,86,248,0.42)',
 }
 
-const safetyCell: React.CSSProperties = {
-  backgroundColor: '#FFF1F3',
-  border: '1px solid #FBD5DD',
-  borderRadius: '14px',
-  padding: '18px 16px',
-  verticalAlign: 'top',
-}
-
-const helpCell: React.CSSProperties = {
-  backgroundColor: '#ECFDF5',
-  border: '1px solid #BBF7D9',
-  borderRadius: '14px',
-  padding: '18px 16px',
-  verticalAlign: 'top',
-}
-
-const warningIconWrap: React.CSSProperties = {
-  textAlign: 'center',
-  marginBottom: '8px',
-}
-
-const warningEmoji: React.CSSProperties = {
-  fontSize: '28px',
-  margin: 0,
-}
-
-const helpIconWrap: React.CSSProperties = {
-  textAlign: 'center',
-  marginBottom: '8px',
-}
-
-const helpEmoji: React.CSSProperties = {
-  fontSize: '28px',
-  margin: 0,
-}
-
-const safetyTitle: React.CSSProperties = {
+const buttonLockIcon: React.CSSProperties = {
+  marginRight: '10px',
   fontSize: '14px',
+}
+
+const buttonLabel: React.CSSProperties = {
+  verticalAlign: 'middle',
+}
+
+const buttonArrow: React.CSSProperties = {
+  marginLeft: '12px',
+  fontSize: '15px',
+}
+
+/* Security card (dark) */
+const securityCard: React.CSSProperties = {
+  margin: '22px 24px 14px',
+  padding: '18px 18px',
+  borderRadius: '14px',
+  background: `linear-gradient(135deg, ${NAVY} 0%, #1A1F45 100%)`,
+  boxShadow: '0 8px 24px rgba(11,18,40,0.25)',
+}
+
+const securityTitle: React.CSSProperties = {
+  fontSize: '15px',
   fontWeight: 800,
-  color: PINK,
+  color: '#ffffff',
   margin: '0 0 6px',
-  textAlign: 'center',
+}
+
+const securityText: React.CSSProperties = {
+  fontSize: '13px',
+  color: 'rgba(255,255,255,0.78)',
+  margin: 0,
+  lineHeight: '1.55',
+}
+
+const securityLink: React.CSSProperties = {
+  color: BLUE,
+  fontWeight: 700,
+  textDecoration: 'underline',
+}
+
+/* Help card (light) */
+const helpCard: React.CSSProperties = {
+  margin: '0 24px 14px',
+  padding: '18px',
+  borderRadius: '14px',
+  backgroundColor: SOFT_BG,
+  border: `1px solid ${BORDER}`,
 }
 
 const helpTitle: React.CSSProperties = {
-  fontSize: '14px',
+  fontSize: '15px',
   fontWeight: 800,
-  color: TEAL,
+  color: PURPLE,
   margin: '0 0 6px',
-  textAlign: 'center',
-}
-
-const safetyText: React.CSSProperties = {
-  fontSize: '12.5px',
-  color: MUTED,
-  margin: 0,
-  lineHeight: '1.55',
-  textAlign: 'center',
 }
 
 const helpText: React.CSSProperties = {
-  fontSize: '12.5px',
+  fontSize: '13px',
   color: MUTED,
-  margin: '0 0 10px',
+  margin: 0,
   lineHeight: '1.55',
-  textAlign: 'center',
 }
 
-const accentDanger: React.CSSProperties = {
-  color: PINK,
-  fontWeight: 700,
-}
-
-const contactRow: React.CSSProperties = {
-  fontSize: '12.5px',
-  margin: '4px 0 0',
-  textAlign: 'left',
-}
-
-const contactLink: React.CSSProperties = {
-  color: TEAL,
+const contactPill: React.CSSProperties = {
+  display: 'block',
+  backgroundColor: '#ffffff',
+  borderRadius: '999px',
+  padding: '10px 12px',
   textDecoration: 'none',
+  border: `1px solid ${BORDER}`,
+  fontSize: '11.5px',
+  color: INK,
+  textAlign: 'center',
   fontWeight: 600,
 }
 
-const signoffHr: React.CSSProperties = {
-  border: 'none',
-  borderTop: `1px solid ${BORDER}`,
-  margin: '28px 0 16px',
+const contactPillIcon: React.CSSProperties = {
+  marginRight: '6px',
+  color: PURPLE,
+}
+
+const contactPillText: React.CSSProperties = {
+  color: INK,
+  wordBreak: 'break-all',
+}
+
+/* Sign-off */
+const shieldDot: React.CSSProperties = {
+  display: 'inline-block',
+  width: '36px',
+  height: '36px',
+  lineHeight: '36px',
+  borderRadius: '50%',
+  background: `linear-gradient(135deg, ${PURPLE}, ${BLUE})`,
+  textAlign: 'center',
+  margin: '0 auto 8px',
+}
+
+const shieldEmoji: React.CSSProperties = {
+  fontSize: '16px',
+  color: '#ffffff',
+  margin: 0,
+  lineHeight: '36px',
 }
 
 const thanksScript: React.CSSProperties = {
@@ -544,6 +622,31 @@ const securityNote: React.CSSProperties = {
   textAlign: 'center',
 }
 
-const shieldDot: React.CSSProperties = {
+const shieldInline: React.CSSProperties = {
   color: PURPLE,
+}
+
+/* Footer gradient band */
+const footerBand: React.CSSProperties = {
+  background: `linear-gradient(90deg, ${BLUE} 0%, ${PURPLE} 60%, ${PINK_HINT} 100%)`,
+  padding: '18px 24px',
+  borderBottomLeftRadius: '16px',
+  borderBottomRightRadius: '16px',
+  marginTop: '14px',
+}
+
+const socialIcon: React.CSSProperties = {
+  display: 'inline-block',
+  width: '32px',
+  height: '32px',
+  lineHeight: '32px',
+  borderRadius: '50%',
+  backgroundColor: 'rgba(255,255,255,0.15)',
+  color: '#ffffff',
+  fontSize: '14px',
+  fontWeight: 700,
+  textAlign: 'center',
+  textDecoration: 'none',
+  margin: '0 6px',
+  border: '1.5px solid rgba(255,255,255,0.6)',
 }
