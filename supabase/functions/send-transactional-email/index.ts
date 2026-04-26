@@ -321,7 +321,7 @@ Deno.serve(async (req) => {
       message_id: messageId,
       to: effectiveRecipient,
       from: `MUFFIGOUT APPAREL HUB <support@${FROM_DOMAIN}>`,
-      reply_to: 'supportmuffigoutapparelhub@gmail.com',
+      reply_to: replyToOverride || 'supportmuffigoutapparelhub@gmail.com',
       sender_domain: SENDER_DOMAIN,
       subject: resolvedSubject,
       html,
