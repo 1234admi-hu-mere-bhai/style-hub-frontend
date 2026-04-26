@@ -87,6 +87,9 @@ const Contact = () => {
         body: {
           templateName: 'contact-support-notification',
           recipientEmail: 'supportmuffigoutapparelhub@gmail.com',
+          // When support hits "Reply" in Gmail, the response goes
+          // straight back to the customer instead of our own inbox.
+          replyTo: data.email,
           idempotencyKey: `contact-notify-${submissionId}`,
           templateData: {
             customerName: data.name,
