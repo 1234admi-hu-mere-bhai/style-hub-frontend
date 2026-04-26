@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { z } from 'zod';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { Phone, Mail, Send, Loader2, CheckCircle2 } from 'lucide-react';
+import { Phone, Mail, Send, Loader2, CheckCircle2, User, AtSign, Smartphone, MessageSquareText, Type, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
