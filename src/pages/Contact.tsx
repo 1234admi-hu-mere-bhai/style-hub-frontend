@@ -62,10 +62,12 @@ const Contact = () => {
   ) => {
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
     if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
+    if (submitError) setSubmitError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
     const parsed = contactSchema.safeParse(form);
     if (!parsed.success) {
       const fieldErrors: FormErrors = {};
