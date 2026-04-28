@@ -418,7 +418,7 @@ const AdminCashbook = ({ orders }: AdminCashbookProps) => {
                             {formatINR(e.amount)}
                           </p>
                         </div>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 </Card>
