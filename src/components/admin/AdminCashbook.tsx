@@ -4,6 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
   ArrowDownCircle,
   ArrowUpCircle,
   BookOpen,
@@ -11,6 +18,12 @@ import {
   Search,
   TrendingUp,
   Wallet,
+  MapPin,
+  CreditCard,
+  Receipt,
+  User,
+  Hash,
+  Calendar,
 } from 'lucide-react';
 
 interface Order {
