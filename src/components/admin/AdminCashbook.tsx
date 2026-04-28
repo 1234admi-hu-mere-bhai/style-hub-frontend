@@ -124,6 +124,7 @@ const AdminCashbook = ({ orders }: AdminCashbookProps) => {
       if (o.refund_processed_at && o.refund_amount && Number(o.refund_amount) > 0) {
         items.push({
           id: `${o.id}-out`,
+          orderId: o.id,
           date: new Date(o.refund_processed_at),
           type: 'OUT',
           amount: Number(o.refund_amount),
