@@ -92,6 +92,7 @@ const AdminCashbook = ({ orders }: AdminCashbookProps) => {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'in' | 'out'>('all');
   const [period, setPeriod] = useState<'all' | 'today' | '7d' | '30d'>('all');
+  const [selected, setSelected] = useState<{ entry: Entry; order: Order } | null>(null);
 
   // Build cashbook entries: paid orders = IN, refunds = OUT
   const allEntries: Entry[] = useMemo(() => {
