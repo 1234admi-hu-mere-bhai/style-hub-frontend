@@ -49,6 +49,7 @@ interface AdminCashbookProps {
 
 type Entry = {
   id: string;
+  orderId: string;
   date: Date;
   type: 'IN' | 'OUT';
   amount: number;
