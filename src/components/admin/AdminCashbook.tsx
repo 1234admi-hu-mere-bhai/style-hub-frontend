@@ -88,6 +88,26 @@ const formatTime = (d: Date) =>
     hour12: true,
   });
 
+const Row = ({
+  icon,
+  label,
+  value,
+  mono,
+}: {
+  icon?: React.ReactNode;
+  label: string;
+  value: React.ReactNode;
+  mono?: boolean;
+}) => (
+  <div className="flex items-start justify-between gap-3 text-xs">
+    <span className="flex items-center gap-1.5 text-muted-foreground flex-shrink-0">
+      {icon}
+      {label}
+    </span>
+    <span className={`text-right break-all ${mono ? 'font-mono' : ''}`}>{value}</span>
+  </div>
+);
+
 const AdminCashbook = ({ orders }: AdminCashbookProps) => {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'in' | 'out'>('all');
