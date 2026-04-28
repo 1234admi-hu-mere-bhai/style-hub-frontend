@@ -7,7 +7,7 @@ import {
   Loader2, ShieldAlert, LayoutDashboard, ShoppingCart, Users,
   CreditCard, BarChart3, LogOut, Package, Warehouse,
   Tag, Bell, FileText, Menu, X, ChevronRight, Store, MessageSquare, Zap, Undo2, Megaphone,
-  UsersRound, ClipboardList,
+  UsersRound, ClipboardList, BookOpen,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ import AdminOrders from '@/components/admin/AdminOrders';
 import AdminProducts from '@/components/admin/AdminProducts';
 import AdminCustomers from '@/components/admin/AdminCustomers';
 import AdminPayments from '@/components/admin/AdminPayments';
+import AdminCashbook from '@/components/admin/AdminCashbook';
 import AdminInventory from '@/components/admin/AdminInventory';
 import AdminAnalytics from '@/components/admin/AdminAnalytics';
 import AdminCoupons from '@/components/admin/AdminCoupons';
@@ -53,6 +54,7 @@ const TABS = [
   { key: 'products', label: 'Products', icon: Package, ownerOnly: false },
   { key: 'customers', label: 'Client Data', icon: Users, ownerOnly: false },
   { key: 'payments', label: 'Payments', icon: CreditCard, ownerOnly: false },
+  { key: 'cashbook', label: 'Cashbook', icon: BookOpen, ownerOnly: false },
   { key: 'inventory', label: 'Inventory', icon: Warehouse, ownerOnly: false },
   { key: 'analytics', label: 'Analytics', icon: BarChart3, ownerOnly: false },
   { key: 'coupons', label: 'Coupons', icon: Tag, ownerOnly: false },
@@ -366,6 +368,7 @@ const Admin = () => {
               paidRevenue={analytics.paidRevenue}
             />
           )}
+          {currentTab === 'cashbook' && <AdminCashbook orders={analytics.allOrders} />}
           {currentTab === 'inventory' && <AdminInventory products={dbProducts} />}
           {currentTab === 'analytics' && (
             <AdminAnalytics
