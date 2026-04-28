@@ -107,6 +107,7 @@ const AdminCashbook = ({ orders }: AdminCashbookProps) => {
       if (o.payment_status === 'paid' || o.payment_status === 'cod_paid') {
         items.push({
           id: `${o.id}-in`,
+          orderId: o.id,
           date: new Date(o.created_at),
           type: 'IN',
           amount: Number(o.total),
