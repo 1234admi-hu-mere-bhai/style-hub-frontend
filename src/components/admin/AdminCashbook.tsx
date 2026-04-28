@@ -4,6 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
   ArrowDownCircle,
   ArrowUpCircle,
   BookOpen,
@@ -11,6 +18,12 @@ import {
   Search,
   TrendingUp,
   Wallet,
+  MapPin,
+  CreditCard,
+  Receipt,
+  User,
+  Hash,
+  Calendar,
 } from 'lucide-react';
 
 interface Order {
@@ -36,6 +49,7 @@ interface AdminCashbookProps {
 
 type Entry = {
   id: string;
+  orderId: string;
   date: Date;
   type: 'IN' | 'OUT';
   amount: number;
@@ -74,10 +88,31 @@ const formatTime = (d: Date) =>
     hour12: true,
   });
 
+const Row = ({
+  icon,
+  label,
+  value,
+  mono,
+}: {
+  icon?: React.ReactNode;
+  label: string;
+  value: React.ReactNode;
+  mono?: boolean;
+}) => (
+  <div className="flex items-start justify-between gap-3 text-xs">
+    <span className="flex items-center gap-1.5 text-muted-foreground flex-shrink-0">
+      {icon}
+      {label}
+    </span>
+    <span className={`text-right break-all ${mono ? 'font-mono' : ''}`}>{value}</span>
+  </div>
+);
+
 const AdminCashbook = ({ orders }: AdminCashbookProps) => {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'in' | 'out'>('all');
   const [period, setPeriod] = useState<'all' | 'today' | '7d' | '30d'>('all');
+  const [selected, setSelected] = useState<{ entry: Entry; order: Order } | null>(null);
 
   // Build cashbook entries: paid orders = IN, refunds = OUT
   const allEntries: Entry[] = useMemo(() => {
@@ -93,6 +128,7 @@ const AdminCashbook = ({ orders }: AdminCashbookProps) => {
       if (o.payment_status === 'paid' || o.payment_status === 'cod_paid') {
         items.push({
           id: `${o.id}-in`,
+          orderId: o.id,
           date: new Date(o.created_at),
           type: 'IN',
           amount: Number(o.total),
@@ -109,6 +145,7 @@ const AdminCashbook = ({ orders }: AdminCashbookProps) => {
       if (o.refund_processed_at && o.refund_amount && Number(o.refund_amount) > 0) {
         items.push({
           id: `${o.id}-out`,
+          orderId: o.id,
           date: new Date(o.refund_processed_at),
           type: 'OUT',
           amount: Number(o.refund_amount),
@@ -347,9 +384,14 @@ const AdminCashbook = ({ orders }: AdminCashbookProps) => {
                 <Card className="border border-border/50 overflow-hidden">
                   <div className="divide-y divide-border/50">
                     {entries.map((e) => (
-                      <div
+                      <button
                         key={e.id}
-                        className="flex items-center gap-3 p-3 hover:bg-muted/40 transition-colors"
+                        type="button"
+                        onClick={() => {
+                          const ord = orders.find((o) => o.id === e.orderId);
+                          if (ord) setSelected({ entry: e, order: ord });
+                        }}
+                        className="w-full flex items-center gap-3 p-3 hover:bg-muted/40 transition-colors text-left"
                       >
                         <div
                           className={`h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -396,7 +438,7 @@ const AdminCashbook = ({ orders }: AdminCashbookProps) => {
                             {formatINR(e.amount)}
                           </p>
                         </div>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 </Card>
@@ -405,6 +447,140 @@ const AdminCashbook = ({ orders }: AdminCashbookProps) => {
           })}
         </div>
       )}
+
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelected(null)}>
+        <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+          {selected && (
+            <>
+              <DialogHeader>
+                <div className="flex items-center gap-3 mb-1">
+                  <div
+                    className={`h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      selected.entry.type === 'IN'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-red-100 text-red-700'
+                    }`}
+                  >
+                    {selected.entry.type === 'IN' ? (
+                      <ArrowDownCircle className="h-6 w-6" />
+                    ) : (
+                      <ArrowUpCircle className="h-6 w-6" />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <DialogTitle className="text-base">
+                      {selected.entry.type === 'IN' ? 'Sale Received' : 'Refund Issued'}
+                    </DialogTitle>
+                    <DialogDescription className="text-xs">
+                      {formatDateLabel(selected.entry.date)} · {formatTime(selected.entry.date)}
+                    </DialogDescription>
+                  </div>
+                </div>
+                <p
+                  className={`text-3xl font-bold mt-2 ${
+                    selected.entry.type === 'IN' ? 'text-green-700' : 'text-red-700'
+                  }`}
+                >
+                  {selected.entry.type === 'IN' ? '+' : '−'}
+                  {formatINR(selected.entry.amount)}
+                </p>
+              </DialogHeader>
+
+              <div className="space-y-4 mt-2">
+                {/* Order info */}
+                <div className="rounded-lg border border-border/60 p-3 space-y-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Order
+                  </p>
+                  <Row icon={<Hash className="h-3.5 w-3.5" />} label="Order #" value={selected.order.order_number} mono />
+                  <Row icon={<User className="h-3.5 w-3.5" />} label="Customer" value={selected.entry.customer} />
+                  <Row icon={<Calendar className="h-3.5 w-3.5" />} label="Placed" value={new Date(selected.order.created_at).toLocaleString('en-IN')} />
+                  <Row
+                    icon={<Receipt className="h-3.5 w-3.5" />}
+                    label="Status"
+                    value={<Badge variant="outline" className="capitalize text-[10px]">{selected.order.status.replace(/_/g, ' ')}</Badge>}
+                  />
+                </div>
+
+                {/* Payment / refund metadata */}
+                <div className="rounded-lg border border-border/60 p-3 space-y-2">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    {selected.entry.type === 'IN' ? 'Payment' : 'Refund'}
+                  </p>
+                  <Row icon={<CreditCard className="h-3.5 w-3.5" />} label="Method" value={selected.order.payment_method || '—'} />
+                  <Row
+                    label="Payment status"
+                    value={<Badge variant="outline" className="capitalize text-[10px]">{selected.order.payment_status.replace(/_/g, ' ')}</Badge>}
+                  />
+                  {selected.order.payment_id && (
+                    <Row label="Txn ID" value={selected.order.payment_id} mono />
+                  )}
+                  {selected.entry.type === 'OUT' && selected.order.refund_processed_at && (
+                    <Row label="Refunded at" value={new Date(selected.order.refund_processed_at).toLocaleString('en-IN')} />
+                  )}
+                </div>
+
+                {/* Amount breakdown */}
+                <div className="rounded-lg border border-border/60 p-3 space-y-1.5">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                    Amount Breakdown
+                  </p>
+                  {selected.order.subtotal !== undefined && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span>{formatINR(Number(selected.order.subtotal))}</span>
+                    </div>
+                  )}
+                  {selected.order.shipping_cost !== undefined && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Shipping</span>
+                      <span>{formatINR(Number(selected.order.shipping_cost))}</span>
+                    </div>
+                  )}
+                  {selected.order.cod_fee !== undefined && Number(selected.order.cod_fee) > 0 && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">COD fee</span>
+                      <span>{formatINR(Number(selected.order.cod_fee))}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-sm font-bold pt-1.5 border-t border-border/50">
+                    <span>Order total</span>
+                    <span>{formatINR(Number(selected.order.total))}</span>
+                  </div>
+                  {selected.entry.type === 'OUT' && selected.order.refund_amount != null && (
+                    <div className="flex justify-between text-sm font-bold text-red-700 pt-1">
+                      <span>Refund amount</span>
+                      <span>−{formatINR(Number(selected.order.refund_amount))}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Shipping address */}
+                {selected.order.shipping_address && (
+                  <div className="rounded-lg border border-border/60 p-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5">
+                      <MapPin className="h-3 w-3" /> Shipping address
+                    </p>
+                    <p className="text-xs leading-relaxed">
+                      {[
+                        selected.order.shipping_address.firstName,
+                        selected.order.shipping_address.lastName,
+                      ].filter(Boolean).join(' ') || selected.order.shipping_address.full_name}
+                      <br />
+                      {selected.order.shipping_address.address}
+                      {selected.order.shipping_address.landmark && `, ${selected.order.shipping_address.landmark}`}
+                      <br />
+                      {selected.order.shipping_address.city}, {selected.order.shipping_address.state} - {selected.order.shipping_address.pincode}
+                      <br />
+                      <span className="text-muted-foreground">📞 {selected.order.shipping_address.phone}</span>
+                    </p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
