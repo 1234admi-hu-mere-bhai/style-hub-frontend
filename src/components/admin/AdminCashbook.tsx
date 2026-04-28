@@ -364,9 +364,14 @@ const AdminCashbook = ({ orders }: AdminCashbookProps) => {
                 <Card className="border border-border/50 overflow-hidden">
                   <div className="divide-y divide-border/50">
                     {entries.map((e) => (
-                      <div
+                      <button
                         key={e.id}
-                        className="flex items-center gap-3 p-3 hover:bg-muted/40 transition-colors"
+                        type="button"
+                        onClick={() => {
+                          const ord = orders.find((o) => o.id === e.orderId);
+                          if (ord) setSelected({ entry: e, order: ord });
+                        }}
+                        className="w-full flex items-center gap-3 p-3 hover:bg-muted/40 transition-colors text-left"
                       >
                         <div
                           className={`h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 ${
