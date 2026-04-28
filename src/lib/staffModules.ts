@@ -13,6 +13,7 @@ export const STAFF_MODULES: StaffModule[] = [
   { key: 'products', label: 'Products', description: 'Add, edit, delete products' },
   { key: 'customers', label: 'Customers', description: 'View customer info' },
   { key: 'payments', label: 'Payments', description: 'View payment history' },
+  { key: 'cashbook', label: 'Cashbook', description: 'View daily cash in/out ledger' },
   { key: 'inventory', label: 'Inventory', description: 'Update stock levels' },
   { key: 'analytics', label: 'Analytics', description: 'View revenue & trends' },
   { key: 'coupons', label: 'Coupons', description: 'Create & manage coupons' },
