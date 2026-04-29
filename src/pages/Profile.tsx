@@ -403,7 +403,9 @@ const Profile = () => {
                       <Label htmlFor="confirmPassword">Confirm New Password</Label>
                       <Input id="confirmPassword" type="password" />
                     </div>
-                    <Button variant="outline">Update Password</Button>
+                    <Button className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow rounded-full px-6 h-11 font-semibold">
+                      Update Password
+                    </Button>
                   </div>
                 </div>
               </div>
