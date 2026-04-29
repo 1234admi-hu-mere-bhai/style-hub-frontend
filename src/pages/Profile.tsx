@@ -337,7 +337,7 @@ const Profile = () => {
                       />
                       <Button
                         type="button"
-                        variant="outline"
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-glow rounded-full px-6 h-11 font-semibold"
                         onClick={async () => {
                           const newEmail = profile.email.trim().toLowerCase();
                           if (!newEmail || newEmail === user?.email) {
