@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["assets/logo-new.png", "pwa-icon-512.jpg"],
+      includeAssets: ["assets/logo-new.png", "favicon.ico", "favicon-512.png", "apple-touch-icon.png", "icon-192x192.png", "icon-512x512.png"],
       workbox: {
         navigateFallbackDenylist: [/^\/~oauth/],
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2}"],
@@ -34,9 +34,9 @@ export default defineConfig(({ mode }) => ({
         ],
       },
       manifest: {
-        name: "MuffiGout Apparel Hub",
-        short_name: "MuffiGout",
-        description: "Shop the latest fashion trends at MuffiGout Apparel Hub. Stylish clothing for men, women, and kids.",
+        name: "MUFFIGOUT APPAREL HUB | Trendy Men’s Outfit",
+        short_name: "MUFFIGOUT",
+        description: "Shop trendy men’s outfits at MUFFIGOUT APPAREL HUB. Stylish shirts, t-shirts, jeans, and everyday fashion.",
         theme_color: "#000000",
         background_color: "#ffffff",
         display: "standalone",
