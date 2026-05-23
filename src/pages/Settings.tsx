@@ -124,43 +124,54 @@ const Settings = () => {
               <Download size={20} />
               Mobile App
             </h2>
-            {isStandalone ? (
-              <div className="flex items-center gap-3 text-sm">
-                <CheckCircle2 className="w-5 h-5 text-primary" />
-                <span className="text-muted-foreground">
-                  You're using the installed app. Enjoy the full experience!
-                </span>
+            {isStandalone || wasInstalled ? (
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <Label className="text-base">MUFFIGOUT App</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {isStandalone
+                      ? "You're using the installed app. Enjoy the full experience!"
+                      : "App is installed on this device. Open it from your home screen."}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 rounded-full bg-primary/10 text-primary px-3 py-1.5 text-sm font-medium">
+                  <CheckCircle2 className="w-4 h-4" />
+                  Installed
+                </div>
               </div>
-            ) : canInstall ? (
+            ) : (
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <Label className="text-base">Install MUFFIGOUT App</Label>
                   <p className="text-sm text-muted-foreground">
-                    Faster shopping, order alerts, and app-only drops.
+                    {canInstall
+                      ? "Faster shopping, order alerts, and app-only drops."
+                      : showIOSHint
+                      ? "In Safari, tap Share → Add to Home Screen."
+                      : "Browse a bit more, then come back to install."}
                   </p>
                 </div>
                 <Button
-                  onClick={() => promptInstall()}
+                  onClick={async () => {
+                    const r = await promptInstall();
+                    if (r === "unavailable") {
+                      toast.info(
+                        showIOSHint
+                          ? "On iOS: tap Share, then Add to Home Screen."
+                          : "Install isn't ready yet. Browse a bit more and try again."
+                      );
+                    }
+                  }}
                   className="rounded-full shrink-0"
+                  disabled={!canInstall && !showIOSHint}
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Install
                 </Button>
               </div>
-            ) : showIOSHint ? (
-              <div>
-                <Label className="text-base">Add to Home Screen (iOS)</Label>
-                <p className="text-sm text-muted-foreground mt-1">
-                  In Safari, tap the <span className="font-semibold text-foreground">Share</span> icon,
-                  then choose <span className="font-semibold text-foreground">Add to Home Screen</span>.
-                </p>
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Install isn't available right now. Try again from your mobile browser after browsing the site for a bit.
-              </p>
             )}
           </div>
+
 
           {/* Push Notifications */}
           <NotificationPreferences />
