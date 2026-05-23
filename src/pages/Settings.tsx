@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Moon, Sun, Globe, IndianRupee, Bell, Download, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Globe, IndianRupee, Download, CheckCircle2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -64,6 +64,54 @@ const Settings = () => {
     setCurrency(value);
     localStorage.setItem('currency', value);
     toast.success(`Currency changed to ${value}`);
+  };
+
+  const showManualInstallHelp = () => {
+    const ua = navigator.userAgent;
+    const isIOS = /iPad|iPhone|iPod/.test(ua);
+    const isAndroid = /Android/.test(ua);
+
+    if (isIOS) {
+      toast.info("Install MUFFIGOUT manually", {
+        description: "Open this site in Safari, tap Share, then choose Add to Home Screen.",
+        duration: 9000,
+      });
+    } else if (isAndroid) {
+      toast.info("Install MUFFIGOUT manually", {
+        description: "Tap Chrome menu (⋮), then choose Install app or Add to Home screen.",
+        duration: 9000,
+      });
+    } else {
+      toast.info("Install MUFFIGOUT manually", {
+        description: "Use your browser menu, then choose Install MUFFIGOUT or Add to desktop.",
+        duration: 9000,
+      });
+    }
+  };
+
+  const handleInstallClick = async () => {
+    if (!canInstall) {
+      showManualInstallHelp();
+      return;
+    }
+
+    const loadingId = toast.loading("Installing MUFFIGOUT App…", {
+      description: "Please confirm the install prompt on your device.",
+    });
+    const result = await promptInstall();
+    toast.dismiss(loadingId);
+
+    if (result === "accepted") {
+      toast.success("App installed successfully", {
+        description: "Open it from your home screen anytime.",
+      });
+    } else if (result === "dismissed") {
+      toast.info("Install cancelled", {
+        description: "You can install manually from your browser menu anytime.",
+      });
+    } else {
+      showManualInstallHelp();
+    }
   };
 
   const getLanguageLabel = (code: string) => {
@@ -152,47 +200,7 @@ const Settings = () => {
                   </p>
                 </div>
                 <Button
-                  onClick={async () => {
-                    const ua = navigator.userAgent;
-                    const isIOS = /iPad|iPhone|iPod/.test(ua);
-                    const isAndroid = /Android/.test(ua);
-
-                    if (canInstall) {
-                      const loadingId = toast.loading("Installing MUFFIGOUT App…", {
-                        description: "Please confirm the install prompt on your device.",
-                      });
-                      const r = await promptInstall();
-                      toast.dismiss(loadingId);
-                      if (r === "accepted") {
-                        toast.success("App installed successfully", {
-                          description: "Open it from your home screen anytime.",
-                        });
-                      } else if (r === "dismissed") {
-                        toast.info("Install cancelled", {
-                          description: "You can install it later from this screen.",
-                        });
-                      }
-                      return;
-                    }
-
-                    // No native prompt available — show manual instructions
-                    if (isIOS) {
-                      toast.info("Install on iPhone / iPad", {
-                        description: "Tap the Share icon in Safari, then choose 'Add to Home Screen'.",
-                        duration: 8000,
-                      });
-                    } else if (isAndroid) {
-                      toast.info("Install on Android", {
-                        description: "Open your browser menu (⋮) and tap 'Install app' or 'Add to Home screen'.",
-                        duration: 8000,
-                      });
-                    } else {
-                      toast.info("Install on Desktop", {
-                        description: "Click the install icon (⊕) in your browser's address bar, or use the browser menu → 'Install MUFFIGOUT'.",
-                        duration: 8000,
-                      });
-                    }
-                  }}
+                  onClick={handleInstallClick}
                   className="rounded-full shrink-0"
                 >
                   <Download className="w-4 h-4 mr-2" />
