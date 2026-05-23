@@ -59,9 +59,19 @@ const Header = () => {
     <>
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
         {/* Announcement bar */}
-        <div className="bg-primary text-primary-foreground py-2 text-sm font-medium overflow-hidden">
-          <div className="animate-marquee whitespace-nowrap">
-            Complimentary shipping on orders above ₹999  •  Apply code MUFFIGOUT20 for 20% off the Men's Collection
+        <div className="bg-primary text-primary-foreground py-2 text-sm font-semibold overflow-hidden shadow-sm">
+          <div className="announce-marquee whitespace-nowrap" aria-label="Store offers">
+            <span>Free shipping above ₹999</span>
+            <span className="announce-dot">•</span>
+            <span>Use code MUFFIGOUT20 for 20% off Men's Collection</span>
+            <span className="announce-dot">•</span>
+            <span>Crafted with Trust, Worn with Pride</span>
+            <span className="announce-gap" aria-hidden="true" />
+            <span>Free shipping above ₹999</span>
+            <span className="announce-dot">•</span>
+            <span>Use code MUFFIGOUT20 for 20% off Men's Collection</span>
+            <span className="announce-dot">•</span>
+            <span>Crafted with Trust, Worn with Pride</span>
           </div>
         </div>
 

@@ -16,6 +16,12 @@ type BIPEvent = Event & {
 const SESSION_DISMISS_KEY = "muffigout_install_dismissed_session";
 const INSTALLED_KEY = "muffigout_app_installed";
 
+const isStandaloneDisplay = () =>
+  window.matchMedia("(display-mode: standalone)").matches ||
+  window.matchMedia("(display-mode: fullscreen)").matches ||
+  window.matchMedia("(display-mode: minimal-ui)").matches ||
+  (window.navigator as any).standalone === true;
+
 type Ctx = {
   canInstall: boolean;
   showIOSHint: boolean;
@@ -33,9 +39,7 @@ export const InstallPromptProvider = ({ children }: { children: ReactNode }) => 
   const [hasPrompt, setHasPrompt] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
-  const [wasInstalled, setWasInstalled] = useState(
-    () => localStorage.getItem(INSTALLED_KEY) === "1"
-  );
+  const [wasInstalled, setWasInstalled] = useState(false);
   const [isDismissedThisSession, setIsDismissed] = useState(
     () => sessionStorage.getItem(SESSION_DISMISS_KEY) === "1"
   );
@@ -44,9 +48,7 @@ export const InstallPromptProvider = ({ children }: { children: ReactNode }) => 
     const ua = window.navigator.userAgent;
     setIsIOS(/iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream);
 
-    const standalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (window.navigator as any).standalone === true;
+    const standalone = isStandaloneDisplay();
     setIsStandalone(standalone);
 
     const markInstalled = () => {
@@ -76,6 +78,7 @@ export const InstallPromptProvider = ({ children }: { children: ReactNode }) => 
     window.addEventListener("appinstalled", installedHandler);
 
     if (standalone) markInstalled();
+    else markNotInstalled();
 
     // Authoritative check via related apps API (Chrome/Android)
     const nav = navigator as any;
@@ -109,6 +112,11 @@ export const InstallPromptProvider = ({ children }: { children: ReactNode }) => 
       deferredRef.current = null;
       setHasPrompt(false);
       if (outcome === "dismissed") dismissForSession();
+      if (outcome === "accepted") {
+        localStorage.setItem(INSTALLED_KEY, "1");
+        setWasInstalled(true);
+        sessionStorage.removeItem(SESSION_DISMISS_KEY);
+      }
       return outcome;
     } catch {
       return "unavailable" as const;

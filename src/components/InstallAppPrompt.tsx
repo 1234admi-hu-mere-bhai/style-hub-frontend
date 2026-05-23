@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useInstallPrompt } from "@/contexts/InstallPromptContext";
 import { Download, Share, Plus, Zap, Bell, Sparkles } from "lucide-react";
 import logo from "@/assets/logo-new.png";
+import { toast } from "sonner";
 
 const APPEAR_DELAY_MS = 2000;
 
@@ -33,8 +34,22 @@ const InstallAppPrompt = () => {
   }, []);
 
   const handleInstall = async () => {
-    await promptInstall();
-    setOpen(false);
+    if (!canInstall) return;
+    const loadingId = toast.loading("Installing MUFFIGOUT App…", {
+      description: "Please confirm the install prompt on your device.",
+    });
+    const result = await promptInstall();
+    toast.dismiss(loadingId);
+    if (result === "accepted") {
+      toast.success("App installed successfully", {
+        description: "Open it from your home screen anytime.",
+      });
+      setOpen(false);
+    } else if (result === "dismissed") {
+      toast.info("Install cancelled", {
+        description: "You can install manually from your browser menu anytime.",
+      });
+    }
   };
 
   const handleClose = () => {
