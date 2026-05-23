@@ -47,6 +47,7 @@ interface PaymentDetails {
     total: number;
     address: Record<string, any>;
     isBuyNow?: boolean;
+    coupon_code?: string | null;
   };
 }
 
@@ -154,10 +155,14 @@ export const usePayU = ({ onSuccess, onError, onDismiss }: UsePayUProps) => {
         description: productinfo,
       }));
 
+      // Use the SERVER-COMPUTED amount returned by payu-hash. The client-supplied
+      // `amount` is ignored by the edge function (defense against price tampering).
+      const serverAmount = (hashData.amount && String(hashData.amount)) || amount;
+
       const params: Record<string, string> = {
         key: hashData.key,
         txnid,
-        amount,
+        amount: serverAmount,
         productinfo,
         firstname,
         email,
