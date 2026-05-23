@@ -75,8 +75,9 @@ const SplashScreen = () => {
         leaving ? 'opacity-0' : 'opacity-100'
       }`}
       style={{
-        background:
-          'radial-gradient(circle at 50% 45%, hsl(174 72% 35% / 0.35) 0%, hsl(262 60% 18%) 45%, hsl(262 65% 10%) 100%)',
+        backgroundColor: 'hsl(262 65% 10%)',
+        backgroundImage:
+          'radial-gradient(circle at 50% 45%, hsl(174 72% 35% / 0.55) 0%, hsl(262 60% 18%) 45%, hsl(262 65% 10%) 100%)',
       }}
       aria-hidden="true"
     >
