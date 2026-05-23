@@ -42,6 +42,7 @@ import LiveSupportChat from "./components/LiveSupportChat";
 import PushNotificationPrompt from "./components/PushNotificationPrompt";
 import InAppNotificationListener from "./components/InAppNotificationListener";
 import EmailVerificationSuccess from "./components/EmailVerificationSuccess";
+import InstallAppPrompt from "./components/InstallAppPrompt";
 
 const queryClient = new QueryClient();
 
@@ -96,6 +97,7 @@ const AppContent = () => {
       {!isAdmin && <PushNotificationPrompt />}
       {!isAdmin && <InAppNotificationListener />}
       {!isAdmin && <EmailVerificationSuccess />}
+      {!isAdmin && <InstallAppPrompt />}
     </div>
   );
 };
