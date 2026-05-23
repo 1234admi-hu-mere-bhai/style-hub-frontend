@@ -11,33 +11,50 @@ const SplashScreen = () => {
   });
   const [leaving, setLeaving] = useState(false);
   const [offer, setOffer] = useState<string | null>(null);
+  const [latestProduct, setLatestProduct] = useState<{ name: string; image: string } | null>(null);
 
-  // Fetch active flash sale / coupon to display dynamically
+  // Fetch active flash sale + latest product dynamically
   useEffect(() => {
     if (!show) return;
     (async () => {
       try {
         const nowIso = new Date().toISOString();
-        const { data } = await supabase
-          .from('flash_sales' as any)
-          .select('title, discount_percentage')
-          .eq('is_active', true)
-          .gt('end_time', nowIso)
-          .lte('start_time', nowIso)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (data) {
-          const d: any = data;
+        const [saleRes, prodRes] = await Promise.all([
+          supabase
+            .from('flash_sales' as any)
+            .select('title, discount_percentage')
+            .eq('is_active', true)
+            .gt('end_time', nowIso)
+            .lte('start_time', nowIso)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase
+            .from('products')
+            .select('name, image, in_stock')
+            .eq('in_stock', true)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+        ]);
+
+        if (saleRes.data) {
+          const d: any = saleRes.data;
           setOffer(`${d.discount_percentage}% OFF • ${d.title}`);
         } else {
           setOffer('MUFFIGOUT20 • 20% OFF on Men\'s Collection');
+        }
+
+        if (prodRes.data) {
+          const p: any = prodRes.data;
+          setLatestProduct({ name: p.name, image: p.image });
         }
       } catch {
         setOffer('MUFFIGOUT20 • 20% OFF on Men\'s Collection');
       }
     })();
   }, [show]);
+
 
   useEffect(() => {
     if (!show) return;
