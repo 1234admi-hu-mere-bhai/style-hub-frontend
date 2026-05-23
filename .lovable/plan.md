@@ -1,35 +1,23 @@
+## App-Open Splash Animations — Video Previews
 
-The user wants to add return status tracking to the customer-facing order tracking page (`src/pages/TrackOrder.tsx`).
+I'll generate one short MP4 (~2 seconds, 1080×1920 portrait, no sound) for each of the 6 splash directions, using your gold MUFFIGOUT logo on a dark brand background. All saved to `/mnt/documents/` so you can preview and pick.
 
-Looking at the current `TrackOrder.tsx`, the `InternalTracking` component handles two flows:
-1. Standard delivery (placed → confirmed → shipped → out_for_delivery → delivered)
-2. Replacement flow (delivered → replacement_requested → replacement_shipped → replacement_delivered)
+### Videos to render
 
-I need to add a third flow for returns. The admin-update-order function already supports these statuses: `return_requested → return_approved → return_picked_up → refund_processed`.
+1. **splash-1-logo-forge.mp4** — Logo draws stroke-by-stroke, then a gold shimmer sweeps across it. Tagline fades in below.
+2. **splash-2-fabric-unfold.mp4** — Purple→gold fabric strip unfolds diagonally, revealing the logo behind it.
+3. **splash-3-mirror-polish.mp4** — Logo enters blurred + dim, snaps into focus while a vertical light ray sweeps across (polishing effect).
+4. **splash-4-stitched-in.mp4** — Animated gold stitch line traces the MG monogram outline like a sewing seam, then fills.
+5. **splash-5-pulse-bloom.mp4** — Single gold dot pulses, expands into a ring, logo blooms outward. Quick and punchy.
+6. **splash-6-catwalk-reveal.mp4** — Spotlight drops from above, lights up the logo on a "stage" with subtle drifting dust particles.
 
-I should also display the return reason if present, and the `Order` interface needs to include `return_reason`. The mini progress on OrderHistory could optionally also reflect returns, but the user specifically asked about the tracking page.
+### How it'll be built
 
-## Plan
+- Frames generated with Python/PIL using your existing `public/icon-512.png` brand logo
+- Encoded to MP4 with ffmpeg (H.264, 30fps)
+- Each file ~300–700 KB, around 2 seconds long
+- No code in the project is touched — these are preview artifacts only
 
-**Goal:** Show a dedicated return tracking timeline on `/track-order` when an order's status indicates a return is in progress.
+### What you do next
 
-### Changes
-
-1. **`src/pages/TrackOrder.tsx`**
-   - Extend the `Order` interface with `return_reason: string | null` and include it in the fetch transformation.
-   - In `InternalTracking`, detect a third "return flow" when `order.status` is one of: `return_requested`, `return_approved`, `return_picked_up`, `refund_processed`.
-   - Add a `returnSteps` array with 4 steps using appropriate icons (Undo2, CheckCircle2, Truck, IndianRupee/Wallet):
-     - Return Requested — "Your return request has been submitted"
-     - Return Approved — "Admin has approved your return"
-     - Return Picked Up — "Courier has collected the package"
-     - Refund Processed — "Refund issued to your original payment method"
-   - Update `getStepStatus` to use the matching status list for the return flow.
-   - When return flow is active, display the `return_reason` in a small info card above the timeline (if available).
-
-2. **Visual consistency** — use the same stepper styling (success / primary / secondary states) already used for standard and replacement flows. No new dependencies.
-
-### Out of scope
-- No DB changes (column already exists).
-- No changes to admin panel (already implemented).
-- OrderHistory mini-progress remains unchanged unless requested.
-
+Watch the 6 clips, tell me which number to implement (or mix two), and I'll wire it into the app as the splash/loading screen.
