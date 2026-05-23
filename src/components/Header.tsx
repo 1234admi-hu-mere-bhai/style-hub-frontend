@@ -59,19 +59,19 @@ const Header = () => {
     <>
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
         {/* Announcement bar */}
-        <div className="bg-primary text-primary-foreground py-2 text-sm font-semibold overflow-hidden shadow-sm">
+        <div className="announce-bar relative overflow-hidden">
           <div className="announce-marquee whitespace-nowrap" aria-label="Store offers">
-            <span>Free shipping above ₹999</span>
-            <span className="announce-dot">•</span>
-            <span>Use code MUFFIGOUT20 for 20% off Men's Collection</span>
-            <span className="announce-dot">•</span>
-            <span>Crafted with Trust, Worn with Pride</span>
+            <span className="announce-item"><span className="announce-icon">🚚</span>Free shipping above ₹999</span>
+            <span className="announce-sep" aria-hidden="true">✦</span>
+            <span className="announce-item"><span className="announce-icon">🎁</span>Use code <b className="announce-code">MUFFIGOUT20</b> for 20% off</span>
+            <span className="announce-sep" aria-hidden="true">✦</span>
+            <span className="announce-item"><span className="announce-icon">👑</span>Crafted with Trust, Worn with Pride</span>
             <span className="announce-gap" aria-hidden="true" />
-            <span>Free shipping above ₹999</span>
-            <span className="announce-dot">•</span>
-            <span>Use code MUFFIGOUT20 for 20% off Men's Collection</span>
-            <span className="announce-dot">•</span>
-            <span>Crafted with Trust, Worn with Pride</span>
+            <span className="announce-item"><span className="announce-icon">🚚</span>Free shipping above ₹999</span>
+            <span className="announce-sep" aria-hidden="true">✦</span>
+            <span className="announce-item"><span className="announce-icon">🎁</span>Use code <b className="announce-code">MUFFIGOUT20</b> for 20% off</span>
+            <span className="announce-sep" aria-hidden="true">✦</span>
+            <span className="announce-item"><span className="announce-icon">👑</span>Crafted with Trust, Worn with Pride</span>
           </div>
         </div>
 
