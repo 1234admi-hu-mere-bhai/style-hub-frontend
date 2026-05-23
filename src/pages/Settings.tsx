@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Moon, Sun, Globe, IndianRupee, Bell } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Globe, IndianRupee, Bell, Download, CheckCircle2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -15,11 +15,13 @@ import {
 } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useInstallPrompt } from '@/contexts/InstallPromptContext';
 import NotificationPreferences from '@/components/NotificationPreferences';
 
 const Settings = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
+  const { canInstall, showIOSHint, isStandalone, promptInstall } = useInstallPrompt();
   
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme');
