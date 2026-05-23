@@ -123,20 +123,38 @@ const SplashScreen = () => {
         Crafted with Trust <span className="text-[#f5d97e] mx-1">•</span> Worn with Pride
       </p>
 
-      {/* Dynamic offer chip */}
-      {offer && (
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-10 splash-fade-up-delay-2">
-          <div
-            className="px-5 py-2 rounded-full text-xs sm:text-sm font-semibold tracking-wide text-[#2a1a4a] shadow-lg"
-            style={{
-              background: 'linear-gradient(135deg, #f5d97e 0%, #d4a544 100%)',
-              boxShadow: '0 6px 20px rgba(212,165,68,0.4)',
-            }}
-          >
-            {offer}
+      {/* Latest drop + offer chip stack */}
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2.5">
+        {latestProduct && (
+          <div className="splash-fade-up-delay-2 flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/15 shadow-lg max-w-[85vw]">
+            <img
+              src={latestProduct.image}
+              alt={latestProduct.name}
+              className="w-7 h-7 rounded-full object-cover ring-1 ring-[#f5d97e]/60"
+            />
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-[0.15em] text-[#f5d97e] shrink-0">
+              Just Dropped
+            </span>
+            <span className="text-xs sm:text-sm text-white/90 truncate max-w-[55vw] sm:max-w-[280px]">
+              {latestProduct.name}
+            </span>
           </div>
-        </div>
-      )}
+        )}
+        {offer && (
+          <div className="splash-fade-up-delay-2">
+            <div
+              className="px-5 py-2 rounded-full text-xs sm:text-sm font-semibold tracking-wide text-[#2a1a4a] shadow-lg"
+              style={{
+                background: 'linear-gradient(135deg, #f5d97e 0%, #d4a544 100%)',
+                boxShadow: '0 6px 20px rgba(212,165,68,0.4)',
+              }}
+            >
+              {offer}
+            </div>
+          </div>
+        )}
+      </div>
+
 
       <style>{`
         @keyframes splashPulse {
