@@ -118,8 +118,53 @@ const Settings = () => {
             </div>
           </div>
 
+          {/* Install App */}
+          <div className="bg-card p-6 rounded-lg border border-border">
+            <h2 className="font-semibold text-xl mb-6 flex items-center gap-2">
+              <Download size={20} />
+              Mobile App
+            </h2>
+            {isStandalone ? (
+              <div className="flex items-center gap-3 text-sm">
+                <CheckCircle2 className="w-5 h-5 text-primary" />
+                <span className="text-muted-foreground">
+                  You're using the installed app. Enjoy the full experience!
+                </span>
+              </div>
+            ) : canInstall ? (
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <Label className="text-base">Install MUFFIGOUT App</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Faster shopping, order alerts, and app-only drops.
+                  </p>
+                </div>
+                <Button
+                  onClick={() => promptInstall()}
+                  className="rounded-full shrink-0"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Install
+                </Button>
+              </div>
+            ) : showIOSHint ? (
+              <div>
+                <Label className="text-base">Add to Home Screen (iOS)</Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  In Safari, tap the <span className="font-semibold text-foreground">Share</span> icon,
+                  then choose <span className="font-semibold text-foreground">Add to Home Screen</span>.
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Install isn't available right now. Try again from your mobile browser after browsing the site for a bit.
+              </p>
+            )}
+          </div>
+
           {/* Push Notifications */}
           <NotificationPreferences />
+
 
           {/* Language */}
           <div className="bg-card p-6 rounded-lg border border-border">
