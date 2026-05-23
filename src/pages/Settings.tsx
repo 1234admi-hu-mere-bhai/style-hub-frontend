@@ -21,7 +21,7 @@ import NotificationPreferences from '@/components/NotificationPreferences';
 const Settings = () => {
   const navigate = useNavigate();
   const { user, isLoading: authLoading } = useAuth();
-  const { canInstall, showIOSHint, isStandalone, promptInstall } = useInstallPrompt();
+  const { canInstall, showIOSHint, isStandalone, wasInstalled, promptInstall } = useInstallPrompt();
   
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('theme');
