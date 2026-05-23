@@ -14,11 +14,13 @@ type BIPEvent = Event & {
 };
 
 const SESSION_DISMISS_KEY = "muffigout_install_dismissed_session";
+const INSTALLED_KEY = "muffigout_app_installed";
 
 type Ctx = {
   canInstall: boolean;
   showIOSHint: boolean;
   isStandalone: boolean;
+  wasInstalled: boolean;
   isDismissedThisSession: boolean;
   promptInstall: () => Promise<"accepted" | "dismissed" | "unavailable">;
   dismissForSession: () => void;
@@ -31,6 +33,9 @@ export const InstallPromptProvider = ({ children }: { children: ReactNode }) => 
   const [hasPrompt, setHasPrompt] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [wasInstalled, setWasInstalled] = useState(
+    () => localStorage.getItem(INSTALLED_KEY) === "1"
+  );
   const [isDismissedThisSession, setIsDismissed] = useState(
     () => sessionStorage.getItem(SESSION_DISMISS_KEY) === "1"
   );
@@ -54,9 +59,20 @@ export const InstallPromptProvider = ({ children }: { children: ReactNode }) => 
     const installedHandler = () => {
       deferredRef.current = null;
       setHasPrompt(false);
+      localStorage.setItem(INSTALLED_KEY, "1");
+      setWasInstalled(true);
       sessionStorage.removeItem(SESSION_DISMISS_KEY);
     };
     window.addEventListener("appinstalled", installedHandler);
+
+    // If launched in standalone, mark as installed permanently
+    if (
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true
+    ) {
+      localStorage.setItem(INSTALLED_KEY, "1");
+      setWasInstalled(true);
+    }
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handler);
@@ -93,6 +109,7 @@ export const InstallPromptProvider = ({ children }: { children: ReactNode }) => 
         canInstall,
         showIOSHint,
         isStandalone,
+        wasInstalled,
         isDismissedThisSession,
         promptInstall,
         dismissForSession,
