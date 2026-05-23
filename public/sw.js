@@ -1,3 +1,15 @@
+self.addEventListener('install', (event) => {
+  event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    const names = await caches.keys();
+    await Promise.all(names.map((name) => caches.delete(name)));
+    await self.clients.claim();
+  })());
+});
+
 // MUFFIGOUT push notification service worker
 // Branded theme + delivery & click tracking
 const TRACK_URL = 'https://zybjzfffkylezzvotcnn.supabase.co/functions/v1/push-track';
