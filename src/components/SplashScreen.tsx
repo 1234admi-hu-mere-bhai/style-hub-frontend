@@ -4,9 +4,20 @@ import logoGold from '@/assets/logo-3d-gold.png';
 
 const SPLASH_KEY = 'muffigout_splash_shown';
 
+const isStandalonePWA = () => {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.matchMedia?.('(display-mode: standalone)').matches ||
+    window.matchMedia?.('(display-mode: fullscreen)').matches ||
+    window.matchMedia?.('(display-mode: minimal-ui)').matches ||
+    (window.navigator as any).standalone === true
+  );
+};
+
 const SplashScreen = () => {
   const [show, setShow] = useState(() => {
     if (typeof window === 'undefined') return false;
+    if (!isStandalonePWA()) return false;
     return !sessionStorage.getItem(SPLASH_KEY);
   });
   const [leaving, setLeaving] = useState(false);
