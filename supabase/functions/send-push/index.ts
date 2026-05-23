@@ -35,6 +35,7 @@ Deno.serve(async (req) => {
     const apikey = req.headers.get("apikey")?.trim() ?? "";
     const isServiceRole = token === serviceRoleKey || apikey === serviceRoleKey;
 
+    let callerUserId: string | null = null;
     if (!isServiceRole) {
       if (!authHeader?.startsWith("Bearer ")) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -52,6 +53,7 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      callerUserId = user.id;
     }
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
@@ -59,6 +61,16 @@ Deno.serve(async (req) => {
     // category: orders | offers | wishlist | cart_reminders | flash_sales | new_arrivals | announcements
     // dedupeKey: optional — prevents same notification firing twice for same user
     const { title, message, url, tag, userId, category, dedupeKey } = await req.json();
+
+    // 🔒 Non-service-role callers can only push to themselves.
+    if (!isServiceRole) {
+      if (!userId || userId !== callerUserId) {
+        return new Response(JSON.stringify({ error: "Forbidden: can only send push to your own account" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     // Get VAPID keys
     const { data: config } = await adminClient
