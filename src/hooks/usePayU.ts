@@ -47,6 +47,7 @@ interface PaymentDetails {
     total: number;
     address: Record<string, any>;
     isBuyNow?: boolean;
+    coupon_code?: string | null;
   };
 }
 
