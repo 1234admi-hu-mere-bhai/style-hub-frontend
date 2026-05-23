@@ -60,6 +60,7 @@ const InstallAppPrompt = () => {
     setOpen(false);
   };
 
+  if (isStandalone || wasInstalled) return null;
   if (!canInstall && !showIOSHint) return null;
 
   return (
