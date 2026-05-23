@@ -44,10 +44,15 @@ export const InstallPromptProvider = ({ children }: { children: ReactNode }) => 
     const ua = window.navigator.userAgent;
     setIsIOS(/iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream);
 
-    setIsStandalone(
+    const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
-        (window.navigator as any).standalone === true
-    );
+      (window.navigator as any).standalone === true;
+    setIsStandalone(standalone);
+
+    const markInstalled = () => {
+      localStorage.setItem(INSTALLED_KEY, "1");
+      setWasInstalled(true);
+    };
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -59,24 +64,39 @@ export const InstallPromptProvider = ({ children }: { children: ReactNode }) => 
     const installedHandler = () => {
       deferredRef.current = null;
       setHasPrompt(false);
-      localStorage.setItem(INSTALLED_KEY, "1");
-      setWasInstalled(true);
+      markInstalled();
       sessionStorage.removeItem(SESSION_DISMISS_KEY);
     };
     window.addEventListener("appinstalled", installedHandler);
 
-    // If launched in standalone, mark as installed permanently
-    if (
-      window.matchMedia("(display-mode: standalone)").matches ||
-      (window.navigator as any).standalone === true
-    ) {
-      localStorage.setItem(INSTALLED_KEY, "1");
-      setWasInstalled(true);
+    if (standalone) markInstalled();
+
+    // Detect previously installed PWA via related apps API (Chrome/Android)
+    const nav = navigator as any;
+    if (typeof nav.getInstalledRelatedApps === "function") {
+      nav
+        .getInstalledRelatedApps()
+        .then((apps: any[]) => {
+          if (apps && apps.length > 0) markInstalled();
+        })
+        .catch(() => {});
     }
+
+    // Heuristic: on Chromium/Android, if no install prompt event arrives
+    // within 3.5s and we're not iOS, assume the app is already installed.
+    const heuristicTimer = window.setTimeout(() => {
+      if (deferredRef.current || standalone) return;
+      const isChromium =
+        /Chrome|CriOS|EdgA|SamsungBrowser/.test(ua) &&
+        !/iPad|iPhone|iPod/.test(ua);
+      const supportsBIP = "onbeforeinstallprompt" in window;
+      if (isChromium && supportsBIP) markInstalled();
+    }, 3500);
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handler);
       window.removeEventListener("appinstalled", installedHandler);
+      window.clearTimeout(heuristicTimer);
     };
   }, []);
 
