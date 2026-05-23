@@ -44,6 +44,7 @@ import InAppNotificationListener from "./components/InAppNotificationListener";
 import EmailVerificationSuccess from "./components/EmailVerificationSuccess";
 import InstallAppPrompt from "./components/InstallAppPrompt";
 import InstallTopBanner from "./components/InstallTopBanner";
+import SplashScreen from "./components/SplashScreen";
 import { InstallPromptProvider } from "./contexts/InstallPromptContext";
 
 const queryClient = new QueryClient();
@@ -57,6 +58,7 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SplashScreen />
       <ScrollToTop />
       <VisitorTracker />
       {!isAdmin && <InstallTopBanner />}
