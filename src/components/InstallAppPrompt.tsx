@@ -1,48 +1,58 @@
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { useInstallPrompt } from "@/hooks/useInstallPrompt";
+import { useInstallPrompt } from "@/contexts/InstallPromptContext";
 import { Download, Share, Plus, Zap, Bell, Sparkles } from "lucide-react";
 import logo from "@/assets/logo-new.png";
 
 const APPEAR_DELAY_MS = 4000;
 
 const InstallAppPrompt = () => {
-  const { canInstall, showIOSHint, wasRecentlyDismissed, promptInstall, dismiss } =
-    useInstallPrompt();
+  const {
+    canInstall,
+    showIOSHint,
+    isDismissedThisSession,
+    promptInstall,
+    dismissForSession,
+  } = useInstallPrompt();
   const [open, setOpen] = useState(false);
 
+  // Auto-open once per session after a delay
   useEffect(() => {
-    if (wasRecentlyDismissed()) return;
+    if (isDismissedThisSession) return;
     if (!canInstall && !showIOSHint) return;
-
     const t = setTimeout(() => setOpen(true), APPEAR_DELAY_MS);
     return () => clearTimeout(t);
-  }, [canInstall, showIOSHint, wasRecentlyDismissed]);
+  }, [canInstall, showIOSHint, isDismissedThisSession]);
+
+  // Allow other components (top banner) to open this sheet on demand
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener("muffigout:open-install-sheet", handler);
+    return () => window.removeEventListener("muffigout:open-install-sheet", handler);
+  }, []);
 
   const handleInstall = async () => {
     await promptInstall();
     setOpen(false);
   };
 
-  const handleDismiss = () => {
-    dismiss();
+  const handleClose = () => {
+    dismissForSession();
     setOpen(false);
   };
 
   if (!canInstall && !showIOSHint) return null;
 
   return (
-    <Sheet open={open} onOpenChange={(v) => (v ? setOpen(true) : handleDismiss())}>
+    <Sheet open={open} onOpenChange={(v) => (v ? setOpen(true) : handleClose())}>
       <SheetContent
         side="bottom"
         className="rounded-t-[2.5rem] border-t-0 p-0 max-h-[90vh] overflow-y-auto"
       >
         <div className="px-6 pt-4 pb-8">
-          {/* grab handle */}
           <div className="w-12 h-1.5 bg-muted rounded-full mx-auto mb-6" />
 
-          {/* App icon presentation */}
           <div className="flex flex-col items-center text-center">
             <div className="relative mb-5">
               <div className="absolute inset-0 bg-primary/30 rounded-[28px] blur-2xl scale-110" />
@@ -66,14 +76,12 @@ const InstallAppPrompt = () => {
             </p>
           </div>
 
-          {/* Feature highlights */}
           <div className="grid grid-cols-3 gap-3 mt-6">
             <Feature icon={<Zap className="w-4 h-4" />} label="Faster" />
             <Feature icon={<Bell className="w-4 h-4" />} label="Order alerts" />
             <Feature icon={<Sparkles className="w-4 h-4" />} label="App-only drops" />
           </div>
 
-          {/* CTA */}
           {canInstall ? (
             <div className="mt-7 space-y-2">
               <Button
@@ -85,7 +93,7 @@ const InstallAppPrompt = () => {
                 Install App
               </Button>
               <Button
-                onClick={handleDismiss}
+                onClick={handleClose}
                 variant="ghost"
                 className="w-full h-11 rounded-full text-muted-foreground"
               >
@@ -116,7 +124,7 @@ const InstallAppPrompt = () => {
                 </div>
               </div>
               <Button
-                onClick={handleDismiss}
+                onClick={handleClose}
                 variant="ghost"
                 className="w-full h-11 rounded-full text-muted-foreground mt-3"
               >
