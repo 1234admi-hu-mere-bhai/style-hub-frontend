@@ -153,27 +153,47 @@ const Settings = () => {
                 </div>
                 <Button
                   onClick={async () => {
-                    const loadingId = toast.loading("Installing MUFFIGOUT App…", {
-                      description: "Please confirm the install prompt on your device.",
-                    });
-                    const r = await promptInstall();
-                    toast.dismiss(loadingId);
-                    if (r === "accepted") {
-                      toast.success("App installed successfully", {
-                        description: "Open it from your home screen anytime.",
+                    const ua = navigator.userAgent;
+                    const isIOS = /iPad|iPhone|iPod/.test(ua);
+                    const isAndroid = /Android/.test(ua);
+
+                    if (canInstall) {
+                      const loadingId = toast.loading("Installing MUFFIGOUT App…", {
+                        description: "Please confirm the install prompt on your device.",
                       });
-                    } else if (r === "dismissed") {
-                      toast.info("Install cancelled");
+                      const r = await promptInstall();
+                      toast.dismiss(loadingId);
+                      if (r === "accepted") {
+                        toast.success("App installed successfully", {
+                          description: "Open it from your home screen anytime.",
+                        });
+                      } else if (r === "dismissed") {
+                        toast.info("Install cancelled", {
+                          description: "You can install it later from this screen.",
+                        });
+                      }
+                      return;
+                    }
+
+                    // No native prompt available — show manual instructions
+                    if (isIOS) {
+                      toast.info("Install on iPhone / iPad", {
+                        description: "Tap the Share icon in Safari, then choose 'Add to Home Screen'.",
+                        duration: 8000,
+                      });
+                    } else if (isAndroid) {
+                      toast.info("Install on Android", {
+                        description: "Open your browser menu (⋮) and tap 'Install app' or 'Add to Home screen'.",
+                        duration: 8000,
+                      });
                     } else {
-                      toast.info(
-                        showIOSHint
-                          ? "On iOS: tap Share, then Add to Home Screen."
-                          : "Install isn't ready yet. Browse a bit more and try again."
-                      );
+                      toast.info("Install on Desktop", {
+                        description: "Click the install icon (⊕) in your browser's address bar, or use the browser menu → 'Install MUFFIGOUT'.",
+                        duration: 8000,
+                      });
                     }
                   }}
                   className="rounded-full shrink-0"
-                  disabled={!canInstall && !showIOSHint}
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Install
