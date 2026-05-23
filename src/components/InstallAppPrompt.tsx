@@ -5,7 +5,7 @@ import { useInstallPrompt } from "@/contexts/InstallPromptContext";
 import { Download, Share, Plus, Zap, Bell, Sparkles } from "lucide-react";
 import logo from "@/assets/logo-new.png";
 
-const APPEAR_DELAY_MS = 4000;
+const APPEAR_DELAY_MS = 2000;
 
 const InstallAppPrompt = () => {
   const {
