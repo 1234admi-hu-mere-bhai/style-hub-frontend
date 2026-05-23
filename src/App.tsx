@@ -43,6 +43,8 @@ import PushNotificationPrompt from "./components/PushNotificationPrompt";
 import InAppNotificationListener from "./components/InAppNotificationListener";
 import EmailVerificationSuccess from "./components/EmailVerificationSuccess";
 import InstallAppPrompt from "./components/InstallAppPrompt";
+import InstallTopBanner from "./components/InstallTopBanner";
+import { InstallPromptProvider } from "./contexts/InstallPromptContext";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +59,7 @@ const AppContent = () => {
     <div className="min-h-screen bg-background">
       <ScrollToTop />
       <VisitorTracker />
+      {!isAdmin && <InstallTopBanner />}
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/products" element={<Products />} />
@@ -108,11 +111,13 @@ const App = () => (
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
+            <InstallPromptProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <AppContent />
+              </BrowserRouter>
+            </InstallPromptProvider>
           </WishlistProvider>
         </CartProvider>
       </AuthProvider>
