@@ -22,7 +22,7 @@ project_id = "zybjzfffkylezzvotcnn"
   [functions.send-transactional-email]
     verify_jwt = true
   [functions.support-chat]
-    verify_jwt = false
+    verify_jwt = true
   [functions.sync-delhivery-status]
     verify_jwt = false
   [functions.push-track]
