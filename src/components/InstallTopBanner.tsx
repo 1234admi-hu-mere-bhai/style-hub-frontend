@@ -8,12 +8,13 @@ const InstallTopBanner = () => {
     canInstall,
     showIOSHint,
     isStandalone,
+    wasInstalled,
     isDismissedThisSession,
     promptInstall,
     dismissForSession,
   } = useInstallPrompt();
 
-  if (isStandalone || isDismissedThisSession) return null;
+  if (isStandalone || wasInstalled || isDismissedThisSession) return null;
   if (!canInstall && !showIOSHint) return null;
 
   const handleInstall = async () => {

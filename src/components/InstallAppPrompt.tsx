@@ -12,6 +12,8 @@ const InstallAppPrompt = () => {
   const {
     canInstall,
     showIOSHint,
+    isStandalone,
+    wasInstalled,
     isDismissedThisSession,
     promptInstall,
     dismissForSession,
@@ -20,11 +22,12 @@ const InstallAppPrompt = () => {
 
   // Auto-open once per session after a delay
   useEffect(() => {
+    if (isStandalone || wasInstalled) return;
     if (isDismissedThisSession) return;
     if (!canInstall && !showIOSHint) return;
     const t = setTimeout(() => setOpen(true), APPEAR_DELAY_MS);
     return () => clearTimeout(t);
-  }, [canInstall, showIOSHint, isDismissedThisSession]);
+  }, [canInstall, showIOSHint, isDismissedThisSession, isStandalone, wasInstalled]);
 
   // Allow other components (top banner) to open this sheet on demand
   useEffect(() => {
@@ -57,6 +60,7 @@ const InstallAppPrompt = () => {
     setOpen(false);
   };
 
+  if (isStandalone || wasInstalled) return null;
   if (!canInstall && !showIOSHint) return null;
 
   return (
