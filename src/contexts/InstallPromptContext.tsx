@@ -14,11 +14,13 @@ type BIPEvent = Event & {
 };
 
 const SESSION_DISMISS_KEY = "muffigout_install_dismissed_session";
+const INSTALLED_KEY = "muffigout_app_installed";
 
 type Ctx = {
   canInstall: boolean;
   showIOSHint: boolean;
   isStandalone: boolean;
+  wasInstalled: boolean;
   isDismissedThisSession: boolean;
   promptInstall: () => Promise<"accepted" | "dismissed" | "unavailable">;
   dismissForSession: () => void;
