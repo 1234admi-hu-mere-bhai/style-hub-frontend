@@ -113,7 +113,6 @@ export const InstallPromptProvider = ({ children }: { children: ReactNode }) => 
         isDismissedThisSession,
         promptInstall,
         dismissForSession,
-        dismissForSession,
       }}
     >
       {children}
