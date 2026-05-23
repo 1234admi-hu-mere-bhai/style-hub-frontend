@@ -60,8 +60,18 @@ Deno.serve(async (req) => {
       })
     }
 
+    const VALID_STATUSES = new Set([
+      'placed','confirmed','shipped','out_for_delivery','delivered',
+      'cancelled','return_requested','return_approved','picked_up',
+      'refund_processed','return_rejected','replacement_requested'
+    ])
     const updateData: any = { updated_at: new Date().toISOString() }
     if (status) {
+      if (!VALID_STATUSES.has(status)) {
+        return new Response(JSON.stringify({ error: 'Invalid status value' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
       updateData.status = status
       if (status === 'delivered') updateData.delivered_at = new Date().toISOString()
     }
