@@ -30,6 +30,18 @@ Deno.serve(async (req) => {
   const PAYU_KEY = Deno.env.get('PAYU_MERCHANT_KEY');
   const PAYU_SALT = Deno.env.get('PAYU_MERCHANT_SALT');
 
+  // 🔒 Auth: only allow service-role callers (internal invocations from other edge functions).
+  // This function issues real-money refunds and must never be exposed to end-users.
+  const authHeader = req.headers.get('Authorization') || '';
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+  const apikey = req.headers.get('apikey')?.trim() ?? '';
+  if (token !== SUPABASE_SERVICE_ROLE_KEY && apikey !== SUPABASE_SERVICE_ROLE_KEY) {
+    return new Response(JSON.stringify({ error: 'Forbidden' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   if (!PAYU_KEY || !PAYU_SALT) {
     return new Response(
       JSON.stringify({ error: 'PayU credentials not configured' }),

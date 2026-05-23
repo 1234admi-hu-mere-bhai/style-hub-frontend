@@ -60,15 +60,17 @@ Deno.serve(async (req) => {
     const merchantKey = (Deno.env.get('PAYU_MERCHANT_KEY') || '').trim();
     const merchantSalt = (Deno.env.get('PAYU_MERCHANT_SALT') || '').trim();
 
-    // Validate response hash from PayU
+    // Validate response hash from PayU — REQUIRED (never skip).
     // Reverse hash formula: sha512(salt|status|||||||||||email|firstname|productinfo|amount|txnid|key)
-    if (receivedHash && payuStatus) {
-      const reverseHash = `${merchantSalt}|${payuStatus}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${merchantKey}`;
-      const computed = await sha512Hex(reverseHash);
-      if (computed.toLowerCase() !== receivedHash.toLowerCase()) {
-        console.error('Hash mismatch for txnid', txnid);
-        return Response.redirect(`${baseRedirect}?status=failure`, 303);
-      }
+    if (!receivedHash || !payuStatus) {
+      console.error('Missing hash or status on payu-webhook call for txnid', txnid);
+      return Response.redirect(`${baseRedirect}?status=failure`, 303);
+    }
+    const reverseHash = `${merchantSalt}|${payuStatus}|||||||||||${email}|${firstname}|${productinfo}|${amount}|${txnid}|${merchantKey}`;
+    const computed = await sha512Hex(reverseHash);
+    if (computed.toLowerCase() !== receivedHash.toLowerCase()) {
+      console.error('Hash mismatch for txnid', txnid);
+      return Response.redirect(`${baseRedirect}?status=failure`, 303);
     }
 
     const adminClient = createClient(
