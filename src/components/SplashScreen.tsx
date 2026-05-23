@@ -82,7 +82,7 @@ const SplashScreen = () => {
       }`}
       style={{
         background:
-          'radial-gradient(circle at 50% 45%, #1f4d52 0%, #2a1357 38%, #150826 100%)',
+          'radial-gradient(circle at 50% 45%, #1a1a1a 0%, #0a0a0a 60%, #000000 100%)',
       }}
       aria-hidden="true"
     >
