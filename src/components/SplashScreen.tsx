@@ -53,16 +53,16 @@ const SplashScreen = () => {
       try {
         const { data: prod } = await supabase
           .from('products')
-          .select('name, images, stock_quantity')
+          .select('name, image, stock_quantity')
           .gt('stock_quantity', 0)
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
         if (prod) {
-          const img = Array.isArray(prod.images) && prod.images.length > 0 ? String(prod.images[0]) : null;
-          setLatest({ name: prod.name as string, image: img });
+          setLatest({ name: prod.name as string, image: (prod.image as string) || null });
         }
       } catch {}
+
     })();
 
     const fadeT = setTimeout(() => setLeaving(true), 2600);
