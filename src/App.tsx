@@ -58,6 +58,7 @@ const AppContent = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SplashScreen />
       <ScrollToTop />
       <VisitorTracker />
       {!isAdmin && <InstallTopBanner />}
