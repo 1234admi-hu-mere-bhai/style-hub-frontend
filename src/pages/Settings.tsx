@@ -153,8 +153,18 @@ const Settings = () => {
                 </div>
                 <Button
                   onClick={async () => {
+                    const loadingId = toast.loading("Installing MUFFIGOUT App…", {
+                      description: "Please confirm the install prompt on your device.",
+                    });
                     const r = await promptInstall();
-                    if (r === "unavailable") {
+                    toast.dismiss(loadingId);
+                    if (r === "accepted") {
+                      toast.success("App installed successfully", {
+                        description: "Open it from your home screen anytime.",
+                      });
+                    } else if (r === "dismissed") {
+                      toast.info("Install cancelled");
+                    } else {
                       toast.info(
                         showIOSHint
                           ? "On iOS: tap Share, then Add to Home Screen."
