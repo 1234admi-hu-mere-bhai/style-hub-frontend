@@ -321,37 +321,13 @@ const Checkout = () => {
   // PayU integration
   const { initiatePayment, isLoading: isPaymentLoading, isRateLimited, retryCountdown, retryAttempt, retryNow, cancelRetry } = usePayU({
     onSuccess: async (response: PayUResponse) => {
+      // Order creation is handled server-side by the payu-webhook edge function
+      // (which validates prices from the products table using the service role).
+      // This client callback is only reached in fallback iframe flows — never
+      // create an order here.
       toast.success('Payment successful', {
         description: `Transaction ID: ${response.txnid}`,
       });
-      
-      try {
-        setIsPlacingOrder(true);
-        const order = await createOrder({
-          userId: user!.id,
-          items: items.map(item => ({
-            product_id: item.id,
-            product_name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            size: item.size,
-            color: item.color,
-            image: item.image,
-          })),
-          subtotal: totalPrice,
-          shippingCost,
-          total: finalTotal,
-          shippingAddress: addressForm,
-          paymentMethod: 'Online Payment (PayU)',
-          paymentId: response.txnid,
-        });
-        navigateToConfirmation(order.order_number, response.txnid);
-      } catch (error) {
-        console.error('Failed to create order:', error);
-        toast.error('We could not create your order. Please contact support.');
-      } finally {
-        setIsPlacingOrder(false);
-      }
     },
     onError: async (error) => {
       toast.error('Payment unsuccessful', { description: error.message });
