@@ -19,6 +19,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // If the app is launched as an installed PWA for the first time,
+    // force a fresh sign-out so the user must log in again inside the app.
+    const FIRST_LAUNCH_KEY = 'muffigout_installed_first_launch_done';
+    const isStandalone =
+      typeof window !== 'undefined' &&
+      (window.matchMedia?.('(display-mode: standalone)').matches ||
+        window.matchMedia?.('(display-mode: fullscreen)').matches ||
+        window.matchMedia?.('(display-mode: minimal-ui)').matches ||
+        (window.navigator as any).standalone === true);
+
+    const shouldForceSignOut =
+      isStandalone && !localStorage.getItem(FIRST_LAUNCH_KEY);
+
+    if (shouldForceSignOut) {
+      localStorage.setItem(FIRST_LAUNCH_KEY, '1');
+      supabase.auth.signOut().catch(() => {});
+    }
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
