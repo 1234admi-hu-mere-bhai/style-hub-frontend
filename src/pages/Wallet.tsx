@@ -235,6 +235,51 @@ const Wallet = () => {
           </CardContent>
         </Card>
 
+        {/* Zepto-style benefit cards */}
+        <div className="grid grid-cols-3 gap-2.5">
+          {[
+            {
+              icon: BadgePercent,
+              title: 'Instant bonus',
+              desc: 'Up to 2.5% extra',
+              from: 'from-emerald-500/15',
+              to: 'to-emerald-500/5',
+              ring: 'ring-emerald-500/20',
+              iconBg: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
+            },
+            {
+              icon: Wallet2,
+              title: 'Easy top-up',
+              desc: 'UPI • Card • Netbanking',
+              from: 'from-primary/15',
+              to: 'to-primary/5',
+              ring: 'ring-primary/20',
+              iconBg: 'bg-primary/15 text-primary',
+            },
+            {
+              icon: ShoppingBag,
+              title: 'Pay at checkout',
+              desc: 'Full or partial use',
+              from: 'from-accent/15',
+              to: 'to-accent/5',
+              ring: 'ring-accent/20',
+              iconBg: 'bg-accent/15 text-accent',
+            },
+          ].map(({ icon: Icon, title, desc, from, to, ring, iconBg }) => (
+            <div
+              key={title}
+              className={`rounded-2xl bg-gradient-to-br ${from} ${to} ring-1 ${ring} p-3 flex flex-col items-start gap-2`}
+            >
+              <div className={`h-9 w-9 rounded-full grid place-items-center ${iconBg}`}>
+                <Icon size={18} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[12px] font-bold leading-tight text-foreground">{title}</p>
+                <p className="text-[10px] text-muted-foreground leading-snug mt-0.5">{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/* Info accordions */}
         <Card className="rounded-2xl border shadow-sm overflow-hidden">
