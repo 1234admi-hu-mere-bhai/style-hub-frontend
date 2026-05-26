@@ -136,6 +136,14 @@ const Header = () => {
               >
                 <Search size={20} />
               </button>
+              <button
+                onClick={() => navigate(user ? '/wallet' : '/auth?redirect=/wallet')}
+                className="p-2 hover:bg-secondary rounded-full transition-colors"
+                aria-label="MG Wallet"
+                title="MG Wallet"
+              >
+                <WalletIcon size={20} className="text-primary" />
+              </button>
               <NotificationBell />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
