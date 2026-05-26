@@ -105,6 +105,62 @@ Deno.serve(async (req) => {
       return Response.redirect(`${baseRedirect}?status=success&txnid=${txnid}`, 303);
     }
 
+    // ===== WALLET TOP-UP BRANCH =====
+    if (pending.is_wallet_topup) {
+      const topupAmount = Number(pending.total);
+      const bonus = Number(pending.topup_bonus || 0);
+      try {
+        // Credit the principal
+        await adminClient.rpc('adjust_wallet_balance', {
+          _user_id: pending.user_id,
+          _amount: topupAmount,
+          _type: 'topup',
+          _reference_type: 'payu',
+          _reference_id: mihpayid || txnid,
+          _description: `Wallet top-up via PayU`,
+        });
+        // Credit the bonus (separate transaction for transparency)
+        if (bonus > 0) {
+          await adminClient.rpc('adjust_wallet_balance', {
+            _user_id: pending.user_id,
+            _amount: bonus,
+            _type: 'topup_bonus',
+            _reference_type: 'payu',
+            _reference_id: mihpayid || txnid,
+            _description: `Bonus on ₹${topupAmount} top-up`,
+          });
+        }
+        await adminClient.from('pending_payments').update({ status: 'completed' }).eq('txnid', txnid);
+
+        // Notify user
+        await adminClient.from('notifications').insert({
+          user_id: pending.user_id,
+          title: '💰 Wallet Top-up Successful',
+          message: `₹${topupAmount.toLocaleString('en-IN')}${bonus > 0 ? ` + ₹${bonus} bonus` : ''} added to your wallet.`,
+          type: 'success',
+        });
+        try {
+          await adminClient.functions.invoke('send-push', {
+            body: {
+              userId: pending.user_id,
+              title: '💰 Wallet Top-up Successful',
+              message: `₹${topupAmount + bonus} credited to your wallet.`,
+              url: '/wallet',
+              tag: `topup-${txnid}`,
+              category: 'announcements',
+              dedupeKey: `topup-${txnid}`,
+            },
+          });
+        } catch (e) { console.error('topup push failed', e); }
+      } catch (e) {
+        console.error('Wallet credit failed:', e);
+        return Response.redirect(`${baseRedirect}?status=failure&txnid=${txnid}&type=wallet`, 303);
+      }
+      return Response.redirect(`${baseRedirect}?status=success&txnid=${txnid}&type=wallet`, 303);
+    }
+    // ===== END WALLET TOP-UP BRANCH =====
+
+
     // Create the order
     // Format: OD + 13-digit timestamp + 5 random digits (e.g. OD337282733413795100)
     const orderNumber = `OD${Date.now().toString().padStart(13, '0')}${Math.floor(10000 + Math.random() * 90000)}`;

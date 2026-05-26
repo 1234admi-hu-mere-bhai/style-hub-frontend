@@ -82,6 +82,104 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Determine refund method from the linked return row.
+    // If user picked one within the 6h admin window → use that.
+    // If window expired with no selection → default to 'source'.
+    // If window still open and no selection → wait (don't refund yet).
+    const { data: ret } = await admin
+      .from('returns')
+      .select('id, allowed_refund_methods, selected_refund_method, admin_window_expires_at')
+      .eq('order_id', orderId)
+      .maybeSingle();
+
+    let chosenMethod: 'wallet' | 'source' = 'source';
+    if (ret) {
+      const allowed = (ret.allowed_refund_methods || ['source']) as string[];
+      if (ret.selected_refund_method) {
+        chosenMethod = ret.selected_refund_method as 'wallet' | 'source';
+      } else if (ret.admin_window_expires_at && new Date(ret.admin_window_expires_at) > new Date()) {
+        // Window still open and user hasn't picked → defer
+        return new Response(
+          JSON.stringify({ success: false, deferred: true, message: 'Awaiting user refund-method selection' }),
+          { status: 202, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        );
+      } else {
+        // Window closed or no window → default to whatever is allowed (prefer source if available)
+        chosenMethod = allowed.includes('source') ? 'source' : (allowed[0] as 'wallet' | 'source') || 'source';
+      }
+    }
+
+    const refundAmount = Number(order.refund_amount ?? order.total ?? 0);
+    if (!(refundAmount > 0)) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid refund amount' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+
+    // ===== WALLET REFUND BRANCH =====
+    if (chosenMethod === 'wallet' && order.user_id) {
+      try {
+        await admin.rpc('adjust_wallet_balance', {
+          _user_id: order.user_id,
+          _amount: refundAmount,
+          _type: 'refund',
+          _reference_type: 'order',
+          _reference_id: order.id,
+          _description: `Refund for order ${order.order_number}`,
+        });
+      } catch (e) {
+        console.error('wallet refund failed:', e);
+        return new Response(JSON.stringify({ error: 'Wallet credit failed' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+
+      await admin.from('orders').update({
+        status: 'refund_processed',
+        refund_amount: refundAmount,
+        refund_processed_at: new Date().toISOString(),
+        refund_method: 'wallet',
+        updated_at: new Date().toISOString(),
+      }).eq('id', orderId);
+
+      if (ret) {
+        await admin.from('returns').update({
+          status: 'refunded',
+          refunded_at: new Date().toISOString(),
+          refund_method: 'wallet',
+          updated_at: new Date().toISOString(),
+        }).eq('id', ret.id);
+      }
+
+      // Notify
+      try {
+        const maskedOrder = `••••${String(order.order_number).slice(-4)}`;
+        await admin.from('notifications').insert({
+          title: 'Refund Credited to Wallet 💰',
+          message: `₹${refundAmount.toLocaleString('en-IN')} for order ${maskedOrder} has been added to your wallet — ready to use instantly.`,
+          type: 'order',
+          user_id: order.user_id,
+        });
+        await admin.functions.invoke('send-push', {
+          body: {
+            userId: order.user_id,
+            title: 'Refund in Wallet 💰',
+            message: `₹${refundAmount.toLocaleString('en-IN')} credited to your wallet.`,
+            url: '/wallet',
+            tag: `refund-${order.id}`,
+          },
+        });
+      } catch (e) { console.error('wallet refund notify failed', e); }
+
+      await sendRefundEmail(admin, order, refundAmount, 'wallet');
+
+      return new Response(
+        JSON.stringify({ success: true, refundAmount, method: 'wallet' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      );
+    }
+    // ===== END WALLET REFUND BRANCH =====
+
     // Only refund prepaid PayU orders. COD orders are settled offline.
     const isPrepaid = (order.payment_method || '').toLowerCase().includes('online') ||
       (order.payment_method || '').toLowerCase().includes('payu') ||
@@ -110,6 +208,7 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
+
 
     const refundAmount = Number(order.refund_amount ?? order.total ?? 0);
     if (!(refundAmount > 0)) {

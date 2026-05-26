@@ -33,6 +33,7 @@ import Payments from "./pages/Payments";
 import Notifications from "./pages/Notifications";
 import PayUCallback from "./pages/PayUCallback";
 import Coupons from "./pages/Coupons";
+import Wallet from "./pages/Wallet";
 import Unsubscribe from "./pages/Unsubscribe";
 import NotFound from "./pages/NotFound";
 import StaffInvite from "./pages/StaffInvite";
@@ -91,6 +92,7 @@ const AppContent = () => {
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/payu-callback" element={<PayUCallback />} />
         <Route path="/coupons" element={<Coupons />} />
+        <Route path="/wallet" element={<Wallet />} />
         <Route path="/unsubscribe" element={<Unsubscribe />} />
         <Route path="/staff-invite/:token" element={<StaffInvite />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -452,6 +452,7 @@ export type Database = {
           payment_id: string | null
           payment_method: string
           payment_status: string
+          payu_amount: number
           refund_amount: number | null
           refund_eta: string | null
           refund_method: string | null
@@ -466,6 +467,7 @@ export type Database = {
           tracking_awb: string | null
           updated_at: string
           user_id: string
+          wallet_amount_used: number
         }
         Insert: {
           cancellation_reason?: string | null
@@ -479,6 +481,7 @@ export type Database = {
           payment_id?: string | null
           payment_method: string
           payment_status?: string
+          payu_amount?: number
           refund_amount?: number | null
           refund_eta?: string | null
           refund_method?: string | null
@@ -493,6 +496,7 @@ export type Database = {
           tracking_awb?: string | null
           updated_at?: string
           user_id: string
+          wallet_amount_used?: number
         }
         Update: {
           cancellation_reason?: string | null
@@ -506,6 +510,7 @@ export type Database = {
           payment_id?: string | null
           payment_method?: string
           payment_status?: string
+          payu_amount?: number
           refund_amount?: number | null
           refund_eta?: string | null
           refund_method?: string | null
@@ -520,6 +525,7 @@ export type Database = {
           tracking_awb?: string | null
           updated_at?: string
           user_id?: string
+          wallet_amount_used?: number
         }
         Relationships: []
       }
@@ -528,49 +534,58 @@ export type Database = {
           created_at: string
           id: string
           is_buy_now: boolean | null
+          is_wallet_topup: boolean
           items: Json
           order_id: string | null
           shipping_address: Json
           shipping_cost: number
           status: string
           subtotal: number
+          topup_bonus: number
           total: number
           txnid: string
           updated_at: string
           user_email: string | null
           user_id: string
+          wallet_amount_used: number
         }
         Insert: {
           created_at?: string
           id?: string
           is_buy_now?: boolean | null
+          is_wallet_topup?: boolean
           items: Json
           order_id?: string | null
           shipping_address: Json
           shipping_cost?: number
           status?: string
           subtotal: number
+          topup_bonus?: number
           total: number
           txnid: string
           updated_at?: string
           user_email?: string | null
           user_id: string
+          wallet_amount_used?: number
         }
         Update: {
           created_at?: string
           id?: string
           is_buy_now?: boolean | null
+          is_wallet_topup?: boolean
           items?: Json
           order_id?: string | null
           shipping_address?: Json
           shipping_cost?: number
           status?: string
           subtotal?: number
+          topup_bonus?: number
           total?: number
           txnid?: string
           updated_at?: string
           user_email?: string | null
           user_id?: string
+          wallet_amount_used?: number
         }
         Relationships: []
       }
@@ -878,6 +893,8 @@ export type Database = {
       }
       returns: {
         Row: {
+          admin_window_expires_at: string | null
+          allowed_refund_methods: string[]
           auto_approved: boolean
           created_at: string
           id: string
@@ -891,11 +908,14 @@ export type Database = {
           refund_amount: number
           refund_method: string
           refunded_at: string | null
+          selected_refund_method: string | null
           status: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          admin_window_expires_at?: string | null
+          allowed_refund_methods?: string[]
           auto_approved?: boolean
           created_at?: string
           id?: string
@@ -909,11 +929,14 @@ export type Database = {
           refund_amount?: number
           refund_method?: string
           refunded_at?: string | null
+          selected_refund_method?: string | null
           status?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          admin_window_expires_at?: string | null
+          allowed_refund_methods?: string[]
           auto_approved?: boolean
           created_at?: string
           id?: string
@@ -927,6 +950,7 @@ export type Database = {
           refund_amount?: number
           refund_method?: string
           refunded_at?: string | null
+          selected_refund_method?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -1211,6 +1235,63 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_transactions: {
+        Row: {
+          amount: number
+          balance_after: number
+          created_at: string
+          description: string
+          id: string
+          reference_id: string | null
+          reference_type: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          balance_after: number
+          created_at?: string
+          description?: string
+          id?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          created_at?: string
+          description?: string
+          id?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallets: {
+        Row: {
+          balance: number
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       wishlist_items: {
         Row: {
           created_at: string
@@ -1243,6 +1324,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      adjust_wallet_balance: {
+        Args: {
+          _amount: number
+          _description: string
+          _reference_id: string
+          _reference_type: string
+          _type: string
+          _user_id: string
+        }
+        Returns: number
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
