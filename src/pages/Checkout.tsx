@@ -225,6 +225,11 @@ const Checkout = () => {
 
   const codFee = paymentMethod === 'cod' && codEligibility.eligible ? COD_FEE : 0;
   const finalTotal = totalPrice - discountAmount + shippingCost + codFee;
+  // Wallet only available for online payments (not COD)
+  const walletEligible = paymentMethod === 'online' && walletBalance > 0 && useWalletBalance;
+  const walletApplied = walletEligible ? Math.min(walletBalance, finalTotal) : 0;
+  const payuRemaining = Math.max(0, finalTotal - walletApplied);
+  const isWalletOnly = walletEligible && walletApplied >= finalTotal;
 
   const handleApplyCoupon = useCallback(async (codeOverride?: string) => {
     if (allFlashSaleItems) { toast.error('Coupons cannot be combined with Flash Sale items.'); return; }
