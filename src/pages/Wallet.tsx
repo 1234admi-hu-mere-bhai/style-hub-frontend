@@ -18,6 +18,11 @@ import {
   HelpCircle,
   ChevronRight,
   ChevronDown,
+  Wallet2,
+  BadgePercent,
+  ShoppingBag,
+  RotateCcw,
+
 } from 'lucide-react';
 import Header from '@/components/Header';
 
