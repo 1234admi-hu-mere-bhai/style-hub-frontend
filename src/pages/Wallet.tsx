@@ -271,7 +271,7 @@ const Wallet = () => {
               </div>
               <div>
                 <p className="font-semibold text-foreground">Will I get bonus on custom amounts?</p>
-                <p>Bonus cash is available only on preset packs (₹500, ₹1000, ₹2000, ₹5000).</p>
+                <p>Bonus cash is available only on preset packs ₹1,000 (+₹25), ₹2,000 (+₹50), and ₹5,000 (+₹125).</p>
               </div>
             </div>
           )}
