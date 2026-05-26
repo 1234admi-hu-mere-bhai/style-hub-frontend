@@ -22,7 +22,7 @@ import {
 import Header from '@/components/Header';
 
 const PAYU_BASE_URL = 'https://secure.payu.in/_payment';
-const MIN = 100;
+const MIN = 500;
 const MAX = 50000;
 
 const Wallet = () => {
@@ -115,7 +115,7 @@ const Wallet = () => {
           >
             <ArrowLeft size={18} />
           </button>
-          <h1 className="font-serif text-lg font-bold">MUFFIGOUT Wallet</h1>
+          <h1 className="font-serif text-lg font-bold">MG Wallet</h1>
           <button
             onClick={refresh}
             className="ml-auto h-9 w-9 grid place-items-center rounded-full hover:bg-muted"
@@ -151,8 +151,8 @@ const Wallet = () => {
             <Sparkles size={18} />
           </div>
           <p className="text-sm font-medium">
-            <span className="text-primary font-bold">5% EXTRA CASH</span>{' '}
-            <span className="text-muted-foreground">on adding ₹2,000 or more</span>
+            <span className="text-primary font-bold">EXTRA CASH</span>{' '}
+            <span className="text-muted-foreground">on ₹1,000 (+₹25), ₹2,000 (+₹50), ₹5,000 (+₹125)</span>
           </p>
         </div>
 
@@ -221,7 +221,7 @@ const Wallet = () => {
               {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Add Balance'}
             </Button>
             <p className="text-[10px] text-center text-muted-foreground">
-              Min ₹{MIN} • Max ₹{MAX.toLocaleString('en-IN')} • Bonus on preset packs only
+              Min ₹{MIN} • Max ₹{MAX.toLocaleString('en-IN')} • Bonus on preset packs ₹1,000+ only
             </p>
           </CardContent>
         </Card>

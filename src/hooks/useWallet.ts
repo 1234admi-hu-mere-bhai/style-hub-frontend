@@ -14,10 +14,10 @@ export interface WalletTransaction {
 }
 
 export const TOPUP_PACKS = [
-  { amount: 500, bonus: 25 },
-  { amount: 1000, bonus: 50 },
-  { amount: 2000, bonus: 100 },
-  { amount: 5000, bonus: 250 },
+  { amount: 500, bonus: 0 },
+  { amount: 1000, bonus: 25 },
+  { amount: 2000, bonus: 50 },
+  { amount: 5000, bonus: 125 },
 ];
 
 export const useWallet = () => {
