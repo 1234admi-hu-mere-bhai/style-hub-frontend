@@ -52,13 +52,24 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json()
-    const { orderId, status, refund_amount, refund_eta, rejection_reason, tracking_awb } = body
+    const { orderId, status, refund_amount, refund_eta, rejection_reason, tracking_awb, allowed_refund_methods } = body
     if (!orderId) {
       return new Response(JSON.stringify({ error: 'orderId is required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
+
+    // Allow admin to update returns.allowed_refund_methods directly
+    if (Array.isArray(allowed_refund_methods)) {
+      const valid = allowed_refund_methods.filter((m: any) => ['wallet', 'source'].includes(m));
+      if (valid.length > 0) {
+        await adminClient.from('returns')
+          .update({ allowed_refund_methods: valid, updated_at: new Date().toISOString() })
+          .eq('order_id', orderId);
+      }
+    }
+
 
     const VALID_STATUSES = new Set([
       'placed','confirmed','shipped','out_for_delivery','delivered',
