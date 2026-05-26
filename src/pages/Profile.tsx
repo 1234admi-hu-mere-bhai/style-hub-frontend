@@ -12,7 +12,9 @@ import {
   LogOut,
   ChevronRight,
   Loader2,
+  Wallet as WalletIcon,
 } from 'lucide-react';
+
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
