@@ -161,6 +161,15 @@ Deno.serve(async (req) => {
       .eq('id', orderId)
       .maybeSingle()
 
+    // When status flips to return_approved, set 6h admin/user selection window on the return row.
+    if (status === 'return_approved' && prevOrder?.status !== 'return_approved') {
+      const expires = new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString();
+      await adminClient.from('returns')
+        .update({ admin_window_expires_at: expires, status: 'approved', updated_at: new Date().toISOString() })
+        .eq('order_id', orderId);
+    }
+
+
     // Helper: lookup recipient email + first name
     const getRecipient = async (userId: string | null) => {
       if (!userId) return { email: '', firstName: '' }
