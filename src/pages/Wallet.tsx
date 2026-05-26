@@ -1,23 +1,37 @@
 import { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWallet, TOPUP_PACKS } from '@/hooks/useWallet';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Wallet as WalletIcon, ArrowLeft, Loader2, ArrowUpRight, ArrowDownLeft, Gift, RefreshCw } from 'lucide-react';
+import {
+  Wallet as WalletIcon,
+  ArrowLeft,
+  Loader2,
+  ArrowUpRight,
+  ArrowDownLeft,
+  RefreshCw,
+  Sparkles,
+  Info,
+  HelpCircle,
+  ChevronRight,
+  ChevronDown,
+} from 'lucide-react';
 import Header from '@/components/Header';
 
 const PAYU_BASE_URL = 'https://secure.payu.in/_payment';
+const MIN = 100;
+const MAX = 50000;
 
 const Wallet = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { balance, transactions, loading, refresh } = useWallet();
-  const [customAmount, setCustomAmount] = useState('');
+  const [amount, setAmount] = useState<string>('1000');
   const [submitting, setSubmitting] = useState(false);
+  const [showHow, setShowHow] = useState(false);
+  const [showFaq, setShowFaq] = useState(false);
   const navigate = useNavigate();
 
   if (!authLoading && !user) {
@@ -25,21 +39,37 @@ const Wallet = () => {
     return null;
   }
 
-  const startTopup = async (amount: number) => {
+  const num = Number(amount);
+  const isPreset = useMemo(
+    () => TOPUP_PACKS.find(p => p.amount === num),
+    [num]
+  );
+  const valid = Number.isFinite(num) && num >= MIN && num <= MAX;
+
+  // Suggest the next pack with a bonus
+  const nextPack = useMemo(() => {
+    if (!Number.isFinite(num)) return null;
+    return TOPUP_PACKS.find(p => p.amount > num) || null;
+  }, [num]);
+
+  const startTopup = async (value: number) => {
     if (!user) return;
-    if (!Number.isFinite(amount) || amount < 100) {
-      toast.error('Minimum top-up is ₹100');
+    if (!Number.isFinite(value) || value < MIN) {
+      toast.error(`Minimum top-up is ₹${MIN}`);
+      return;
+    }
+    if (value > MAX) {
+      toast.error(`Maximum top-up is ₹${MAX}`);
       return;
     }
     setSubmitting(true);
     try {
       const { data, error } = await supabase.functions.invoke('wallet-topup-initiate', {
-        body: { amount, firstname: user.user_metadata?.first_name || 'Customer' },
+        body: { amount: value, firstname: user.user_metadata?.first_name || 'Customer' },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
-      // Submit to PayU
       const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
       const webhookBase = `${supabaseUrl}/functions/v1/payu-webhook`;
       const form = document.createElement('form');
@@ -71,97 +101,213 @@ const Wallet = () => {
     }
   };
 
-  const customNum = Number(customAmount);
-  const customValid = Number.isFinite(customNum) && customNum >= 100 && customNum <= 50000;
-
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-muted/30 pb-24">
       <Header />
-      <div className="container max-w-3xl mx-auto px-4 py-6">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-          <ArrowLeft size={16} /> Back
-        </button>
 
-        {/* Balance */}
-        <Card className="overflow-hidden rounded-3xl border-0 shadow-elegant bg-gradient-to-br from-primary to-accent text-primary-foreground">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <WalletIcon className="h-6 w-6" />
-              <span className="text-sm opacity-90">Wallet Balance</span>
-              <button onClick={refresh} className="ml-auto opacity-80 hover:opacity-100" aria-label="Refresh">
-                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-              </button>
+      {/* Top bar */}
+      <div className="bg-background border-b">
+        <div className="container max-w-2xl mx-auto px-4 h-14 flex items-center gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="h-9 w-9 grid place-items-center rounded-full border bg-background hover:bg-muted"
+            aria-label="Back"
+          >
+            <ArrowLeft size={18} />
+          </button>
+          <h1 className="font-serif text-lg font-bold">MUFFIGOUT Wallet</h1>
+          <button
+            onClick={refresh}
+            className="ml-auto h-9 w-9 grid place-items-center rounded-full hover:bg-muted"
+            aria-label="Refresh"
+          >
+            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+          </button>
+        </div>
+      </div>
+
+      <div className="container max-w-2xl mx-auto px-4 py-5 space-y-4">
+        {/* Available balance card */}
+        <Card className="rounded-2xl border bg-card shadow-sm">
+          <CardContent className="p-6 text-center">
+            <p className="text-xs tracking-[0.18em] text-muted-foreground font-medium">
+              AVAILABLE BALANCE
+            </p>
+            <div className="mt-2 flex items-center justify-center gap-1">
+              <WalletIcon className="h-6 w-6 text-primary" />
+              <span className="text-4xl font-bold font-serif tracking-tight">
+                ₹{balance.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+              </span>
             </div>
-            <div className="text-4xl font-bold font-serif tracking-tight">
-              ₹{balance.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
-            </div>
-            <p className="text-xs opacity-80 mt-2">Use at checkout • Never expires</p>
+            <p className="text-[11px] text-muted-foreground mt-2">
+              Use at checkout • Never expires
+            </p>
           </CardContent>
         </Card>
 
-        {/* Top-up packs */}
-        <h2 className="font-serif text-xl font-bold mt-8 mb-3">Add Money</h2>
-        <p className="text-xs text-muted-foreground mb-3">
-          Bonus included on preset packs only. Custom amount = no bonus.
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          {TOPUP_PACKS.map(pack => (
-            <button
-              key={pack.amount}
-              onClick={() => startTopup(pack.amount)}
-              disabled={submitting}
-              className="relative rounded-2xl border-2 border-border bg-card p-4 text-left transition-all hover:border-primary hover:shadow-md disabled:opacity-50"
-            >
-              <Badge className="absolute top-2 right-2 bg-emerald-500 text-white border-0">
-                <Gift size={10} className="mr-1" />+₹{pack.bonus}
-              </Badge>
-              <div className="text-2xl font-bold">₹{pack.amount}</div>
-              <div className="text-xs text-muted-foreground mt-1">Get ₹{pack.amount + pack.bonus} in wallet</div>
-            </button>
-          ))}
-        </div>
-
-        {/* Custom amount */}
-        <div className="mt-4 rounded-2xl border border-border bg-card p-4">
-          <p className="text-sm font-medium mb-2">Custom amount</p>
-          <p className="text-xs text-muted-foreground mb-3">No bonus on custom amounts (₹100 – ₹50,000)</p>
-          <div className="flex gap-2">
-            <Input
-              type="number"
-              inputMode="numeric"
-              placeholder="Enter amount"
-              value={customAmount}
-              onChange={(e) => setCustomAmount(e.target.value.replace(/[^\d]/g, ''))}
-              className="h-12 bg-secondary/40"
-              min={100}
-              max={50000}
-            />
-            <Button
-              onClick={() => startTopup(customNum)}
-              disabled={!customValid || submitting}
-              className="h-12 rounded-full px-6"
-            >
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add'}
-            </Button>
+        {/* Bonus promo banner */}
+        <div className="rounded-2xl px-4 py-3 flex items-center gap-3 bg-gradient-to-r from-primary/15 via-accent/15 to-primary/15 border border-primary/20">
+          <div className="h-10 w-10 rounded-full grid place-items-center bg-primary/20 text-primary">
+            <Sparkles size={18} />
           </div>
+          <p className="text-sm font-medium">
+            <span className="text-primary font-bold">5% EXTRA CASH</span>{' '}
+            <span className="text-muted-foreground">on adding ₹2,000 or more</span>
+          </p>
         </div>
 
-        {/* History */}
-        <h2 className="font-serif text-xl font-bold mt-8 mb-3">Transaction History</h2>
-        {loading ? (
-          <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-        ) : transactions.length === 0 ? (
-          <Card><CardContent className="p-8 text-center text-sm text-muted-foreground">
-            No transactions yet. Add money to your wallet to get started.
-          </CardContent></Card>
-        ) : (
-          <div className="space-y-2">
-            {transactions.map(tx => {
-              const credit = tx.amount > 0;
-              return (
-                <Card key={tx.id}>
-                  <CardContent className="p-3 flex items-center gap-3">
-                    <div className={`h-9 w-9 rounded-full grid place-items-center ${credit ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'}`}>
+        {/* Add money card */}
+        <Card className="rounded-2xl border shadow-sm">
+          <CardContent className="p-4 sm:p-5 space-y-4">
+            {/* Amount input */}
+            <div>
+              <label className="text-[11px] text-muted-foreground font-medium">
+                Add amount <span className="text-destructive">*</span>
+              </label>
+              <div className="mt-1 flex items-center gap-2 h-12 px-3 rounded-xl border-2 border-input bg-secondary/40 focus-within:border-primary transition-colors">
+                <span className="text-lg font-semibold text-muted-foreground">₹</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value.replace(/[^\d]/g, '').slice(0, 5))}
+                  className="flex-1 bg-transparent outline-none text-lg font-semibold"
+                  placeholder="0"
+                />
+              </div>
+              {isPreset && isPreset.bonus > 0 ? (
+                <div className="mt-2 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium px-3 py-2">
+                  🎉 You'll get ₹{isPreset.bonus} extra cash on this top-up
+                </div>
+              ) : nextPack ? (
+                <div className="mt-2 rounded-lg bg-orange-500/10 text-orange-700 dark:text-orange-400 text-xs font-medium px-3 py-2">
+                  Add ₹{nextPack.amount - num} more to get additional ₹{nextPack.bonus} extra cash
+                </div>
+              ) : null}
+            </div>
+
+            {/* Preset chips */}
+            <div className="grid grid-cols-4 gap-2">
+              {TOPUP_PACKS.map(pack => {
+                const selected = num === pack.amount;
+                return (
+                  <button
+                    key={pack.amount}
+                    type="button"
+                    onClick={() => setAmount(String(pack.amount))}
+                    className={`relative rounded-xl border-2 py-2.5 px-1 text-center transition-all ${
+                      selected
+                        ? 'border-primary bg-primary/5'
+                        : 'border-input bg-background hover:border-primary/40'
+                    }`}
+                  >
+                    <div className="text-sm font-bold">{pack.amount}</div>
+                    {pack.bonus > 0 && (
+                      <div className="mt-1 text-[10px] font-semibold rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 px-1 py-0.5">
+                        ₹{pack.bonus} extra
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* CTA */}
+            <Button
+              onClick={() => startTopup(num)}
+              disabled={!valid || submitting}
+              className="w-full h-12 rounded-xl text-base font-semibold"
+            >
+              {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : 'Add Balance'}
+            </Button>
+            <p className="text-[10px] text-center text-muted-foreground">
+              Min ₹{MIN} • Max ₹{MAX.toLocaleString('en-IN')} • Bonus on preset packs only
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Info accordions */}
+        <Card className="rounded-2xl border shadow-sm overflow-hidden">
+          <button
+            onClick={() => setShowHow(s => !s)}
+            className="w-full flex items-center gap-3 px-4 py-4 hover:bg-muted/40"
+          >
+            <Info size={18} className="text-muted-foreground" />
+            <span className="text-sm font-medium flex-1 text-left">How it works</span>
+            <ChevronDown
+              size={18}
+              className={`text-muted-foreground transition-transform ${showHow ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {showHow && (
+            <div className="px-4 pb-4 text-xs text-muted-foreground space-y-2 border-t">
+              <p className="pt-3">• Add money from any UPI, card, or netbanking via secure PayU gateway.</p>
+              <p>• Bonus cash is added instantly along with your top-up amount.</p>
+              <p>• Use wallet balance fully or partially at checkout.</p>
+              <p>• Refunds can be credited back to your wallet instantly when eligible.</p>
+            </div>
+          )}
+          <div className="border-t" />
+          <button
+            onClick={() => setShowFaq(s => !s)}
+            className="w-full flex items-center gap-3 px-4 py-4 hover:bg-muted/40"
+          >
+            <HelpCircle size={18} className="text-muted-foreground" />
+            <span className="text-sm font-medium flex-1 text-left">FAQs</span>
+            <ChevronDown
+              size={18}
+              className={`text-muted-foreground transition-transform ${showFaq ? 'rotate-180' : ''}`}
+            />
+          </button>
+          {showFaq && (
+            <div className="px-4 pb-4 text-xs text-muted-foreground space-y-3 border-t">
+              <div className="pt-3">
+                <p className="font-semibold text-foreground">Does the balance expire?</p>
+                <p>No, your wallet balance never expires.</p>
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">Can I withdraw the wallet balance?</p>
+                <p>Wallet balance can only be used for purchases on MUFFIGOUT and is non-refundable to bank.</p>
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">Will I get bonus on custom amounts?</p>
+                <p>Bonus cash is available only on preset packs (₹500, ₹1000, ₹2000, ₹5000).</p>
+              </div>
+            </div>
+          )}
+        </Card>
+
+        {/* Transactions */}
+        <div className="pt-2">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="font-serif text-base font-bold">Transactions</h2>
+            {transactions.length > 0 && (
+              <span className="text-[11px] text-muted-foreground">Last {transactions.length}</span>
+            )}
+          </div>
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          ) : transactions.length === 0 ? (
+            <Card className="rounded-2xl">
+              <CardContent className="p-8 text-center text-sm text-muted-foreground">
+                No transactions yet. Add money to your wallet to get started.
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="rounded-2xl divide-y">
+              {transactions.map(tx => {
+                const credit = tx.amount > 0;
+                return (
+                  <div key={tx.id} className="p-3 flex items-center gap-3">
+                    <div
+                      className={`h-9 w-9 rounded-full grid place-items-center ${
+                        credit
+                          ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+                          : 'bg-red-500/15 text-red-700 dark:text-red-400'
+                      }`}
+                    >
                       {credit ? <ArrowDownLeft size={16} /> : <ArrowUpRight size={16} />}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -171,19 +317,26 @@ const Wallet = () => {
                       <p className="text-xs text-muted-foreground truncate">{tx.description}</p>
                     </div>
                     <div className="text-right">
-                      <p className={`text-sm font-semibold ${credit ? 'text-emerald-600' : 'text-red-600'}`}>
+                      <p
+                        className={`text-sm font-semibold ${
+                          credit ? 'text-emerald-600' : 'text-red-600'
+                        }`}
+                      >
                         {credit ? '+' : ''}₹{Math.abs(tx.amount).toLocaleString('en-IN')}
                       </p>
                       <p className="text-[10px] text-muted-foreground">
-                        {new Date(tx.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                        {new Date(tx.created_at).toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'short',
+                        })}
                       </p>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        )}
+                  </div>
+                );
+              })}
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );
