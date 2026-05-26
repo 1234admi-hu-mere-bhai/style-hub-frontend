@@ -9,13 +9,12 @@ const corsHeaders = {
 
 // Preset packs ONLY get a bonus. Custom amounts get zero bonus.
 const PRESET_BONUSES: Record<number, number> = {
-  500: 25,
-  1000: 50,
-  2000: 100,
-  5000: 250,
+  1000: 25,
+  2000: 50,
+  5000: 125,
 };
 
-const MIN_TOPUP = 100;
+const MIN_TOPUP = 500;
 const MAX_TOPUP = 50000;
 
 const json = (b: unknown, s = 200) =>
