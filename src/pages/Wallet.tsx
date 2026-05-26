@@ -145,24 +145,21 @@ const Wallet = () => {
           </CardContent>
         </Card>
 
-        {/* Bonus promo banner — Zepto style, combined */}
-        <div className="relative overflow-hidden rounded-2xl px-4 py-3.5 bg-gradient-to-r from-primary/15 via-accent/20 to-primary/10 border border-primary/25">
+        {/* Bonus promo banner — Zepto style */}
+        <div className="relative overflow-hidden rounded-2xl px-4 py-4 bg-gradient-to-r from-primary/15 via-accent/20 to-primary/10 border border-primary/25">
           <Sparkles className="absolute -top-1 -right-1 h-8 w-8 text-primary/20" />
           <Sparkles className="absolute bottom-1 left-1/3 h-4 w-4 text-primary/15" />
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-2xl sm:text-3xl font-black font-serif text-primary leading-none">
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-3xl font-black font-serif text-primary leading-none">
                 2.5%
               </span>
               <span className="text-[11px] font-extrabold leading-tight text-primary">
                 EXTRA<br />CASH
               </span>
             </div>
-            <p className="text-sm text-foreground/80 font-medium">
-              on adding{' '}
-              <span className="font-bold text-foreground">₹1,000</span>,{' '}
-              <span className="font-bold text-foreground">₹2,000</span> or{' '}
-              <span className="font-bold text-foreground">₹5,000</span> to MG Wallet
+            <p className="text-sm text-foreground/80 font-medium leading-snug">
+              on adding <span className="font-bold text-foreground">₹1,000</span> or more to MG Wallet
             </p>
           </div>
         </div>
@@ -186,15 +183,11 @@ const Wallet = () => {
                   placeholder="0"
                 />
               </div>
-              {isPreset && isPreset.bonus > 0 ? (
-                <div className="mt-2 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-medium px-3 py-2">
-                  🎉 You'll get ₹{isPreset.bonus} extra cash on this top-up
+              {isPreset && isPreset.bonus > 0 && (
+                <div className="mt-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                  You're getting <span className="font-bold">₹{isPreset.bonus} extra</span> cash!
                 </div>
-              ) : nextPack ? (
-                <div className="mt-2 rounded-lg bg-orange-500/10 text-orange-700 dark:text-orange-400 text-xs font-medium px-3 py-2">
-                  Add ₹{nextPack.amount - num} more to get additional ₹{nextPack.bonus} extra cash
-                </div>
-              ) : null}
+              )}
             </div>
 
             {/* Preset chips */}
@@ -214,7 +207,7 @@ const Wallet = () => {
                   >
                     <div className="text-sm font-bold">{pack.amount}</div>
                     {pack.bonus > 0 && (
-                      <div className="mt-1 text-[10px] font-semibold rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 px-1 py-0.5">
+                      <div className="mt-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
                         ₹{pack.bonus} extra
                       </div>
                     )}
@@ -236,6 +229,7 @@ const Wallet = () => {
             </p>
           </CardContent>
         </Card>
+
 
         {/* Info accordions */}
         <Card className="rounded-2xl border shadow-sm overflow-hidden">
