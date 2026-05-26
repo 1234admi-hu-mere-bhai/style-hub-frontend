@@ -1242,8 +1242,35 @@ const Checkout = () => {
                     </div>
                   </button>
                 </div>
+
+                {/* Wallet apply — only with Online payment */}
+                {paymentMethod === 'online' && walletBalance > 0 && (
+                  <div className="mt-4 p-4 rounded-xl border-2 border-accent/30 bg-accent/5">
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={useWalletBalance}
+                        onChange={(e) => setUseWalletBalance(e.target.checked)}
+                        className="mt-1 h-4 w-4 accent-primary"
+                      />
+                      <div className="flex-1">
+                        <p className="font-semibold text-sm">
+                          Use wallet balance ({formatPrice(walletBalance)})
+                        </p>
+                        {useWalletBalance && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {isWalletOnly
+                              ? `Wallet covers full amount — no online payment needed.`
+                              : `${formatPrice(walletApplied)} from wallet + ${formatPrice(payuRemaining)} via PayU.`}
+                          </p>
+                        )}
+                      </div>
+                    </label>
+                  </div>
+                )}
               </div>
             )}
+
 
             {/* Delivery Address Card — sits between cart items and Price Details on Review step */}
             {step === 'summary' && addressForm.firstName && (
