@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, Heart, ShoppingBag, User, Menu, X, LogOut, Package, History, Mic, Camera, Wallet as WalletIcon } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useWallet } from '@/hooks/useWallet';
@@ -35,6 +35,8 @@ const Header = () => {
   const { items: wishlistItems } = useWishlist();
   const { user, signOut } = useAuth();
   const { balance: walletBalance } = useWallet();
+  const location = useLocation();
+  const onWalletPage = location.pathname.startsWith('/wallet');
   const navigate = useNavigate();
 
   const handleVoiceResult = (text: string) => {
@@ -138,19 +140,21 @@ const Header = () => {
               >
                 <Search size={20} />
               </button>
-              <button
-                onClick={() => navigate(user ? '/wallet' : '/auth?redirect=/wallet')}
-                className="flex items-center gap-1 pl-1.5 pr-2.5 py-1 rounded-full bg-primary/15 hover:bg-primary/25 transition-colors"
-                aria-label="MG Wallet"
-                title="MG Wallet"
-              >
-                <span className="grid place-items-center h-6 w-6 rounded-full bg-primary text-primary-foreground">
-                  <WalletIcon size={13} />
-                </span>
-                <span className="text-xs font-semibold text-primary tabular-nums">
-                  ₹{Math.round(walletBalance || 0)}
-                </span>
-              </button>
+              {!onWalletPage && (
+                <button
+                  onClick={() => navigate(user ? '/wallet' : '/auth?redirect=/wallet')}
+                  className="flex items-center gap-1 pl-1.5 pr-2.5 py-1 rounded-full bg-primary/15 hover:bg-primary/25 transition-colors"
+                  aria-label="MG Wallet"
+                  title="MG Wallet"
+                >
+                  <span className="grid place-items-center h-6 w-6 rounded-full bg-primary text-primary-foreground">
+                    <WalletIcon size={13} />
+                  </span>
+                  <span className="text-xs font-semibold text-primary tabular-nums">
+                    ₹{Math.round(walletBalance || 0)}
+                  </span>
+                </button>
+              )}
               <NotificationBell />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
