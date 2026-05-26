@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, Heart, ShoppingBag, User, Menu, X, LogOut, Package, History, Mic, Camera } from 'lucide-react';
+import { Search, Heart, ShoppingBag, User, Menu, X, LogOut, Package, History, Mic, Camera, Wallet as WalletIcon } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -167,11 +167,18 @@ const Header = () => {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
+                        <Link to="/wallet" className="flex items-center gap-2">
+                          <WalletIcon size={16} />
+                          Wallet
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
                         <Link to="/track-order" className="flex items-center gap-2">
                           <Package size={16} />
                           Track Order
                         </Link>
                       </DropdownMenuItem>
+
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         onClick={handleSignOut}
