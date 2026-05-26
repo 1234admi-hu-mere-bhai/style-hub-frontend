@@ -145,15 +145,32 @@ const Wallet = () => {
           </CardContent>
         </Card>
 
-        {/* Bonus promo banner */}
-        <div className="rounded-2xl px-4 py-3 flex items-center gap-3 bg-gradient-to-r from-primary/15 via-accent/15 to-primary/15 border border-primary/20">
-          <div className="h-10 w-10 rounded-full grid place-items-center bg-primary/20 text-primary">
-            <Sparkles size={18} />
-          </div>
-          <p className="text-sm font-medium">
-            <span className="text-primary font-bold">EXTRA CASH</span>{' '}
-            <span className="text-muted-foreground">on ₹1,000 (+₹25), ₹2,000 (+₹50), ₹5,000 (+₹125)</span>
-          </p>
+        {/* Bonus promo banners — Zepto style */}
+        <div className="space-y-2">
+          {[
+            { pct: '2.5%', min: '1,000' },
+            { pct: '2.5%', min: '2,000' },
+            { pct: '2.5%', min: '5,000' },
+          ].map((b, i) => (
+            <div
+              key={i}
+              className="relative overflow-hidden rounded-2xl px-4 py-3 flex items-center gap-3 bg-gradient-to-r from-primary/15 via-accent/20 to-primary/10 border border-primary/25"
+            >
+              <Sparkles className="absolute -top-1 -right-1 h-8 w-8 text-primary/20" />
+              <Sparkles className="absolute bottom-0 left-1/2 h-5 w-5 text-primary/15" />
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-2xl sm:text-3xl font-black font-serif text-primary leading-none">
+                  {b.pct}
+                </span>
+                <span className="text-[11px] font-extrabold leading-tight text-primary">
+                  EXTRA<br />CASH
+                </span>
+              </div>
+              <p className="text-sm text-foreground/80 font-medium">
+                on adding <span className="font-bold text-foreground">₹{b.min}</span> or more to MG Wallet
+              </p>
+            </div>
+          ))}
         </div>
 
         {/* Add money card */}
