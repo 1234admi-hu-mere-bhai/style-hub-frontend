@@ -396,7 +396,37 @@ const Checkout = () => {
       return;
     }
 
-    // ── PayU (online) branch ──
+    // ── Wallet-only branch ──
+    if (isWalletOnly) {
+      try {
+        setIsPlacingOrder(true);
+        const { data, error } = await supabase.functions.invoke('create-wallet-order', {
+          body: {
+            items: items.map(item => ({
+              product_id: item.id,
+              quantity: item.quantity,
+              size: item.size,
+              color: item.color,
+            })),
+            shipping_address: addressForm,
+            coupon_code: appliedCoupon?.code || null,
+          },
+        });
+        if (error || !data?.success) {
+          throw new Error(data?.error || error?.message || 'Could not place order');
+        }
+        toast.success('Order placed — paid from your wallet.');
+        navigateToConfirmation(data.order.order_number);
+      } catch (error: any) {
+        console.error('Failed to create wallet order:', error);
+        toast.error(error?.message || 'We could not place your order. Please try again.');
+      } finally {
+        setIsPlacingOrder(false);
+      }
+      return;
+    }
+
+    // ── PayU (online) branch ── (with optional wallet portion)
     // NOTE: client-supplied prices are ignored server-side; only product_id +
     // quantity + size/color + coupon are honored.
     const checkoutItems = items.map(item => ({
@@ -418,7 +448,7 @@ const Checkout = () => {
     }));
 
     await initiatePayment({
-      amount: finalTotal, // hint for display only; server recomputes
+      amount: payuRemaining, // hint for display only; server recomputes
       customerName: `${addressForm.firstName} ${addressForm.lastName}`,
       customerEmail: user.email,
       customerPhone: addressForm.phone,
@@ -433,7 +463,8 @@ const Checkout = () => {
         address: addressForm,
         isBuyNow,
         coupon_code: appliedCoupon?.code || null,
-      },
+        apply_wallet: walletEligible,
+      } as any,
     });
   };
 
