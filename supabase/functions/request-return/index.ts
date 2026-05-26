@@ -107,6 +107,31 @@ Deno.serve(async (req) => {
 
     if (updateError) throw updateError
 
+    // Create a `returns` row (if not exists) so admin can set allowed refund methods later.
+    const { data: existingReturn } = await adminClient
+      .from('returns')
+      .select('id')
+      .eq('order_id', orderId)
+      .maybeSingle();
+    if (!existingReturn) {
+      const { data: orderForReturn } = await adminClient
+        .from('orders')
+        .select('total')
+        .eq('id', orderId)
+        .maybeSingle();
+      await adminClient.from('returns').insert({
+        order_id: orderId,
+        user_id: user.id,
+        reason_code: 'user_initiated',
+        reason_details: reason.trim().slice(0, 1000),
+        refund_amount: Number(orderForReturn?.total || 0),
+        status: 'pending',
+        // Default: both methods allowed. Admin can narrow this on approval.
+        allowed_refund_methods: ['wallet', 'source'],
+      });
+    }
+
+
     // 🔔 Push notification: return submitted
     try {
       await adminClient.functions.invoke('send-push', {
