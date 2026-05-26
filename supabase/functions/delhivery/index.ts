@@ -32,7 +32,19 @@ Deno.serve(async (req) => {
 
     switch (action) {
       case 'track': {
-        // Track by AWB number — available to authenticated users
+        // Track by AWB number — authenticated users only
+        const anonClientTrack = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          global: { headers: { Authorization: authHeader || '' } },
+        });
+        const token = authHeader?.replace('Bearer ', '') || '';
+        const { data: claimsData, error: claimsError } = await anonClientTrack.auth.getClaims(token);
+        if (claimsError || !claimsData?.claims) {
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
         const { waybill } = params;
         if (!waybill) {
           return new Response(JSON.stringify({ error: 'waybill is required' }), {
