@@ -398,6 +398,7 @@ const AdminReturns = ({ orders, onRefresh }: AdminReturnsProps) => {
                       </Button>
                     )}
 
+                    {order.status === 'return_picked_up' && (
                       <Button
                         size="sm"
                         className="bg-green-600 hover:bg-green-700 text-white"
