@@ -27,6 +27,7 @@ import { detectCurrentLocation } from '@/lib/geolocation';
 import { checkCodEligibility, COD_FEE } from '@/lib/codEligibility';
 import { calculateShipping } from '@/lib/shipping';
 import CouponSuccessDialog from '@/components/CouponSuccessDialog';
+import { useWallet } from '@/hooks/useWallet';
 
 const getEstimatedDeliveryDate = (days?: string | number) => {
   const deliveryDays = typeof days === 'number' ? days : days ? parseInt(days) : 5;
