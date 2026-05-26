@@ -198,8 +198,7 @@ const Index = () => {
       {/* Flash Sale Banner - Below Hero, Above Categories */}
       <FlashSaleBanner />
 
-      {/* MG Wallet quick-access card (Zepto-style) */}
-      <WalletHomeCard />
+
 
 
       {/* Categories */}

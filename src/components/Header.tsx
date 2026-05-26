@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Heart, ShoppingBag, User, Menu, X, LogOut, Package, History, Mic, Camera, Wallet as WalletIcon } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { useWallet } from '@/hooks/useWallet';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -33,6 +34,7 @@ const Header = () => {
   const { totalItems, isCartOpen: cartOpen, setCartOpen } = useCart();
   const { items: wishlistItems } = useWishlist();
   const { user, signOut } = useAuth();
+  const { balance: walletBalance } = useWallet();
   const navigate = useNavigate();
 
   const handleVoiceResult = (text: string) => {
@@ -138,11 +140,16 @@ const Header = () => {
               </button>
               <button
                 onClick={() => navigate(user ? '/wallet' : '/auth?redirect=/wallet')}
-                className="p-2 hover:bg-secondary rounded-full transition-colors"
+                className="flex items-center gap-1 pl-1.5 pr-2.5 py-1 rounded-full bg-primary/15 hover:bg-primary/25 transition-colors"
                 aria-label="MG Wallet"
                 title="MG Wallet"
               >
-                <WalletIcon size={20} className="text-primary" />
+                <span className="grid place-items-center h-6 w-6 rounded-full bg-primary text-primary-foreground">
+                  <WalletIcon size={13} />
+                </span>
+                <span className="text-xs font-semibold text-primary tabular-nums">
+                  ₹{Math.round(walletBalance || 0)}
+                </span>
               </button>
               <NotificationBell />
               <DropdownMenu>
