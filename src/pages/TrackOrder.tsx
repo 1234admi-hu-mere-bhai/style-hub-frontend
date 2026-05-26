@@ -21,6 +21,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import Header from '@/components/Header';
+import RefundMethodPicker from '@/components/RefundMethodPicker';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -535,6 +536,12 @@ const TrackOrder = () => {
               </div>
 
               <RefundTimeline order={order} />
+
+              <div className="mt-4">
+                <RefundMethodPicker orderId={order.id} orderStatus={order.status} />
+              </div>
+
+
 
               {(order.refund_amount != null || order.refund_eta || order.refund_processed_at) && (
                 <div className="grid grid-cols-2 gap-3 text-sm mt-4">

@@ -373,6 +373,31 @@ const AdminReturns = ({ orders, onRefresh }: AdminReturnsProps) => {
                       </Button>
                     )}
 
+                    {order.status === 'return_approved' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={async () => {
+                          setUpdating(order.id);
+                          try {
+                            const { error } = await supabase.functions.invoke('admin-update-order', {
+                              body: { orderId: order.id, allowed_refund_methods: ['wallet', 'source'] },
+                            });
+                            if (error) throw error;
+                            toast.success('Wallet refund option enabled for customer');
+                            onRefresh();
+                          } catch (e: any) {
+                            toast.error(e.message || 'Failed to update');
+                          } finally {
+                            setUpdating(null);
+                          }
+                        }}
+                        disabled={updating === order.id}
+                      >
+                        Offer Wallet Refund
+                      </Button>
+                    )}
+
                     {order.status === 'return_picked_up' && (
                       <Button
                         size="sm"

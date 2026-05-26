@@ -27,6 +27,7 @@ import { detectCurrentLocation } from '@/lib/geolocation';
 import { checkCodEligibility, COD_FEE } from '@/lib/codEligibility';
 import { calculateShipping } from '@/lib/shipping';
 import CouponSuccessDialog from '@/components/CouponSuccessDialog';
+import { useWallet } from '@/hooks/useWallet';
 
 const getEstimatedDeliveryDate = (days?: string | number) => {
   const deliveryDays = typeof days === 'number' ? days : days ? parseInt(days) : 5;
@@ -66,6 +67,8 @@ const Checkout = () => {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [showPriceDetails, setShowPriceDetails] = useState(false);
   const [locatingUser, setLocatingUser] = useState(false);
+  const { balance: walletBalance } = useWallet();
+  const [useWalletBalance, setUseWalletBalance] = useState(false);
 
   // Coupon state
   const [couponCode, setCouponCode] = useState('');
@@ -222,6 +225,11 @@ const Checkout = () => {
 
   const codFee = paymentMethod === 'cod' && codEligibility.eligible ? COD_FEE : 0;
   const finalTotal = totalPrice - discountAmount + shippingCost + codFee;
+  // Wallet only available for online payments (not COD)
+  const walletEligible = paymentMethod === 'online' && walletBalance > 0 && useWalletBalance;
+  const walletApplied = walletEligible ? Math.min(walletBalance, finalTotal) : 0;
+  const payuRemaining = Math.max(0, finalTotal - walletApplied);
+  const isWalletOnly = walletEligible && walletApplied >= finalTotal;
 
   const handleApplyCoupon = useCallback(async (codeOverride?: string) => {
     if (allFlashSaleItems) { toast.error('Coupons cannot be combined with Flash Sale items.'); return; }
@@ -388,7 +396,37 @@ const Checkout = () => {
       return;
     }
 
-    // ── PayU (online) branch ──
+    // ── Wallet-only branch ──
+    if (isWalletOnly) {
+      try {
+        setIsPlacingOrder(true);
+        const { data, error } = await supabase.functions.invoke('create-wallet-order', {
+          body: {
+            items: items.map(item => ({
+              product_id: item.id,
+              quantity: item.quantity,
+              size: item.size,
+              color: item.color,
+            })),
+            shipping_address: addressForm,
+            coupon_code: appliedCoupon?.code || null,
+          },
+        });
+        if (error || !data?.success) {
+          throw new Error(data?.error || error?.message || 'Could not place order');
+        }
+        toast.success('Order placed — paid from your wallet.');
+        navigateToConfirmation(data.order.order_number);
+      } catch (error: any) {
+        console.error('Failed to create wallet order:', error);
+        toast.error(error?.message || 'We could not place your order. Please try again.');
+      } finally {
+        setIsPlacingOrder(false);
+      }
+      return;
+    }
+
+    // ── PayU (online) branch ── (with optional wallet portion)
     // NOTE: client-supplied prices are ignored server-side; only product_id +
     // quantity + size/color + coupon are honored.
     const checkoutItems = items.map(item => ({
@@ -410,7 +448,7 @@ const Checkout = () => {
     }));
 
     await initiatePayment({
-      amount: finalTotal, // hint for display only; server recomputes
+      amount: payuRemaining, // hint for display only; server recomputes
       customerName: `${addressForm.firstName} ${addressForm.lastName}`,
       customerEmail: user.email,
       customerPhone: addressForm.phone,
@@ -425,7 +463,8 @@ const Checkout = () => {
         address: addressForm,
         isBuyNow,
         coupon_code: appliedCoupon?.code || null,
-      },
+        apply_wallet: walletEligible,
+      } as any,
     });
   };
 
@@ -1203,8 +1242,35 @@ const Checkout = () => {
                     </div>
                   </button>
                 </div>
+
+                {/* Wallet apply — only with Online payment */}
+                {paymentMethod === 'online' && walletBalance > 0 && (
+                  <div className="mt-4 p-4 rounded-xl border-2 border-accent/30 bg-accent/5">
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={useWalletBalance}
+                        onChange={(e) => setUseWalletBalance(e.target.checked)}
+                        className="mt-1 h-4 w-4 accent-primary"
+                      />
+                      <div className="flex-1">
+                        <p className="font-semibold text-sm">
+                          Use wallet balance ({formatPrice(walletBalance)})
+                        </p>
+                        {useWalletBalance && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {isWalletOnly
+                              ? `Wallet covers full amount — no online payment needed.`
+                              : `${formatPrice(walletApplied)} from wallet + ${formatPrice(payuRemaining)} via PayU.`}
+                          </p>
+                        )}
+                      </div>
+                    </label>
+                  </div>
+                )}
               </div>
             )}
+
 
             {/* Delivery Address Card — sits between cart items and Price Details on Review step */}
             {step === 'summary' && addressForm.firstName && (
