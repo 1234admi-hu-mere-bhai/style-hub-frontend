@@ -72,7 +72,21 @@ Deno.serve(async (req) => {
       throw e;
     }
 
-    const amount = priced.total.toFixed(2);
+    // ===== Wallet split: optionally apply wallet balance toward this order =====
+    let walletUsed = 0;
+    if (checkout.apply_wallet) {
+      const { data: wallet } = await admin.from('wallets').select('balance').eq('user_id', userId).maybeSingle();
+      const bal = Number(wallet?.balance || 0);
+      if (bal > 0) {
+        // Leave at least ₹1 for PayU (it can't accept ₹0). For wallet-only checkouts
+        // the client must use the dedicated create-wallet-order endpoint.
+        const maxApplicable = Math.max(0, priced.total - 1);
+        walletUsed = Math.min(bal, maxApplicable);
+        walletUsed = Math.round(walletUsed * 100) / 100;
+      }
+    }
+    const payuAmount = Math.round((priced.total - walletUsed) * 100) / 100;
+    const amount = payuAmount.toFixed(2);
 
     // Persist pending_payment with SERVER-computed values
     const { error: pendingError } = await admin.from('pending_payments').upsert({
@@ -83,6 +97,7 @@ Deno.serve(async (req) => {
       subtotal: priced.subtotal,
       shipping_cost: priced.shipping_cost,
       total: priced.total,
+      wallet_amount_used: walletUsed,
       shipping_address: address,
       is_buy_now: !!checkout.isBuyNow,
       status: 'pending',
@@ -97,7 +112,7 @@ Deno.serve(async (req) => {
     const hashBuffer = await crypto.subtle.digest('SHA-512', new TextEncoder().encode(hashString));
     const hash = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
 
-    return json({ hash, key: merchantKey, txnid, amount, total: priced.total });
+    return json({ hash, key: merchantKey, txnid, amount, total: priced.total, walletUsed, payuAmount });
   } catch (error) {
     console.error('PayU hash error:', error);
     return json({ error: 'Failed to generate hash' }, 500);
