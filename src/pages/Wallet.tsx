@@ -250,13 +250,32 @@ const Wallet = () => {
             />
           </button>
           {showHow && (
-            <div className="px-4 pb-4 text-xs text-muted-foreground space-y-2 border-t">
-              <p className="pt-3">• Add money from any UPI, card, or netbanking via secure PayU gateway.</p>
-              <p>• Bonus cash is added instantly along with your top-up amount.</p>
-              <p>• Use wallet balance fully or partially at checkout.</p>
-              <p>• Refunds can be credited back to your wallet instantly when eligible.</p>
+            <div className="px-4 pb-5 border-t bg-muted/20">
+              <div className="pt-5 relative">
+                {/* vertical connector line */}
+                <div className="absolute left-[27px] top-9 bottom-9 w-px border-l-2 border-dashed border-primary/30" />
+                <div className="space-y-5">
+                  {[
+                    { icon: Wallet2, title: 'Add money to MG Wallet', desc: 'Top up via UPI, card or netbanking through secure PayU.' },
+                    { icon: BadgePercent, title: 'Get instant bonus cash', desc: 'Earn up to 2.5% extra on preset packs ₹1,000 and above.' },
+                    { icon: ShoppingBag, title: 'Pay faster at checkout', desc: 'Use wallet balance fully or partially on any order.' },
+                    { icon: RotateCcw, title: 'Refunds in seconds', desc: 'Eligible refunds land back in your wallet instantly.' },
+                  ].map(({ icon: Icon, title, desc }, i) => (
+                    <div key={i} className="flex items-start gap-3 relative">
+                      <div className="h-[38px] w-[38px] shrink-0 rounded-full bg-gradient-to-br from-primary to-accent grid place-items-center shadow-sm ring-4 ring-background relative z-10">
+                        <Icon size={18} className="text-primary-foreground" />
+                      </div>
+                      <div className="flex-1 pt-1">
+                        <p className="text-sm font-bold text-foreground leading-tight">{title}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
+
           <div className="border-t" />
           <button
             onClick={() => setShowFaq(s => !s)}
