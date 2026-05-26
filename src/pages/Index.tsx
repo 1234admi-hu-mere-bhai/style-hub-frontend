@@ -14,6 +14,7 @@ import ProductCard from '@/components/ProductCard';
 import HeroProductCarousel from '@/components/HeroProductCarousel';
 import { useDbProducts } from '@/hooks/useDbProducts';
 import FlashSaleBanner from '@/components/FlashSaleBanner';
+import WalletHomeCard from '@/components/WalletHomeCard';
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from '@/components/ui/sheet';
@@ -196,6 +197,10 @@ const Index = () => {
 
       {/* Flash Sale Banner - Below Hero, Above Categories */}
       <FlashSaleBanner />
+
+      {/* MG Wallet quick-access card (Zepto-style) */}
+      <WalletHomeCard />
+
 
       {/* Categories */}
       <section className="py-6 lg:py-16">
