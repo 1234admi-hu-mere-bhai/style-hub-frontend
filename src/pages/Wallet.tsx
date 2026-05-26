@@ -145,32 +145,26 @@ const Wallet = () => {
           </CardContent>
         </Card>
 
-        {/* Bonus promo banners — Zepto style */}
-        <div className="space-y-2">
-          {[
-            { pct: '2.5%', min: '1,000' },
-            { pct: '2.5%', min: '2,000' },
-            { pct: '2.5%', min: '5,000' },
-          ].map((b, i) => (
-            <div
-              key={i}
-              className="relative overflow-hidden rounded-2xl px-4 py-3 flex items-center gap-3 bg-gradient-to-r from-primary/15 via-accent/20 to-primary/10 border border-primary/25"
-            >
-              <Sparkles className="absolute -top-1 -right-1 h-8 w-8 text-primary/20" />
-              <Sparkles className="absolute bottom-0 left-1/2 h-5 w-5 text-primary/15" />
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-2xl sm:text-3xl font-black font-serif text-primary leading-none">
-                  {b.pct}
-                </span>
-                <span className="text-[11px] font-extrabold leading-tight text-primary">
-                  EXTRA<br />CASH
-                </span>
-              </div>
-              <p className="text-sm text-foreground/80 font-medium">
-                on adding <span className="font-bold text-foreground">₹{b.min}</span> or more to MG Wallet
-              </p>
+        {/* Bonus promo banner — Zepto style, combined */}
+        <div className="relative overflow-hidden rounded-2xl px-4 py-3.5 bg-gradient-to-r from-primary/15 via-accent/20 to-primary/10 border border-primary/25">
+          <Sparkles className="absolute -top-1 -right-1 h-8 w-8 text-primary/20" />
+          <Sparkles className="absolute bottom-1 left-1/3 h-4 w-4 text-primary/15" />
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-2xl sm:text-3xl font-black font-serif text-primary leading-none">
+                2.5%
+              </span>
+              <span className="text-[11px] font-extrabold leading-tight text-primary">
+                EXTRA<br />CASH
+              </span>
             </div>
-          ))}
+            <p className="text-sm text-foreground/80 font-medium">
+              on adding{' '}
+              <span className="font-bold text-foreground">₹1,000</span>,{' '}
+              <span className="font-bold text-foreground">₹2,000</span> or{' '}
+              <span className="font-bold text-foreground">₹5,000</span> to MG Wallet
+            </p>
+          </div>
         </div>
 
         {/* Add money card */}
