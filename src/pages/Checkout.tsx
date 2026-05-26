@@ -67,6 +67,8 @@ const Checkout = () => {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [showPriceDetails, setShowPriceDetails] = useState(false);
   const [locatingUser, setLocatingUser] = useState(false);
+  const { balance: walletBalance } = useWallet();
+  const [useWalletBalance, setUseWalletBalance] = useState(false);
 
   // Coupon state
   const [couponCode, setCouponCode] = useState('');
