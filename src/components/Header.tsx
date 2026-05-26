@@ -34,6 +34,7 @@ const Header = () => {
   const { totalItems, isCartOpen: cartOpen, setCartOpen } = useCart();
   const { items: wishlistItems } = useWishlist();
   const { user, signOut } = useAuth();
+  const { balance: walletBalance } = useWallet();
   const navigate = useNavigate();
 
   const handleVoiceResult = (text: string) => {
