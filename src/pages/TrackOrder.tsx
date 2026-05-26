@@ -21,6 +21,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import Header from '@/components/Header';
+import RefundMethodPicker from '@/components/RefundMethodPicker';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
