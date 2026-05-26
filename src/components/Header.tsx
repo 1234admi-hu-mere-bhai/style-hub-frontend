@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, Heart, ShoppingBag, User, Menu, X, LogOut, Package, History, Mic, Camera, Wallet as WalletIcon } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { useWallet } from '@/hooks/useWallet';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useAuth } from '@/contexts/AuthContext';
 import {
