@@ -164,21 +164,56 @@ Deno.serve(async (req) => {
     // Create the order
     // Format: OD + 13-digit timestamp + 5 random digits (e.g. OD337282733413795100)
     const orderNumber = `OD${Date.now().toString().padStart(13, '0')}${Math.floor(10000 + Math.random() * 90000)}`;
+    const walletPortion = Number(pending.wallet_amount_used || 0);
+    const payuPortion = Math.max(0, Number(pending.total) - walletPortion);
+
+    // Debit wallet portion (atomic; will throw if insufficient)
+    if (walletPortion > 0) {
+      try {
+        await adminClient.rpc('adjust_wallet_balance', {
+          _user_id: pending.user_id,
+          _amount: -walletPortion,
+          _type: 'purchase',
+          _reference_type: 'order_pending',
+          _reference_id: txnid,
+          _description: `Wallet portion of order (txn ${txnid})`,
+        });
+      } catch (e) {
+        console.error('Wallet debit failed for txnid', txnid, e);
+        return Response.redirect(`${baseRedirect}?status=failure&txnid=${txnid}&reason=wallet`, 303);
+      }
+    }
+
     const { data: order, error: orderError } = await adminClient.from('orders').insert([{
       user_id: pending.user_id,
       order_number: orderNumber,
       status: 'placed',
-      payment_method: 'Online Payment (PayU)',
+      payment_method: walletPortion > 0 ? 'Wallet + Online (PayU)' : 'Online Payment (PayU)',
       payment_status: 'paid',
       payment_id: mihpayid || txnid,
       subtotal: pending.subtotal,
       shipping_cost: pending.shipping_cost,
       total: pending.total,
+      wallet_amount_used: walletPortion,
+      payu_amount: payuPortion,
       shipping_address: pending.shipping_address,
     }]).select().single();
 
     if (orderError || !order) {
       console.error('Order creation failed:', orderError);
+      // Refund the wallet portion we just debited
+      if (walletPortion > 0) {
+        try {
+          await adminClient.rpc('adjust_wallet_balance', {
+            _user_id: pending.user_id,
+            _amount: walletPortion,
+            _type: 'refund',
+            _reference_type: 'order_pending',
+            _reference_id: txnid,
+            _description: `Reversal — order creation failed (txn ${txnid})`,
+          });
+        } catch (e) { console.error('wallet reversal failed', e); }
+      }
       return Response.redirect(`${baseRedirect}?status=failure&txnid=${txnid}`, 303);
     }
 
