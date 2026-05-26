@@ -167,11 +167,18 @@ const Header = () => {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
+                        <Link to="/wallet" className="flex items-center gap-2">
+                          <WalletIcon size={16} />
+                          Wallet
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
                         <Link to="/track-order" className="flex items-center gap-2">
                           <Package size={16} />
                           Track Order
                         </Link>
                       </DropdownMenuItem>
+
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         onClick={handleSignOut}
