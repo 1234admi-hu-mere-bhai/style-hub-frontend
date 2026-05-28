@@ -126,11 +126,7 @@ const AdminProducts = () => {
       rotation_frames: product.rotation_frames || [],
     });
     setSizesInput((product.sizes || []).join(', '));
-    setColorsInput(
-      (product.colors || []).map((c: any) =>
-        typeof c === 'string' ? c : `${c.name}:${c.hex}${c.image ? ':' + c.image : ''}`
-      ).join(', ')
-    );
+    setColorsInput('');
     setTagsInput((product.tags || []).join(', '));
     setAdditionalImagesInput((product.additional_images || []).join(', '));
     setEditingId(product.id);
