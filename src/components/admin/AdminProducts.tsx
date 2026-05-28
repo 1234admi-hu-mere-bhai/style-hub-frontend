@@ -424,6 +424,11 @@ const AdminProducts = () => {
                 <Input value={additionalImagesInput} onChange={e => setAdditionalImagesInput(e.target.value)} placeholder="Additional Image URLs" />
               </div>
 
+              <div className="flex items-center gap-2 pt-3 pb-1 border-b border-border/60">
+                <span className="h-5 w-1 rounded-full bg-primary" />
+                <h4 className="text-sm font-bold uppercase tracking-wider text-foreground">3. AI Model Generation</h4>
+              </div>
+
               {/* AI Mannequin section */}
               <div className="rounded-lg border border-border/50 p-3 space-y-2 bg-secondary/20">
                 <div className="flex items-center justify-between flex-wrap gap-2">
