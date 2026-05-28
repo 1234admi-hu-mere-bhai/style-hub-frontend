@@ -63,15 +63,13 @@ const ProductDetail = () => {
       // Show only images for the selected color variant
       const variant = product.colors.find((c) => c.name === selectedColor);
       if (variant?.image) push(variant.image, `${product.name} in ${variant.name}`, 'cover');
-      if (variant?.images && Array.isArray(variant.images)) {
-        variant.images.forEach((src: string, i: number) =>
-          push(src, `${product.name} in ${variant.name} ${i + 1}`, 'cover')
-        );
-      }
+      // Include shared product photos so the user can scroll through more views of this variant
+      product.images.forEach((src, i) => push(src, `${product.name} ${variant?.name || ''} ${i + 1}`, 'cover'));
     } else {
       // No color variants — show all product images
       product.images.forEach((src, i) => push(src, `${product.name} photo ${i + 1}`, 'cover'));
     }
+
 
     if (product.mannequinImage) push(product.mannequinImage, `${product.name} on mannequin`, 'contain');
     if (product.humanModelImage) push(product.humanModelImage, `${product.name} on model`, 'contain');
