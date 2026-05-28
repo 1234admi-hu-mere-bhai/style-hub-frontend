@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Heart, Minus, Plus, Star, Truck, RefreshCw, Shield, Ruler, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, Minus, Plus, Star, Truck, RefreshCw, Shield, Ruler, Loader2, ChevronRight } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
@@ -33,9 +33,7 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<'photos' | 'mannequin' | 'model' | '360'>('photos');
+  
 
   const allImages = useMemo(() => {
     if (!product) return [];
@@ -49,31 +47,31 @@ const ProductDetail = () => {
     return product.images;
   }, [product, selectedColor]);
 
-  const currentImage = allImages[currentImageIndex] || (product?.images[0] ?? '');
+  const galleryItems = useMemo(() => {
+    const items: Array<
+      | { type: 'image'; src: string; alt: string; fit: 'cover' | 'contain' }
+      | { type: 'rotation'; frames: string[] }
+    > = allImages.map((src, index) => ({
+      type: 'image',
+      src,
+      alt: `${product?.name ?? 'Product'} photo ${index + 1}`,
+      fit: 'cover',
+    }));
 
-  const nextImage = useCallback(() => {
-    if (allImages.length <= 1) return;
-    setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
-  }, [allImages.length]);
-
-  const prevImage = useCallback(() => {
-    if (allImages.length <= 1) return;
-    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
-  }, [allImages.length]);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.touches[0].clientX);
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart === null) return;
-    const diff = touchStart - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) nextImage();
-      else prevImage();
+    if (product?.mannequinImage && !items.some((item) => item.type === 'image' && item.src === product.mannequinImage)) {
+      items.push({ type: 'image', src: product.mannequinImage, alt: `${product.name} on mannequin`, fit: 'contain' });
     }
-    setTouchStart(null);
-  };
+
+    if (product?.humanModelImage && !items.some((item) => item.type === 'image' && item.src === product.humanModelImage)) {
+      items.push({ type: 'image', src: product.humanModelImage, alt: `${product.name} on model`, fit: 'contain' });
+    }
+
+    if (product?.rotationFrames && product.rotationFrames.length > 0) {
+      items.push({ type: 'rotation', frames: product.rotationFrames });
+    }
+
+    return items;
+  }, [allImages, product]);
 
   if (loading) {
     return (
@@ -165,121 +163,34 @@ const ProductDetail = () => {
 
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
           <div className="space-y-3">
-            {/* View mode toggle: photos / mannequin / 360° */}
-            {(product.mannequinImage || product.humanModelImage || (product.rotationFrames && product.rotationFrames.length > 0)) && (
-              <div className="inline-flex p-1 rounded-full bg-secondary/60 border border-border/50 text-xs font-medium">
-                <button
-                  onClick={() => setViewMode('photos')}
-                  className={`px-3 py-1.5 rounded-full transition-colors ${viewMode === 'photos' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
-                >
-                  Photos
-                </button>
-                {product.mannequinImage && (
-                  <button
-                    onClick={() => setViewMode('mannequin')}
-                    className={`px-3 py-1.5 rounded-full transition-colors ${viewMode === 'mannequin' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
-                  >
-                    Mannequin
-                  </button>
-                )}
-                {product.humanModelImage && (
-                  <button
-                    onClick={() => setViewMode('model')}
-                    className={`px-3 py-1.5 rounded-full transition-colors ${viewMode === 'model' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
-                  >
-                    Model
-                  </button>
-                )}
-                {product.rotationFrames && product.rotationFrames.length > 0 && (
-                  <button
-                    onClick={() => setViewMode('360')}
-                    className={`px-3 py-1.5 rounded-full transition-colors ${viewMode === '360' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
-                  >
-                    360°
-                  </button>
-                )}
-              </div>
-            )}
-
-            {viewMode === 'mannequin' && product.mannequinImage ? (
-              <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-secondary">
-                <img src={product.mannequinImage} alt={`${product.name} on mannequin`} className="w-full h-full object-contain" />
-              </div>
-            ) : viewMode === 'model' && product.humanModelImage ? (
-              <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-secondary">
-                <img src={product.humanModelImage} alt={`${product.name} on model`} className="w-full h-full object-contain" />
-              </div>
-            ) : viewMode === '360' && product.rotationFrames && product.rotationFrames.length > 0 ? (
-              <div className="aspect-[3/4]">
-                <Product360Viewer frames={product.rotationFrames} className="h-full" />
-              </div>
-            ) : (
-            <>
-            {/* Main image with swipe */}
-            <div
-              className="relative aspect-[3/4] rounded-lg overflow-hidden bg-secondary"
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-            >
-              <img
-                src={currentImage}
-                alt={`${product.name}${selectedColor ? ` - ${selectedColor}` : ''}`}
-                className="w-full h-full object-cover transition-all duration-300"
-              />
-              <div className="absolute top-4 left-4 flex flex-col gap-2">
-                {product.isNew && <span className="badge-new rounded">NEW</span>}
-                {product.discount && <span className="badge-sale rounded">-{product.discount}%</span>}
-              </div>
-
-              {/* Navigation arrows */}
-              {allImages.length > 1 && (
-                <>
-                  <button
-                    onClick={prevImage}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/70 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-background/90 transition-colors"
-                  >
-                    <ChevronLeft className="w-5 h-5 text-foreground" />
-                  </button>
-                  <button
-                    onClick={nextImage}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-background/70 backdrop-blur-sm border border-border/50 flex items-center justify-center hover:bg-background/90 transition-colors"
-                  >
-                    <ChevronRight className="w-5 h-5 text-foreground" />
-                  </button>
-
-                  {/* Dots */}
-                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                    {allImages.map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setCurrentImageIndex(i)}
-                        className={`w-2 h-2 rounded-full transition-all ${
-                          i === currentImageIndex ? 'bg-primary w-5' : 'bg-background/60'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </>
-              )}
+            <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 lg:mx-0 lg:px-0">
+              {galleryItems.map((item, index) => (
+                <div key={item.type === 'image' ? item.src : `rotation-${index}`} className="relative min-w-full aspect-[3/4] snap-center rounded-lg overflow-hidden bg-secondary">
+                  {item.type === 'image' ? (
+                    <img
+                      src={item.src}
+                      alt={item.alt}
+                      className={`w-full h-full transition-all duration-300 ${item.fit === 'contain' ? 'object-contain' : 'object-cover'}`}
+                    />
+                  ) : (
+                    <Product360Viewer frames={item.frames} className="h-full rounded-lg" />
+                  )}
+                  {index === 0 && (
+                    <div className="absolute top-4 left-4 flex flex-col gap-2">
+                      {product.isNew && <span className="badge-new rounded">NEW</span>}
+                      {product.discount && <span className="badge-sale rounded">-{product.discount}%</span>}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
 
-            {/* Thumbnail strip */}
-            {allImages.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {allImages.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrentImageIndex(i)}
-                    className={`flex-shrink-0 w-16 h-20 rounded-md overflow-hidden border-2 transition-all ${
-                      i === currentImageIndex ? 'border-primary' : 'border-transparent hover:border-border'
-                    }`}
-                  >
-                    <img src={img} alt={`${product.name} ${i + 1}`} className="w-full h-full object-cover" />
-                  </button>
+            {galleryItems.length > 1 && (
+              <div className="flex justify-center gap-1.5">
+                {galleryItems.map((item, index) => (
+                  <span key={item.type === 'image' ? `dot-${item.src}` : `dot-rotation-${index}`} className="h-1.5 w-1.5 rounded-full bg-muted-foreground/35" />
                 ))}
               </div>
-            )}
-            </>
             )}
           </div>
 
