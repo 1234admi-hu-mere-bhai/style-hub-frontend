@@ -349,6 +349,39 @@ const ColorVariantsEditor = ({ value, onChange }: Props) => {
                   {uploadingIdx === idx ? <Loader2 className="h-3 w-3 animate-spin" /> : <RefreshCw className="h-3 w-3" />}
                   Re-detect
                 </Button>
+
+                {/* Extra images for this color (gallery scrolls through these after the main image) */}
+                <div className="pt-1 border-t border-border/40">
+                  <div className="text-[10px] text-muted-foreground mb-1">More photos ({(slot.images || []).length})</div>
+                  <div className="flex flex-wrap gap-1">
+                    {(slot.images || []).map((url, i) => (
+                      <div key={url + i} className="relative h-10 w-10 rounded overflow-hidden border border-border/60">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeExtraImage(idx, i)}
+                          className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-background text-destructive flex items-center justify-center text-[10px] border border-border"
+                          aria-label="Remove"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                    <label className="h-10 w-10 rounded border border-dashed border-border/60 hover:border-primary/60 flex items-center justify-center cursor-pointer">
+                      {uploadingIdx === idx ? <Loader2 className="h-3 w-3 animate-spin text-primary" /> : <Upload className="h-3 w-3 text-muted-foreground" />}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={e => {
+                          const f = e.target.files?.[0];
+                          if (f) addExtraImage(idx, f);
+                          e.target.value = '';
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
               </>
             ) : (
               <label className="cursor-pointer w-full aspect-square rounded border-2 border-dashed border-border/60 hover:border-primary/60 hover:bg-secondary/40 flex flex-col items-center justify-center gap-1 transition-colors">
