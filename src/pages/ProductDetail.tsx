@@ -35,7 +35,7 @@ const ProductDetail = () => {
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<'photos' | 'mannequin' | '360'>('photos');
+  const [viewMode, setViewMode] = useState<'photos' | 'mannequin' | 'model' | '360'>('photos');
 
   const allImages = useMemo(() => {
     if (!product) return [];
@@ -166,7 +166,7 @@ const ProductDetail = () => {
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
           <div className="space-y-3">
             {/* View mode toggle: photos / mannequin / 360° */}
-            {(product.mannequinImage || (product.rotationFrames && product.rotationFrames.length > 0)) && (
+            {(product.mannequinImage || product.humanModelImage || (product.rotationFrames && product.rotationFrames.length > 0)) && (
               <div className="inline-flex p-1 rounded-full bg-secondary/60 border border-border/50 text-xs font-medium">
                 <button
                   onClick={() => setViewMode('photos')}
@@ -180,6 +180,14 @@ const ProductDetail = () => {
                     className={`px-3 py-1.5 rounded-full transition-colors ${viewMode === 'mannequin' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
                   >
                     Mannequin
+                  </button>
+                )}
+                {product.humanModelImage && (
+                  <button
+                    onClick={() => setViewMode('model')}
+                    className={`px-3 py-1.5 rounded-full transition-colors ${viewMode === 'model' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
+                  >
+                    Model
                   </button>
                 )}
                 {product.rotationFrames && product.rotationFrames.length > 0 && (
@@ -196,6 +204,10 @@ const ProductDetail = () => {
             {viewMode === 'mannequin' && product.mannequinImage ? (
               <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-secondary">
                 <img src={product.mannequinImage} alt={`${product.name} on mannequin`} className="w-full h-full object-contain" />
+              </div>
+            ) : viewMode === 'model' && product.humanModelImage ? (
+              <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-secondary">
+                <img src={product.humanModelImage} alt={`${product.name} on model`} className="w-full h-full object-contain" />
               </div>
             ) : viewMode === '360' && product.rotationFrames && product.rotationFrames.length > 0 ? (
               <div className="aspect-[3/4]">

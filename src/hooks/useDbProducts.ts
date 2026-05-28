@@ -21,6 +21,7 @@ export interface DbProduct {
   description: string | null;
   created_at: string;
   mannequin_image?: string | null;
+  human_model_image?: string | null;
   rotation_frames?: string[] | null;
 }
 
@@ -43,6 +44,7 @@ export interface StoreProduct {
   isFlashSale?: boolean;
   subcategory?: string;
   mannequinImage?: string;
+  humanModelImage?: string;
   rotationFrames?: string[];
 }
 
@@ -75,6 +77,7 @@ export const dbToStoreProduct = (p: DbProduct): StoreProduct => {
     isFeatured: true,
     subcategory: p.subcategory || '',
     mannequinImage: p.mannequin_image || undefined,
+    humanModelImage: p.human_model_image || undefined,
     rotationFrames: (p.rotation_frames || []).filter(Boolean),
   };
 };

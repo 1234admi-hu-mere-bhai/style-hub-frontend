@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Package, Loader2, X, Sparkles, RotateCw } from 'lucide-react';
+import { Plus, Pencil, Trash2, Package, Loader2, X, Sparkles, RotateCw, User, Upload } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -32,6 +32,7 @@ interface Product {
   description: string;
   created_at: string;
   mannequin_image?: string | null;
+  human_model_image?: string | null;
   rotation_frames?: string[] | null;
 }
 
@@ -53,6 +54,7 @@ const EMPTY_PRODUCT = {
   in_stock: true,
   description: '',
   mannequin_image: '' as string,
+  human_model_image: '' as string,
   rotation_frames: [] as string[],
 };
 
@@ -119,6 +121,7 @@ const AdminProducts = () => {
       in_stock: product.in_stock,
       description: product.description,
       mannequin_image: product.mannequin_image || '',
+      human_model_image: product.human_model_image || '',
       rotation_frames: product.rotation_frames || [],
     });
     setSizesInput((product.sizes || []).join(', '));
@@ -194,39 +197,71 @@ const AdminProducts = () => {
   };
 
   const [generatingMannequin, setGeneratingMannequin] = useState(false);
+  const [generatingHuman, setGeneratingHuman] = useState(false);
   const [generating360, setGenerating360] = useState(false);
+  const [uploadingField, setUploadingField] = useState<string | null>(null);
+  const [rotationBase, setRotationBase] = useState<'mannequin' | 'human' | 'product'>('mannequin');
 
-  const handleGenerateMannequin = async () => {
+  // Upload a file from gallery to product-images bucket, returns public URL
+  const uploadToStorage = async (file: File, folder: string): Promise<string> => {
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `uploads/${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from('product-images').upload(path, file, { upsert: false });
+    if (error) throw error;
+    const { data } = supabase.storage.from('product-images').getPublicUrl(path);
+    return data.publicUrl;
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'image' | 'mannequin_image' | 'human_model_image') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingField(field);
+    try {
+      const url = await uploadToStorage(file, field);
+      setForm(f => ({ ...f, [field]: url }));
+      toast({ title: 'Image uploaded' });
+    } catch (err: any) {
+      toast({ title: 'Upload failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setUploadingField(null);
+      e.target.value = '';
+    }
+  };
+
+  const runGenerate = async (action: 'mannequin' | 'human') => {
     if (!form.image) {
-      toast({ title: 'Add product image first', description: 'Image URL is required to generate a mannequin.', variant: 'destructive' });
+      toast({ title: 'Add a product image first', variant: 'destructive' });
       return;
     }
-    setGeneratingMannequin(true);
+    const setter = action === 'human' ? setGeneratingHuman : setGeneratingMannequin;
+    setter(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-product-mannequin', {
-        body: { action: 'mannequin', productImage: form.image, subcategory: form.subcategory, productId: editingId || undefined },
+        body: { action, productImage: form.image, subcategory: form.subcategory, productId: editingId || undefined },
       });
       if (error) throw error;
       if (!data?.url) throw new Error('No image returned');
-      setForm(f => ({ ...f, mannequin_image: data.url }));
-      toast({ title: 'Mannequin generated', description: `Region: ${data.region}. Remember to Save.` });
+      setForm(f => ({ ...f, [action === 'human' ? 'human_model_image' : 'mannequin_image']: data.url }));
+      toast({ title: `${action === 'human' ? 'Human model' : 'Mannequin'} generated`, description: `Region: ${data.region}. Remember to Save.` });
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
-      setGeneratingMannequin(false);
+      setter(false);
     }
   };
 
   const handleGenerate360 = async () => {
-    const base = form.mannequin_image || form.image;
+    const base = rotationBase === 'human' ? form.human_model_image
+      : rotationBase === 'mannequin' ? form.mannequin_image
+      : form.image;
     if (!base) {
-      toast({ title: 'Generate mannequin first', description: 'A mannequin or product image is required.', variant: 'destructive' });
+      toast({ title: `No ${rotationBase} image available`, description: 'Generate or upload it first.', variant: 'destructive' });
       return;
     }
     setGenerating360(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-product-mannequin', {
-        body: { action: 'rotation', mannequinImage: form.mannequin_image, productImage: form.image, subcategory: form.subcategory, productId: editingId || undefined, frameCount: 12 },
+        body: { action: 'rotation', baseImage: base, subject: rotationBase === 'human' ? 'human' : 'mannequin', subcategory: form.subcategory, productId: editingId || undefined, frameCount: 12 },
       });
       if (error) throw error;
       if (!data?.frames?.length) throw new Error('No frames returned');
@@ -305,8 +340,18 @@ const AdminProducts = () => {
                 <Input value={form.subcategory} onChange={e => setForm({ ...form, subcategory: e.target.value })} placeholder="Subcategory" />
               </div>
               <div>
-                <Label>Image URL *</Label>
-                <Input value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} placeholder="Image URL" />
+                <Label>Product Image *</Label>
+                <div className="flex gap-2">
+                  <Input value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} placeholder="Paste URL or upload below" className="flex-1" />
+                  <Button type="button" variant="outline" size="sm" disabled={uploadingField === 'image'} asChild>
+                    <label className="cursor-pointer">
+                      {uploadingField === 'image' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                      <span className="ml-1.5">Upload</span>
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, 'image')} />
+                    </label>
+                  </Button>
+                </div>
+                {form.image && <img src={form.image} alt="Product preview" className="mt-2 w-24 h-32 object-cover rounded-md bg-muted" />}
               </div>
               <div>
                 <Label>Stock Quantity</Label>
@@ -323,15 +368,24 @@ const AdminProducts = () => {
 
               {/* AI Mannequin section */}
               <div className="rounded-lg border border-border/50 p-3 space-y-2 bg-secondary/20">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
-                    <Label className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-primary" /> Mannequin Image (AI)</Label>
-                    <p className="text-xs text-muted-foreground">Auto-dresses garment on mannequin. Upper or lower body chosen from subcategory.</p>
+                    <Label className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-primary" /> Mannequin Image</Label>
+                    <p className="text-xs text-muted-foreground">AI dresses garment on a faceless mannequin. Body region auto-detected from subcategory.</p>
                   </div>
-                  <Button type="button" size="sm" variant="outline" onClick={handleGenerateMannequin} disabled={generatingMannequin || !form.image}>
-                    {generatingMannequin ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                    <span className="ml-1.5">{form.mannequin_image ? 'Regenerate' : 'Generate'}</span>
-                  </Button>
+                  <div className="flex gap-1.5">
+                    <Button type="button" size="sm" variant="outline" disabled={uploadingField === 'mannequin_image'} asChild>
+                      <label className="cursor-pointer">
+                        {uploadingField === 'mannequin_image' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                        <span className="ml-1.5">Upload</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, 'mannequin_image')} />
+                      </label>
+                    </Button>
+                    <Button type="button" size="sm" variant="outline" onClick={() => runGenerate('mannequin')} disabled={generatingMannequin || !form.image}>
+                      {generatingMannequin ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                      <span className="ml-1.5">{form.mannequin_image ? 'Regenerate' : 'AI Generate'}</span>
+                    </Button>
+                  </div>
                 </div>
                 {form.mannequin_image && (
                   <div className="flex items-start gap-3">
@@ -343,17 +397,58 @@ const AdminProducts = () => {
                 )}
               </div>
 
+              {/* AI Human Model section */}
+              <div className="rounded-lg border border-border/50 p-3 space-y-2 bg-secondary/20">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <Label className="flex items-center gap-1.5"><User className="h-3.5 w-3.5 text-primary" /> Real Human Model</Label>
+                    <p className="text-xs text-muted-foreground">AI dresses garment on a realistic human model. Same body-region rules apply.</p>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <Button type="button" size="sm" variant="outline" disabled={uploadingField === 'human_model_image'} asChild>
+                      <label className="cursor-pointer">
+                        {uploadingField === 'human_model_image' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                        <span className="ml-1.5">Upload</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, 'human_model_image')} />
+                      </label>
+                    </Button>
+                    <Button type="button" size="sm" variant="outline" onClick={() => runGenerate('human')} disabled={generatingHuman || !form.image}>
+                      {generatingHuman ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <User className="h-3.5 w-3.5" />}
+                      <span className="ml-1.5">{form.human_model_image ? 'Regenerate' : 'AI Generate'}</span>
+                    </Button>
+                  </div>
+                </div>
+                {form.human_model_image && (
+                  <div className="flex items-start gap-3">
+                    <img src={form.human_model_image} alt="Human model preview" className="w-24 h-32 object-cover rounded-md bg-muted" />
+                    <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={() => setForm(f => ({ ...f, human_model_image: '' }))}>
+                      <X className="h-3.5 w-3.5 mr-1" /> Remove
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               {/* AI 360° section */}
               <div className="rounded-lg border border-border/50 p-3 space-y-2 bg-secondary/20">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
-                    <Label className="flex items-center gap-1.5"><RotateCw className="h-3.5 w-3.5 text-primary" /> 360° View (AI)</Label>
-                    <p className="text-xs text-muted-foreground">12 frames user can drag-rotate. Uses mannequin if available.</p>
+                    <Label className="flex items-center gap-1.5"><RotateCw className="h-3.5 w-3.5 text-primary" /> 360° View</Label>
+                    <p className="text-xs text-muted-foreground">12 frames user can drag-rotate. Pick which base to wrap around.</p>
                   </div>
-                  <Button type="button" size="sm" variant="outline" onClick={handleGenerate360} disabled={generating360 || (!form.mannequin_image && !form.image)}>
-                    {generating360 ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCw className="h-3.5 w-3.5" />}
-                    <span className="ml-1.5">{form.rotation_frames.length > 0 ? 'Regenerate' : 'Generate'}</span>
-                  </Button>
+                  <div className="flex gap-1.5 items-center">
+                    <Select value={rotationBase} onValueChange={(v: any) => setRotationBase(v)}>
+                      <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="mannequin">Mannequin</SelectItem>
+                        <SelectItem value="human">Human model</SelectItem>
+                        <SelectItem value="product">Product</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button type="button" size="sm" variant="outline" onClick={handleGenerate360} disabled={generating360}>
+                      {generating360 ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCw className="h-3.5 w-3.5" />}
+                      <span className="ml-1.5">{form.rotation_frames.length > 0 ? 'Regenerate' : 'Generate'}</span>
+                    </Button>
+                  </div>
                 </div>
                 {generating360 && (
                   <p className="text-xs text-muted-foreground">Generating 12 frames sequentially… ~1–2 min.</p>
@@ -372,6 +467,7 @@ const AdminProducts = () => {
                   </div>
                 )}
               </div>
+
 
               <div>
                 <Label>Sizes (comma-separated) *</Label>
