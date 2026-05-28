@@ -45,8 +45,8 @@ Deno.serve(async (req) => {
     // and auto-fire a refund.
     const { data: orders, error: fetchError } = await serviceClient
       .from('orders')
-      .select('id, tracking_awb, status, payment_method, payment_status')
-      .not('tracking_awb', 'is', null)
+      .select('id, tracking_awb, reverse_awb, status, payment_method, payment_status')
+      .or('tracking_awb.not.is.null,reverse_awb.not.is.null')
       .not('status', 'in', '("delivered","cancelled","replacement_delivered","refund_processed")');
 
     if (fetchError) throw fetchError;
@@ -62,8 +62,13 @@ Deno.serve(async (req) => {
 
     for (const order of orders) {
       try {
+        const inReturnFlow = ['return_approved', 'return_requested', 'picked_up_pending'].includes(order.status);
+        // In return flow, prefer the reverse AWB so we see pickup scans.
+        const awbToPoll = inReturnFlow && order.reverse_awb ? order.reverse_awb : order.tracking_awb;
+        if (!awbToPoll) continue;
+
         const response = await fetch(
-          `${DELHIVERY_BASE}/api/v1/packages/json/?waybill=${encodeURIComponent(order.tracking_awb!)}`,
+          `${DELHIVERY_BASE}/api/v1/packages/json/?waybill=${encodeURIComponent(awbToPoll)}`,
           {
             headers: {
               'Authorization': `Token ${DELHIVERY_API_KEY}`,
