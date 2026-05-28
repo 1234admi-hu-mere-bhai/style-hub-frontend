@@ -193,6 +193,52 @@ const AdminProducts = () => {
     }
   };
 
+  const [generatingMannequin, setGeneratingMannequin] = useState(false);
+  const [generating360, setGenerating360] = useState(false);
+
+  const handleGenerateMannequin = async () => {
+    if (!form.image) {
+      toast({ title: 'Add product image first', description: 'Image URL is required to generate a mannequin.', variant: 'destructive' });
+      return;
+    }
+    setGeneratingMannequin(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-product-mannequin', {
+        body: { action: 'mannequin', productImage: form.image, subcategory: form.subcategory, productId: editingId || undefined },
+      });
+      if (error) throw error;
+      if (!data?.url) throw new Error('No image returned');
+      setForm(f => ({ ...f, mannequin_image: data.url }));
+      toast({ title: 'Mannequin generated', description: `Region: ${data.region}. Remember to Save.` });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setGeneratingMannequin(false);
+    }
+  };
+
+  const handleGenerate360 = async () => {
+    const base = form.mannequin_image || form.image;
+    if (!base) {
+      toast({ title: 'Generate mannequin first', description: 'A mannequin or product image is required.', variant: 'destructive' });
+      return;
+    }
+    setGenerating360(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-product-mannequin', {
+        body: { action: 'rotation', mannequinImage: form.mannequin_image, productImage: form.image, subcategory: form.subcategory, productId: editingId || undefined, frameCount: 12 },
+      });
+      if (error) throw error;
+      if (!data?.frames?.length) throw new Error('No frames returned');
+      setForm(f => ({ ...f, rotation_frames: data.frames }));
+      toast({ title: '360° frames generated', description: `${data.frames.length} frames ready. Remember to Save.` });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setGenerating360(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
