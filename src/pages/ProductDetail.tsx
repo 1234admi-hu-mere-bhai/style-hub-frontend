@@ -123,7 +123,7 @@ const ProductDetail = () => {
       return;
     }
     if (!selectedSize) { toast.error('Please select a size'); return; }
-    if (!selectedColor) { toast.error('Please select a color'); return; }
+    if (product.colors.length > 0 && !selectedColor) { toast.error('Please select a color'); return; }
     addToCart({
       id: product.id,
       name: product.name,
