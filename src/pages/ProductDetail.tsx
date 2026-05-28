@@ -165,6 +165,44 @@ const ProductDetail = () => {
 
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
           <div className="space-y-3">
+            {/* View mode toggle: photos / mannequin / 360° */}
+            {(product.mannequinImage || (product.rotationFrames && product.rotationFrames.length > 0)) && (
+              <div className="inline-flex p-1 rounded-full bg-secondary/60 border border-border/50 text-xs font-medium">
+                <button
+                  onClick={() => setViewMode('photos')}
+                  className={`px-3 py-1.5 rounded-full transition-colors ${viewMode === 'photos' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
+                >
+                  Photos
+                </button>
+                {product.mannequinImage && (
+                  <button
+                    onClick={() => setViewMode('mannequin')}
+                    className={`px-3 py-1.5 rounded-full transition-colors ${viewMode === 'mannequin' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
+                  >
+                    Mannequin
+                  </button>
+                )}
+                {product.rotationFrames && product.rotationFrames.length > 0 && (
+                  <button
+                    onClick={() => setViewMode('360')}
+                    className={`px-3 py-1.5 rounded-full transition-colors ${viewMode === '360' ? 'bg-background shadow-sm' : 'text-muted-foreground'}`}
+                  >
+                    360°
+                  </button>
+                )}
+              </div>
+            )}
+
+            {viewMode === 'mannequin' && product.mannequinImage ? (
+              <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-secondary">
+                <img src={product.mannequinImage} alt={`${product.name} on mannequin`} className="w-full h-full object-contain" />
+              </div>
+            ) : viewMode === '360' && product.rotationFrames && product.rotationFrames.length > 0 ? (
+              <div className="aspect-[3/4]">
+                <Product360Viewer frames={product.rotationFrames} className="h-full" />
+              </div>
+            ) : (
+            <>
             {/* Main image with swipe */}
             <div
               className="relative aspect-[3/4] rounded-lg overflow-hidden bg-secondary"
@@ -228,6 +266,8 @@ const ProductDetail = () => {
                   </button>
                 ))}
               </div>
+            )}
+            </>
             )}
           </div>
 
