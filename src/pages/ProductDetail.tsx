@@ -137,6 +137,7 @@ const ProductDetail = () => {
   const inWishlist = isInWishlist(product.id);
   
   const relatedProducts = allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4);
+  const selectedProductImage = selectedColorVariant?.image || product.images[0];
 
   const handleAddToCart = () => {
     if (addedToCart) {
@@ -150,7 +151,7 @@ const ProductDetail = () => {
       name: product.name,
       price: product.price,
       originalPrice: product.originalPrice,
-      image: product.images[0],
+      image: selectedProductImage,
       size: selectedSize,
       color: selectedColor,
       quantity,
@@ -166,7 +167,7 @@ const ProductDetail = () => {
       name: product.name,
       price: product.price,
       originalPrice: product.originalPrice,
-      image: product.images[0],
+      image: selectedProductImage,
       size: selectedSize,
       color: selectedColor,
       quantity,
