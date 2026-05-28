@@ -257,7 +257,25 @@ const ColorVariantsEditor = ({ value, onChange }: Props) => {
     }
   };
 
-  const clearSlot = (idx: number) => updateSlot(idx, { name: '', hex: '', image: '' });
+  const clearSlot = (idx: number) => updateSlot(idx, { name: '', hex: '', image: '', images: [] });
+
+  const addExtraImage = async (idx: number, file: File) => {
+    setUploadingIdx(idx);
+    try {
+      const url = await uploadToStorage(file);
+      const existing = value[idx]?.images || [];
+      updateSlot(idx, { images: [...existing, url] });
+    } catch (err: any) {
+      toast({ title: 'Upload failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setUploadingIdx(null);
+    }
+  };
+
+  const removeExtraImage = (idx: number, imgIdx: number) => {
+    const existing = value[idx]?.images || [];
+    updateSlot(idx, { images: existing.filter((_, i) => i !== imgIdx) });
+  };
 
   const slots = Array.from({ length: slotCount }, (_, i) => value[i] || { name: '', hex: '', image: '' });
   const filled = slots.filter(s => s.image).length;
