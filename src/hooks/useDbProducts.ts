@@ -35,7 +35,7 @@ export interface StoreProduct {
   discount?: number;
   images: string[];
   sizes: string[];
-  colors: { name: string; hex: string; image?: string }[];
+  colors: { name: string; hex: string; image?: string; images?: string[] }[];
   rating: number;
   reviews: number;
   description: string;
