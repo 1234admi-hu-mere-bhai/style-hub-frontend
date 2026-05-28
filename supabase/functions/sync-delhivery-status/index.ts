@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
         );
 
         if (!response.ok) {
-          errors.push(`AWB ${order.tracking_awb}: HTTP ${response.status}`);
+          errors.push(`AWB ${awbToPoll}: HTTP ${response.status}`);
           await response.text();
           continue;
         }
