@@ -247,18 +247,19 @@ const InvoiceDialog = ({
           <div class="grid">
             <div class="card">
               <h3>Billed To</h3>
-              <p><strong>${addr.firstName} ${addr.lastName}</strong></p>
-              <p>${addr.address}${addr.landmark ? `, ${addr.landmark}` : ''}</p>
-              <p>${addr.city}, ${addr.state} - ${addr.pincode}</p>
-              ${addr.phone ? `<p>📞 ${addr.phone}</p>` : ''}
+              <p><strong>${escapeHtml(addr.firstName)} ${escapeHtml(addr.lastName)}</strong></p>
+              <p>${escapeHtml(addr.address)}${addr.landmark ? `, ${escapeHtml(addr.landmark)}` : ''}</p>
+              <p>${escapeHtml(addr.city)}, ${escapeHtml(addr.state)} - ${escapeHtml(addr.pincode)}</p>
+              ${addr.phone ? `<p>📞 ${escapeHtml(addr.phone)}</p>` : ''}
             </div>
             <div class="card">
               <h3>Payment</h3>
-              <p><strong>Method:</strong> ${order.payment_method}</p>
-              <p><strong>Status:</strong> ${order.payment_status === 'paid' ? '✓ Paid' : order.payment_status}</p>
-              ${order.payment_id ? `<p><strong>Txn ID:</strong> ${order.payment_id}</p>` : ''}
+              <p><strong>Method:</strong> ${escapeHtml(order.payment_method)}</p>
+              <p><strong>Status:</strong> ${order.payment_status === 'paid' ? '✓ Paid' : escapeHtml(order.payment_status)}</p>
+              ${order.payment_id ? `<p><strong>Txn ID:</strong> ${escapeHtml(order.payment_id)}</p>` : ''}
             </div>
           </div>
+
 
           <table>
             <thead>
