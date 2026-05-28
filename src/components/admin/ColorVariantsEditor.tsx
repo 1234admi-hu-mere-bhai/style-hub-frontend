@@ -248,7 +248,11 @@ const ColorVariantsEditor = ({ value, onChange }: Props) => {
                   />
                   <Input
                     value={slot.name}
-                    onChange={e => updateSlot(idx, { name: e.target.value })}
+                    onChange={e => {
+                      const name = e.target.value;
+                      const matchedHex = nameToHex(name);
+                      updateSlot(idx, matchedHex ? { name, hex: matchedHex } : { name });
+                    }}
                     placeholder="Color name"
                     className="h-7 text-xs px-1.5"
                   />
