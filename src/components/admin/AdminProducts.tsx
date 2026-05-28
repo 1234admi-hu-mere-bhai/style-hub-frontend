@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Package, Loader2, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Package, Loader2, X, Sparkles, RotateCw } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -31,6 +31,8 @@ interface Product {
   in_stock: boolean;
   description: string;
   created_at: string;
+  mannequin_image?: string | null;
+  rotation_frames?: string[] | null;
 }
 
 const EMPTY_PRODUCT = {
@@ -50,6 +52,8 @@ const EMPTY_PRODUCT = {
   tags: [] as string[],
   in_stock: true,
   description: '',
+  mannequin_image: '' as string,
+  rotation_frames: [] as string[],
 };
 
 const AdminProducts = () => {
@@ -114,6 +118,8 @@ const AdminProducts = () => {
       tags: product.tags || [],
       in_stock: product.in_stock,
       description: product.description,
+      mannequin_image: product.mannequin_image || '',
+      rotation_frames: product.rotation_frames || [],
     });
     setSizesInput((product.sizes || []).join(', '));
     setColorsInput(
@@ -184,6 +190,52 @@ const AdminProducts = () => {
       fetchProducts();
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    }
+  };
+
+  const [generatingMannequin, setGeneratingMannequin] = useState(false);
+  const [generating360, setGenerating360] = useState(false);
+
+  const handleGenerateMannequin = async () => {
+    if (!form.image) {
+      toast({ title: 'Add product image first', description: 'Image URL is required to generate a mannequin.', variant: 'destructive' });
+      return;
+    }
+    setGeneratingMannequin(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-product-mannequin', {
+        body: { action: 'mannequin', productImage: form.image, subcategory: form.subcategory, productId: editingId || undefined },
+      });
+      if (error) throw error;
+      if (!data?.url) throw new Error('No image returned');
+      setForm(f => ({ ...f, mannequin_image: data.url }));
+      toast({ title: 'Mannequin generated', description: `Region: ${data.region}. Remember to Save.` });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setGeneratingMannequin(false);
+    }
+  };
+
+  const handleGenerate360 = async () => {
+    const base = form.mannequin_image || form.image;
+    if (!base) {
+      toast({ title: 'Generate mannequin first', description: 'A mannequin or product image is required.', variant: 'destructive' });
+      return;
+    }
+    setGenerating360(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-product-mannequin', {
+        body: { action: 'rotation', mannequinImage: form.mannequin_image, productImage: form.image, subcategory: form.subcategory, productId: editingId || undefined, frameCount: 12 },
+      });
+      if (error) throw error;
+      if (!data?.frames?.length) throw new Error('No frames returned');
+      setForm(f => ({ ...f, rotation_frames: data.frames }));
+      toast({ title: '360° frames generated', description: `${data.frames.length} frames ready. Remember to Save.` });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setGenerating360(false);
     }
   };
 
@@ -268,6 +320,59 @@ const AdminProducts = () => {
                 <Label>Additional Images (comma-separated URLs)</Label>
                 <Input value={additionalImagesInput} onChange={e => setAdditionalImagesInput(e.target.value)} placeholder="Additional Image URLs" />
               </div>
+
+              {/* AI Mannequin section */}
+              <div className="rounded-lg border border-border/50 p-3 space-y-2 bg-secondary/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-primary" /> Mannequin Image (AI)</Label>
+                    <p className="text-xs text-muted-foreground">Auto-dresses garment on mannequin. Upper or lower body chosen from subcategory.</p>
+                  </div>
+                  <Button type="button" size="sm" variant="outline" onClick={handleGenerateMannequin} disabled={generatingMannequin || !form.image}>
+                    {generatingMannequin ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                    <span className="ml-1.5">{form.mannequin_image ? 'Regenerate' : 'Generate'}</span>
+                  </Button>
+                </div>
+                {form.mannequin_image && (
+                  <div className="flex items-start gap-3">
+                    <img src={form.mannequin_image} alt="Mannequin preview" className="w-24 h-32 object-cover rounded-md bg-muted" />
+                    <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={() => setForm(f => ({ ...f, mannequin_image: '' }))}>
+                      <X className="h-3.5 w-3.5 mr-1" /> Remove
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* AI 360° section */}
+              <div className="rounded-lg border border-border/50 p-3 space-y-2 bg-secondary/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="flex items-center gap-1.5"><RotateCw className="h-3.5 w-3.5 text-primary" /> 360° View (AI)</Label>
+                    <p className="text-xs text-muted-foreground">12 frames user can drag-rotate. Uses mannequin if available.</p>
+                  </div>
+                  <Button type="button" size="sm" variant="outline" onClick={handleGenerate360} disabled={generating360 || (!form.mannequin_image && !form.image)}>
+                    {generating360 ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCw className="h-3.5 w-3.5" />}
+                    <span className="ml-1.5">{form.rotation_frames.length > 0 ? 'Regenerate' : 'Generate'}</span>
+                  </Button>
+                </div>
+                {generating360 && (
+                  <p className="text-xs text-muted-foreground">Generating 12 frames sequentially… ~1–2 min.</p>
+                )}
+                {form.rotation_frames.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">{form.rotation_frames.length} frames</p>
+                    <div className="flex gap-1.5 overflow-x-auto">
+                      {form.rotation_frames.map((url, i) => (
+                        <img key={i} src={url} alt={`Frame ${i + 1}`} className="w-12 h-16 object-cover rounded bg-muted flex-shrink-0" />
+                      ))}
+                    </div>
+                    <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={() => setForm(f => ({ ...f, rotation_frames: [] }))}>
+                      <X className="h-3.5 w-3.5 mr-1" /> Remove all frames
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               <div>
                 <Label>Sizes (comma-separated) *</Label>
                 <Input value={sizesInput} onChange={e => setSizesInput(e.target.value)} placeholder="S, M, L, XL" />

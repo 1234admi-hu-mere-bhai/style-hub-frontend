@@ -33,3 +33,6 @@ project_id = "zybjzfffkylezzvotcnn"
     verify_jwt = false
   [functions.flash-sale-broadcast]
     verify_jwt = false
+  [functions.generate-product-mannequin]
+    verify_jwt = false
+
