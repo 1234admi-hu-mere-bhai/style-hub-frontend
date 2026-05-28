@@ -598,6 +598,7 @@ export type Database = {
           created_at: string
           description: string | null
           discount: number | null
+          human_model_image: string | null
           id: string
           image: string
           in_stock: boolean | null
@@ -622,6 +623,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           discount?: number | null
+          human_model_image?: string | null
           id?: string
           image?: string
           in_stock?: boolean | null
@@ -646,6 +648,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           discount?: number | null
+          human_model_image?: string | null
           id?: string
           image?: string
           in_stock?: boolean | null
