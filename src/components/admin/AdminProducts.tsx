@@ -494,16 +494,10 @@ const AdminProducts = () => {
                 <Label>Sizes (comma-separated) *</Label>
                 <Input value={sizesInput} onChange={e => setSizesInput(e.target.value)} placeholder="S, M, L, XL" />
               </div>
-              <div>
-                <Label>Colors with Images (Name:Hex:ImageURL, comma-separated)</Label>
-                <p className="text-xs text-muted-foreground mb-1.5">Format: ColorName:HexCode:ImageURL — image URL is optional. Each color can have its own image that shows when selected.</p>
-                <Textarea
-                  value={colorsInput}
-                  onChange={e => setColorsInput(e.target.value)}
-                  placeholder="Blue:#3B82F6:https://img-blue.jpg, Black:#111111:https://img-black.jpg, Red:#EF4444"
-                  rows={3}
-                />
-              </div>
+              <ColorVariantsEditor
+                value={(form.colors as ColorVariant[]) || []}
+                onChange={(next) => setForm(f => ({ ...f, colors: next }))}
+              />
               <div>
                 <Label>Tags (comma-separated)</Label>
                 <Input value={tagsInput} onChange={e => setTagsInput(e.target.value)} placeholder="bestseller, trending" />
