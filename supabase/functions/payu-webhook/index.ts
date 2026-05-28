@@ -5,6 +5,7 @@
 // IMPORTANT: verify_jwt = false in supabase/config.toml — PayU does not
 // send a Supabase auth token. Security comes from validating the PayU hash.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { autoCreateDelhiveryShipment } from "../_shared/auto-shipment.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
