@@ -459,6 +459,7 @@ export type Database = {
           refund_processed_at: string | null
           rejection_reason: string | null
           return_reason: string | null
+          reverse_awb: string | null
           shipping_address: Json
           shipping_cost: number
           status: string
@@ -488,6 +489,7 @@ export type Database = {
           refund_processed_at?: string | null
           rejection_reason?: string | null
           return_reason?: string | null
+          reverse_awb?: string | null
           shipping_address: Json
           shipping_cost?: number
           status?: string
@@ -517,6 +519,7 @@ export type Database = {
           refund_processed_at?: string | null
           rejection_reason?: string | null
           return_reason?: string | null
+          reverse_awb?: string | null
           shipping_address?: Json
           shipping_cost?: number
           status?: string

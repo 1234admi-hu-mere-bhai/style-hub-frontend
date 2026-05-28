@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { autoCreateDelhiveryReversePickup } from '../_shared/auto-reverse-pickup.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -167,6 +168,19 @@ Deno.serve(async (req) => {
       await adminClient.from('returns')
         .update({ admin_window_expires_at: expires, status: 'approved', updated_at: new Date().toISOString() })
         .eq('order_id', orderId);
+
+      // 🔁 Auto-create Delhivery reverse pickup so customer sees pickup tracking immediately.
+      // sync-delhivery-status cron will then auto-advance to picked_up → fires payu-refund.
+      try {
+        const rev = await autoCreateDelhiveryReversePickup(adminClient, orderId);
+        if (rev.awb) {
+          console.log(`Reverse pickup AWB created for order ${orderId}: ${rev.awb}`);
+        } else if (rev.error) {
+          console.error(`Reverse pickup failed for order ${orderId}: ${rev.error}`);
+        }
+      } catch (e) {
+        console.error('autoCreateDelhiveryReversePickup invoke failed:', e);
+      }
     }
 
 
