@@ -111,6 +111,13 @@ Deno.serve(async (req) => {
         console.error('Invoice generation failed:', e);
       }
 
+      // Auto-create Delhivery shipment (best-effort). Cron sync will advance the timeline.
+      try {
+        const ship = await autoCreateDelhiveryShipment(adminClient, orderId);
+        if (ship.awb) console.log(`[verify-payment] auto AWB ${ship.awb} for order ${orderId}`);
+        else console.warn(`[verify-payment] auto shipment skipped/failed:`, ship);
+      } catch (e) { console.error('auto shipment exception', e); }
+
       return new Response(JSON.stringify({ success: true, verified: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     } else {
       return new Response(JSON.stringify({ success: false, verified: false, message: 'Payment verification failed' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
