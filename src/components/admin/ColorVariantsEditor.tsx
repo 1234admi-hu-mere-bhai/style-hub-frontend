@@ -307,8 +307,15 @@ const ColorVariantsEditor = ({ value, onChange }: Props) => {
             </SelectContent>
           </Select>
           <span className="text-xs text-muted-foreground">{filled}/{slotCount} filled</span>
+          <Label className="text-xs ml-2">Max photos/color:</Label>
+          <Select value={String(maxPerColor)} onValueChange={v => setMaxPerColor(Number(v))}>
+            <SelectTrigger className="h-8 w-16"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {[1,2,3,4,5,6,8,10].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
-      </div>
+
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
         {slots.map((slot, idx) => (
