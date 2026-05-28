@@ -281,13 +281,13 @@ const ProductDetail = () => {
 
             <p className="text-muted-foreground">{product.description}</p>
 
-            {product.colors.length > 0 && (
+            {displayColors.length > 0 && (
               <div>
                 <h3 className="font-semibold mb-3">
                   Selected Color: <span className="font-normal text-muted-foreground">{selectedColor || 'Select a color'}</span>
                 </h3>
                 <div className="flex gap-3 overflow-x-auto pb-1">
-                  {product.colors.map((color) => {
+                  {displayColors.map((color) => {
                     const isSelected = selectedColor === color.name;
                     return (
                       <button
