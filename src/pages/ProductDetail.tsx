@@ -38,56 +38,69 @@ const ProductDetail = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // Auto-select first color when product loads
+  useEffect(() => {
+    if (product && product.colors.length > 0 && !selectedColor) {
+      setSelectedColor(product.colors[0].name);
+    }
+  }, [product, selectedColor]);
+
   const galleryItems = useMemo(() => {
     if (!product) return [];
     const items: Array<
-      | { type: 'image'; src: string; alt: string; fit: 'cover' | 'contain'; colorName?: string }
+      | { type: 'image'; src: string; alt: string; fit: 'cover' | 'contain' }
       | { type: 'rotation'; frames: string[] }
     > = [];
 
     const seen = new Set<string>();
-    const push = (src: string, alt: string, fit: 'cover' | 'contain', colorName?: string) => {
+    const push = (src: string, alt: string, fit: 'cover' | 'contain') => {
       if (!src || seen.has(src)) return;
       seen.add(src);
-      items.push({ type: 'image', src, alt, fit, colorName });
+      items.push({ type: 'image', src, alt, fit });
     };
 
-    product.images.forEach((src, i) => push(src, `${product.name} photo ${i + 1}`, 'cover'));
-    product.colors.forEach((c) => {
-      if (c.image) push(c.image, `${product.name} in ${c.name}`, 'cover', c.name);
-    });
+    if (product.colors.length > 0 && selectedColor) {
+      // Show only images for the selected color variant
+      const variant = product.colors.find((c) => c.name === selectedColor);
+      if (variant?.image) push(variant.image, `${product.name} in ${variant.name}`, 'cover');
+      if (variant?.images && Array.isArray(variant.images)) {
+        variant.images.forEach((src: string, i: number) =>
+          push(src, `${product.name} in ${variant.name} ${i + 1}`, 'cover')
+        );
+      }
+    } else {
+      // No color variants — show all product images
+      product.images.forEach((src, i) => push(src, `${product.name} photo ${i + 1}`, 'cover'));
+    }
+
     if (product.mannequinImage) push(product.mannequinImage, `${product.name} on mannequin`, 'contain');
     if (product.humanModelImage) push(product.humanModelImage, `${product.name} on model`, 'contain');
     if (product.rotationFrames && product.rotationFrames.length > 0) {
       items.push({ type: 'rotation', frames: product.rotationFrames });
     }
     return items;
-  }, [product]);
+  }, [product, selectedColor]);
 
-  // Scroll to selected color's image
+  // Reset scroll position when color (and therefore gallery) changes
   useEffect(() => {
-    if (!selectedColor || !scrollRef.current) return;
-    const idx = galleryItems.findIndex((it) => it.type === 'image' && it.colorName === selectedColor);
-    if (idx < 0) return;
-    const child = scrollRef.current.children[idx] as HTMLElement | undefined;
-    child?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-  }, [selectedColor, galleryItems]);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+      setActiveIndex(0);
+    }
+  }, [selectedColor]);
 
-  // Track active scroll index and sync color swatch
+  // Track active scroll index
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
     const onScroll = () => {
       const idx = Math.round(el.scrollLeft / el.clientWidth);
       setActiveIndex(idx);
-      const item = galleryItems[idx];
-      if (item?.type === 'image' && item.colorName && item.colorName !== selectedColor) {
-        setSelectedColor(item.colorName);
-      }
     };
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => el.removeEventListener('scroll', onScroll);
-  }, [galleryItems, selectedColor]);
+  }, [galleryItems]);
+
 
   if (loading) {
     return (
