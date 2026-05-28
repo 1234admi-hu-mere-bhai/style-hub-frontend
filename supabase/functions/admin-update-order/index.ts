@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { autoCreateDelhiveryReversePickup } from '../_shared/auto-reverse-pickup.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
