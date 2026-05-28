@@ -3,6 +3,7 @@
 // and COD fees are recomputed from the database via priceCart().
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { priceCart, PriceCartError } from "../_shared/price-cart.ts";
+import { autoCreateDelhiveryShipment } from "../_shared/auto-shipment.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
