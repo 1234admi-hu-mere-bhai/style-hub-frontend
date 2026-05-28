@@ -94,8 +94,7 @@ Deno.serve(async (req) => {
 
         // Special-case: if order is in return flow (return_approved / picked_up_pending),
         // a Delhivery "picked up" status means the package was collected from customer →
-        // trigger automatic refund.
-        const inReturnFlow = ['return_approved', 'return_requested', 'picked_up_pending'].includes(order.status);
+        // trigger automatic refund. (inReturnFlow computed above)
         if (newStatus === 'picked_up' && inReturnFlow) {
           await serviceClient
             .from('orders')
