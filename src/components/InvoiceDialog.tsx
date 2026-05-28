@@ -202,7 +202,7 @@ const InvoiceDialog = ({
     return `
       <html>
         <head>
-          <title>Invoice ${order.order_number}</title>
+          <title>Invoice ${escapeHtml(order.order_number)}</title>
           <style>
             * { box-sizing: border-box; }
             body { font-family: -apple-system, 'Segoe UI', sans-serif; padding: 32px; color: #111; max-width: 720px; margin: 0 auto; }
