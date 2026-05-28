@@ -86,40 +86,96 @@ const rgbToHsl = (r: number, g: number, b: number) => {
   return { h, s, l };
 };
 
-// Analyze dominant color: skip background-like pixels (very light/dark/desaturated)
-// and weight remaining pixels by saturation so vivid garments win over neutrals.
+// HSL -> RGB (h: 0..360, s/l: 0..1) -> 0..255 RGB
+const hslToRgb = (h: number, s: number, l: number) => {
+  h = ((h % 360) + 360) % 360 / 360;
+  if (s === 0) { const v = Math.round(l * 255); return [v, v, v]; }
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  const hk = (t: number) => {
+    if (t < 0) t += 1; if (t > 1) t -= 1;
+    if (t < 1 / 6) return p + (q - p) * 6 * t;
+    if (t < 1 / 2) return q;
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+  };
+  return [Math.round(hk(h + 1 / 3) * 255), Math.round(hk(h) * 255), Math.round(hk(h - 1 / 3) * 255)];
+};
+
+// Detect dominant garment color.
+// Strategy: focus on center crop (skip background-heavy edges), bucket pixels by HUE
+// (so shadows + highlights of the same color all vote for the same bucket), pick the
+// bucket with the most saturated-pixel votes, then output a *display-friendly* color
+// at moderate lightness (not the average — averaging mixes shadows and washes the color out).
 const analyzeDominant = (url: string): Promise<string> => new Promise((resolve, reject) => {
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = () => {
     try {
-      const size = 96;
+      const size = 128;
       const canvas = document.createElement('canvas');
       canvas.width = size; canvas.height = size;
       const ctx = canvas.getContext('2d')!;
       ctx.drawImage(img, 0, 0, size, size);
       const { data } = ctx.getImageData(0, 0, size, size);
-      const buckets = new Map<string, { r: number; g: number; b: number; w: number }>();
-      const fallback = { r: 0, g: 0, b: 0, w: 0 };
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
-        if (a < 200) continue;
-        const { s, l } = rgbToHsl(r, g, b);
-        if (l > 0.94) continue; // skip near-white background
-        if (l < 0.06) continue; // skip near-black shadows
-        fallback.r += r; fallback.g += g; fallback.b += b; fallback.w += 1;
-        // Skip near-greys at mid lightness (likely pants/shadow)
-        if (s < 0.15 && l > 0.18 && l < 0.85) continue;
-        const w = 0.4 + s * 1.5; // weight by saturation
-        const key = `${r >> 4}-${g >> 4}-${b >> 4}`;
-        const cur = buckets.get(key) || { r: 0, g: 0, b: 0, w: 0 };
-        cur.r += r * w; cur.g += g * w; cur.b += b * w; cur.w += w;
-        buckets.set(key, cur);
+
+      // 24 hue buckets (15° each). Track saturation-weighted votes + sum of S and L of voting pixels.
+      const HUE_BUCKETS = 24;
+      const hueVotes = new Array(HUE_BUCKETS).fill(0).map(() => ({ w: 0, s: 0, l: 0, n: 0 }));
+      // Grayscale (sat<threshold) tracked separately; vote only when truly no color exists
+      const gray = { w: 0, l: 0 };
+
+      const cx = size / 2, cy = size / 2;
+      const maxDist = Math.hypot(cx, cy);
+
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          const i = (y * size + x) * 4;
+          const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+          if (a < 200) continue;
+          const { h, s, l } = rgbToHsl(r, g, b);
+          if (l > 0.96) continue; // skip pure white
+          if (l < 0.04) continue; // skip pure black
+          // Center weight: pixels near center matter more (garment is usually centered)
+          const dist = Math.hypot(x - cx, y - cy) / maxDist;
+          const centerW = 1.4 - dist; // 1.4 at center, 0.4 at corners
+          if (s < 0.12) {
+            gray.w += centerW * 0.3;
+            gray.l += l * centerW * 0.3;
+            continue;
+          }
+          const bucket = Math.floor((h / 360) * HUE_BUCKETS) % HUE_BUCKETS;
+          const w = centerW * (0.3 + s * 2); // strongly favor saturated pixels
+          hueVotes[bucket].w += w;
+          hueVotes[bucket].s += s * w;
+          hueVotes[bucket].l += l * w;
+          hueVotes[bucket].n += 1;
+        }
       }
-      let bestW = 0; let best: { r: number; g: number; b: number; w: number } | null = null;
-      buckets.forEach(v => { if (v.w > bestW) { bestW = v.w; best = v; } });
-      const winner = best ?? (fallback.w > 0 ? fallback : { r: 128, g: 128, b: 128, w: 1 });
-      resolve(rgbToHex(winner.r / winner.w, winner.g / winner.w, winner.b / winner.w));
+
+      // Pick best hue bucket
+      let bestIdx = -1, bestW = 0;
+      hueVotes.forEach((v, i) => { if (v.w > bestW) { bestW = v.w; bestIdx = i; } });
+
+      // If no saturated hue won, fall back to greyscale average
+      if (bestIdx === -1 || hueVotes[bestIdx].w < gray.w * 0.5) {
+        const lAvg = gray.w > 0 ? gray.l / gray.w : 0.5;
+        const v = Math.round(lAvg * 255);
+        resolve(rgbToHex(v, v, v));
+        return;
+      }
+
+      const best = hueVotes[bestIdx];
+      // Hue: center of the winning bucket (could also weighted-avg neighbors, but bucket center is robust)
+      const hue = (bestIdx + 0.5) * (360 / HUE_BUCKETS);
+      const sat = best.s / best.w;
+      let light = best.l / best.w;
+      // Clamp lightness to a display-friendly range so very dark garments still show their real color
+      // (shadows pull the avg down; bumping mid-shadows up reveals the actual hue)
+      if (light < 0.18) light = 0.18 + light * 0.5;
+      if (light > 0.78) light = 0.78;
+      const [r, g, b] = hslToRgb(hue, Math.min(1, sat * 1.1), light);
+      resolve(rgbToHex(r, g, b));
     } catch (e) { reject(e); }
   };
   img.onerror = () => reject(new Error('Image load failed'));
