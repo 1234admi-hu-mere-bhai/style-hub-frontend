@@ -92,6 +92,7 @@ const AdminProducts = () => {
   const [colorsInput, setColorsInput] = useState('');
   const [tagsInput, setTagsInput] = useState(draft?.tagsInput ?? '');
   const [additionalImagesInput, setAdditionalImagesInput] = useState(draft?.additionalImagesInput ?? '');
+  const [maxAdditionalImages, setMaxAdditionalImages] = useState<number>(6);
 
   // Persist draft on every change
   useEffect(() => {
