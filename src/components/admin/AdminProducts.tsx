@@ -197,39 +197,71 @@ const AdminProducts = () => {
   };
 
   const [generatingMannequin, setGeneratingMannequin] = useState(false);
+  const [generatingHuman, setGeneratingHuman] = useState(false);
   const [generating360, setGenerating360] = useState(false);
+  const [uploadingField, setUploadingField] = useState<string | null>(null);
+  const [rotationBase, setRotationBase] = useState<'mannequin' | 'human' | 'product'>('mannequin');
 
-  const handleGenerateMannequin = async () => {
+  // Upload a file from gallery to product-images bucket, returns public URL
+  const uploadToStorage = async (file: File, folder: string): Promise<string> => {
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `uploads/${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await supabase.storage.from('product-images').upload(path, file, { upsert: false });
+    if (error) throw error;
+    const { data } = supabase.storage.from('product-images').getPublicUrl(path);
+    return data.publicUrl;
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'image' | 'mannequin_image' | 'human_model_image') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingField(field);
+    try {
+      const url = await uploadToStorage(file, field);
+      setForm(f => ({ ...f, [field]: url }));
+      toast({ title: 'Image uploaded' });
+    } catch (err: any) {
+      toast({ title: 'Upload failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setUploadingField(null);
+      e.target.value = '';
+    }
+  };
+
+  const runGenerate = async (action: 'mannequin' | 'human') => {
     if (!form.image) {
-      toast({ title: 'Add product image first', description: 'Image URL is required to generate a mannequin.', variant: 'destructive' });
+      toast({ title: 'Add a product image first', variant: 'destructive' });
       return;
     }
-    setGeneratingMannequin(true);
+    const setter = action === 'human' ? setGeneratingHuman : setGeneratingMannequin;
+    setter(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-product-mannequin', {
-        body: { action: 'mannequin', productImage: form.image, subcategory: form.subcategory, productId: editingId || undefined },
+        body: { action, productImage: form.image, subcategory: form.subcategory, productId: editingId || undefined },
       });
       if (error) throw error;
       if (!data?.url) throw new Error('No image returned');
-      setForm(f => ({ ...f, mannequin_image: data.url }));
-      toast({ title: 'Mannequin generated', description: `Region: ${data.region}. Remember to Save.` });
+      setForm(f => ({ ...f, [action === 'human' ? 'human_model_image' : 'mannequin_image']: data.url }));
+      toast({ title: `${action === 'human' ? 'Human model' : 'Mannequin'} generated`, description: `Region: ${data.region}. Remember to Save.` });
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
-      setGeneratingMannequin(false);
+      setter(false);
     }
   };
 
   const handleGenerate360 = async () => {
-    const base = form.mannequin_image || form.image;
+    const base = rotationBase === 'human' ? form.human_model_image
+      : rotationBase === 'mannequin' ? form.mannequin_image
+      : form.image;
     if (!base) {
-      toast({ title: 'Generate mannequin first', description: 'A mannequin or product image is required.', variant: 'destructive' });
+      toast({ title: `No ${rotationBase} image available`, description: 'Generate or upload it first.', variant: 'destructive' });
       return;
     }
     setGenerating360(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-product-mannequin', {
-        body: { action: 'rotation', mannequinImage: form.mannequin_image, productImage: form.image, subcategory: form.subcategory, productId: editingId || undefined, frameCount: 12 },
+        body: { action: 'rotation', baseImage: base, subject: rotationBase === 'human' ? 'human' : 'mannequin', subcategory: form.subcategory, productId: editingId || undefined, frameCount: 12 },
       });
       if (error) throw error;
       if (!data?.frames?.length) throw new Error('No frames returned');
