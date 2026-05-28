@@ -59,20 +59,48 @@ const EMPTY_PRODUCT = {
   rotation_frames: [] as string[],
 };
 
+const DRAFT_KEY = 'admin-products-draft-v1';
+
+interface Draft {
+  showForm: boolean;
+  editingId: string | null;
+  form: typeof EMPTY_PRODUCT;
+  sizesInput: string;
+  tagsInput: string;
+  additionalImagesInput: string;
+}
+
+const loadDraft = (): Draft | null => {
+  try {
+    const raw = sessionStorage.getItem(DRAFT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+};
+
 const AdminProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const draft = loadDraft();
+  const [showForm, setShowForm] = useState(draft?.showForm ?? false);
+  const [editingId, setEditingId] = useState<string | null>(draft?.editingId ?? null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-  // Form state
-  const [form, setForm] = useState(EMPTY_PRODUCT);
-  const [sizesInput, setSizesInput] = useState('');
+  // Form state — restored from sessionStorage so switching tabs doesn't wipe in-progress edits
+  const [form, setForm] = useState(draft?.form ?? EMPTY_PRODUCT);
+  const [sizesInput, setSizesInput] = useState(draft?.sizesInput ?? '');
   const [colorsInput, setColorsInput] = useState('');
-  const [tagsInput, setTagsInput] = useState('');
-  const [additionalImagesInput, setAdditionalImagesInput] = useState('');
+  const [tagsInput, setTagsInput] = useState(draft?.tagsInput ?? '');
+  const [additionalImagesInput, setAdditionalImagesInput] = useState(draft?.additionalImagesInput ?? '');
+
+  // Persist draft on every change
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
+        showForm, editingId, form, sizesInput, tagsInput, additionalImagesInput,
+      }));
+    } catch {}
+  }, [showForm, editingId, form, sizesInput, tagsInput, additionalImagesInput]);
 
   useEffect(() => {
     fetchProducts();
