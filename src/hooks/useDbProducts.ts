@@ -15,7 +15,7 @@ export interface DbProduct {
   stock_quantity: number | null;
   low_stock_threshold: number | null;
   sizes: string[];
-  colors: { name: string; hex: string; image?: string }[];
+  colors: { name: string; hex: string; image?: string; images?: string[] }[];
   tags: string[];
   in_stock: boolean | null;
   description: string | null;
@@ -35,7 +35,7 @@ export interface StoreProduct {
   discount?: number;
   images: string[];
   sizes: string[];
-  colors: { name: string; hex: string; image?: string }[];
+  colors: { name: string; hex: string; image?: string; images?: string[] }[];
   rating: number;
   reviews: number;
   description: string;
@@ -57,7 +57,7 @@ interface ActiveFlashSale {
 export const dbToStoreProduct = (p: DbProduct): StoreProduct => {
   const colors = (p.colors || []).map((c: any) => {
     if (typeof c === 'string') return { name: c, hex: '#000' };
-    return { name: c.name, hex: c.hex, image: c.image };
+    return { name: c.name, hex: c.hex, image: c.image, images: Array.isArray(c.images) ? c.images.filter(Boolean) : [] };
   });
 
   return {
