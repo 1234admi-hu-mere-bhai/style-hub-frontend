@@ -142,16 +142,8 @@ const AdminProducts = () => {
     setSaving(true);
     try {
       const sizes = sizesInput.split(',').map(s => s.trim()).filter(Boolean);
-      const colors = colorsInput.split(',').map(c => {
-        const trimmed = c.trim();
-        const parts = trimmed.split(':');
-        if (parts.length >= 3) {
-          return { name: parts[0].trim(), hex: parts[1].trim(), image: parts.slice(2).join(':').trim() };
-        } else if (parts.length === 2) {
-          return { name: parts[0].trim(), hex: parts[1].trim() };
-        }
-        return { name: trimmed, hex: '' };
-      }).filter(c => c.name);
+      // Colors managed by ColorVariantsEditor; keep only filled slots
+      const colors = (form.colors as ColorVariant[]).filter(c => c && (c.image || c.name));
       const tags = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
       const additional_images = additionalImagesInput.split(',').map(i => i.trim()).filter(Boolean);
 
