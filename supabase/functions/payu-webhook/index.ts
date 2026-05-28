@@ -5,6 +5,7 @@
 // IMPORTANT: verify_jwt = false in supabase/config.toml — PayU does not
 // send a Supabase auth token. Security comes from validating the PayU hash.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { autoCreateDelhiveryShipment } from "../_shared/auto-shipment.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -240,6 +241,13 @@ Deno.serve(async (req) => {
     } catch (e) {
       console.error('Invoice generation failed:', e);
     }
+
+    // Auto-create Delhivery shipment (best-effort). Cron sync advances the timeline.
+    try {
+      const ship = await autoCreateDelhiveryShipment(adminClient, order.id);
+      if (ship.awb) console.log(`[payu-webhook] auto AWB ${ship.awb} for order ${orderNumber}`);
+      else console.warn(`[payu-webhook] auto shipment skipped/failed:`, ship);
+    } catch (e) { console.error('auto shipment exception', e); }
 
     // Notify user (mask order id for privacy on lock screens / previews)
     const maskedOrder = `••••${orderNumber.slice(-4)}`;

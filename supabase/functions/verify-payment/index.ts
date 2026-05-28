@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { autoCreateDelhiveryShipment } from "../_shared/auto-shipment.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -109,6 +110,13 @@ Deno.serve(async (req) => {
       } catch (e) {
         console.error('Invoice generation failed:', e);
       }
+
+      // Auto-create Delhivery shipment (best-effort). Cron sync will advance the timeline.
+      try {
+        const ship = await autoCreateDelhiveryShipment(adminClient, orderId);
+        if (ship.awb) console.log(`[verify-payment] auto AWB ${ship.awb} for order ${orderId}`);
+        else console.warn(`[verify-payment] auto shipment skipped/failed:`, ship);
+      } catch (e) { console.error('auto shipment exception', e); }
 
       return new Response(JSON.stringify({ success: true, verified: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     } else {
