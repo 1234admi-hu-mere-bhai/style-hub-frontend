@@ -191,6 +191,7 @@ const ColorVariantsEditor = ({ value, onChange }: Props) => {
     return SLOT_OPTIONS.find(n => n >= Math.max(v, 3)) || 5;
   });
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
+  const [maxPerColor, setMaxPerColor] = useState<number>(6);
   const fileRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Ensure value array length matches slotCount (pad with blanks, trim extras only if trailing blanks)
