@@ -531,7 +531,10 @@ const AdminProducts = () => {
                 )}
               </div>
 
-
+              <div className="flex items-center gap-2 pt-3 pb-1 border-b border-border/60">
+                <span className="h-5 w-1 rounded-full bg-primary" />
+                <h4 className="text-sm font-bold uppercase tracking-wider text-foreground">4. Sizes & Color Variants</h4>
+              </div>
               <div>
                 <Label>Sizes (comma-separated) *</Label>
                 <Input value={sizesInput} onChange={e => setSizesInput(e.target.value)} placeholder="S, M, L, XL" />
@@ -540,6 +543,11 @@ const AdminProducts = () => {
                 value={(form.colors as ColorVariant[]) || []}
                 onChange={(next) => setForm(f => ({ ...f, colors: next }))}
               />
+
+              <div className="flex items-center gap-2 pt-3 pb-1 border-b border-border/60">
+                <span className="h-5 w-1 rounded-full bg-primary" />
+                <h4 className="text-sm font-bold uppercase tracking-wider text-foreground">5. Tags & Description</h4>
+              </div>
               <div>
                 <Label>Tags (comma-separated)</Label>
                 <Input value={tagsInput} onChange={e => setTagsInput(e.target.value)} placeholder="bestseller, trending" />
