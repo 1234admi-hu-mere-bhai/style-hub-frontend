@@ -388,8 +388,8 @@ const ColorVariantsEditor = ({ value, onChange }: Props) => {
                         </button>
                       </div>
                     ))}
-                    <label className="h-10 w-10 rounded border border-dashed border-border/60 hover:border-primary/60 flex items-center justify-center cursor-pointer">
-                      {uploadingIdx === idx ? <Loader2 className="h-3 w-3 animate-spin text-primary" /> : <Upload className="h-3 w-3 text-muted-foreground" />}
+                    <label className="h-10 w-10 rounded border-2 border-dashed border-primary/70 bg-primary/10 hover:bg-primary/20 hover:border-primary flex items-center justify-center cursor-pointer shadow-sm ring-1 ring-primary/30 animate-pulse" title="Upload more photos for this color">
+                      {uploadingIdx === idx ? <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" /> : <Upload className="h-3.5 w-3.5 text-primary" />}
                       <input
                         type="file"
                         accept="image/*"
