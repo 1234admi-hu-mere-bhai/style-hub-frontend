@@ -15,7 +15,7 @@ export interface DbProduct {
   stock_quantity: number | null;
   low_stock_threshold: number | null;
   sizes: string[];
-  colors: { name: string; hex: string; image?: string }[];
+  colors: { name: string; hex: string; image?: string; images?: string[] }[];
   tags: string[];
   in_stock: boolean | null;
   description: string | null;
