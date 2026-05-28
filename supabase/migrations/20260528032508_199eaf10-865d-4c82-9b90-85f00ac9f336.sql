@@ -1,0 +1,2 @@
+REVOKE SELECT ON public.referrals FROM authenticated;
+GRANT SELECT (id, referrer_id, referral_code, referred_id, status, referrer_discount_applied, referred_discount_applied, created_at, used_at) ON public.referrals TO authenticated;
