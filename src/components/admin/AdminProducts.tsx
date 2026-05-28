@@ -340,8 +340,18 @@ const AdminProducts = () => {
                 <Input value={form.subcategory} onChange={e => setForm({ ...form, subcategory: e.target.value })} placeholder="Subcategory" />
               </div>
               <div>
-                <Label>Image URL *</Label>
-                <Input value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} placeholder="Image URL" />
+                <Label>Product Image *</Label>
+                <div className="flex gap-2">
+                  <Input value={form.image} onChange={e => setForm({ ...form, image: e.target.value })} placeholder="Paste URL or upload below" className="flex-1" />
+                  <Button type="button" variant="outline" size="sm" disabled={uploadingField === 'image'} asChild>
+                    <label className="cursor-pointer">
+                      {uploadingField === 'image' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                      <span className="ml-1.5">Upload</span>
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, 'image')} />
+                    </label>
+                  </Button>
+                </div>
+                {form.image && <img src={form.image} alt="Product preview" className="mt-2 w-24 h-32 object-cover rounded-md bg-muted" />}
               </div>
               <div>
                 <Label>Stock Quantity</Label>
@@ -358,15 +368,24 @@ const AdminProducts = () => {
 
               {/* AI Mannequin section */}
               <div className="rounded-lg border border-border/50 p-3 space-y-2 bg-secondary/20">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
-                    <Label className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-primary" /> Mannequin Image (AI)</Label>
-                    <p className="text-xs text-muted-foreground">Auto-dresses garment on mannequin. Upper or lower body chosen from subcategory.</p>
+                    <Label className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-primary" /> Mannequin Image</Label>
+                    <p className="text-xs text-muted-foreground">AI dresses garment on a faceless mannequin. Body region auto-detected from subcategory.</p>
                   </div>
-                  <Button type="button" size="sm" variant="outline" onClick={handleGenerateMannequin} disabled={generatingMannequin || !form.image}>
-                    {generatingMannequin ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
-                    <span className="ml-1.5">{form.mannequin_image ? 'Regenerate' : 'Generate'}</span>
-                  </Button>
+                  <div className="flex gap-1.5">
+                    <Button type="button" size="sm" variant="outline" disabled={uploadingField === 'mannequin_image'} asChild>
+                      <label className="cursor-pointer">
+                        {uploadingField === 'mannequin_image' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                        <span className="ml-1.5">Upload</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, 'mannequin_image')} />
+                      </label>
+                    </Button>
+                    <Button type="button" size="sm" variant="outline" onClick={() => runGenerate('mannequin')} disabled={generatingMannequin || !form.image}>
+                      {generatingMannequin ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                      <span className="ml-1.5">{form.mannequin_image ? 'Regenerate' : 'AI Generate'}</span>
+                    </Button>
+                  </div>
                 </div>
                 {form.mannequin_image && (
                   <div className="flex items-start gap-3">
@@ -378,17 +397,58 @@ const AdminProducts = () => {
                 )}
               </div>
 
+              {/* AI Human Model section */}
+              <div className="rounded-lg border border-border/50 p-3 space-y-2 bg-secondary/20">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <Label className="flex items-center gap-1.5"><User className="h-3.5 w-3.5 text-primary" /> Real Human Model</Label>
+                    <p className="text-xs text-muted-foreground">AI dresses garment on a realistic human model. Same body-region rules apply.</p>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <Button type="button" size="sm" variant="outline" disabled={uploadingField === 'human_model_image'} asChild>
+                      <label className="cursor-pointer">
+                        {uploadingField === 'human_model_image' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                        <span className="ml-1.5">Upload</span>
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => handleFileUpload(e, 'human_model_image')} />
+                      </label>
+                    </Button>
+                    <Button type="button" size="sm" variant="outline" onClick={() => runGenerate('human')} disabled={generatingHuman || !form.image}>
+                      {generatingHuman ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <User className="h-3.5 w-3.5" />}
+                      <span className="ml-1.5">{form.human_model_image ? 'Regenerate' : 'AI Generate'}</span>
+                    </Button>
+                  </div>
+                </div>
+                {form.human_model_image && (
+                  <div className="flex items-start gap-3">
+                    <img src={form.human_model_image} alt="Human model preview" className="w-24 h-32 object-cover rounded-md bg-muted" />
+                    <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={() => setForm(f => ({ ...f, human_model_image: '' }))}>
+                      <X className="h-3.5 w-3.5 mr-1" /> Remove
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               {/* AI 360° section */}
               <div className="rounded-lg border border-border/50 p-3 space-y-2 bg-secondary/20">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
-                    <Label className="flex items-center gap-1.5"><RotateCw className="h-3.5 w-3.5 text-primary" /> 360° View (AI)</Label>
-                    <p className="text-xs text-muted-foreground">12 frames user can drag-rotate. Uses mannequin if available.</p>
+                    <Label className="flex items-center gap-1.5"><RotateCw className="h-3.5 w-3.5 text-primary" /> 360° View</Label>
+                    <p className="text-xs text-muted-foreground">12 frames user can drag-rotate. Pick which base to wrap around.</p>
                   </div>
-                  <Button type="button" size="sm" variant="outline" onClick={handleGenerate360} disabled={generating360 || (!form.mannequin_image && !form.image)}>
-                    {generating360 ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCw className="h-3.5 w-3.5" />}
-                    <span className="ml-1.5">{form.rotation_frames.length > 0 ? 'Regenerate' : 'Generate'}</span>
-                  </Button>
+                  <div className="flex gap-1.5 items-center">
+                    <Select value={rotationBase} onValueChange={(v: any) => setRotationBase(v)}>
+                      <SelectTrigger className="h-8 w-32"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="mannequin">Mannequin</SelectItem>
+                        <SelectItem value="human">Human model</SelectItem>
+                        <SelectItem value="product">Product</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button type="button" size="sm" variant="outline" onClick={handleGenerate360} disabled={generating360}>
+                      {generating360 ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCw className="h-3.5 w-3.5" />}
+                      <span className="ml-1.5">{form.rotation_frames.length > 0 ? 'Regenerate' : 'Generate'}</span>
+                    </Button>
+                  </div>
                 </div>
                 {generating360 && (
                   <p className="text-xs text-muted-foreground">Generating 12 frames sequentially… ~1–2 min.</p>
@@ -407,6 +467,7 @@ const AdminProducts = () => {
                   </div>
                 )}
               </div>
+
 
               <div>
                 <Label>Sizes (comma-separated) *</Label>
