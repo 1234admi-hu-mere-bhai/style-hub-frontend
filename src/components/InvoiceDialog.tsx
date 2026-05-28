@@ -239,7 +239,7 @@ const InvoiceDialog = ({
             </div>
             <div class="invoice-no">
               <h2>Tax Invoice</h2>
-              <p>${order.order_number}</p>
+              <p>${escapeHtml(order.order_number)}</p>
               <p style="font-size:12px; color:#666; font-weight:500;">${date}</p>
             </div>
           </div>
