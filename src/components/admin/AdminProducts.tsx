@@ -421,7 +421,18 @@ const AdminProducts = () => {
                 <Input type="number" value={form.low_stock_threshold || ''} onChange={e => setForm({ ...form, low_stock_threshold: Number(e.target.value) })} />
               </div>
               <div>
-                <Label>Additional Images</Label>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <Label>Additional Images</Label>
+                  <div className="flex items-center gap-1.5">
+                    <Label className="text-xs">Max:</Label>
+                    <Select value={String(maxAdditionalImages)} onValueChange={v => setMaxAdditionalImages(Number(v))}>
+                      <SelectTrigger className="h-7 w-16 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {[1,2,3,4,5,6,8,10].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 <div className="flex gap-2 items-start">
                   <Input value={additionalImagesInput} onChange={e => setAdditionalImagesInput(e.target.value)} placeholder="Comma-separated URLs or upload below" className="flex-1" />
                   <Button type="button" variant="outline" size="sm" disabled={uploadingField === 'additional_images'} asChild>
@@ -436,13 +447,21 @@ const AdminProducts = () => {
                         onChange={async (e) => {
                           const files = Array.from(e.target.files || []);
                           if (!files.length) return;
+                          const existing = additionalImagesInput.split(',').map(s => s.trim()).filter(Boolean);
+                          const remaining = Math.max(0, maxAdditionalImages - existing.length);
+                          if (remaining === 0) {
+                            toast({ title: `Limit reached`, description: `Max ${maxAdditionalImages} images. Remove some or raise the limit.`, variant: 'destructive' });
+                            e.target.value = '';
+                            return;
+                          }
+                          const toUpload = files.slice(0, remaining);
+                          const skipped = files.length - toUpload.length;
                           setUploadingField('additional_images');
                           try {
-                            const urls = await Promise.all(files.map(f => uploadToStorage(f, 'additional')));
-                            const existing = additionalImagesInput.split(',').map(s => s.trim()).filter(Boolean);
+                            const urls = await Promise.all(toUpload.map(f => uploadToStorage(f, 'additional')));
                             const merged = [...existing, ...urls];
                             setAdditionalImagesInput(merged.join(', '));
-                            toast({ title: `${urls.length} image${urls.length > 1 ? 's' : ''} uploaded` });
+                            toast({ title: `${urls.length} image${urls.length > 1 ? 's' : ''} uploaded`, description: skipped ? `${skipped} skipped (limit ${maxAdditionalImages})` : undefined });
                           } catch (err: any) {
                             toast({ title: 'Upload failed', description: err.message, variant: 'destructive' });
                           } finally {
@@ -454,6 +473,7 @@ const AdminProducts = () => {
                     </label>
                   </Button>
                 </div>
+
                 {additionalImagesInput.trim() && (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {additionalImagesInput.split(',').map(s => s.trim()).filter(Boolean).map((url, i, arr) => (
