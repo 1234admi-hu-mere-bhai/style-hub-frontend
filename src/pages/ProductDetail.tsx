@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import SizeChartModal from '@/components/SizeChartModal';
 import ReviewSection from '@/components/ReviewSection';
+import Product360Viewer from '@/components/Product360Viewer';
 import PincodeChecker from '@/components/PincodeChecker';
 import { useDbProducts, useDbProduct } from '@/hooks/useDbProducts';
 import { useProductReviews } from '@/hooks/useProductReviews';
@@ -34,6 +35,7 @@ const ProductDetail = () => {
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [viewMode, setViewMode] = useState<'photos' | 'mannequin' | '360'>('photos');
 
   const allImages = useMemo(() => {
     if (!product) return [];
