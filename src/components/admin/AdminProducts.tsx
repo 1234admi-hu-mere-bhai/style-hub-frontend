@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Package, Loader2, X, Sparkles, RotateCw } from 'lucide-react';
+import { Plus, Pencil, Trash2, Package, Loader2, X, Sparkles, RotateCw, User, Upload } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -32,6 +32,7 @@ interface Product {
   description: string;
   created_at: string;
   mannequin_image?: string | null;
+  human_model_image?: string | null;
   rotation_frames?: string[] | null;
 }
 
@@ -53,6 +54,7 @@ const EMPTY_PRODUCT = {
   in_stock: true,
   description: '',
   mannequin_image: '' as string,
+  human_model_image: '' as string,
   rotation_frames: [] as string[],
 };
 
@@ -119,6 +121,7 @@ const AdminProducts = () => {
       in_stock: product.in_stock,
       description: product.description,
       mannequin_image: product.mannequin_image || '',
+      human_model_image: product.human_model_image || '',
       rotation_frames: product.rotation_frames || [],
     });
     setSizesInput((product.sizes || []).join(', '));
