@@ -59,20 +59,48 @@ const EMPTY_PRODUCT = {
   rotation_frames: [] as string[],
 };
 
+const DRAFT_KEY = 'admin-products-draft-v1';
+
+interface Draft {
+  showForm: boolean;
+  editingId: string | null;
+  form: typeof EMPTY_PRODUCT;
+  sizesInput: string;
+  tagsInput: string;
+  additionalImagesInput: string;
+}
+
+const loadDraft = (): Draft | null => {
+  try {
+    const raw = sessionStorage.getItem(DRAFT_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+};
+
 const AdminProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const draft = loadDraft();
+  const [showForm, setShowForm] = useState(draft?.showForm ?? false);
+  const [editingId, setEditingId] = useState<string | null>(draft?.editingId ?? null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
-  // Form state
-  const [form, setForm] = useState(EMPTY_PRODUCT);
-  const [sizesInput, setSizesInput] = useState('');
+  // Form state — restored from sessionStorage so switching tabs doesn't wipe in-progress edits
+  const [form, setForm] = useState(draft?.form ?? EMPTY_PRODUCT);
+  const [sizesInput, setSizesInput] = useState(draft?.sizesInput ?? '');
   const [colorsInput, setColorsInput] = useState('');
-  const [tagsInput, setTagsInput] = useState('');
-  const [additionalImagesInput, setAdditionalImagesInput] = useState('');
+  const [tagsInput, setTagsInput] = useState(draft?.tagsInput ?? '');
+  const [additionalImagesInput, setAdditionalImagesInput] = useState(draft?.additionalImagesInput ?? '');
+
+  // Persist draft on every change
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
+        showForm, editingId, form, sizesInput, tagsInput, additionalImagesInput,
+      }));
+    } catch {}
+  }, [showForm, editingId, form, sizesInput, tagsInput, additionalImagesInput]);
 
   useEffect(() => {
     fetchProducts();
@@ -163,6 +191,7 @@ const AdminProducts = () => {
 
       toast({ title: editingId ? 'Product updated' : 'Product added' });
       setShowForm(false);
+      try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
       fetchProducts();
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
@@ -325,6 +354,10 @@ const AdminProducts = () => {
             </div>
 
             <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-1 border-b border-border/60">
+                <span className="h-5 w-1 rounded-full bg-primary" />
+                <h4 className="text-sm font-bold uppercase tracking-wider text-foreground">1. Basic Info</h4>
+              </div>
               <div>
                 <Label>Product Name *</Label>
                 <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
@@ -360,6 +393,10 @@ const AdminProducts = () => {
                 <Label>Subcategory *</Label>
                 <Input value={form.subcategory} onChange={e => setForm({ ...form, subcategory: e.target.value })} placeholder="Subcategory" />
               </div>
+              <div className="flex items-center gap-2 pt-3 pb-1 border-b border-border/60">
+                <span className="h-5 w-1 rounded-full bg-primary" />
+                <h4 className="text-sm font-bold uppercase tracking-wider text-foreground">2. Main Image & Stock</h4>
+              </div>
               <div>
                 <Label>Product Image *</Label>
                 <div className="flex gap-2">
@@ -385,6 +422,11 @@ const AdminProducts = () => {
               <div>
                 <Label>Additional Images (comma-separated URLs)</Label>
                 <Input value={additionalImagesInput} onChange={e => setAdditionalImagesInput(e.target.value)} placeholder="Additional Image URLs" />
+              </div>
+
+              <div className="flex items-center gap-2 pt-3 pb-1 border-b border-border/60">
+                <span className="h-5 w-1 rounded-full bg-primary" />
+                <h4 className="text-sm font-bold uppercase tracking-wider text-foreground">3. AI Model Generation</h4>
               </div>
 
               {/* AI Mannequin section */}
@@ -489,7 +531,10 @@ const AdminProducts = () => {
                 )}
               </div>
 
-
+              <div className="flex items-center gap-2 pt-3 pb-1 border-b border-border/60">
+                <span className="h-5 w-1 rounded-full bg-primary" />
+                <h4 className="text-sm font-bold uppercase tracking-wider text-foreground">4. Sizes & Color Variants</h4>
+              </div>
               <div>
                 <Label>Sizes (comma-separated) *</Label>
                 <Input value={sizesInput} onChange={e => setSizesInput(e.target.value)} placeholder="S, M, L, XL" />
@@ -498,6 +543,11 @@ const AdminProducts = () => {
                 value={(form.colors as ColorVariant[]) || []}
                 onChange={(next) => setForm(f => ({ ...f, colors: next }))}
               />
+
+              <div className="flex items-center gap-2 pt-3 pb-1 border-b border-border/60">
+                <span className="h-5 w-1 rounded-full bg-primary" />
+                <h4 className="text-sm font-bold uppercase tracking-wider text-foreground">5. Tags & Description</h4>
+              </div>
               <div>
                 <Label>Tags (comma-separated)</Label>
                 <Input value={tagsInput} onChange={e => setTagsInput(e.target.value)} placeholder="bestseller, trending" />

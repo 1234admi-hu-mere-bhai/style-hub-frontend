@@ -18,13 +18,15 @@ interface Props {
   onChange: (next: ColorVariant[]) => void;
 }
 
-// Curated color name map (nearest match by RGB distance)
+// Curated color name map (nearest match by RGB distance). Names are matched case-insensitively.
 const NAMED_COLORS: { name: string; hex: string }[] = [
   { name: 'Black', hex: '#1a1a1a' }, { name: 'White', hex: '#f5f5f5' },
-  { name: 'Grey', hex: '#808080' }, { name: 'Charcoal', hex: '#36454f' },
+  { name: 'Grey', hex: '#808080' }, { name: 'Gray', hex: '#808080' },
+  { name: 'Charcoal', hex: '#36454f' },
   { name: 'Navy', hex: '#1e3a5f' }, { name: 'Blue', hex: '#3b82f6' },
   { name: 'Sky Blue', hex: '#7dd3fc' }, { name: 'Teal', hex: '#14b8a6' },
-  { name: 'Green', hex: '#22c55e' }, { name: 'Olive', hex: '#4a5d23' },
+  { name: 'Green', hex: '#22c55e' }, { name: 'Dark Green', hex: '#15402b' },
+  { name: 'Olive', hex: '#4a5d23' }, { name: 'Forest', hex: '#1a3c2a' },
   { name: 'Mint', hex: '#a7f3d0' }, { name: 'Yellow', hex: '#facc15' },
   { name: 'Mustard', hex: '#c9a227' }, { name: 'Beige', hex: '#d4c3a3' },
   { name: 'Brown', hex: '#78350f' }, { name: 'Tan', hex: '#b8865b' },
@@ -39,11 +41,12 @@ const rgbDist = (a: number[], b: number[]) =>
 
 const hexToRgb = (hex: string): number[] => {
   const h = hex.replace('#', '');
+  if (h.length !== 6) return [128, 128, 128];
   return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
 };
 
 const rgbToHex = (r: number, g: number, b: number) =>
-  '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+  '#' + [r, g, b].map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
 
 const nearestName = (hex: string) => {
   const rgb = hexToRgb(hex);
@@ -55,34 +58,68 @@ const nearestName = (hex: string) => {
   return best.name;
 };
 
-// Analyze dominant color from an image URL using canvas
+// Lookup hex from a typed name (case-insensitive, allows fuzzy contains)
+const nameToHex = (name: string): string | null => {
+  const n = name.trim().toLowerCase();
+  if (!n) return null;
+  const exact = NAMED_COLORS.find(c => c.name.toLowerCase() === n);
+  if (exact) return exact.hex;
+  const partial = NAMED_COLORS.find(c => c.name.toLowerCase().includes(n) || n.includes(c.name.toLowerCase()));
+  return partial ? partial.hex : null;
+};
+
+const rgbToHsl = (r: number, g: number, b: number) => {
+  r /= 255; g /= 255; b /= 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  let h = 0, s = 0;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)); break;
+      case g: h = ((b - r) / d + 2); break;
+      case b: h = ((r - g) / d + 4); break;
+    }
+    h *= 60;
+  }
+  return { h, s, l };
+};
+
+// Analyze dominant color: skip background-like pixels (very light/dark/desaturated)
+// and weight remaining pixels by saturation so vivid garments win over neutrals.
 const analyzeDominant = (url: string): Promise<string> => new Promise((resolve, reject) => {
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = () => {
     try {
-      const size = 64;
+      const size = 96;
       const canvas = document.createElement('canvas');
       canvas.width = size; canvas.height = size;
       const ctx = canvas.getContext('2d')!;
       ctx.drawImage(img, 0, 0, size, size);
       const { data } = ctx.getImageData(0, 0, size, size);
-      // Bucket by quantized rgb, ignore near-white/near-black backgrounds
-      const buckets = new Map<string, { r: number; g: number; b: number; n: number }>();
+      const buckets = new Map<string, { r: number; g: number; b: number; w: number }>();
+      const fallback = { r: 0, g: 0, b: 0, w: 0 };
       for (let i = 0; i < data.length; i += 4) {
         const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
         if (a < 200) continue;
-        const max = Math.max(r, g, b), min = Math.min(r, g, b);
-        if (max > 240 && min > 230) continue; // skip near-white
-        if (max < 25) continue; // skip near-black
+        const { s, l } = rgbToHsl(r, g, b);
+        if (l > 0.94) continue; // skip near-white background
+        if (l < 0.06) continue; // skip near-black shadows
+        fallback.r += r; fallback.g += g; fallback.b += b; fallback.w += 1;
+        // Skip near-greys at mid lightness (likely pants/shadow)
+        if (s < 0.15 && l > 0.18 && l < 0.85) continue;
+        const w = 0.4 + s * 1.5; // weight by saturation
         const key = `${r >> 4}-${g >> 4}-${b >> 4}`;
-        const cur = buckets.get(key) || { r: 0, g: 0, b: 0, n: 0 };
-        cur.r += r; cur.g += g; cur.b += b; cur.n += 1;
+        const cur = buckets.get(key) || { r: 0, g: 0, b: 0, w: 0 };
+        cur.r += r * w; cur.g += g * w; cur.b += b * w; cur.w += w;
         buckets.set(key, cur);
       }
-      let bestN = 0; let best = { r: 128, g: 128, b: 128, n: 1 };
-      buckets.forEach(v => { if (v.n > bestN) { bestN = v.n; best = v; } });
-      resolve(rgbToHex(Math.round(best.r / best.n), Math.round(best.g / best.n), Math.round(best.b / best.n)));
+      let bestW = 0; let best: { r: number; g: number; b: number; w: number } | null = null;
+      buckets.forEach(v => { if (v.w > bestW) { bestW = v.w; best = v; } });
+      const winner = best ?? (fallback.w > 0 ? fallback : { r: 128, g: 128, b: 128, w: 1 });
+      resolve(rgbToHex(winner.r / winner.w, winner.g / winner.w, winner.b / winner.w));
     } catch (e) { reject(e); }
   };
   img.onerror = () => reject(new Error('Image load failed'));
@@ -211,7 +248,11 @@ const ColorVariantsEditor = ({ value, onChange }: Props) => {
                   />
                   <Input
                     value={slot.name}
-                    onChange={e => updateSlot(idx, { name: e.target.value })}
+                    onChange={e => {
+                      const name = e.target.value;
+                      const matchedHex = nameToHex(name);
+                      updateSlot(idx, matchedHex ? { name, hex: matchedHex } : { name });
+                    }}
                     placeholder="Color name"
                     className="h-7 text-xs px-1.5"
                   />
