@@ -374,10 +374,11 @@ const ColorVariantsEditor = ({ value, onChange }: Props) => {
                       <input
                         type="file"
                         accept="image/*"
+                        multiple
                         className="hidden"
                         onChange={e => {
-                          const f = e.target.files?.[0];
-                          if (f) addExtraImage(idx, f);
+                          const files = Array.from(e.target.files || []);
+                          if (files.length) addExtraImages(idx, files);
                           e.target.value = '';
                         }}
                       />
