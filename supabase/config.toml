@@ -35,4 +35,7 @@ project_id = "zybjzfffkylezzvotcnn"
     verify_jwt = false
   [functions.generate-product-mannequin]
     verify_jwt = false
+  [functions.submit-contact-form]
+    verify_jwt = false
+
 

@@ -867,7 +867,6 @@ export type Database = {
           id: string
           referral_code: string
           referred_discount_applied: boolean | null
-          referred_email: string | null
           referred_id: string | null
           referrer_discount_applied: boolean | null
           referrer_id: string
@@ -879,7 +878,6 @@ export type Database = {
           id?: string
           referral_code: string
           referred_discount_applied?: boolean | null
-          referred_email?: string | null
           referred_id?: string | null
           referrer_discount_applied?: boolean | null
           referrer_id: string
@@ -891,7 +889,6 @@ export type Database = {
           id?: string
           referral_code?: string
           referred_discount_applied?: boolean | null
-          referred_email?: string | null
           referred_id?: string | null
           referrer_discount_applied?: boolean | null
           referrer_id?: string

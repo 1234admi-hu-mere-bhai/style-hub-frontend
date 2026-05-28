@@ -1,0 +1,1 @@
+ALTER TABLE public.referrals DROP COLUMN IF EXISTS referred_email;

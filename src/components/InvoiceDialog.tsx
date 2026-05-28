@@ -163,6 +163,16 @@ const InvoiceDialog = ({
     }
   };
 
+  const escapeHtml = (value: unknown): string => {
+    if (value === null || value === undefined) return '';
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  };
+
   const buildInvoiceHtml = () => {
     if (!order) return '';
     const addr = order.shipping_address;
@@ -177,9 +187,9 @@ const InvoiceDialog = ({
         <tr>
           <td>${i + 1}</td>
           <td>
-            <strong>${it.product_name}</strong>
-            ${it.size ? `<br/><span class="meta">Size: ${it.size}</span>` : ''}
-            ${it.color ? `<span class="meta"> · Color: ${it.color}</span>` : ''}
+            <strong>${escapeHtml(it.product_name)}</strong>
+            ${it.size ? `<br/><span class="meta">Size: ${escapeHtml(it.size)}</span>` : ''}
+            ${it.color ? `<span class="meta"> · Color: ${escapeHtml(it.color)}</span>` : ''}
           </td>
           <td class="num">${it.quantity}</td>
           <td class="num">₹${Number(it.price).toLocaleString('en-IN')}</td>
@@ -188,10 +198,11 @@ const InvoiceDialog = ({
       )
       .join('');
 
+
     return `
       <html>
         <head>
-          <title>Invoice ${order.order_number}</title>
+          <title>Invoice ${escapeHtml(order.order_number)}</title>
           <style>
             * { box-sizing: border-box; }
             body { font-family: -apple-system, 'Segoe UI', sans-serif; padding: 32px; color: #111; max-width: 720px; margin: 0 auto; }
@@ -228,7 +239,7 @@ const InvoiceDialog = ({
             </div>
             <div class="invoice-no">
               <h2>Tax Invoice</h2>
-              <p>${order.order_number}</p>
+              <p>${escapeHtml(order.order_number)}</p>
               <p style="font-size:12px; color:#666; font-weight:500;">${date}</p>
             </div>
           </div>
@@ -236,18 +247,19 @@ const InvoiceDialog = ({
           <div class="grid">
             <div class="card">
               <h3>Billed To</h3>
-              <p><strong>${addr.firstName} ${addr.lastName}</strong></p>
-              <p>${addr.address}${addr.landmark ? `, ${addr.landmark}` : ''}</p>
-              <p>${addr.city}, ${addr.state} - ${addr.pincode}</p>
-              ${addr.phone ? `<p>📞 ${addr.phone}</p>` : ''}
+              <p><strong>${escapeHtml(addr.firstName)} ${escapeHtml(addr.lastName)}</strong></p>
+              <p>${escapeHtml(addr.address)}${addr.landmark ? `, ${escapeHtml(addr.landmark)}` : ''}</p>
+              <p>${escapeHtml(addr.city)}, ${escapeHtml(addr.state)} - ${escapeHtml(addr.pincode)}</p>
+              ${addr.phone ? `<p>📞 ${escapeHtml(addr.phone)}</p>` : ''}
             </div>
             <div class="card">
               <h3>Payment</h3>
-              <p><strong>Method:</strong> ${order.payment_method}</p>
-              <p><strong>Status:</strong> ${order.payment_status === 'paid' ? '✓ Paid' : order.payment_status}</p>
-              ${order.payment_id ? `<p><strong>Txn ID:</strong> ${order.payment_id}</p>` : ''}
+              <p><strong>Method:</strong> ${escapeHtml(order.payment_method)}</p>
+              <p><strong>Status:</strong> ${order.payment_status === 'paid' ? '✓ Paid' : escapeHtml(order.payment_status)}</p>
+              ${order.payment_id ? `<p><strong>Txn ID:</strong> ${escapeHtml(order.payment_id)}</p>` : ''}
             </div>
           </div>
+
 
           <table>
             <thead>

@@ -81,53 +81,28 @@ const Contact = () => {
 
     setSubmitting(true);
     try {
-      const submissionId = crypto.randomUUID();
-      const submittedAt = new Date().toISOString();
       const data = parsed.data;
 
-      // Notify support inbox
-      const notifyPromise = supabase.functions.invoke('send-transactional-email', {
+      // Route through a dedicated public endpoint that validates input and
+      // then internally invokes the email sender with the service role. This
+      // prevents the public anon key from being used to send arbitrary emails.
+      const { data: result, error } = await supabase.functions.invoke('submit-contact-form', {
         body: {
-          templateName: 'contact-support-notification',
-          recipientEmail: 'supportmuffigoutapparelhub@gmail.com',
-          // When support hits "Reply" in Gmail, the response goes
-          // straight back to the customer instead of our own inbox.
-          replyTo: data.email,
-          idempotencyKey: `contact-notify-${submissionId}`,
-          templateData: {
-            customerName: data.name,
-            customerEmail: data.email,
-            customerPhone: data.phone || undefined,
-            subject: data.subject,
-            message: data.message,
-            submittedAt,
-          },
+          name: data.name,
+          email: data.email,
+          phone: data.phone || undefined,
+          subject: data.subject,
+          message: data.message,
         },
       });
 
-      // Acknowledge customer
-      const ackPromise = supabase.functions.invoke('send-transactional-email', {
-        body: {
-          templateName: 'contact-support-ack',
-          recipientEmail: data.email,
-          idempotencyKey: `contact-ack-${submissionId}`,
-          templateData: {
-            customerName: data.name,
-            subject: data.subject,
-            message: data.message,
-          },
-        },
-      });
-
-      const [notifyRes, ackRes] = await Promise.all([notifyPromise, ackPromise]);
-
-      if (notifyRes.error) {
-        throw new Error(notifyRes.error.message || 'Failed to deliver your message');
+      if (error) {
+        throw new Error(error.message || 'Failed to deliver your message');
       }
-      // Ack failure is non-blocking — log but don't error out.
-      if (ackRes.error) {
-        console.warn('Customer ack email failed:', ackRes.error);
+      if (result?.error) {
+        throw new Error(result.error);
       }
+
 
       setSubmitted(true);
       setForm({ name: '', email: user?.email ?? '', phone: '', subject: '', message: '' });

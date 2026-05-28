@@ -30,15 +30,49 @@ function generateToken(): string {
     .join('')
 }
 
-// Auth note: this function uses verify_jwt = true in config.toml, so Supabase's
-// gateway validates the caller's JWT (anon or service_role) before the request
-// reaches this code. No in-function auth check is needed.
+// Auth note: this function uses verify_jwt = true in config.toml, which validates
+// JWT signature but accepts BOTH the public anon key and service_role tokens.
+// Because the anon key is bundled in the frontend and publicly readable, we must
+// additionally enforce that only service_role callers (i.e. other trusted edge
+// functions) can invoke this endpoint — otherwise anyone could send emails from
+// our verified domain to arbitrary recipients.
+function isServiceRoleJwt(authHeader: string | null): boolean {
+  if (!authHeader) return false
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim()
+  const parts = token.split('.')
+  if (parts.length !== 3) return false
+  try {
+    const padded = parts[1].replace(/-/g, '+').replace(/_/g, '/')
+    const pad = padded.length % 4
+    const b64 = pad ? padded + '='.repeat(4 - pad) : padded
+    const json = atob(b64)
+    const claims = JSON.parse(json)
+    return claims?.role === 'service_role'
+  } catch {
+    return false
+  }
+}
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
+
+  // Reject callers that are not using the service role key. Legitimate callers
+  // are all server-side edge functions (e.g. order confirmation, password reset)
+  // which already use SUPABASE_SERVICE_ROLE_KEY. User-facing code must never
+  // call this function directly.
+  if (!isServiceRoleJwt(req.headers.get('Authorization'))) {
+    return new Response(
+      JSON.stringify({ error: 'Forbidden' }),
+      {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    )
+  }
+
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
