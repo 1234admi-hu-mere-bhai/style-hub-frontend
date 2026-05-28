@@ -20,6 +20,8 @@ export interface DbProduct {
   in_stock: boolean | null;
   description: string | null;
   created_at: string;
+  mannequin_image?: string | null;
+  rotation_frames?: string[] | null;
 }
 
 // Convert DB product to the format used by ProductCard & ProductDetail
@@ -40,6 +42,8 @@ export interface StoreProduct {
   isFeatured?: boolean;
   isFlashSale?: boolean;
   subcategory?: string;
+  mannequinImage?: string;
+  rotationFrames?: string[];
 }
 
 interface ActiveFlashSale {
@@ -70,6 +74,8 @@ export const dbToStoreProduct = (p: DbProduct): StoreProduct => {
     isNew: false,
     isFeatured: true,
     subcategory: p.subcategory || '',
+    mannequinImage: p.mannequin_image || undefined,
+    rotationFrames: (p.rotation_frames || []).filter(Boolean),
   };
 };
 
