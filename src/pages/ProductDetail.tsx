@@ -272,11 +272,29 @@ const ProductDetail = () => {
 
             {product.colors.length > 0 && (
               <div>
-                <h3 className="font-semibold mb-3">Color: <span className="font-normal text-muted-foreground">{selectedColor || 'Select a color'}</span></h3>
-                <div className="flex gap-3">
-                  {product.colors.map((color) => (
-                    <button key={color.name} onClick={() => setSelectedColor(color.name)} className={`w-10 h-10 rounded-full border-2 transition-all ${selectedColor === color.name ? 'border-primary scale-110 ring-2 ring-primary/30' : 'border-border'}`} style={{ backgroundColor: color.hex }} title={color.name} />
-                  ))}
+                <h3 className="font-semibold mb-3">
+                  Selected Color: <span className="font-normal text-muted-foreground">{selectedColor || 'Select a color'}</span>
+                </h3>
+                <div className="flex gap-3 overflow-x-auto pb-1">
+                  {product.colors.map((color) => {
+                    const isSelected = selectedColor === color.name;
+                    return (
+                      <button
+                        key={color.name}
+                        onClick={() => handleSelectColor(color.name)}
+                        title={color.name}
+                        className={`flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 transition-all bg-secondary ${
+                          isSelected ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-primary/50'
+                        }`}
+                      >
+                        {color.image ? (
+                          <img src={color.image} alt={color.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="block w-full h-full" style={{ backgroundColor: color.hex }} />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
