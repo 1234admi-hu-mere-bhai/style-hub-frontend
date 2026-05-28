@@ -1,6 +1,6 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Heart, Minus, Plus, Star, Truck, RefreshCw, Shield, Ruler, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, Minus, Plus, Star, Truck, RefreshCw, Shield, Ruler, Loader2, ChevronRight } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
@@ -33,9 +33,7 @@ const ProductDetail = () => {
   const [selectedColor, setSelectedColor] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<'photos' | 'mannequin' | 'model' | '360'>('photos');
+  
 
   const allImages = useMemo(() => {
     if (!product) return [];
@@ -49,31 +47,31 @@ const ProductDetail = () => {
     return product.images;
   }, [product, selectedColor]);
 
-  const currentImage = allImages[currentImageIndex] || (product?.images[0] ?? '');
+  const galleryItems = useMemo(() => {
+    const items: Array<
+      | { type: 'image'; src: string; alt: string; fit: 'cover' | 'contain' }
+      | { type: 'rotation'; frames: string[] }
+    > = allImages.map((src, index) => ({
+      type: 'image',
+      src,
+      alt: `${product?.name ?? 'Product'} photo ${index + 1}`,
+      fit: 'cover',
+    }));
 
-  const nextImage = useCallback(() => {
-    if (allImages.length <= 1) return;
-    setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
-  }, [allImages.length]);
-
-  const prevImage = useCallback(() => {
-    if (allImages.length <= 1) return;
-    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
-  }, [allImages.length]);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.touches[0].clientX);
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart === null) return;
-    const diff = touchStart - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) nextImage();
-      else prevImage();
+    if (product?.mannequinImage && !items.some((item) => item.type === 'image' && item.src === product.mannequinImage)) {
+      items.push({ type: 'image', src: product.mannequinImage, alt: `${product.name} on mannequin`, fit: 'contain' });
     }
-    setTouchStart(null);
-  };
+
+    if (product?.humanModelImage && !items.some((item) => item.type === 'image' && item.src === product.humanModelImage)) {
+      items.push({ type: 'image', src: product.humanModelImage, alt: `${product.name} on model`, fit: 'contain' });
+    }
+
+    if (product?.rotationFrames && product.rotationFrames.length > 0) {
+      items.push({ type: 'rotation', frames: product.rotationFrames });
+    }
+
+    return items;
+  }, [allImages, product]);
 
   if (loading) {
     return (
