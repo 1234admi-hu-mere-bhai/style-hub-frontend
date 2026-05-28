@@ -262,18 +262,26 @@ const ColorVariantsEditor = ({ value, onChange }: Props) => {
 
   const addExtraImages = async (idx: number, files: File[]) => {
     if (!files.length) return;
+    const existing = value[idx]?.images || [];
+    const remaining = Math.max(0, maxPerColor - existing.length);
+    if (remaining === 0) {
+      toast({ title: 'Limit reached', description: `Max ${maxPerColor} photos per color. Remove some or raise the limit.`, variant: 'destructive' });
+      return;
+    }
+    const toUpload = files.slice(0, remaining);
+    const skipped = files.length - toUpload.length;
     setUploadingIdx(idx);
     try {
-      const urls = await Promise.all(files.map(f => uploadToStorage(f)));
-      const existing = value[idx]?.images || [];
+      const urls = await Promise.all(toUpload.map(f => uploadToStorage(f)));
       updateSlot(idx, { images: [...existing, ...urls] });
-      toast({ title: `${urls.length} image${urls.length > 1 ? 's' : ''} added` });
+      toast({ title: `${urls.length} image${urls.length > 1 ? 's' : ''} added`, description: skipped ? `${skipped} skipped (limit ${maxPerColor})` : undefined });
     } catch (err: any) {
       toast({ title: 'Upload failed', description: err.message, variant: 'destructive' });
     } finally {
       setUploadingIdx(null);
     }
   };
+
 
   const removeExtraImage = (idx: number, imgIdx: number) => {
     const existing = value[idx]?.images || [];
