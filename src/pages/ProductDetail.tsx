@@ -179,7 +179,7 @@ const ProductDetail = () => {
 
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
           <div className="space-y-3">
-            <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 lg:mx-0 lg:px-0">
+            <div ref={scrollRef} className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 lg:mx-0 lg:px-0 scroll-smooth">
               {galleryItems.map((item, index) => (
                 <div key={item.type === 'image' ? item.src : `rotation-${index}`} className="relative min-w-full aspect-[3/4] snap-center rounded-lg overflow-hidden bg-secondary">
                   {item.type === 'image' ? (
@@ -204,7 +204,7 @@ const ProductDetail = () => {
             {galleryItems.length > 1 && (
               <div className="flex justify-center gap-1.5">
                 {galleryItems.map((item, index) => (
-                  <span key={item.type === 'image' ? `dot-${item.src}` : `dot-rotation-${index}`} className="h-1.5 w-1.5 rounded-full bg-muted-foreground/35" />
+                  <span key={item.type === 'image' ? `dot-${item.src}` : `dot-rotation-${index}`} className={`h-1.5 rounded-full transition-all ${index === activeIndex ? 'w-4 bg-primary' : 'w-1.5 bg-muted-foreground/35'}`} />
                 ))}
               </div>
             )}
