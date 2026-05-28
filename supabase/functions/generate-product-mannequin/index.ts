@@ -17,15 +17,18 @@ function getBodyRegion(subcategory: string): 'upper' | 'lower' | 'full' {
   return 'full'
 }
 
-function buildPrompt(region: 'upper' | 'lower' | 'full', angleLabel?: string) {
+function buildPrompt(region: 'upper' | 'lower' | 'full', subject: 'mannequin' | 'human', angleLabel?: string) {
   const angle = angleLabel ? ` Camera angle: ${angleLabel}.` : ''
+  const model = subject === 'human'
+    ? 'a realistic Indian male human model in his mid-20s with short dark hair, friendly neutral expression'
+    : 'a realistic neutral male mannequin (faceless)'
   if (region === 'upper') {
-    return `Take the garment from this product photo and dress it onto a realistic neutral male mannequin showing ONLY the upper body from the waist up. No legs visible. Clean light grey studio background, soft even lighting, photorealistic e-commerce style. Preserve exact color, pattern, fabric texture, collar, buttons, and stitching of the original garment.${angle}`
+    return `Dress the garment from this product photo onto ${model}, showing ONLY the upper body from the waist up. No legs visible. Clean light grey studio background, soft even lighting, photorealistic e-commerce style. Preserve exact color, pattern, fabric texture, collar, buttons, and stitching of the original garment.${angle}`
   }
   if (region === 'lower') {
-    return `Take the garment from this product photo and dress it onto a realistic neutral male mannequin showing ONLY the lower body from the waist down to the feet. No torso or head visible. Clean light grey studio background, soft even lighting, photorealistic e-commerce style. Preserve exact color, pattern, fabric texture, pockets, and stitching of the original garment.${angle}`
+    return `Dress the garment from this product photo onto ${model}, showing ONLY the lower body from the waist down to the feet. No torso or head visible. Clean light grey studio background, soft even lighting, photorealistic e-commerce style. Preserve exact color, pattern, fabric texture, pockets, and stitching of the original garment.${angle}`
   }
-  return `Dress the garment from this product photo onto a realistic neutral male mannequin, full body. Clean light grey studio background, soft even lighting, photorealistic e-commerce style. Preserve exact garment details.${angle}`
+  return `Dress the garment from this product photo onto ${model}, full body. Clean light grey studio background, soft even lighting, photorealistic e-commerce style. Preserve exact garment details.${angle}`
 }
 
 async function callImageGen(apiKey: string, prompt: string, imageUrl: string): Promise<string> {
@@ -93,24 +96,27 @@ Deno.serve(async (req) => {
     }
     if (!allowed) return new Response(JSON.stringify({ error: 'Forbidden' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
 
-    const { action, productImage, subcategory, mannequinImage, productId, frameCount = 12 } = await req.json()
+    const { action, productImage, subcategory, mannequinImage, baseImage: baseImg, productId, frameCount = 12, subject = 'mannequin' } = await req.json()
 
-    if (!productImage && action === 'mannequin') {
+    if (!productImage && (action === 'mannequin' || action === 'human')) {
       return new Response(JSON.stringify({ error: 'productImage required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     const region = getBodyRegion(subcategory || '')
     const idSlug = (productId || crypto.randomUUID()).toString()
 
-    if (action === 'mannequin') {
-      const dataUrl = await callImageGen(lovableKey, buildPrompt(region), productImage)
-      const url = await uploadDataUrl(adminClient, dataUrl, `mannequins/${idSlug}/front-${Date.now()}.png`)
+    if (action === 'mannequin' || action === 'human') {
+      const subj: 'mannequin' | 'human' = action === 'human' ? 'human' : 'mannequin'
+      const dataUrl = await callImageGen(lovableKey, buildPrompt(region, subj), productImage)
+      const folder = subj === 'human' ? 'humans' : 'mannequins'
+      const url = await uploadDataUrl(adminClient, dataUrl, `${folder}/${idSlug}/front-${Date.now()}.png`)
       return new Response(JSON.stringify({ url, region }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
     if (action === 'rotation') {
-      const baseImage = mannequinImage || productImage
-      if (!baseImage) return new Response(JSON.stringify({ error: 'mannequinImage or productImage required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      const base = baseImg || mannequinImage || productImage
+      if (!base) return new Response(JSON.stringify({ error: 'baseImage or productImage required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      const subj: 'mannequin' | 'human' = subject === 'human' ? 'human' : 'mannequin'
 
       const count = Math.min(Math.max(parseInt(frameCount) || 12, 6), 16)
       const frames: string[] = []
@@ -121,12 +127,11 @@ Deno.serve(async (req) => {
         'front-left 345°', 'three-quarter front', 'three-quarter back', 'profile',
       ].slice(0, count)
 
-      // Generate sequentially to keep mannequin consistent (each frame uses base)
       for (let i = 0; i < count; i++) {
-        const prompt = buildPrompt(region, angleLabels[i]) + ' Keep the mannequin pose, lighting, and background IDENTICAL to the reference — only change the camera angle around the mannequin.'
+        const prompt = buildPrompt(region, subj, angleLabels[i]) + ' Keep the subject pose, lighting, and background IDENTICAL to the reference — only change the camera angle around the subject.'
         try {
-          const dataUrl = await callImageGen(lovableKey, prompt, baseImage)
-          const url = await uploadDataUrl(adminClient, dataUrl, `mannequins/${idSlug}/360-${i}-${Date.now()}.png`)
+          const dataUrl = await callImageGen(lovableKey, prompt, base)
+          const url = await uploadDataUrl(adminClient, dataUrl, `rotations/${idSlug}/${subj}-${i}-${Date.now()}.png`)
           frames.push(url)
         } catch (e) {
           console.error(`Frame ${i} failed:`, e)
