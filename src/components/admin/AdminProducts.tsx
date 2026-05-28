@@ -212,14 +212,45 @@ const AdminProducts = () => {
     return data.publicUrl;
   };
 
+  const generateModelImage = async (action: 'mannequin' | 'human', productImage: string) => {
+    const { data, error } = await supabase.functions.invoke('generate-product-mannequin', {
+      body: { action, productImage, subcategory: form.subcategory, productId: editingId || undefined },
+    });
+    if (error) throw error;
+    if (!data?.url) throw new Error('No image returned');
+    return data as { url: string; region: string };
+  };
+
+  const saveProductPatch = async (updates: Partial<typeof EMPTY_PRODUCT>) => {
+    if (!editingId) return;
+    const { error } = await supabase.functions.invoke('admin-products', {
+      body: { action: 'update', product: { id: editingId, ...updates } },
+    });
+    if (error) throw error;
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'image' | 'mannequin_image' | 'human_model_image') => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadingField(field);
     try {
-      const url = await uploadToStorage(file, field);
-      setForm(f => ({ ...f, [field]: url }));
-      toast({ title: 'Image uploaded' });
+      const uploadedUrl = await uploadToStorage(file, field);
+
+      if (field === 'mannequin_image' || field === 'human_model_image') {
+        const action = field === 'human_model_image' ? 'human' : 'mannequin';
+        toast({ title: `${action === 'human' ? 'Human model' : 'Mannequin'} generation started` });
+        const generated = await generateModelImage(action, uploadedUrl);
+        setForm(f => ({ ...f, [field]: generated.url }));
+        await saveProductPatch({ [field]: generated.url } as Partial<typeof EMPTY_PRODUCT>);
+        toast({
+          title: `${action === 'human' ? 'Human model' : 'Mannequin'} generated${editingId ? ' and saved' : ''}`,
+          description: editingId ? `Region: ${generated.region}. Public page updated.` : `Region: ${generated.region}. Save product to publish.`,
+        });
+        return;
+      }
+
+      setForm(f => ({ ...f, [field]: uploadedUrl }));
+      toast({ title: 'Image uploaded', description: 'Use AI Generate to create mannequin or human model views.' });
     } catch (err: any) {
       toast({ title: 'Upload failed', description: err.message, variant: 'destructive' });
     } finally {
@@ -236,13 +267,14 @@ const AdminProducts = () => {
     const setter = action === 'human' ? setGeneratingHuman : setGeneratingMannequin;
     setter(true);
     try {
-      const { data, error } = await supabase.functions.invoke('generate-product-mannequin', {
-        body: { action, productImage: form.image, subcategory: form.subcategory, productId: editingId || undefined },
+      const field = action === 'human' ? 'human_model_image' : 'mannequin_image';
+      const data = await generateModelImage(action, form.image);
+      setForm(f => ({ ...f, [field]: data.url }));
+      await saveProductPatch({ [field]: data.url } as Partial<typeof EMPTY_PRODUCT>);
+      toast({
+        title: `${action === 'human' ? 'Human model' : 'Mannequin'} generated${editingId ? ' and saved' : ''}`,
+        description: editingId ? `Region: ${data.region}. Public page updated.` : `Region: ${data.region}. Save product to publish.`,
       });
-      if (error) throw error;
-      if (!data?.url) throw new Error('No image returned');
-      setForm(f => ({ ...f, [action === 'human' ? 'human_model_image' : 'mannequin_image']: data.url }));
-      toast({ title: `${action === 'human' ? 'Human model' : 'Mannequin'} generated`, description: `Region: ${data.region}. Remember to Save.` });
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
