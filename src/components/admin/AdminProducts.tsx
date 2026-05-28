@@ -420,8 +420,56 @@ const AdminProducts = () => {
                 <Input type="number" value={form.low_stock_threshold || ''} onChange={e => setForm({ ...form, low_stock_threshold: Number(e.target.value) })} />
               </div>
               <div>
-                <Label>Additional Images (comma-separated URLs)</Label>
-                <Input value={additionalImagesInput} onChange={e => setAdditionalImagesInput(e.target.value)} placeholder="Additional Image URLs" />
+                <Label>Additional Images</Label>
+                <div className="flex gap-2 items-start">
+                  <Input value={additionalImagesInput} onChange={e => setAdditionalImagesInput(e.target.value)} placeholder="Comma-separated URLs or upload below" className="flex-1" />
+                  <Button type="button" variant="outline" size="sm" disabled={uploadingField === 'additional_images'} asChild>
+                    <label className="cursor-pointer">
+                      {uploadingField === 'additional_images' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                      <span className="ml-1.5">Upload</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={async (e) => {
+                          const files = Array.from(e.target.files || []);
+                          if (!files.length) return;
+                          setUploadingField('additional_images');
+                          try {
+                            const urls = await Promise.all(files.map(f => uploadToStorage(f, 'additional')));
+                            const existing = additionalImagesInput.split(',').map(s => s.trim()).filter(Boolean);
+                            const merged = [...existing, ...urls];
+                            setAdditionalImagesInput(merged.join(', '));
+                            toast({ title: `${urls.length} image${urls.length > 1 ? 's' : ''} uploaded` });
+                          } catch (err: any) {
+                            toast({ title: 'Upload failed', description: err.message, variant: 'destructive' });
+                          } finally {
+                            setUploadingField(null);
+                            e.target.value = '';
+                          }
+                        }}
+                      />
+                    </label>
+                  </Button>
+                </div>
+                {additionalImagesInput.trim() && (
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {additionalImagesInput.split(',').map(s => s.trim()).filter(Boolean).map((url, i, arr) => (
+                      <div key={url + i} className="relative h-16 w-16 rounded overflow-hidden border border-border/60 bg-muted">
+                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setAdditionalImagesInput(arr.filter((_, j) => j !== i).join(', '))}
+                          className="absolute top-0.5 right-0.5 h-4 w-4 rounded-full bg-background/90 text-destructive flex items-center justify-center"
+                          aria-label="Remove"
+                        >
+                          <X className="h-2.5 w-2.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center gap-2 pt-3 pb-1 border-b border-border/60">

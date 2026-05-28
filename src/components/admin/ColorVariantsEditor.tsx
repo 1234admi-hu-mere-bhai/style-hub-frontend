@@ -259,12 +259,14 @@ const ColorVariantsEditor = ({ value, onChange }: Props) => {
 
   const clearSlot = (idx: number) => updateSlot(idx, { name: '', hex: '', image: '', images: [] });
 
-  const addExtraImage = async (idx: number, file: File) => {
+  const addExtraImages = async (idx: number, files: File[]) => {
+    if (!files.length) return;
     setUploadingIdx(idx);
     try {
-      const url = await uploadToStorage(file);
+      const urls = await Promise.all(files.map(f => uploadToStorage(f)));
       const existing = value[idx]?.images || [];
-      updateSlot(idx, { images: [...existing, url] });
+      updateSlot(idx, { images: [...existing, ...urls] });
+      toast({ title: `${urls.length} image${urls.length > 1 ? 's' : ''} added` });
     } catch (err: any) {
       toast({ title: 'Upload failed', description: err.message, variant: 'destructive' });
     } finally {
@@ -372,10 +374,11 @@ const ColorVariantsEditor = ({ value, onChange }: Props) => {
                       <input
                         type="file"
                         accept="image/*"
+                        multiple
                         className="hidden"
                         onChange={e => {
-                          const f = e.target.files?.[0];
-                          if (f) addExtraImage(idx, f);
+                          const files = Array.from(e.target.files || []);
+                          if (files.length) addExtraImages(idx, files);
                           e.target.value = '';
                         }}
                       />
