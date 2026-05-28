@@ -118,6 +118,8 @@ const AdminProducts = () => {
       tags: product.tags || [],
       in_stock: product.in_stock,
       description: product.description,
+      mannequin_image: product.mannequin_image || '',
+      rotation_frames: product.rotation_frames || [],
     });
     setSizesInput((product.sizes || []).join(', '));
     setColorsInput(
