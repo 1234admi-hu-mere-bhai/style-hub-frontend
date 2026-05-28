@@ -38,17 +38,35 @@ const ProductDetail = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Auto-select first color when product loads
+  // Build the display color list, prepending the product's original/base
+  // color (from product.image) so users can always revert to it.
+  const displayColors = useMemo(() => {
+    if (!product) return [] as Array<{ name: string; hex: string; image?: string; images?: string[] }>;
+    const variants = product.colors || [];
+    const baseImage = product.image || product.images?.[0];
+    if (!baseImage) return variants;
+    const alreadyPresent = variants.some((c) => c.image && c.image === baseImage);
+    if (alreadyPresent) return variants;
+    const original = {
+      name: 'Original',
+      hex: '',
+      image: baseImage,
+      images: (product.images || []).filter((src) => src !== baseImage),
+    };
+    return [original, ...variants];
+  }, [product]);
+
+  // Auto-select first color (Original by default) when product loads
   useEffect(() => {
-    if (product && product.colors.length > 0 && !selectedColor) {
-      setSelectedColor(product.colors[0].name);
+    if (product && displayColors.length > 0 && !selectedColor) {
+      setSelectedColor(displayColors[0].name);
     }
-  }, [product, selectedColor]);
+  }, [product, displayColors, selectedColor]);
 
   const selectedColorVariant = useMemo(() => {
-    if (!product || product.colors.length === 0) return undefined;
-    return product.colors.find((color) => color.name === selectedColor) || product.colors[0];
-  }, [product, selectedColor]);
+    if (!product || displayColors.length === 0) return undefined;
+    return displayColors.find((color) => color.name === selectedColor) || displayColors[0];
+  }, [product, displayColors, selectedColor]);
 
   // Per-color gallery: only show the selected color's own images while swiping.
   const galleryItems = useMemo(() => {
