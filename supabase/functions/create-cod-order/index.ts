@@ -111,6 +111,14 @@ Deno.serve(async (req) => {
       });
     } catch (e) { console.error('notif insert failed', e); }
 
+    // Auto-create Delhivery shipment (best-effort). Once AWB is set, the
+    // sync-delhivery-status cron will advance the timeline automatically.
+    try {
+      const ship = await autoCreateDelhiveryShipment(admin, order.id);
+      if (ship.awb) console.log(`[cod] auto AWB ${ship.awb} for order ${orderNumber}`);
+      else console.warn(`[cod] auto shipment skipped/failed:`, ship);
+    } catch (e) { console.error('auto shipment exception', e); }
+
     return json({
       success: true,
       order: { ...order, order_number: orderNumber },
