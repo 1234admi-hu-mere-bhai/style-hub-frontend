@@ -393,7 +393,6 @@ const AdminProducts = () => {
                 <Label>Subcategory *</Label>
                 <Input value={form.subcategory} onChange={e => setForm({ ...form, subcategory: e.target.value })} placeholder="Subcategory" />
               </div>
-              <div>
               <div className="flex items-center gap-2 pt-3 pb-1 border-b border-border/60">
                 <span className="h-5 w-1 rounded-full bg-primary" />
                 <h4 className="text-sm font-bold uppercase tracking-wider text-foreground">2. Main Image & Stock</h4>
