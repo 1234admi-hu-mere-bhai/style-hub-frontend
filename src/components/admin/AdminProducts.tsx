@@ -354,6 +354,10 @@ const AdminProducts = () => {
             </div>
 
             <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-1 border-b border-border/60">
+                <span className="h-5 w-1 rounded-full bg-primary" />
+                <h4 className="text-sm font-bold uppercase tracking-wider text-foreground">1. Basic Info</h4>
+              </div>
               <div>
                 <Label>Product Name *</Label>
                 <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
