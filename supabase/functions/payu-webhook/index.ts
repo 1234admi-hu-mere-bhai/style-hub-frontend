@@ -242,6 +242,13 @@ Deno.serve(async (req) => {
       console.error('Invoice generation failed:', e);
     }
 
+    // Auto-create Delhivery shipment (best-effort). Cron sync advances the timeline.
+    try {
+      const ship = await autoCreateDelhiveryShipment(adminClient, order.id);
+      if (ship.awb) console.log(`[payu-webhook] auto AWB ${ship.awb} for order ${orderNumber}`);
+      else console.warn(`[payu-webhook] auto shipment skipped/failed:`, ship);
+    } catch (e) { console.error('auto shipment exception', e); }
+
     // Notify user (mask order id for privacy on lock screens / previews)
     const maskedOrder = `••••${orderNumber.slice(-4)}`;
     await adminClient.from('notifications').insert({
