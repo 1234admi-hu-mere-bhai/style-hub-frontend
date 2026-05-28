@@ -45,8 +45,12 @@ const ProductDetail = () => {
     }
   }, [product, selectedColor]);
 
-  // Flat continuous gallery: [color1.image, ...color1.images, color2.image, ...color2.images, ...]
-  // Plus shared images (mannequin/model/360) at the end, not associated with any color.
+  const selectedColorVariant = useMemo(() => {
+    if (!product || product.colors.length === 0) return undefined;
+    return product.colors.find((color) => color.name === selectedColor) || product.colors[0];
+  }, [product, selectedColor]);
+
+  // Per-color gallery: only show the selected color's own images while swiping.
   const galleryItems = useMemo(() => {
     if (!product) return [];
     const items: Array<
@@ -61,13 +65,13 @@ const ProductDetail = () => {
       items.push({ type: 'image', src, alt, fit, colorName });
     };
 
-    if (product.colors.length > 0 && product.colors.some(c => c.image)) {
-      product.colors.forEach((c) => {
-        if (c.image) push(c.image, `${product.name} in ${c.name}`, 'cover', c.name);
-        (c.images || []).forEach((src, i) => push(src, `${product.name} ${c.name} ${i + 2}`, 'cover', c.name));
-      });
-      // Shared product photos (un-tagged) at the end
-      product.images.forEach((src, i) => push(src, `${product.name} photo ${i + 1}`, 'cover'));
+    if (product.colors.length > 0 && selectedColorVariant) {
+      if (selectedColorVariant.image) push(selectedColorVariant.image, `${product.name} in ${selectedColorVariant.name}`, 'cover', selectedColorVariant.name);
+      (selectedColorVariant.images || []).forEach((src, i) => push(src, `${product.name} ${selectedColorVariant.name} ${i + 2}`, 'cover', selectedColorVariant.name));
+
+      if (items.length === 0) {
+        product.images.forEach((src, i) => push(src, `${product.name} photo ${i + 1}`, 'cover'));
+      }
     } else {
       product.images.forEach((src, i) => push(src, `${product.name} photo ${i + 1}`, 'cover'));
     }
@@ -78,44 +82,32 @@ const ProductDetail = () => {
       items.push({ type: 'rotation', frames: product.rotationFrames });
     }
     return items;
-  }, [product]);
+  }, [product, selectedColorVariant]);
 
-  // First-index map: which gallery index does each color start at?
-  const colorStartIndex = useMemo(() => {
-    const map: Record<string, number> = {};
-    galleryItems.forEach((it, i) => {
-      if (it.type === 'image' && it.colorName && map[it.colorName] === undefined) {
-        map[it.colorName] = i;
-      }
-    });
-    return map;
-  }, [galleryItems]);
-
-  // Scroll to a color's first image when user taps a swatch
+  // Load a color's own gallery and start from the first image when user taps a swatch.
   const handleSelectColor = (name: string) => {
     setSelectedColor(name);
-    const idx = colorStartIndex[name];
     const el = scrollRef.current;
-    if (el && idx !== undefined) {
-      el.scrollTo({ left: idx * el.clientWidth, behavior: 'smooth' });
-    }
+    setActiveIndex(0);
+    el?.scrollTo({ left: 0, behavior: 'auto' });
   };
 
-  // Track active scroll index and auto-update selectedColor when scrolling crosses into another color
+  // Track active image within the selected color only.
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
     const onScroll = () => {
       const idx = Math.round(el.scrollLeft / el.clientWidth);
       setActiveIndex(idx);
-      const item = galleryItems[idx];
-      if (item && item.type === 'image' && item.colorName && item.colorName !== selectedColor) {
-        setSelectedColor(item.colorName);
-      }
     };
     el.addEventListener('scroll', onScroll, { passive: true });
     return () => el.removeEventListener('scroll', onScroll);
-  }, [galleryItems, selectedColor]);
+  }, []);
+
+  useEffect(() => {
+    setActiveIndex(0);
+    scrollRef.current?.scrollTo({ left: 0, behavior: 'auto' });
+  }, [selectedColor, galleryItems.length]);
 
 
   if (loading) {
