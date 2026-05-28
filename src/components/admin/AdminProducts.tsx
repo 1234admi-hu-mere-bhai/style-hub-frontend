@@ -435,10 +435,16 @@ const AdminProducts = () => {
                 </div>
                 <div className="flex gap-2 items-start">
                   <Input value={additionalImagesInput} onChange={e => setAdditionalImagesInput(e.target.value)} placeholder="Comma-separated URLs or upload below" className="flex-1" />
-                  <Button type="button" variant="outline" size="sm" disabled={uploadingField === 'additional_images'} asChild>
-                    <label className="cursor-pointer">
-                      {uploadingField === 'additional_images' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                      <span className="ml-1.5">Upload</span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={uploadingField === 'additional_images'}
+                    asChild
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-md ring-2 ring-primary/40 ring-offset-1 ring-offset-background animate-pulse"
+                  >
+                    <label className="cursor-pointer font-semibold">
+                      {uploadingField === 'additional_images' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                      <span className="ml-1.5">Upload Images</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -473,6 +479,9 @@ const AdminProducts = () => {
                     </label>
                   </Button>
                 </div>
+                <p className="text-[11px] text-primary/80 mt-1 flex items-center gap-1">
+                  <Upload className="h-3 w-3" /> Tip: Click <span className="font-semibold">Upload Images</span> to add multiple photos at once (up to {maxAdditionalImages}).
+                </p>
 
                 {additionalImagesInput.trim() && (
                   <div className="mt-2 flex flex-wrap gap-2">
