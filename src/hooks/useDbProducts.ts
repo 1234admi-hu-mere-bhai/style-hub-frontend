@@ -57,7 +57,7 @@ interface ActiveFlashSale {
 export const dbToStoreProduct = (p: DbProduct): StoreProduct => {
   const colors = (p.colors || []).map((c: any) => {
     if (typeof c === 'string') return { name: c, hex: '#000' };
-    return { name: c.name, hex: c.hex, image: c.image };
+    return { name: c.name, hex: c.hex, image: c.image, images: Array.isArray(c.images) ? c.images.filter(Boolean) : [] };
   });
 
   return {
