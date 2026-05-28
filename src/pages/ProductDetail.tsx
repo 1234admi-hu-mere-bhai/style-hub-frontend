@@ -35,43 +35,59 @@ const ProductDetail = () => {
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
   
 
-  const allImages = useMemo(() => {
-    if (!product) return [];
-    // If a color is selected and has an image, show it first
-    if (selectedColor) {
-      const colorOption = product.colors.find(c => c.name === selectedColor);
-      if (colorOption?.image) {
-        return [colorOption.image, ...product.images.filter(img => img !== colorOption.image)];
-      }
-    }
-    return product.images;
-  }, [product, selectedColor]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const galleryItems = useMemo(() => {
+    if (!product) return [];
     const items: Array<
-      | { type: 'image'; src: string; alt: string; fit: 'cover' | 'contain' }
+      | { type: 'image'; src: string; alt: string; fit: 'cover' | 'contain'; colorName?: string }
       | { type: 'rotation'; frames: string[] }
-    > = allImages.map((src, index) => ({
-      type: 'image',
-      src,
-      alt: `${product?.name ?? 'Product'} photo ${index + 1}`,
-      fit: 'cover',
-    }));
+    > = [];
 
-    if (product?.mannequinImage && !items.some((item) => item.type === 'image' && item.src === product.mannequinImage)) {
-      items.push({ type: 'image', src: product.mannequinImage, alt: `${product.name} on mannequin`, fit: 'contain' });
-    }
+    const seen = new Set<string>();
+    const push = (src: string, alt: string, fit: 'cover' | 'contain', colorName?: string) => {
+      if (!src || seen.has(src)) return;
+      seen.add(src);
+      items.push({ type: 'image', src, alt, fit, colorName });
+    };
 
-    if (product?.humanModelImage && !items.some((item) => item.type === 'image' && item.src === product.humanModelImage)) {
-      items.push({ type: 'image', src: product.humanModelImage, alt: `${product.name} on model`, fit: 'contain' });
-    }
-
-    if (product?.rotationFrames && product.rotationFrames.length > 0) {
+    product.images.forEach((src, i) => push(src, `${product.name} photo ${i + 1}`, 'cover'));
+    product.colors.forEach((c) => {
+      if (c.image) push(c.image, `${product.name} in ${c.name}`, 'cover', c.name);
+    });
+    if (product.mannequinImage) push(product.mannequinImage, `${product.name} on mannequin`, 'contain');
+    if (product.humanModelImage) push(product.humanModelImage, `${product.name} on model`, 'contain');
+    if (product.rotationFrames && product.rotationFrames.length > 0) {
       items.push({ type: 'rotation', frames: product.rotationFrames });
     }
-
     return items;
-  }, [allImages, product]);
+  }, [product]);
+
+  // Scroll to selected color's image
+  useEffect(() => {
+    if (!selectedColor || !scrollRef.current) return;
+    const idx = galleryItems.findIndex((it) => it.type === 'image' && it.colorName === selectedColor);
+    if (idx < 0) return;
+    const child = scrollRef.current.children[idx] as HTMLElement | undefined;
+    child?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, [selectedColor, galleryItems]);
+
+  // Track active scroll index and sync color swatch
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      const idx = Math.round(el.scrollLeft / el.clientWidth);
+      setActiveIndex(idx);
+      const item = galleryItems[idx];
+      if (item?.type === 'image' && item.colorName && item.colorName !== selectedColor) {
+        setSelectedColor(item.colorName);
+      }
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [galleryItems, selectedColor]);
 
   if (loading) {
     return (
