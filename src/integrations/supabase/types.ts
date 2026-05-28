@@ -602,9 +602,11 @@ export type Database = {
           image: string
           in_stock: boolean | null
           low_stock_threshold: number | null
+          mannequin_image: string | null
           name: string
           original_price: number | null
           price: number
+          rotation_frames: string[] | null
           sizes: string[] | null
           stock_quantity: number | null
           subcategory: string
@@ -624,9 +626,11 @@ export type Database = {
           image?: string
           in_stock?: boolean | null
           low_stock_threshold?: number | null
+          mannequin_image?: string | null
           name: string
           original_price?: number | null
           price: number
+          rotation_frames?: string[] | null
           sizes?: string[] | null
           stock_quantity?: number | null
           subcategory?: string
@@ -646,9 +650,11 @@ export type Database = {
           image?: string
           in_stock?: boolean | null
           low_stock_threshold?: number | null
+          mannequin_image?: string | null
           name?: string
           original_price?: number | null
           price?: number
+          rotation_frames?: string[] | null
           sizes?: string[] | null
           stock_quantity?: number | null
           subcategory?: string
