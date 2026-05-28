@@ -163,6 +163,16 @@ const InvoiceDialog = ({
     }
   };
 
+  const escapeHtml = (value: unknown): string => {
+    if (value === null || value === undefined) return '';
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  };
+
   const buildInvoiceHtml = () => {
     if (!order) return '';
     const addr = order.shipping_address;
@@ -177,9 +187,9 @@ const InvoiceDialog = ({
         <tr>
           <td>${i + 1}</td>
           <td>
-            <strong>${it.product_name}</strong>
-            ${it.size ? `<br/><span class="meta">Size: ${it.size}</span>` : ''}
-            ${it.color ? `<span class="meta"> · Color: ${it.color}</span>` : ''}
+            <strong>${escapeHtml(it.product_name)}</strong>
+            ${it.size ? `<br/><span class="meta">Size: ${escapeHtml(it.size)}</span>` : ''}
+            ${it.color ? `<span class="meta"> · Color: ${escapeHtml(it.color)}</span>` : ''}
           </td>
           <td class="num">${it.quantity}</td>
           <td class="num">₹${Number(it.price).toLocaleString('en-IN')}</td>
@@ -187,6 +197,7 @@ const InvoiceDialog = ({
         </tr>`
       )
       .join('');
+
 
     return `
       <html>
