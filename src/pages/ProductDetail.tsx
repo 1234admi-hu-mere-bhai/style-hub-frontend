@@ -139,7 +139,7 @@ const ProductDetail = () => {
   };
 
   const handleBuyNow = () => {
-    if (!selectedSize || !selectedColor) { toast.error('Please select size and color'); return; }
+    if (!selectedSize || (product.colors.length > 0 && !selectedColor)) { toast.error('Please select size and color'); return; }
     setBuyNowItem({
       id: product.id,
       name: product.name,
