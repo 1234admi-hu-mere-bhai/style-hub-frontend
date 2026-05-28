@@ -123,7 +123,7 @@ const ProductDetail = () => {
       return;
     }
     if (!selectedSize) { toast.error('Please select a size'); return; }
-    if (!selectedColor) { toast.error('Please select a color'); return; }
+    if (product.colors.length > 0 && !selectedColor) { toast.error('Please select a color'); return; }
     addToCart({
       id: product.id,
       name: product.name,
@@ -139,7 +139,7 @@ const ProductDetail = () => {
   };
 
   const handleBuyNow = () => {
-    if (!selectedSize || !selectedColor) { toast.error('Please select size and color'); return; }
+    if (!selectedSize || (product.colors.length > 0 && !selectedColor)) { toast.error('Please select size and color'); return; }
     setBuyNowItem({
       id: product.id,
       name: product.name,
@@ -241,14 +241,16 @@ const ProductDetail = () => {
 
             <p className="text-muted-foreground">{product.description}</p>
 
-            <div>
-              <h3 className="font-semibold mb-3">Color: <span className="font-normal text-muted-foreground">{selectedColor || 'Select a color'}</span></h3>
-              <div className="flex gap-3">
-                {product.colors.map((color) => (
-                  <button key={color.name} onClick={() => setSelectedColor(color.name)} className={`w-10 h-10 rounded-full border-2 transition-all ${selectedColor === color.name ? 'border-primary scale-110 ring-2 ring-primary/30' : 'border-border'}`} style={{ backgroundColor: color.hex }} title={color.name} />
-                ))}
+            {product.colors.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-3">Color: <span className="font-normal text-muted-foreground">{selectedColor || 'Select a color'}</span></h3>
+                <div className="flex gap-3">
+                  {product.colors.map((color) => (
+                    <button key={color.name} onClick={() => setSelectedColor(color.name)} className={`w-10 h-10 rounded-full border-2 transition-all ${selectedColor === color.name ? 'border-primary scale-110 ring-2 ring-primary/30' : 'border-border'}`} style={{ backgroundColor: color.hex }} title={color.name} />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             <div>
               <div className="flex items-center justify-between mb-3">

@@ -69,7 +69,7 @@ export const dbToStoreProduct = (p: DbProduct): StoreProduct => {
     discount: p.discount ? Number(p.discount) : undefined,
     images: [p.image, ...(p.additional_images || [])].filter(Boolean),
     sizes: p.sizes || [],
-    colors: colors.length > 0 ? colors : [{ name: 'Default', hex: '#000' }],
+    colors,
     rating: 4.5,
     reviews: 0,
     description: p.description || '',
