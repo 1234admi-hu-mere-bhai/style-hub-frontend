@@ -191,6 +191,7 @@ const ColorVariantsEditor = ({ value, onChange }: Props) => {
     return SLOT_OPTIONS.find(n => n >= Math.max(v, 3)) || 5;
   });
   const [uploadingIdx, setUploadingIdx] = useState<number | null>(null);
+  const [maxPerColor, setMaxPerColor] = useState<number>(6);
   const fileRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // Ensure value array length matches slotCount (pad with blanks, trim extras only if trailing blanks)
@@ -261,18 +262,26 @@ const ColorVariantsEditor = ({ value, onChange }: Props) => {
 
   const addExtraImages = async (idx: number, files: File[]) => {
     if (!files.length) return;
+    const existing = value[idx]?.images || [];
+    const remaining = Math.max(0, maxPerColor - existing.length);
+    if (remaining === 0) {
+      toast({ title: 'Limit reached', description: `Max ${maxPerColor} photos per color. Remove some or raise the limit.`, variant: 'destructive' });
+      return;
+    }
+    const toUpload = files.slice(0, remaining);
+    const skipped = files.length - toUpload.length;
     setUploadingIdx(idx);
     try {
-      const urls = await Promise.all(files.map(f => uploadToStorage(f)));
-      const existing = value[idx]?.images || [];
+      const urls = await Promise.all(toUpload.map(f => uploadToStorage(f)));
       updateSlot(idx, { images: [...existing, ...urls] });
-      toast({ title: `${urls.length} image${urls.length > 1 ? 's' : ''} added` });
+      toast({ title: `${urls.length} image${urls.length > 1 ? 's' : ''} added`, description: skipped ? `${skipped} skipped (limit ${maxPerColor})` : undefined });
     } catch (err: any) {
       toast({ title: 'Upload failed', description: err.message, variant: 'destructive' });
     } finally {
       setUploadingIdx(null);
     }
   };
+
 
   const removeExtraImage = (idx: number, imgIdx: number) => {
     const existing = value[idx]?.images || [];
@@ -298,8 +307,18 @@ const ColorVariantsEditor = ({ value, onChange }: Props) => {
             </SelectContent>
           </Select>
           <span className="text-xs text-muted-foreground">{filled}/{slotCount} filled</span>
+          <Label className="text-xs ml-2">Max photos/color:</Label>
+          <Select value={String(maxPerColor)} onValueChange={v => setMaxPerColor(Number(v))}>
+            <SelectTrigger className="h-8 w-16"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {[1,2,3,4,5,6,8,10].map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
       </div>
+
+
+
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
         {slots.map((slot, idx) => (
