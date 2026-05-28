@@ -320,6 +320,59 @@ const AdminProducts = () => {
                 <Label>Additional Images (comma-separated URLs)</Label>
                 <Input value={additionalImagesInput} onChange={e => setAdditionalImagesInput(e.target.value)} placeholder="Additional Image URLs" />
               </div>
+
+              {/* AI Mannequin section */}
+              <div className="rounded-lg border border-border/50 p-3 space-y-2 bg-secondary/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-primary" /> Mannequin Image (AI)</Label>
+                    <p className="text-xs text-muted-foreground">Auto-dresses garment on mannequin. Upper or lower body chosen from subcategory.</p>
+                  </div>
+                  <Button type="button" size="sm" variant="outline" onClick={handleGenerateMannequin} disabled={generatingMannequin || !form.image}>
+                    {generatingMannequin ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                    <span className="ml-1.5">{form.mannequin_image ? 'Regenerate' : 'Generate'}</span>
+                  </Button>
+                </div>
+                {form.mannequin_image && (
+                  <div className="flex items-start gap-3">
+                    <img src={form.mannequin_image} alt="Mannequin preview" className="w-24 h-32 object-cover rounded-md bg-muted" />
+                    <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={() => setForm(f => ({ ...f, mannequin_image: '' }))}>
+                      <X className="h-3.5 w-3.5 mr-1" /> Remove
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* AI 360° section */}
+              <div className="rounded-lg border border-border/50 p-3 space-y-2 bg-secondary/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="flex items-center gap-1.5"><RotateCw className="h-3.5 w-3.5 text-primary" /> 360° View (AI)</Label>
+                    <p className="text-xs text-muted-foreground">12 frames user can drag-rotate. Uses mannequin if available.</p>
+                  </div>
+                  <Button type="button" size="sm" variant="outline" onClick={handleGenerate360} disabled={generating360 || (!form.mannequin_image && !form.image)}>
+                    {generating360 ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RotateCw className="h-3.5 w-3.5" />}
+                    <span className="ml-1.5">{form.rotation_frames.length > 0 ? 'Regenerate' : 'Generate'}</span>
+                  </Button>
+                </div>
+                {generating360 && (
+                  <p className="text-xs text-muted-foreground">Generating 12 frames sequentially… ~1–2 min.</p>
+                )}
+                {form.rotation_frames.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">{form.rotation_frames.length} frames</p>
+                    <div className="flex gap-1.5 overflow-x-auto">
+                      {form.rotation_frames.map((url, i) => (
+                        <img key={i} src={url} alt={`Frame ${i + 1}`} className="w-12 h-16 object-cover rounded bg-muted flex-shrink-0" />
+                      ))}
+                    </div>
+                    <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={() => setForm(f => ({ ...f, rotation_frames: [] }))}>
+                      <X className="h-3.5 w-3.5 mr-1" /> Remove all frames
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               <div>
                 <Label>Sizes (comma-separated) *</Label>
                 <Input value={sizesInput} onChange={e => setSizesInput(e.target.value)} placeholder="S, M, L, XL" />
