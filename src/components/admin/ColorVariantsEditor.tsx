@@ -11,6 +11,7 @@ export interface ColorVariant {
   name: string;
   hex: string;
   image?: string;
+  images?: string[]; // additional photos for this color (the gallery scrolls through these)
 }
 
 interface Props {
