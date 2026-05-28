@@ -43,7 +43,7 @@ const ProductDetail = () => {
   const displayColors = useMemo(() => {
     if (!product) return [] as Array<{ name: string; hex: string; image?: string; images?: string[] }>;
     const variants = product.colors || [];
-    const baseImage = product.image || product.images?.[0];
+    const baseImage = product.images?.[0];
     if (!baseImage) return variants;
     const alreadyPresent = variants.some((c) => c.image && c.image === baseImage);
     if (alreadyPresent) return variants;
