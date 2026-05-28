@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, Package, Loader2, X, Sparkles, RotateCw, User, Upload } from 'lucide-react';
+import ColorVariantsEditor, { type ColorVariant } from './ColorVariantsEditor';
 
 interface Product {
   id: string;
