@@ -269,12 +269,17 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 🔁 Auto-trigger PayU refund when admin marks the package as picked up
+    // 🔁 Auto-trigger PayU refund when admin marks the package as picked up,
+    // but ONLY for return flows — replacements do NOT refund (we ship a new item instead).
+    const isReturnPickup =
+      !!prevOrder &&
+      ['return_requested', 'return_approved', 'picked_up_pending'].includes(prevOrder.status);
     if (
       prevOrder &&
       nextOrder &&
       prevOrder.status !== nextOrder.status &&
-      nextOrder.status === 'picked_up'
+      nextOrder.status === 'picked_up' &&
+      isReturnPickup
     ) {
       try {
         await adminClient.functions.invoke('payu-refund', {
