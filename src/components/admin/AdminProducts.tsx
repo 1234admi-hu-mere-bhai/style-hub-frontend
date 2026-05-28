@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, Package, Loader2, X, Sparkles, RotateCw, User, Upload } from 'lucide-react';
+import ColorVariantsEditor, { type ColorVariant } from './ColorVariantsEditor';
 
 interface Product {
   id: string;
@@ -125,11 +126,7 @@ const AdminProducts = () => {
       rotation_frames: product.rotation_frames || [],
     });
     setSizesInput((product.sizes || []).join(', '));
-    setColorsInput(
-      (product.colors || []).map((c: any) =>
-        typeof c === 'string' ? c : `${c.name}:${c.hex}${c.image ? ':' + c.image : ''}`
-      ).join(', ')
-    );
+    setColorsInput('');
     setTagsInput((product.tags || []).join(', '));
     setAdditionalImagesInput((product.additional_images || []).join(', '));
     setEditingId(product.id);
@@ -145,16 +142,8 @@ const AdminProducts = () => {
     setSaving(true);
     try {
       const sizes = sizesInput.split(',').map(s => s.trim()).filter(Boolean);
-      const colors = colorsInput.split(',').map(c => {
-        const trimmed = c.trim();
-        const parts = trimmed.split(':');
-        if (parts.length >= 3) {
-          return { name: parts[0].trim(), hex: parts[1].trim(), image: parts.slice(2).join(':').trim() };
-        } else if (parts.length === 2) {
-          return { name: parts[0].trim(), hex: parts[1].trim() };
-        }
-        return { name: trimmed, hex: '' };
-      }).filter(c => c.name);
+      // Colors managed by ColorVariantsEditor; keep only filled slots
+      const colors = (form.colors as ColorVariant[]).filter(c => c && (c.image || c.name));
       const tags = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
       const additional_images = additionalImagesInput.split(',').map(i => i.trim()).filter(Boolean);
 
@@ -505,16 +494,10 @@ const AdminProducts = () => {
                 <Label>Sizes (comma-separated) *</Label>
                 <Input value={sizesInput} onChange={e => setSizesInput(e.target.value)} placeholder="S, M, L, XL" />
               </div>
-              <div>
-                <Label>Colors with Images (Name:Hex:ImageURL, comma-separated)</Label>
-                <p className="text-xs text-muted-foreground mb-1.5">Format: ColorName:HexCode:ImageURL — image URL is optional. Each color can have its own image that shows when selected.</p>
-                <Textarea
-                  value={colorsInput}
-                  onChange={e => setColorsInput(e.target.value)}
-                  placeholder="Blue:#3B82F6:https://img-blue.jpg, Black:#111111:https://img-black.jpg, Red:#EF4444"
-                  rows={3}
-                />
-              </div>
+              <ColorVariantsEditor
+                value={(form.colors as ColorVariant[]) || []}
+                onChange={(next) => setForm(f => ({ ...f, colors: next }))}
+              />
               <div>
                 <Label>Tags (comma-separated)</Label>
                 <Input value={tagsInput} onChange={e => setTagsInput(e.target.value)} placeholder="bestseller, trending" />
