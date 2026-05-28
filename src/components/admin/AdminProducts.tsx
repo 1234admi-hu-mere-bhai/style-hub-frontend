@@ -191,6 +191,7 @@ const AdminProducts = () => {
 
       toast({ title: editingId ? 'Product updated' : 'Product added' });
       setShowForm(false);
+      try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
       fetchProducts();
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
