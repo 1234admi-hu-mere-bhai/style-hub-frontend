@@ -463,11 +463,17 @@ const Index = () => {
                     {c} <X size={12} />
                   </button>
                 ))}
-                {(priceRange[0] > 0 || priceRange[1] < 5000) && (
-                  <button onClick={() => setPriceRange([0, 5000])} className="inline-flex items-center gap-1 px-3 py-1.5 bg-secondary rounded-full text-xs font-medium">
-                    ₹{priceRange[0]}-₹{priceRange[1]} <X size={12} />
+                {selectedPriceChips.map(label => (
+                  <button key={label} onClick={() => setSelectedPriceChips(prev => prev.filter(p => p !== label))} className="inline-flex items-center gap-1 px-3 py-1.5 bg-secondary rounded-full text-xs font-medium">
+                    {label} <X size={12} />
                   </button>
-                )}
+                ))}
+                {(Object.entries(attrs) as [AttrKey, string[]][]).flatMap(([key, vals]) => vals.map(v => (
+                  <button key={`${key}-${v}`} onClick={() => setAttrs(prev => ({ ...prev, [key]: prev[key].filter(x => x !== v) }))} className="inline-flex items-center gap-1 px-3 py-1.5 bg-secondary rounded-full text-xs font-medium">
+                    {v} <X size={12} />
+                  </button>
+                )))}
+
               </>
             )}
           </div>
