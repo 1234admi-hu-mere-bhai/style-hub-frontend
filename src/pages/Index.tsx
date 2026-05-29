@@ -392,15 +392,48 @@ const Index = () => {
                     </div>
                   </div>
 
-                  {/* Price */}
+                  {/* Price Range Chips */}
                   <div>
                     <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Price Range</h3>
-                    <Slider value={tempPriceRange} onValueChange={setTempPriceRange} min={0} max={5000} step={100} />
-                    <div className="flex justify-between text-sm text-muted-foreground mt-3">
-                      <span>₹{tempPriceRange[0]}</span>
-                      <span>₹{tempPriceRange[1]}</span>
+                    <div className="flex flex-wrap gap-2">
+                      {PRICE_CHIPS.map(chip => (
+                        <button
+                          key={chip.label}
+                          onClick={() => toggleTempPriceChip(chip.label)}
+                          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                            tempPriceChips.includes(chip.label) ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+                          }`}
+                        >{chip.label}</button>
+                      ))}
                     </div>
                   </div>
+
+                  {/* Attribute filters */}
+                  {([
+                    { key: 'fit' as AttrKey, label: 'Fit', options: [...FIT_OPTIONS] },
+                    { key: 'fabric' as AttrKey, label: 'Fabric', options: [...FABRIC_OPTIONS] },
+                    { key: 'occasion' as AttrKey, label: 'Occasion', options: [...OCCASION_OPTIONS] },
+                    { key: 'colorFamily' as AttrKey, label: 'Color Family', options: [...COLOR_FAMILY_OPTIONS] },
+                    { key: 'sleeveType' as AttrKey, label: 'Sleeve Type', options: [...SLEEVE_TYPE_OPTIONS] },
+                    { key: 'neckType' as AttrKey, label: 'Neck Type', options: [...NECK_TYPE_OPTIONS] },
+                    ...(collectionOptions.length ? [{ key: 'collection' as AttrKey, label: 'Collection', options: collectionOptions }] : []),
+                  ]).map(group => (
+                    <div key={group.key}>
+                      <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">{group.label}</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {group.options.map(opt => (
+                          <button
+                            key={opt}
+                            onClick={() => toggleTempAttr(group.key, opt)}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                              tempAttrs[group.key].includes(opt) ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+                            }`}
+                          >{opt}</button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
                 </div>
 
                 {/* Apply Button */}
