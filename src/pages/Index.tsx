@@ -35,7 +35,6 @@ const Index = () => {
   const navigate = useNavigate();
   const { products, loading } = useDbProducts();
   const [activeFilter, setActiveFilter] = useState('all');
-  const [priceRange, setPriceRange] = useState([0, 5000]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedPriceChips, setSelectedPriceChips] = useState<string[]>([]);
@@ -120,31 +119,39 @@ const Index = () => {
 
   const toggleTempSize = (size: string) => setTempSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
   const toggleTempColor = (color: string) => setTempColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
+  const toggleTempPriceChip = (label: string) => setTempPriceChips(prev => prev.includes(label) ? prev.filter(p => p !== label) : [...prev, label]);
+  const toggleTempAttr = (key: AttrKey, val: string) => setTempAttrs(prev => ({
+    ...prev,
+    [key]: prev[key].includes(val) ? prev[key].filter(v => v !== val) : [...prev[key], val],
+  }));
 
   // Sync temp state when opening the sheet
   const handleOpenFilter = (open: boolean) => {
     if (open) {
       setTempFilter(activeFilter);
-      setTempPriceRange(priceRange);
       setTempSizes(selectedSizes);
       setTempColors(selectedColors);
+      setTempPriceChips(selectedPriceChips);
+      setTempAttrs(attrs);
     }
     setFilterOpen(open);
   };
 
   const applyFilters = () => {
     setActiveFilter(tempFilter);
-    setPriceRange(tempPriceRange);
     setSelectedSizes(tempSizes);
     setSelectedColors(tempColors);
+    setSelectedPriceChips(tempPriceChips);
+    setAttrs(tempAttrs);
     setFilterOpen(false);
   };
 
   const clearTempFilters = () => {
     setTempFilter('all');
-    setTempPriceRange([0, 5000]);
     setTempSizes([]);
     setTempColors([]);
+    setTempPriceChips([]);
+    setTempAttrs(EMPTY_ATTRS);
   };
 
   const toggleSize = (size: string) => setSelectedSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
@@ -157,31 +164,60 @@ const Index = () => {
     return merged;
   }, [products]);
 
+  // Distinct collections present in catalog (free-text field)
+  const collectionOptions = useMemo(() => {
+    return [...new Set(products.map(p => p.collection).filter(Boolean) as string[])];
+  }, [products]);
+
+  const productMatchesPriceChips = (price: number) => {
+    if (selectedPriceChips.length === 0) return true;
+    return selectedPriceChips.some(label => {
+      const chip = PRICE_CHIPS.find(c => c.label === label);
+      return chip ? price >= chip.min && price <= chip.max : false;
+    });
+  };
+
   const featuredProducts = useMemo(() => {
-    let filtered = activeFilter === 'all' 
-      ? products 
+    let filtered = activeFilter === 'all'
+      ? products
       : products.filter(p => p.subcategory === activeFilter);
-    
-    filtered = filtered.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
-    
+
+    filtered = filtered.filter(p => productMatchesPriceChips(p.price));
+
     if (selectedSizes.length > 0) {
       filtered = filtered.filter(p => p.sizes.some(s => selectedSizes.includes(s)));
     }
     if (selectedColors.length > 0) {
       filtered = filtered.filter(p => p.colors.some(c => selectedColors.includes(c.name)));
     }
-    
-    return filtered.slice(0, 8);
-  }, [products, activeFilter, priceRange, selectedSizes, selectedColors]);
+    if (attrs.fit.length) filtered = filtered.filter(p => p.fit && attrs.fit.includes(p.fit));
+    if (attrs.fabric.length) filtered = filtered.filter(p => p.fabric && attrs.fabric.includes(p.fabric));
+    if (attrs.occasion.length) filtered = filtered.filter(p => p.occasion && attrs.occasion.includes(p.occasion));
+    if (attrs.colorFamily.length) filtered = filtered.filter(p => p.colorFamily && attrs.colorFamily.includes(p.colorFamily));
+    if (attrs.sleeveType.length) filtered = filtered.filter(p => p.sleeveType && attrs.sleeveType.includes(p.sleeveType));
+    if (attrs.neckType.length) filtered = filtered.filter(p => p.neckType && attrs.neckType.includes(p.neckType));
+    if (attrs.collection.length) filtered = filtered.filter(p => p.collection && attrs.collection.includes(p.collection));
 
-  const activeFiltersCount = selectedSizes.length + selectedColors.length + (priceRange[0] > 0 || priceRange[1] < 5000 ? 1 : 0) + (activeFilter !== 'all' ? 1 : 0);
+    return filtered.slice(0, 8);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products, activeFilter, selectedPriceChips, selectedSizes, selectedColors, attrs]);
+
+  const attrChipCount = Object.values(attrs).reduce((sum, list) => sum + list.length, 0);
+  const activeFiltersCount =
+    selectedSizes.length +
+    selectedColors.length +
+    selectedPriceChips.length +
+    attrChipCount +
+    (activeFilter !== 'all' ? 1 : 0);
 
   const clearAllFilters = () => {
     setActiveFilter('all');
-    setPriceRange([0, 5000]);
     setSelectedSizes([]);
     setSelectedColors([]);
+    setSelectedPriceChips([]);
+    setAttrs(EMPTY_ATTRS);
   };
+
 
   const categories = [
     { name: 'Men', image: categoryMen, href: '/products?category=men' },
