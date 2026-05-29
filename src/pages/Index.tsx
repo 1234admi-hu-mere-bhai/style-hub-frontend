@@ -484,8 +484,8 @@ const Index = () => {
               <Link
                 to={`/products?${new URLSearchParams([
                   ...(activeFilter !== 'all' ? [['subcategory', activeFilter]] : []),
-                  ...(priceRange[0] > 0 ? [['priceMin', String(priceRange[0])]] : []),
-                  ...(priceRange[1] < 5000 ? [['priceMax', String(priceRange[1])]] : []),
+                  ...selectedPriceChips.map(label => ['price', label] as [string, string]),
+
                   ...selectedSizes.map(s => ['size', s]),
                   ...selectedColors.map(c => ['color', c]),
                 ]).toString()}`}
