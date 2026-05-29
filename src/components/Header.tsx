@@ -140,9 +140,9 @@ const Header = () => {
               >
                 <Search size={20} />
               </button>
-              {!onWalletPage && (
+              {user && !onWalletPage && (
                 <button
-                  onClick={() => navigate(user ? '/wallet' : '/auth?redirect=/wallet')}
+                  onClick={() => navigate('/wallet')}
                   className="flex items-center gap-1 pl-1.5 pr-2.5 py-1 rounded-full bg-primary/15 hover:bg-primary/25 transition-colors"
                   aria-label="MG Wallet"
                   title="MG Wallet"
