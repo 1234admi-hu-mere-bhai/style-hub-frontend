@@ -13,15 +13,27 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from '@/components/ui/sheet';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Slider } from '@/components/ui/slider';
+import {
+  FIT_OPTIONS,
+  FABRIC_OPTIONS,
+  OCCASION_OPTIONS,
+  COLOR_FAMILY_OPTIONS,
+  SLEEVE_TYPE_OPTIONS,
+  NECK_TYPE_OPTIONS,
+  PRICE_CHIPS,
+} from '@/lib/product-attributes';
+
+type AttrKey = 'fit' | 'fabric' | 'occasion' | 'colorFamily' | 'sleeveType' | 'neckType' | 'collection';
+const EMPTY_ATTRS: Record<AttrKey, string[]> = {
+  fit: [], fabric: [], occasion: [], colorFamily: [], sleeveType: [], neckType: [], collection: [],
+};
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
   const saleParam = searchParams.get('sale');
   const subcategoryParam = searchParams.get('subcategory');
-  const priceMinParam = searchParams.get('priceMin');
-  const priceMaxParam = searchParams.get('priceMax');
+  const priceParams = searchParams.getAll('price'); // chip labels
   const sizeParams = searchParams.getAll('size');
   const colorParams = searchParams.getAll('color');
   const searchQuery = searchParams.get('search') || '';
@@ -29,16 +41,21 @@ const Products = () => {
   const { products: allProducts, loading } = useDbProducts();
 
   const [sortBy, setSortBy] = useState('featured');
-  const [priceRange, setPriceRange] = useState([
-    priceMinParam ? Number(priceMinParam) : 0,
-    priceMaxParam ? Number(priceMaxParam) : 5000,
-  ]);
+  const [selectedPriceChips, setSelectedPriceChips] = useState<string[]>(priceParams);
   const [selectedSizes, setSelectedSizes] = useState<string[]>(sizeParams);
   const [selectedColors, setSelectedColors] = useState<string[]>(colorParams);
   const [selectedCategories, setSelectedCategories] = useState<string[]>(
     categoryParam ? [categoryParam] : []
   );
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>(subcategoryParam || '');
+  const [attrs, setAttrs] = useState<Record<AttrKey, string[]>>(() => {
+    const init = { ...EMPTY_ATTRS };
+    (Object.keys(EMPTY_ATTRS) as AttrKey[]).forEach(k => {
+      const vals = searchParams.getAll(k);
+      if (vals.length) init[k] = vals;
+    });
+    return init;
+  });
   const [gridCols, setGridCols] = useState<2 | 3 | 4>(3);
 
   const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
@@ -52,10 +69,16 @@ const Products = () => {
   ];
   const categories = ['men'];
 
+  // Collection chips derived from currently loaded products
+  const collectionOptions = useMemo(() => {
+    const set = new Set<string>();
+    allProducts.forEach(p => { if (p.collection) set.add(p.collection); });
+    return Array.from(set).sort();
+  }, [allProducts]);
+
   const filteredProducts = useMemo(() => {
     let result = [...allProducts];
 
-    // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter((p) =>
@@ -75,13 +98,27 @@ const Products = () => {
     if (selectedSubcategory) {
       result = result.filter((p) => p.subcategory === selectedSubcategory);
     }
-    result = result.filter((p) => p.price >= priceRange[0] && p.price <= priceRange[1]);
+    if (selectedPriceChips.length > 0) {
+      const ranges = selectedPriceChips
+        .map(label => PRICE_CHIPS.find(c => c.label === label))
+        .filter((c): c is typeof PRICE_CHIPS[number] => !!c);
+      if (ranges.length) {
+        result = result.filter(p => ranges.some(r => p.price >= r.min && p.price <= r.max));
+      }
+    }
     if (selectedSizes.length > 0) {
       result = result.filter((p) => p.sizes.some((s) => selectedSizes.includes(s)));
     }
     if (selectedColors.length > 0) {
       result = result.filter((p) => p.colors.some((c) => selectedColors.includes(c.name)));
     }
+    if (attrs.fit.length) result = result.filter(p => p.fit && attrs.fit.includes(p.fit));
+    if (attrs.fabric.length) result = result.filter(p => p.fabric && attrs.fabric.includes(p.fabric));
+    if (attrs.occasion.length) result = result.filter(p => p.occasion && attrs.occasion.includes(p.occasion));
+    if (attrs.colorFamily.length) result = result.filter(p => p.colorFamily && attrs.colorFamily.includes(p.colorFamily));
+    if (attrs.sleeveType.length) result = result.filter(p => p.sleeveType && attrs.sleeveType.includes(p.sleeveType));
+    if (attrs.neckType.length) result = result.filter(p => p.neckType && attrs.neckType.includes(p.neckType));
+    if (attrs.collection.length) result = result.filter(p => p.collection && attrs.collection.includes(p.collection));
 
     switch (sortBy) {
       case 'price-low': result.sort((a, b) => a.price - b.price); break;
@@ -91,21 +128,44 @@ const Products = () => {
       default: result.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
     }
     return result;
-  }, [allProducts, searchQuery, saleParam, selectedCategories, selectedSubcategory, priceRange, selectedSizes, selectedColors, sortBy]);
+  }, [allProducts, searchQuery, saleParam, selectedCategories, selectedSubcategory, selectedPriceChips, selectedSizes, selectedColors, attrs, sortBy]);
 
   const toggleSize = (size: string) => setSelectedSizes((prev) => prev.includes(size) ? prev.filter((s) => s !== size) : [...prev, size]);
   const toggleColor = (color: string) => setSelectedColors((prev) => prev.includes(color) ? prev.filter((c) => c !== color) : [...prev, color]);
   const toggleCategory = (category: string) => setSelectedCategories((prev) => prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]);
+  const togglePriceChip = (label: string) => setSelectedPriceChips(prev => prev.includes(label) ? prev.filter(p => p !== label) : [...prev, label]);
+  const toggleAttr = (key: AttrKey, value: string) => setAttrs(prev => ({
+    ...prev,
+    [key]: prev[key].includes(value) ? prev[key].filter(v => v !== value) : [...prev[key], value],
+  }));
+
+  const attrChipCount = Object.values(attrs).reduce((sum, list) => sum + list.length, 0);
 
   const clearFilters = () => {
     setSelectedSizes([]);
     setSelectedColors([]);
     setSelectedCategories([]);
-    setPriceRange([0, 5000]);
+    setSelectedPriceChips([]);
+    setAttrs(EMPTY_ATTRS);
     setSearchParams({});
   };
 
-  const activeFiltersCount = selectedSizes.length + selectedColors.length + selectedCategories.length + (priceRange[0] > 0 || priceRange[1] < 5000 ? 1 : 0);
+  const activeFiltersCount =
+    selectedSizes.length +
+    selectedColors.length +
+    selectedCategories.length +
+    selectedPriceChips.length +
+    attrChipCount;
+
+  const attrGroups: { key: AttrKey; label: string; options: string[] }[] = [
+    { key: 'fit', label: 'Fit', options: [...FIT_OPTIONS] },
+    { key: 'fabric', label: 'Fabric', options: [...FABRIC_OPTIONS] },
+    { key: 'occasion', label: 'Occasion', options: [...OCCASION_OPTIONS] },
+    { key: 'colorFamily', label: 'Color Family', options: [...COLOR_FAMILY_OPTIONS] },
+    { key: 'sleeveType', label: 'Sleeve Type', options: [...SLEEVE_TYPE_OPTIONS] },
+    { key: 'neckType', label: 'Neck Type', options: [...NECK_TYPE_OPTIONS] },
+    ...(collectionOptions.length ? [{ key: 'collection' as AttrKey, label: 'Collection', options: collectionOptions }] : []),
+  ];
 
   const FilterContent = () => (
     <div className="space-y-8">
@@ -122,10 +182,16 @@ const Products = () => {
       </div>
       <div>
         <h3 className="font-semibold mb-4">Price Range</h3>
-        <Slider value={priceRange} onValueChange={setPriceRange} min={0} max={5000} step={100} className="mb-4" />
-        <div className="flex justify-between text-sm text-muted-foreground">
-          <span>₹{priceRange[0]}</span>
-          <span>₹{priceRange[1]}</span>
+        <div className="flex flex-wrap gap-2">
+          {PRICE_CHIPS.map(chip => (
+            <button
+              key={chip.label}
+              onClick={() => togglePriceChip(chip.label)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                selectedPriceChips.includes(chip.label) ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+              }`}
+            >{chip.label}</button>
+          ))}
         </div>
       </div>
       <div>
@@ -146,6 +212,22 @@ const Products = () => {
           ))}
         </div>
       </div>
+      {attrGroups.map(group => (
+        <div key={group.key}>
+          <h3 className="font-semibold mb-4">{group.label}</h3>
+          <div className="flex flex-wrap gap-2">
+            {group.options.map(opt => (
+              <button
+                key={opt}
+                onClick={() => toggleAttr(group.key, opt)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  attrs[group.key].includes(opt) ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+                }`}
+              >{opt}</button>
+            ))}
+          </div>
+        </div>
+      ))}
       {activeFiltersCount > 0 && <Button variant="outline" onClick={clearFilters} className="w-full">Clear All Filters</Button>}
     </div>
   );
@@ -196,7 +278,7 @@ const Products = () => {
 
         <div className="flex gap-8">
           <aside className="hidden lg:block w-64 flex-shrink-0">
-            <div className="sticky top-28">
+            <div className="sticky top-28 max-h-[calc(100vh-7rem)] overflow-y-auto pr-2">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="font-semibold text-lg flex items-center gap-2"><Filter size={20} />Filters</h2>
                 {activeFiltersCount > 0 && <span className="text-sm text-primary">{activeFiltersCount} active</span>}
@@ -215,7 +297,7 @@ const Products = () => {
                       {activeFiltersCount > 0 && <span className="ml-2 w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center">{activeFiltersCount}</span>}
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="w-80">
+                  <SheetContent side="left" className="w-80 overflow-y-auto">
                     <SheetHeader><SheetTitle>Filters</SheetTitle></SheetHeader>
                     <div className="mt-6"><FilterContent /></div>
                   </SheetContent>
@@ -248,12 +330,18 @@ const Products = () => {
                 {selectedCategories.map((cat) => (
                   <button key={cat} onClick={() => toggleCategory(cat)} className="inline-flex items-center gap-1 px-3 py-1 bg-secondary rounded-full text-sm"><span className="capitalize">{cat}</span><X size={14} /></button>
                 ))}
+                {selectedPriceChips.map((label) => (
+                  <button key={label} onClick={() => togglePriceChip(label)} className="inline-flex items-center gap-1 px-3 py-1 bg-secondary rounded-full text-sm">{label}<X size={14} /></button>
+                ))}
                 {selectedSizes.map((size) => (
                   <button key={size} onClick={() => toggleSize(size)} className="inline-flex items-center gap-1 px-3 py-1 bg-secondary rounded-full text-sm">Size: {size}<X size={14} /></button>
                 ))}
                 {selectedColors.map((color) => (
                   <button key={color} onClick={() => toggleColor(color)} className="inline-flex items-center gap-1 px-3 py-1 bg-secondary rounded-full text-sm">{color}<X size={14} /></button>
                 ))}
+                {(Object.entries(attrs) as [AttrKey, string[]][]).flatMap(([key, vals]) => vals.map(v => (
+                  <button key={`${key}-${v}`} onClick={() => toggleAttr(key, v)} className="inline-flex items-center gap-1 px-3 py-1 bg-secondary rounded-full text-sm">{v}<X size={14} /></button>
+                )))}
               </div>
             )}
 
