@@ -311,15 +311,20 @@ const Index = () => {
           <div className="flex flex-wrap items-center gap-2 mb-4 lg:mb-8">
             <Sheet open={filterOpen} onOpenChange={handleOpenFilter}>
               <SheetTrigger asChild>
-                <Button variant="outline" className="rounded-full gap-2">
-                  <SlidersHorizontal size={16} />
-                  Filter
+                <button
+                  type="button"
+                  className="group relative inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-glow ring-1 ring-primary/40 transition-all duration-300 hover:scale-[1.03] active:scale-[0.98]"
+                  style={{ backgroundImage: 'var(--gradient-vibrant)' }}
+                >
+                  <span className="absolute inset-0 rounded-full bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <SlidersHorizontal size={18} className="relative" />
+                  <span className="relative tracking-wide uppercase">Filters</span>
                   {activeFiltersCount > 0 && (
-                    <span className="w-5 h-5 bg-primary text-primary-foreground rounded-full text-xs flex items-center justify-center">
+                    <span className="relative ml-1 grid place-items-center min-w-[22px] h-[22px] px-1.5 rounded-full bg-background text-primary text-xs font-bold ring-2 ring-primary-foreground/60">
                       {activeFiltersCount}
                     </span>
                   )}
-                </Button>
+                </button>
               </SheetTrigger>
               <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl flex flex-col">
                 <SheetHeader>
