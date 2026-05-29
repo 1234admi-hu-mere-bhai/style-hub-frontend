@@ -12,6 +12,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, Package, Loader2, X, Sparkles, RotateCw, User, Upload } from 'lucide-react';
 import ColorVariantsEditor, { type ColorVariant } from './ColorVariantsEditor';
+import {
+  FIT_OPTIONS,
+  FABRIC_OPTIONS,
+  OCCASION_OPTIONS,
+  COLOR_FAMILY_OPTIONS,
+  SLEEVE_TYPE_OPTIONS,
+  NECK_TYPE_OPTIONS,
+} from '@/lib/product-attributes';
 
 interface Product {
   id: string;
