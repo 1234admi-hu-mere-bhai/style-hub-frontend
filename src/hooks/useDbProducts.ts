@@ -23,6 +23,13 @@ export interface DbProduct {
   mannequin_image?: string | null;
   human_model_image?: string | null;
   rotation_frames?: string[] | null;
+  fit?: string | null;
+  fabric?: string | null;
+  occasion?: string | null;
+  color_family?: string | null;
+  sleeve_type?: string | null;
+  neck_type?: string | null;
+  collection?: string | null;
 }
 
 // Convert DB product to the format used by ProductCard & ProductDetail
@@ -46,7 +53,15 @@ export interface StoreProduct {
   mannequinImage?: string;
   humanModelImage?: string;
   rotationFrames?: string[];
+  fit?: string;
+  fabric?: string;
+  occasion?: string;
+  colorFamily?: string;
+  sleeveType?: string;
+  neckType?: string;
+  collection?: string;
 }
+
 
 interface ActiveFlashSale {
   id: string;
