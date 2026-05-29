@@ -38,12 +38,20 @@ const Index = () => {
   const [priceRange, setPriceRange] = useState([0, 5000]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [selectedPriceChips, setSelectedPriceChips] = useState<string[]>([]);
+
+  type AttrKey = 'fit' | 'fabric' | 'occasion' | 'colorFamily' | 'sleeveType' | 'neckType' | 'collection';
+  const EMPTY_ATTRS: Record<AttrKey, string[]> = {
+    fit: [], fabric: [], occasion: [], colorFamily: [], sleeveType: [], neckType: [], collection: [],
+  };
+  const [attrs, setAttrs] = useState<Record<AttrKey, string[]>>(EMPTY_ATTRS);
 
   // Temporary filter state (used inside the sheet before Apply)
   const [tempFilter, setTempFilter] = useState('all');
-  const [tempPriceRange, setTempPriceRange] = useState([0, 5000]);
   const [tempSizes, setTempSizes] = useState<string[]>([]);
   const [tempColors, setTempColors] = useState<string[]>([]);
+  const [tempPriceChips, setTempPriceChips] = useState<string[]>([]);
+  const [tempAttrs, setTempAttrs] = useState<Record<AttrKey, string[]>>(EMPTY_ATTRS);
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [voiceSearchOpen, setVoiceSearchOpen] = useState(false);
@@ -51,6 +59,7 @@ const Index = () => {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribing, setSubscribing] = useState(false);
   const [discountCode, setDiscountCode] = useState('');
+
 
   const handleSubscribe = useCallback(() => {
     const email = newsletterEmail.trim();
