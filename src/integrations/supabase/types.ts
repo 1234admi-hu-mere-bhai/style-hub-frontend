@@ -597,10 +597,14 @@ export type Database = {
           additional_images: string[] | null
           brand: string
           category: string
+          collection: string | null
+          color_family: string | null
           colors: Json | null
           created_at: string
           description: string | null
           discount: number | null
+          fabric: string | null
+          fit: string | null
           human_model_image: string | null
           id: string
           image: string
@@ -608,10 +612,13 @@ export type Database = {
           low_stock_threshold: number | null
           mannequin_image: string | null
           name: string
+          neck_type: string | null
+          occasion: string | null
           original_price: number | null
           price: number
           rotation_frames: string[] | null
           sizes: string[] | null
+          sleeve_type: string | null
           stock_quantity: number | null
           subcategory: string
           tags: string[] | null
@@ -622,10 +629,14 @@ export type Database = {
           additional_images?: string[] | null
           brand?: string
           category?: string
+          collection?: string | null
+          color_family?: string | null
           colors?: Json | null
           created_at?: string
           description?: string | null
           discount?: number | null
+          fabric?: string | null
+          fit?: string | null
           human_model_image?: string | null
           id?: string
           image?: string
@@ -633,10 +644,13 @@ export type Database = {
           low_stock_threshold?: number | null
           mannequin_image?: string | null
           name: string
+          neck_type?: string | null
+          occasion?: string | null
           original_price?: number | null
           price: number
           rotation_frames?: string[] | null
           sizes?: string[] | null
+          sleeve_type?: string | null
           stock_quantity?: number | null
           subcategory?: string
           tags?: string[] | null
@@ -647,10 +661,14 @@ export type Database = {
           additional_images?: string[] | null
           brand?: string
           category?: string
+          collection?: string | null
+          color_family?: string | null
           colors?: Json | null
           created_at?: string
           description?: string | null
           discount?: number | null
+          fabric?: string | null
+          fit?: string | null
           human_model_image?: string | null
           id?: string
           image?: string
@@ -658,10 +676,13 @@ export type Database = {
           low_stock_threshold?: number | null
           mannequin_image?: string | null
           name?: string
+          neck_type?: string | null
+          occasion?: string | null
           original_price?: number | null
           price?: number
           rotation_frames?: string[] | null
           sizes?: string[] | null
+          sleeve_type?: string | null
           stock_quantity?: number | null
           subcategory?: string
           tags?: string[] | null
