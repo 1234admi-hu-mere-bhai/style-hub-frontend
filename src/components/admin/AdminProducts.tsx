@@ -418,6 +418,74 @@ const AdminProducts = () => {
                 <Label>Subcategory *</Label>
                 <Input value={form.subcategory} onChange={e => setForm({ ...form, subcategory: e.target.value })} placeholder="Subcategory" />
               </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Fit</Label>
+                  <Select value={form.fit || '__none__'} onValueChange={val => setForm({ ...form, fit: val === '__none__' ? '' : val })}>
+                    <SelectTrigger><SelectValue placeholder="Select fit" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {FIT_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Fabric</Label>
+                  <Select value={form.fabric || '__none__'} onValueChange={val => setForm({ ...form, fabric: val === '__none__' ? '' : val })}>
+                    <SelectTrigger><SelectValue placeholder="Select fabric" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {FABRIC_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Occasion</Label>
+                  <Select value={form.occasion || '__none__'} onValueChange={val => setForm({ ...form, occasion: val === '__none__' ? '' : val })}>
+                    <SelectTrigger><SelectValue placeholder="Select occasion" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {OCCASION_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Color Family</Label>
+                  <Select value={form.color_family || '__none__'} onValueChange={val => setForm({ ...form, color_family: val === '__none__' ? '' : val })}>
+                    <SelectTrigger><SelectValue placeholder="Select color family" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {COLOR_FAMILY_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Sleeve Type</Label>
+                  <Select value={form.sleeve_type || '__none__'} onValueChange={val => setForm({ ...form, sleeve_type: val === '__none__' ? '' : val })}>
+                    <SelectTrigger><SelectValue placeholder="Select sleeve type" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {SLEEVE_TYPE_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Neck Type</Label>
+                  <Select value={form.neck_type || '__none__'} onValueChange={val => setForm({ ...form, neck_type: val === '__none__' ? '' : val })}>
+                    <SelectTrigger><SelectValue placeholder="Select neck type" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {NECK_TYPE_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="col-span-2">
+                  <Label>Collection</Label>
+                  <Input value={form.collection || ''} onChange={e => setForm({ ...form, collection: e.target.value })} placeholder="Summer Drop, Winter Edit, etc." />
+                </div>
+              </div>
+
               <div className="flex items-center gap-2 pt-3 pb-1 border-b border-border/60">
                 <span className="h-5 w-1 rounded-full bg-primary" />
                 <h4 className="text-sm font-bold uppercase tracking-wider text-foreground">2. Main Image & Stock</h4>
