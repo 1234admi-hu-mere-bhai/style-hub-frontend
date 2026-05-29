@@ -35,6 +35,13 @@ interface Product {
   mannequin_image?: string | null;
   human_model_image?: string | null;
   rotation_frames?: string[] | null;
+  fit?: string | null;
+  fabric?: string | null;
+  occasion?: string | null;
+  color_family?: string | null;
+  sleeve_type?: string | null;
+  neck_type?: string | null;
+  collection?: string | null;
 }
 
 const EMPTY_PRODUCT = {
@@ -57,7 +64,15 @@ const EMPTY_PRODUCT = {
   mannequin_image: '' as string,
   human_model_image: '' as string,
   rotation_frames: [] as string[],
+  fit: '' as string,
+  fabric: '' as string,
+  occasion: '' as string,
+  color_family: '' as string,
+  sleeve_type: '' as string,
+  neck_type: '' as string,
+  collection: '' as string,
 };
+
 
 const DRAFT_KEY = 'admin-products-draft-v1';
 
