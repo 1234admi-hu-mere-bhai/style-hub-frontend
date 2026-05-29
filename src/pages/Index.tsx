@@ -501,7 +501,8 @@ const Index = () => {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : featuredProducts.length > 0 ? (
-            <div key={`${activeFilter}-${selectedSizes.join()}-${selectedColors.join()}-${priceRange.join()}`} className="grid grid-cols-2 lg:grid-cols-4 gap-px lg:gap-6 -mx-3 lg:mx-0 bg-border lg:bg-transparent">
+            <div key={`${activeFilter}-${selectedSizes.join()}-${selectedColors.join()}-${selectedPriceChips.join()}`} className="grid grid-cols-2 lg:grid-cols-4 gap-px lg:gap-6 -mx-3 lg:mx-0 bg-border lg:bg-transparent">
+
               {featuredProducts.map((product, index) => (
                 <div key={product.id} className="animate-fade-in bg-background" style={{ animationDelay: `${index * 60}ms`, animationFillMode: 'backwards' }}>
                   <ProductCard product={product} />
