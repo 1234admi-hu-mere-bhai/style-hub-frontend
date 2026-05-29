@@ -94,6 +94,13 @@ export const dbToStoreProduct = (p: DbProduct): StoreProduct => {
     mannequinImage: p.mannequin_image || undefined,
     humanModelImage: p.human_model_image || undefined,
     rotationFrames: (p.rotation_frames || []).filter(Boolean),
+    fit: p.fit || undefined,
+    fabric: p.fabric || undefined,
+    occasion: p.occasion || undefined,
+    colorFamily: p.color_family || undefined,
+    sleeveType: p.sleeve_type || undefined,
+    neckType: p.neck_type || undefined,
+    collection: p.collection || undefined,
   };
 };
 
