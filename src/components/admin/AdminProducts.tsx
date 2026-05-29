@@ -184,13 +184,7 @@ const AdminProducts = () => {
     setShowForm(true);
   };
 
-    setSizesInput((product.sizes || []).join(', '));
-    setColorsInput('');
-    setTagsInput((product.tags || []).join(', '));
-    setAdditionalImagesInput((product.additional_images || []).join(', '));
-    setEditingId(product.id);
-    setShowForm(true);
-  };
+
 
   const handleSave = async () => {
     if (!form.name || !form.price) {
