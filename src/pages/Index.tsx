@@ -19,6 +19,15 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from '@/components/ui/sheet';
 import { Slider } from '@/components/ui/slider';
+import {
+  FIT_OPTIONS,
+  FABRIC_OPTIONS,
+  OCCASION_OPTIONS,
+  COLOR_FAMILY_OPTIONS,
+  SLEEVE_TYPE_OPTIONS,
+  NECK_TYPE_OPTIONS,
+  PRICE_CHIPS,
+} from '@/lib/product-attributes';
 
 import categoryMen from '@/assets/category-men.jpg';
 
