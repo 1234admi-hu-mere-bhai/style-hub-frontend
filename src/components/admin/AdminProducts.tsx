@@ -12,6 +12,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, Package, Loader2, X, Sparkles, RotateCw, User, Upload } from 'lucide-react';
 import ColorVariantsEditor, { type ColorVariant } from './ColorVariantsEditor';
+import {
+  FIT_OPTIONS,
+  FABRIC_OPTIONS,
+  OCCASION_OPTIONS,
+  COLOR_FAMILY_OPTIONS,
+  SLEEVE_TYPE_OPTIONS,
+  NECK_TYPE_OPTIONS,
+} from '@/lib/product-attributes';
 
 interface Product {
   id: string;
@@ -35,6 +43,13 @@ interface Product {
   mannequin_image?: string | null;
   human_model_image?: string | null;
   rotation_frames?: string[] | null;
+  fit?: string | null;
+  fabric?: string | null;
+  occasion?: string | null;
+  color_family?: string | null;
+  sleeve_type?: string | null;
+  neck_type?: string | null;
+  collection?: string | null;
 }
 
 const EMPTY_PRODUCT = {
@@ -57,7 +72,15 @@ const EMPTY_PRODUCT = {
   mannequin_image: '' as string,
   human_model_image: '' as string,
   rotation_frames: [] as string[],
+  fit: '' as string,
+  fabric: '' as string,
+  occasion: '' as string,
+  color_family: '' as string,
+  sleeve_type: '' as string,
+  neck_type: '' as string,
+  collection: '' as string,
 };
+
 
 const DRAFT_KEY = 'admin-products-draft-v1';
 
@@ -153,6 +176,13 @@ const AdminProducts = () => {
       mannequin_image: product.mannequin_image || '',
       human_model_image: product.human_model_image || '',
       rotation_frames: product.rotation_frames || [],
+      fit: product.fit || '',
+      fabric: product.fabric || '',
+      occasion: product.occasion || '',
+      color_family: product.color_family || '',
+      sleeve_type: product.sleeve_type || '',
+      neck_type: product.neck_type || '',
+      collection: product.collection || '',
     });
     setSizesInput((product.sizes || []).join(', '));
     setColorsInput('');
@@ -161,6 +191,8 @@ const AdminProducts = () => {
     setEditingId(product.id);
     setShowForm(true);
   };
+
+
 
   const handleSave = async () => {
     if (!form.name || !form.price) {
@@ -394,6 +426,74 @@ const AdminProducts = () => {
                 <Label>Subcategory *</Label>
                 <Input value={form.subcategory} onChange={e => setForm({ ...form, subcategory: e.target.value })} placeholder="Subcategory" />
               </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Fit</Label>
+                  <Select value={form.fit || '__none__'} onValueChange={val => setForm({ ...form, fit: val === '__none__' ? '' : val })}>
+                    <SelectTrigger><SelectValue placeholder="Select fit" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {FIT_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Fabric</Label>
+                  <Select value={form.fabric || '__none__'} onValueChange={val => setForm({ ...form, fabric: val === '__none__' ? '' : val })}>
+                    <SelectTrigger><SelectValue placeholder="Select fabric" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {FABRIC_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Occasion</Label>
+                  <Select value={form.occasion || '__none__'} onValueChange={val => setForm({ ...form, occasion: val === '__none__' ? '' : val })}>
+                    <SelectTrigger><SelectValue placeholder="Select occasion" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {OCCASION_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Color Family</Label>
+                  <Select value={form.color_family || '__none__'} onValueChange={val => setForm({ ...form, color_family: val === '__none__' ? '' : val })}>
+                    <SelectTrigger><SelectValue placeholder="Select color family" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {COLOR_FAMILY_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Sleeve Type</Label>
+                  <Select value={form.sleeve_type || '__none__'} onValueChange={val => setForm({ ...form, sleeve_type: val === '__none__' ? '' : val })}>
+                    <SelectTrigger><SelectValue placeholder="Select sleeve type" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {SLEEVE_TYPE_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Neck Type</Label>
+                  <Select value={form.neck_type || '__none__'} onValueChange={val => setForm({ ...form, neck_type: val === '__none__' ? '' : val })}>
+                    <SelectTrigger><SelectValue placeholder="Select neck type" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— None —</SelectItem>
+                      {NECK_TYPE_OPTIONS.map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="col-span-2">
+                  <Label>Collection</Label>
+                  <Input value={form.collection || ''} onChange={e => setForm({ ...form, collection: e.target.value })} placeholder="Summer Drop, Winter Edit, etc." />
+                </div>
+              </div>
+
               <div className="flex items-center gap-2 pt-3 pb-1 border-b border-border/60">
                 <span className="h-5 w-1 rounded-full bg-primary" />
                 <h4 className="text-sm font-bold uppercase tracking-wider text-foreground">2. Main Image & Stock</h4>

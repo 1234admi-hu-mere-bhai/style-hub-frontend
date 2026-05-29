@@ -19,6 +19,15 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from '@/components/ui/sheet';
 import { Slider } from '@/components/ui/slider';
+import {
+  FIT_OPTIONS,
+  FABRIC_OPTIONS,
+  OCCASION_OPTIONS,
+  COLOR_FAMILY_OPTIONS,
+  SLEEVE_TYPE_OPTIONS,
+  NECK_TYPE_OPTIONS,
+  PRICE_CHIPS,
+} from '@/lib/product-attributes';
 
 import categoryMen from '@/assets/category-men.jpg';
 
@@ -26,15 +35,22 @@ const Index = () => {
   const navigate = useNavigate();
   const { products, loading } = useDbProducts();
   const [activeFilter, setActiveFilter] = useState('all');
-  const [priceRange, setPriceRange] = useState([0, 5000]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [selectedPriceChips, setSelectedPriceChips] = useState<string[]>([]);
+
+  type AttrKey = 'fit' | 'fabric' | 'occasion' | 'colorFamily' | 'sleeveType' | 'neckType' | 'collection';
+  const EMPTY_ATTRS: Record<AttrKey, string[]> = {
+    fit: [], fabric: [], occasion: [], colorFamily: [], sleeveType: [], neckType: [], collection: [],
+  };
+  const [attrs, setAttrs] = useState<Record<AttrKey, string[]>>(EMPTY_ATTRS);
 
   // Temporary filter state (used inside the sheet before Apply)
   const [tempFilter, setTempFilter] = useState('all');
-  const [tempPriceRange, setTempPriceRange] = useState([0, 5000]);
   const [tempSizes, setTempSizes] = useState<string[]>([]);
   const [tempColors, setTempColors] = useState<string[]>([]);
+  const [tempPriceChips, setTempPriceChips] = useState<string[]>([]);
+  const [tempAttrs, setTempAttrs] = useState<Record<AttrKey, string[]>>(EMPTY_ATTRS);
   const [filterOpen, setFilterOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [voiceSearchOpen, setVoiceSearchOpen] = useState(false);
@@ -42,6 +58,7 @@ const Index = () => {
   const [newsletterEmail, setNewsletterEmail] = useState('');
   const [subscribing, setSubscribing] = useState(false);
   const [discountCode, setDiscountCode] = useState('');
+
 
   const handleSubscribe = useCallback(() => {
     const email = newsletterEmail.trim();
@@ -102,31 +119,39 @@ const Index = () => {
 
   const toggleTempSize = (size: string) => setTempSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
   const toggleTempColor = (color: string) => setTempColors(prev => prev.includes(color) ? prev.filter(c => c !== color) : [...prev, color]);
+  const toggleTempPriceChip = (label: string) => setTempPriceChips(prev => prev.includes(label) ? prev.filter(p => p !== label) : [...prev, label]);
+  const toggleTempAttr = (key: AttrKey, val: string) => setTempAttrs(prev => ({
+    ...prev,
+    [key]: prev[key].includes(val) ? prev[key].filter(v => v !== val) : [...prev[key], val],
+  }));
 
   // Sync temp state when opening the sheet
   const handleOpenFilter = (open: boolean) => {
     if (open) {
       setTempFilter(activeFilter);
-      setTempPriceRange(priceRange);
       setTempSizes(selectedSizes);
       setTempColors(selectedColors);
+      setTempPriceChips(selectedPriceChips);
+      setTempAttrs(attrs);
     }
     setFilterOpen(open);
   };
 
   const applyFilters = () => {
     setActiveFilter(tempFilter);
-    setPriceRange(tempPriceRange);
     setSelectedSizes(tempSizes);
     setSelectedColors(tempColors);
+    setSelectedPriceChips(tempPriceChips);
+    setAttrs(tempAttrs);
     setFilterOpen(false);
   };
 
   const clearTempFilters = () => {
     setTempFilter('all');
-    setTempPriceRange([0, 5000]);
     setTempSizes([]);
     setTempColors([]);
+    setTempPriceChips([]);
+    setTempAttrs(EMPTY_ATTRS);
   };
 
   const toggleSize = (size: string) => setSelectedSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size]);
@@ -139,31 +164,60 @@ const Index = () => {
     return merged;
   }, [products]);
 
+  // Distinct collections present in catalog (free-text field)
+  const collectionOptions = useMemo(() => {
+    return [...new Set(products.map(p => p.collection).filter(Boolean) as string[])];
+  }, [products]);
+
+  const productMatchesPriceChips = (price: number) => {
+    if (selectedPriceChips.length === 0) return true;
+    return selectedPriceChips.some(label => {
+      const chip = PRICE_CHIPS.find(c => c.label === label);
+      return chip ? price >= chip.min && price <= chip.max : false;
+    });
+  };
+
   const featuredProducts = useMemo(() => {
-    let filtered = activeFilter === 'all' 
-      ? products 
+    let filtered = activeFilter === 'all'
+      ? products
       : products.filter(p => p.subcategory === activeFilter);
-    
-    filtered = filtered.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
-    
+
+    filtered = filtered.filter(p => productMatchesPriceChips(p.price));
+
     if (selectedSizes.length > 0) {
       filtered = filtered.filter(p => p.sizes.some(s => selectedSizes.includes(s)));
     }
     if (selectedColors.length > 0) {
       filtered = filtered.filter(p => p.colors.some(c => selectedColors.includes(c.name)));
     }
-    
-    return filtered.slice(0, 8);
-  }, [products, activeFilter, priceRange, selectedSizes, selectedColors]);
+    if (attrs.fit.length) filtered = filtered.filter(p => p.fit && attrs.fit.includes(p.fit));
+    if (attrs.fabric.length) filtered = filtered.filter(p => p.fabric && attrs.fabric.includes(p.fabric));
+    if (attrs.occasion.length) filtered = filtered.filter(p => p.occasion && attrs.occasion.includes(p.occasion));
+    if (attrs.colorFamily.length) filtered = filtered.filter(p => p.colorFamily && attrs.colorFamily.includes(p.colorFamily));
+    if (attrs.sleeveType.length) filtered = filtered.filter(p => p.sleeveType && attrs.sleeveType.includes(p.sleeveType));
+    if (attrs.neckType.length) filtered = filtered.filter(p => p.neckType && attrs.neckType.includes(p.neckType));
+    if (attrs.collection.length) filtered = filtered.filter(p => p.collection && attrs.collection.includes(p.collection));
 
-  const activeFiltersCount = selectedSizes.length + selectedColors.length + (priceRange[0] > 0 || priceRange[1] < 5000 ? 1 : 0) + (activeFilter !== 'all' ? 1 : 0);
+    return filtered.slice(0, 8);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products, activeFilter, selectedPriceChips, selectedSizes, selectedColors, attrs]);
+
+  const attrChipCount = Object.values(attrs).reduce((sum, list) => sum + list.length, 0);
+  const activeFiltersCount =
+    selectedSizes.length +
+    selectedColors.length +
+    selectedPriceChips.length +
+    attrChipCount +
+    (activeFilter !== 'all' ? 1 : 0);
 
   const clearAllFilters = () => {
     setActiveFilter('all');
-    setPriceRange([0, 5000]);
     setSelectedSizes([]);
     setSelectedColors([]);
+    setSelectedPriceChips([]);
+    setAttrs(EMPTY_ATTRS);
   };
+
 
   const categories = [
     { name: 'Men', image: categoryMen, href: '/products?category=men' },
@@ -338,15 +392,48 @@ const Index = () => {
                     </div>
                   </div>
 
-                  {/* Price */}
+                  {/* Price Range Chips */}
                   <div>
                     <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">Price Range</h3>
-                    <Slider value={tempPriceRange} onValueChange={setTempPriceRange} min={0} max={5000} step={100} />
-                    <div className="flex justify-between text-sm text-muted-foreground mt-3">
-                      <span>₹{tempPriceRange[0]}</span>
-                      <span>₹{tempPriceRange[1]}</span>
+                    <div className="flex flex-wrap gap-2">
+                      {PRICE_CHIPS.map(chip => (
+                        <button
+                          key={chip.label}
+                          onClick={() => toggleTempPriceChip(chip.label)}
+                          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                            tempPriceChips.includes(chip.label) ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+                          }`}
+                        >{chip.label}</button>
+                      ))}
                     </div>
                   </div>
+
+                  {/* Attribute filters */}
+                  {([
+                    { key: 'fit' as AttrKey, label: 'Fit', options: [...FIT_OPTIONS] },
+                    { key: 'fabric' as AttrKey, label: 'Fabric', options: [...FABRIC_OPTIONS] },
+                    { key: 'occasion' as AttrKey, label: 'Occasion', options: [...OCCASION_OPTIONS] },
+                    { key: 'colorFamily' as AttrKey, label: 'Color Family', options: [...COLOR_FAMILY_OPTIONS] },
+                    { key: 'sleeveType' as AttrKey, label: 'Sleeve Type', options: [...SLEEVE_TYPE_OPTIONS] },
+                    { key: 'neckType' as AttrKey, label: 'Neck Type', options: [...NECK_TYPE_OPTIONS] },
+                    ...(collectionOptions.length ? [{ key: 'collection' as AttrKey, label: 'Collection', options: collectionOptions }] : []),
+                  ]).map(group => (
+                    <div key={group.key}>
+                      <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">{group.label}</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {group.options.map(opt => (
+                          <button
+                            key={opt}
+                            onClick={() => toggleTempAttr(group.key, opt)}
+                            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                              tempAttrs[group.key].includes(opt) ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'
+                            }`}
+                          >{opt}</button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
                 </div>
 
                 {/* Apply Button */}
@@ -376,11 +463,17 @@ const Index = () => {
                     {c} <X size={12} />
                   </button>
                 ))}
-                {(priceRange[0] > 0 || priceRange[1] < 5000) && (
-                  <button onClick={() => setPriceRange([0, 5000])} className="inline-flex items-center gap-1 px-3 py-1.5 bg-secondary rounded-full text-xs font-medium">
-                    ₹{priceRange[0]}-₹{priceRange[1]} <X size={12} />
+                {selectedPriceChips.map(label => (
+                  <button key={label} onClick={() => setSelectedPriceChips(prev => prev.filter(p => p !== label))} className="inline-flex items-center gap-1 px-3 py-1.5 bg-secondary rounded-full text-xs font-medium">
+                    {label} <X size={12} />
                   </button>
-                )}
+                ))}
+                {(Object.entries(attrs) as [AttrKey, string[]][]).flatMap(([key, vals]) => vals.map(v => (
+                  <button key={`${key}-${v}`} onClick={() => setAttrs(prev => ({ ...prev, [key]: prev[key].filter(x => x !== v) }))} className="inline-flex items-center gap-1 px-3 py-1.5 bg-secondary rounded-full text-xs font-medium">
+                    {v} <X size={12} />
+                  </button>
+                )))}
+
               </>
             )}
           </div>
@@ -391,8 +484,8 @@ const Index = () => {
               <Link
                 to={`/products?${new URLSearchParams([
                   ...(activeFilter !== 'all' ? [['subcategory', activeFilter]] : []),
-                  ...(priceRange[0] > 0 ? [['priceMin', String(priceRange[0])]] : []),
-                  ...(priceRange[1] < 5000 ? [['priceMax', String(priceRange[1])]] : []),
+                  ...selectedPriceChips.map(label => ['price', label] as [string, string]),
+
                   ...selectedSizes.map(s => ['size', s]),
                   ...selectedColors.map(c => ['color', c]),
                 ]).toString()}`}
@@ -408,7 +501,8 @@ const Index = () => {
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : featuredProducts.length > 0 ? (
-            <div key={`${activeFilter}-${selectedSizes.join()}-${selectedColors.join()}-${priceRange.join()}`} className="grid grid-cols-2 lg:grid-cols-4 gap-px lg:gap-6 -mx-3 lg:mx-0 bg-border lg:bg-transparent">
+            <div key={`${activeFilter}-${selectedSizes.join()}-${selectedColors.join()}-${selectedPriceChips.join()}`} className="grid grid-cols-2 lg:grid-cols-4 gap-px lg:gap-6 -mx-3 lg:mx-0 bg-border lg:bg-transparent">
+
               {featuredProducts.map((product, index) => (
                 <div key={product.id} className="animate-fade-in bg-background" style={{ animationDelay: `${index * 60}ms`, animationFillMode: 'backwards' }}>
                   <ProductCard product={product} />
