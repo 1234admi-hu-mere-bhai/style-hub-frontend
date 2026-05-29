@@ -168,7 +168,22 @@ const AdminProducts = () => {
       mannequin_image: product.mannequin_image || '',
       human_model_image: product.human_model_image || '',
       rotation_frames: product.rotation_frames || [],
+      fit: product.fit || '',
+      fabric: product.fabric || '',
+      occasion: product.occasion || '',
+      color_family: product.color_family || '',
+      sleeve_type: product.sleeve_type || '',
+      neck_type: product.neck_type || '',
+      collection: product.collection || '',
     });
+    setSizesInput((product.sizes || []).join(', '));
+    setColorsInput('');
+    setTagsInput((product.tags || []).join(', '));
+    setAdditionalImagesInput((product.additional_images || []).join(', '));
+    setEditingId(product.id);
+    setShowForm(true);
+  };
+
     setSizesInput((product.sizes || []).join(', '));
     setColorsInput('');
     setTagsInput((product.tags || []).join(', '));
