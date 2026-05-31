@@ -262,6 +262,25 @@ const ProductDetail = () => {
               ))}
             </div>
 
+            {/* Floating action buttons over image */}
+            <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
+              <button
+                onClick={handleWishlist}
+                aria-label="Add to wishlist"
+                className="w-10 h-10 rounded-md bg-card/95 backdrop-blur border border-border shadow-md flex items-center justify-center hover:bg-card transition-colors"
+              >
+                <Heart size={18} className={inWishlist ? 'fill-primary text-primary' : 'text-foreground'} />
+              </button>
+              <button
+                onClick={handleShare}
+                aria-label="Share product"
+                className="w-10 h-10 rounded-md bg-card/95 backdrop-blur border border-border shadow-md flex items-center justify-center hover:bg-card transition-colors"
+              >
+                <Send size={18} className="text-foreground" />
+              </button>
+            </div>
+            </div>
+
             {galleryItems.length > 1 && (
               <div className="flex justify-center gap-1.5">
                 {galleryItems.map((item, index) => (
