@@ -8,7 +8,7 @@ const corsHeaders = {
 
 const OWNER_EMAILS = ['otw2003@gmail.com', 'kaliasgar776@gmail.com', 'muffigout@gmail.com']
 
-function buildPrompt(view: 'front' | 'back', hex?: string, hd?: boolean) {
+function buildPrompt(view: 'front' | 'back' | 'spec', hex?: string, hd?: boolean, specs?: { chest?: number; length?: number; sleeve?: number; shoulder?: number; size?: string; fabric?: string }) {
   const colorLock = hex
     ? `CRITICAL COLOR LOCK: The shirt body color MUST be EXACTLY hex ${hex}. Do NOT shift hue, saturation, brightness, warmth, or tint by even one step. Sample this exact color and paint every fiber of the shirt with it. If in doubt, err toward the swatch, never toward a "nicer" color.`
     : `CRITICAL COLOR LOCK: Sample the EXACT dominant color from the provided fabric image and paint the shirt with that exact color pixel-for-pixel as perceived. Do NOT prettify, brighten, desaturate or shift hue.`
@@ -16,6 +16,34 @@ function buildPrompt(view: 'front' | 'back', hex?: string, hd?: boolean) {
   const quality = hd
     ? `Ultra high resolution 4K studio photograph, razor-sharp focus, every weave fiber visible, crisp stitching, professional e-commerce hero shot quality.`
     : `High quality studio product photograph, sharp focus, clean stitching.`
+
+  if (view === 'spec') {
+    const size = specs?.size || 'M'
+    const chest = specs?.chest ?? 42
+    const length = specs?.length ?? 29
+    const sleeve = specs?.sleeve ?? 25
+    const shoulder = specs?.shoulder ?? 18
+    const fabric = specs?.fabric || 'Premium cotton blend'
+    const colorLine = hex ? `Color swatch labeled "${hex}"` : `Color swatch sampled from fabric`
+    return `Professional apparel TECH PACK / SPEC SHEET illustration on a clean off-white paper background with faint blueprint grid. Show a men's full-sleeve button-down shirt rendered as a clean front-view technical flat (vector-style line drawing filled with the fabric color and pattern). ${colorLock} ${patternLock} ${quality}
+
+Around the shirt, draw crisp BLACK measurement callout lines with arrowheads and printed labels in a clean sans-serif font, exactly these four measurements and NO others:
+- "CHEST: ${chest}\\"" — horizontal line across the chest, pit-to-pit
+- "LENGTH: ${length}\\"" — vertical line from shoulder seam to hem on the right side
+- "SLEEVE: ${sleeve}\\"" — diagonal line from shoulder to cuff on the left sleeve
+- "SHOULDER: ${shoulder}\\"" — short horizontal line across the top yoke
+
+In the bottom-right corner add a small info panel with exactly these lines printed in clean sans-serif:
+"MUFFI GOUT APPAREL HUB"
+"SIZE: ${size}"
+"FABRIC: ${fabric}"
+"FIT: Regular"
+${hex ? `"COLOR: ${hex}"` : `"COLOR: see swatch"`}
+and a small ${hex ? hex : 'fabric-sampled'} color swatch square next to the COLOR line. ${colorLine}.
+
+Style: technical, precise, like a fashion designer's tech pack from a brand book. NO model, NO mannequin, NO photographic background, NO extra annotations, NO watermark. All text must be perfectly legible, correctly spelled, and only the labels listed above — do not invent extra text.`
+  }
+
   const common = `Photorealistic flat-lay studio product photograph of a men's full-sleeve button-down shirt on a pure white seamless background. Soft even lighting, no harsh shadows on background, perfectly centered, NO model, NO mannequin, NO hands, NO props, NO text overlays, NO watermark, NO logo on shirt body. ${quality} ${colorLock} ${patternLock}`
   if (view === 'front') {
     return `${common} VIEW: FRONT view. Shirt laid flat and perfectly symmetric, collar at top, full placket with buttons visible down the center, chest pocket on the left chest, both sleeves spread slightly outward, cuffs visible. Leave the inner back collar area (just under the collar band at the back of the neck) clean and unobstructed — a label tag will be composited there afterwards.`
@@ -104,11 +132,11 @@ Deno.serve(async (req) => {
     }
     if (!allowed) throw new Error('Forbidden')
 
-    const { fabricUrl, view = 'front', colorHex, collarTagUrl, productId, hd = false } = await req.json()
+    const { fabricUrl, view = 'front', colorHex, collarTagUrl, productId, hd = false, specs } = await req.json()
     if (!fabricUrl) throw new Error('fabricUrl required')
-    if (view !== 'front' && view !== 'back') throw new Error('view must be front|back')
+    if (view !== 'front' && view !== 'back' && view !== 'spec') throw new Error('view must be front|back|spec')
 
-    const dataUrl = await callImageGen(lovableKey, buildPrompt(view, colorHex, hd), fabricUrl)
+    const dataUrl = await callImageGen(lovableKey, buildPrompt(view, colorHex, hd, specs), fabricUrl)
     let { bytes, mime } = dataUrlToBytes(dataUrl)
 
     // Overlay collar tag on FRONT view if provided
