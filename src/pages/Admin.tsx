@@ -7,7 +7,7 @@ import {
   Loader2, ShieldAlert, LayoutDashboard, ShoppingCart, Users,
   CreditCard, BarChart3, LogOut, Package, Warehouse,
   Tag, Bell, FileText, Menu, X, ChevronRight, Store, MessageSquare, Zap, Undo2, Megaphone,
-  UsersRound, ClipboardList, BookOpen,
+  UsersRound, ClipboardList, BookOpen, Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +30,7 @@ import AdminReturns from '@/components/admin/AdminReturns';
 import AdminPushCampaigns from '@/components/admin/AdminPushCampaigns';
 import AdminStaff from '@/components/admin/AdminStaff';
 import AdminPendingApprovals from '@/components/admin/AdminPendingApprovals';
+import FabricToShirtStudio from '@/components/admin/FabricToShirtStudio';
 
 interface Analytics {
   totalOrders: number;
@@ -52,6 +53,7 @@ const TABS = [
   { key: 'orders', label: 'Orders', icon: ShoppingCart, ownerOnly: false },
   { key: 'returns', label: 'Returns', icon: Undo2, ownerOnly: false },
   { key: 'products', label: 'Products', icon: Package, ownerOnly: false },
+  { key: 'fabric-studio', label: 'Fabric Studio', icon: Sparkles, ownerOnly: false },
   { key: 'customers', label: 'Client Data', icon: Users, ownerOnly: false },
   { key: 'payments', label: 'Payments', icon: CreditCard, ownerOnly: false },
   { key: 'cashbook', label: 'Cashbook', icon: BookOpen, ownerOnly: false },
@@ -359,6 +361,15 @@ const Admin = () => {
           {currentTab === 'orders' && <AdminOrders orders={analytics.allOrders} onRefresh={fetchAnalytics} />}
           {currentTab === 'returns' && <AdminReturns orders={analytics.allOrders} onRefresh={fetchAnalytics} />}
           {currentTab === 'products' && <AdminProducts />}
+          {currentTab === 'fabric-studio' && (
+            <div className="space-y-4">
+              <div>
+                <h2 className="font-serif text-xl font-bold">Fabric → Shirt Studio</h2>
+                <p className="text-sm text-muted-foreground">Upload a fabric swatch and instantly generate flat front (with collar tag) and back shirt mockups. Color stays accurate to the fabric.</p>
+              </div>
+              <FabricToShirtStudio />
+            </div>
+          )}
           {currentTab === 'customers' && <AdminCustomers customers={analytics.customers} />}
           {currentTab === 'payments' && (
             <AdminPayments
