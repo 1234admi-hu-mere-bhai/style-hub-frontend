@@ -57,6 +57,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const [collarTagUrl, setCollarTagUrl] = useState<string>('');
   const [colorHex, setColorHex] = useState<string>('');
   const [autoColor, setAutoColor] = useState(true);
+  const [hd, setHd] = useState(true);
   const [uploading, setUploading] = useState<'fabric' | 'tag' | null>(null);
   const [generating, setGenerating] = useState<'front' | 'back' | null>(null);
   const [frontUrl, setFrontUrl] = useState<string>('');
