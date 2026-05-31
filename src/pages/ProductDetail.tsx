@@ -204,6 +204,25 @@ const ProductDetail = () => {
     }
   };
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    const shareData = {
+      title: product.name,
+      text: `Check out ${product.name} on MUFFIGOUT APPAREL HUB`,
+      url,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copied to clipboard');
+      }
+    } catch (err) {
+      // user cancelled or share unsupported
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
