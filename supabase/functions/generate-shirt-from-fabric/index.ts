@@ -132,11 +132,11 @@ Deno.serve(async (req) => {
     }
     if (!allowed) throw new Error('Forbidden')
 
-    const { fabricUrl, view = 'front', colorHex, collarTagUrl, productId, hd = false } = await req.json()
+    const { fabricUrl, view = 'front', colorHex, collarTagUrl, productId, hd = false, specs } = await req.json()
     if (!fabricUrl) throw new Error('fabricUrl required')
-    if (view !== 'front' && view !== 'back') throw new Error('view must be front|back')
+    if (view !== 'front' && view !== 'back' && view !== 'spec') throw new Error('view must be front|back|spec')
 
-    const dataUrl = await callImageGen(lovableKey, buildPrompt(view, colorHex, hd), fabricUrl)
+    const dataUrl = await callImageGen(lovableKey, buildPrompt(view, colorHex, hd, specs), fabricUrl)
     let { bytes, mime } = dataUrlToBytes(dataUrl)
 
     // Overlay collar tag on FRONT view if provided
