@@ -106,7 +106,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     } finally { setUploading(null); }
   };
 
-  const generate = async (view: 'front' | 'back') => {
+  const generate = async (view: 'front' | 'back' | 'spec') => {
     if (!fabricUrl) { toast({ title: 'Upload a fabric image first', variant: 'destructive' }); return; }
     setGenerating(view);
     try {
@@ -118,13 +118,16 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
           collarTagUrl: view === 'front' ? (collarTagUrl?.split('?')[0] || undefined) : undefined,
           productId,
           hd,
+          specs: view === 'spec' ? specs : undefined,
         },
       });
       if (error) throw error;
       if (!data?.url) throw new Error('No image returned');
-      if (view === 'front') setFrontUrl(data.url); else setBackUrl(data.url);
+      if (view === 'front') setFrontUrl(data.url);
+      else if (view === 'back') setBackUrl(data.url);
+      else setSpecUrl(data.url);
       onGenerated?.({ front: view === 'front' ? data.url : frontUrl, back: view === 'back' ? data.url : backUrl });
-      toast({ title: `${view === 'front' ? 'Front' : 'Back'} mockup ready` });
+      toast({ title: `${view === 'front' ? 'Front' : view === 'back' ? 'Back' : 'Spec sheet'} ready` });
     } catch (e: any) {
       toast({ title: 'Generation failed', description: e.message, variant: 'destructive' });
     } finally { setGenerating(null); }
@@ -146,7 +149,9 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     const stamp = Date.now();
     if (frontUrl) await downloadOne(frontUrl, `muffigout-shirt-front-${stamp}.png`);
     if (backUrl) await downloadOne(backUrl, `muffigout-shirt-back-${stamp}.png`);
+    if (specUrl) await downloadOne(specUrl, `muffigout-shirt-spec-${stamp}.png`);
   };
+
 
 
   const saveToProduct = async () => {
