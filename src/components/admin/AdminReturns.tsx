@@ -47,8 +47,9 @@ const statusConfig: Record<string, { label: string; color: string }> = {
 };
 
 const AdminReturns = ({ orders, onRefresh }: AdminReturnsProps) => {
-  const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [search, setSearch] = usePersistedState<string>('admin:returns:search', '');
+  const [filterStatus, setFilterStatus] = usePersistedState<string>('admin:returns:filterStatus', 'all');
+
   const [updating, setUpdating] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<ReturnOrder | null>(null);
   const [rejectReason, setRejectReason] = useState('');
