@@ -374,7 +374,7 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <div className="flex gap-4 pb-16 md:pb-0">
+            <div className="flex gap-4">
               <Button
                 size="lg"
                 className={`flex-1 transition-all duration-300 ${
