@@ -286,6 +286,13 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                 <Input value={colorHex} onChange={(e) => { setAutoColor(false); setColorHex(e.target.value); }} placeholder="#5a6f8a" className="h-12 bg-secondary/40 font-mono" />
                 <input type="color" value={colorHex || '#888888'} onChange={(e) => { setAutoColor(false); setColorHex(e.target.value); }} className="h-12 w-14 rounded-md border bg-secondary/40 cursor-pointer" />
               </div>
+              {nearestColorName(colorHex) && (
+                <div className="flex items-center gap-2">
+                  <span className="inline-block h-3 w-3 rounded-full border" style={{ backgroundColor: colorHex }} />
+                  <span className="text-sm font-medium text-foreground">{nearestColorName(colorHex)}</span>
+                  <span className="text-xs text-muted-foreground font-mono uppercase">{colorHex}</span>
+                </div>
+              )}
               <p className="text-xs text-muted-foreground">
                 {autoColor ? 'Auto-sampled from fabric. Edit to override.' : 'Manual override active.'}
               </p>
@@ -294,6 +301,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
               Re-sample
             </Button>
           </div>
+
 
           {/* HD toggle */}
           <div className="flex items-center justify-between rounded-md border bg-secondary/40 px-3 py-2">
