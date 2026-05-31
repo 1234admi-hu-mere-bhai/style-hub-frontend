@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import SizeChartModal from '@/components/SizeChartModal';
 import ReviewSection from '@/components/ReviewSection';
+import ProductHighlights from '@/components/ProductHighlights';
 import Product360Viewer from '@/components/Product360Viewer';
 import PincodeChecker from '@/components/PincodeChecker';
 import { useDbProducts, useDbProduct } from '@/hooks/useDbProducts';
@@ -15,7 +16,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { toast } from 'sonner';
 
 const ProductDetail = () => {
@@ -365,36 +366,50 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        <div className="mt-16">
-          <Tabs defaultValue="description">
-            <TabsList>
-              <TabsTrigger value="description">Description</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews ({totalReviews})</TabsTrigger>
-              <TabsTrigger value="shipping">Shipping</TabsTrigger>
-            </TabsList>
-            <TabsContent value="description" className="mt-6">
-              <div className="prose prose-neutral max-w-none">
-                <p>{product.description}</p>
-                <h4>Features</h4>
-                <ul>
-                  <li>Premium quality fabric</li>
-                  <li>Comfortable fit for all-day wear</li>
-                  <li>Easy care - machine washable</li>
-                  <li>Sustainable and eco-friendly materials</li>
-                </ul>
-              </div>
-            </TabsContent>
-            <TabsContent value="reviews" className="mt-6">
-              <ReviewSection productId={product.id} />
-            </TabsContent>
-            <TabsContent value="shipping" className="mt-6">
-              <div className="space-y-4">
-                <div><h4 className="font-semibold mb-2">Delivery</h4><p className="text-muted-foreground">West Bengal: ₹20 flat handling, delivered in 7 business days. Outside West Bengal: free shipping on orders above ₹999 (₹99 otherwise), delivered in 10 business days.</p></div>
-                <div><h4 className="font-semibold mb-2">Returns</h4><p className="text-muted-foreground">Easy returns within 7 days of delivery. Items must be unused with original tags attached.</p></div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
+        {/* Product Highlights — Meesho-style structured spec table */}
+        <ProductHighlights product={product} selectedColor={selectedColor} />
+
+        {/* Reviews — visually separated, attractive section */}
+        <section
+          id="reviews"
+          className="mt-12 rounded-2xl border border-border bg-gradient-to-br from-primary/5 via-background to-accent/5 p-6 md:p-10 shadow-sm"
+        >
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
+            <div>
+              <h2 className="font-serif text-2xl md:text-3xl font-bold">Customer Reviews</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Real feedback from verified buyers
+              </p>
+            </div>
+            <div className="flex items-center gap-2 bg-card border border-border rounded-full px-4 py-2 shadow-sm">
+              <Star size={18} className="fill-gold text-gold" />
+              <span className="font-bold text-lg">{averageRating.toFixed(1)}</span>
+              <span className="text-sm text-muted-foreground">/ 5</span>
+              <span className="text-xs text-muted-foreground ml-2 border-l border-border pl-2">
+                {totalReviews} {totalReviews === 1 ? 'review' : 'reviews'}
+              </span>
+            </div>
+          </div>
+          <ReviewSection productId={product.id} />
+        </section>
+
+        {/* Shipping & Returns */}
+        <section className="mt-12 grid md:grid-cols-2 gap-4">
+          <div className="rounded-2xl border border-border bg-card p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Truck size={18} className="text-primary" />
+              <h4 className="font-semibold">Delivery</h4>
+            </div>
+            <p className="text-sm text-muted-foreground">West Bengal: ₹20 flat handling, delivered in 7 business days. Outside West Bengal: free shipping on orders above ₹999 (₹99 otherwise), delivered in 10 business days.</p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-6">
+            <div className="flex items-center gap-2 mb-2">
+              <RefreshCw size={18} className="text-primary" />
+              <h4 className="font-semibold">Returns</h4>
+            </div>
+            <p className="text-sm text-muted-foreground">Easy returns within 7 days of delivery. Items must be unused with original tags attached.</p>
+          </div>
+        </section>
 
         {relatedProducts.length > 0 && (
           <section className="mt-16">
