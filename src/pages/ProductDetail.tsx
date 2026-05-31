@@ -317,22 +317,9 @@ const ProductDetail = () => {
 
           <div className="space-y-6">
             <div>
-              <h1 className="font-serif text-3xl lg:text-4xl font-bold mb-3">{product.name}</h1>
-              <div className="flex items-center gap-3">
-                {totalReviews > 0 ? (
-                  <>
-                    <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={18} className={i < Math.floor(averageRating) ? 'fill-gold text-gold' : 'text-border'} />
-                      ))}
-                    </div>
-                    <span className="text-muted-foreground">{averageRating.toFixed(1)} ({totalReviews} reviews)</span>
-                  </>
-                ) : (
-                  <span className="text-muted-foreground">No reviews yet</span>
-                )}
-              </div>
+              <h1 className="font-serif text-3xl lg:text-4xl font-bold">{product.name}</h1>
             </div>
+
 
             <div className="flex items-baseline gap-4">
               <span className="text-3xl font-bold">{formatPrice(product.price)}</span>
