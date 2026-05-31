@@ -8,7 +8,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, Sparkles, Loader2, Image as ImageIcon, Download, Tag, Info } from 'lucide-react';
+import { Upload, Sparkles, Loader2, Image as ImageIcon, Download, Tag, Info, Shirt, User } from 'lucide-react';
+
+type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'lifestyle';
+type Pose = 'sitting' | 'leaning' | 'walking' | 'coffee';
 
 const COLLAR_TAG_PATH = 'assets/collar-tag.png';
 
@@ -71,11 +74,23 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const [autoColor, setAutoColor] = useState(true);
   const [hd, setHd] = useState(true);
   const [uploading, setUploading] = useState<'fabric' | 'tag' | null>(null);
-  const [generating, setGenerating] = useState<'front' | 'back' | 'spec' | null>(null);
+  const [generating, setGenerating] = useState<ViewKind | null>(null);
   const [frontUrl, setFrontUrl] = useState<string>('');
   const [backUrl, setBackUrl] = useState<string>('');
   const [specUrl, setSpecUrl] = useState<string>('');
-  const [specs, setSpecs] = useState({ size: 'M', chest: SIZE_CHART.M.chest, length: SIZE_CHART.M.length, sleeve: SIZE_CHART.M.sleeve, shoulder: SIZE_CHART.M.shoulder, fabric: 'Premium cotton blend' });
+  const [highlightsUrl, setHighlightsUrl] = useState<string>('');
+  const [modelUrl, setModelUrl] = useState<string>('');
+  const [lifestyleUrl, setLifestyleUrl] = useState<string>('');
+  const [pose, setPose] = useState<Pose>('sitting');
+  const [specs, setSpecs] = useState({
+    size: 'M',
+    chest: SIZE_CHART.M.chest, length: SIZE_CHART.M.length, sleeve: SIZE_CHART.M.sleeve, shoulder: SIZE_CHART.M.shoulder,
+    fabric: 'Cotton Blend',
+    fit: 'Regular',
+    pattern: 'Solid',
+    occasion: 'Casual',
+    collar: 'Spread',
+  });
   const fabricInput = useRef<HTMLInputElement>(null);
   const tagInput = useRef<HTMLInputElement>(null);
 
@@ -100,7 +115,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     try {
       const url = await uploadToBucket(file, `fabric-uploads/${crypto.randomUUID()}-${file.name}`);
       setFabricUrl(url);
-      setFrontUrl(''); setBackUrl('');
+      setFrontUrl(''); setBackUrl(''); setSpecUrl(''); setHighlightsUrl(''); setModelUrl(''); setLifestyleUrl('');
     } catch (e: any) {
       toast({ title: 'Upload failed', description: e.message, variant: 'destructive' });
     } finally { setUploading(null); }
@@ -118,28 +133,37 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     } finally { setUploading(null); }
   };
 
-  const generate = async (view: 'front' | 'back' | 'spec') => {
+  const generate = async (view: ViewKind) => {
     if (!fabricUrl) { toast({ title: 'Upload a fabric image first', variant: 'destructive' }); return; }
     setGenerating(view);
     try {
+      const needsSpecs = view === 'spec' || view === 'highlights';
+      const needsTag = view === 'front' || view === 'highlights';
       const { data, error } = await supabase.functions.invoke('generate-shirt-from-fabric', {
         body: {
           fabricUrl,
           view,
           colorHex: colorHex || undefined,
-          collarTagUrl: view === 'front' ? (collarTagUrl?.split('?')[0] || undefined) : undefined,
+          collarTagUrl: needsTag ? (collarTagUrl?.split('?')[0] || undefined) : undefined,
           productId,
           hd,
-          specs: view === 'spec' ? specs : undefined,
+          specs: needsSpecs ? specs : undefined,
+          pose: view === 'lifestyle' ? pose : undefined,
         },
       });
       if (error) throw error;
       if (!data?.url) throw new Error('No image returned');
-      if (view === 'front') setFrontUrl(data.url);
-      else if (view === 'back') setBackUrl(data.url);
-      else setSpecUrl(data.url);
+      const setters: Record<ViewKind, (u: string) => void> = {
+        front: setFrontUrl, back: setBackUrl, spec: setSpecUrl,
+        highlights: setHighlightsUrl, model: setModelUrl, lifestyle: setLifestyleUrl,
+      };
+      setters[view](data.url);
       onGenerated?.({ front: view === 'front' ? data.url : frontUrl, back: view === 'back' ? data.url : backUrl });
-      toast({ title: `${view === 'front' ? 'Front' : view === 'back' ? 'Back' : 'Spec sheet'} ready` });
+      const labels: Record<ViewKind, string> = {
+        front: 'Front', back: 'Back', spec: 'Spec sheet',
+        highlights: 'Key Highlights hanger', model: 'Model (straight)', lifestyle: 'Lifestyle pose',
+      };
+      toast({ title: `${labels[view]} ready` });
     } catch (e: any) {
       toast({ title: 'Generation failed', description: e.message, variant: 'destructive' });
     } finally { setGenerating(null); }
@@ -159,9 +183,13 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
 
   const downloadAll = async () => {
     const stamp = Date.now();
-    if (frontUrl) await downloadOne(frontUrl, `muffigout-shirt-front-${stamp}.png`);
-    if (backUrl) await downloadOne(backUrl, `muffigout-shirt-back-${stamp}.png`);
-    if (specUrl) await downloadOne(specUrl, `muffigout-shirt-spec-${stamp}.png`);
+    const all: Array<[string, string]> = [
+      [frontUrl, 'front'], [backUrl, 'back'], [specUrl, 'spec'],
+      [highlightsUrl, 'highlights'], [modelUrl, 'model'], [lifestyleUrl, `lifestyle-${pose}`],
+    ];
+    for (const [url, key] of all) {
+      if (url) await downloadOne(url, `muffigout-shirt-${key}-${stamp}.png`);
+    }
   };
 
 
@@ -271,51 +299,120 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
               <div><Label className="text-xs">Shoulder (in)</Label><Input className="h-10" type="number" step="0.5" value={specs.shoulder} onChange={e => setSpecs(s => ({ ...s, shoulder: Number(e.target.value) }))} /></div>
               <div className="col-span-2 sm:col-span-1"><Label className="text-xs">Fabric</Label><Input className="h-10" value={specs.fabric} onChange={e => setSpecs(s => ({ ...s, fabric: e.target.value }))} /></div>
             </div>
-            <p className="text-xs text-muted-foreground">Pick a size to auto-fill the standard measurements. Override any field if your sample differs.</p>
+
+            {/* Key Highlights metadata — used on the hanger overlay */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+              <div>
+                <Label className="text-xs">Fit</Label>
+                <Select value={specs.fit} onValueChange={(v) => setSpecs(s => ({ ...s, fit: v }))}>
+                  <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                  <SelectContent>{['Regular','Slim','Relaxed','Oversized'].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs">Pattern</Label>
+                <Select value={specs.pattern} onValueChange={(v) => setSpecs(s => ({ ...s, pattern: v }))}>
+                  <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                  <SelectContent>{['Solid','Striped','Checked','Printed','Textured'].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs">Occasion</Label>
+                <Select value={specs.occasion} onValueChange={(v) => setSpecs(s => ({ ...s, occasion: v }))}>
+                  <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                  <SelectContent>{['Casual','Formal','Party','Festive','Office'].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs">Collar</Label>
+                <Select value={specs.collar} onValueChange={(v) => setSpecs(s => ({ ...s, collar: v }))}>
+                  <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                  <SelectContent>{['Spread','Button-down','Mandarin','Cuban','Classic'].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">Pick a size to auto-fill measurements. Fit/Pattern/Occasion/Collar render on the Key Highlights hanger shot.</p>
+          </div>
+
+          {/* Lifestyle pose selector */}
+          <div className="rounded-md border bg-secondary/40 p-3 space-y-2">
+            <div className="flex items-center gap-1.5">
+              <User className="h-3.5 w-3.5 text-primary" />
+              <Label className="text-sm">Lifestyle pose (for stylish model shot)</Label>
+            </div>
+            <Select value={pose} onValueChange={(v) => setPose(v as Pose)}>
+              <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="sitting">Sitting on a wooden table</SelectItem>
+                <SelectItem value="leaning">Leaning against a concrete wall</SelectItem>
+                <SelectItem value="walking">Walking through a sunlit corridor</SelectItem>
+                <SelectItem value="coffee">Seated at a cafe table</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Generate buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Button type="button" onClick={() => generate('front')} disabled={!fabricUrl || generating !== null} className="h-12">
-              {generating === 'front' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-              Front
-            </Button>
-            <Button type="button" onClick={() => generate('back')} disabled={!fabricUrl || generating !== null} variant="secondary" className="h-12">
-              {generating === 'back' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-              Back
-            </Button>
-            <Button type="button" onClick={() => generate('spec')} disabled={!fabricUrl || generating !== null} variant="outline" className="h-12">
-              {generating === 'spec' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Info className="h-4 w-4 mr-2" />}
-              Spec Sheet
-            </Button>
+          <div className="space-y-2">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground">Garment views</Label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <Button type="button" onClick={() => generate('front')} disabled={!fabricUrl || generating !== null} className="h-11">
+                {generating === 'front' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                Front
+              </Button>
+              <Button type="button" onClick={() => generate('back')} disabled={!fabricUrl || generating !== null} variant="secondary" className="h-11">
+                {generating === 'back' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                Back
+              </Button>
+              <Button type="button" onClick={() => generate('spec')} disabled={!fabricUrl || generating !== null} variant="outline" className="h-11">
+                {generating === 'spec' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Info className="h-4 w-4 mr-2" />}
+                Spec Sheet
+              </Button>
+              <Button type="button" onClick={() => generate('highlights')} disabled={!fabricUrl || generating !== null} variant="outline" className="h-11">
+                {generating === 'highlights' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Shirt className="h-4 w-4 mr-2" />}
+                Key Highlights
+              </Button>
+            </div>
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground pt-2 block">Human model (optional)</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <Button type="button" onClick={() => generate('model')} disabled={!fabricUrl || generating !== null} variant="outline" className="h-11">
+                {generating === 'model' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <User className="h-4 w-4 mr-2" />}
+                Model (straight)
+              </Button>
+              <Button type="button" onClick={() => generate('lifestyle')} disabled={!fabricUrl || generating !== null} className="h-11">
+                {generating === 'lifestyle' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                Lifestyle pose
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Results */}
-      {(frontUrl || backUrl || specUrl) && (
+      {(frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || lifestyleUrl) && (
         <Card>
           <CardContent className="p-4 space-y-3">
             <div className="flex items-start gap-2 rounded-md bg-secondary/40 p-3 text-sm">
               <Info className="h-4 w-4 mt-0.5 text-primary shrink-0" />
               <div className="space-y-1">
-                <p className="font-medium">About this mockup</p>
+                <p className="font-medium">About these mockups</p>
                 <p className="text-xs text-muted-foreground">
                   Men's full-sleeve button-down shirt rendered from your fabric swatch.
                   Color locked to <span className="font-mono text-foreground">{colorHex || 'auto-sampled'}</span>,
-                  pattern reproduced from the fabric, MUFFI GOUT collar tag at the back-neck and a tonal MG monogram embroidered on the chest pocket (front view).
-                  Spec sheet matches the same fabric color & pattern, sized for <span className="font-medium text-foreground">{specs.size}</span> — Chest {specs.chest}″, Length {specs.length}″, Sleeve {specs.sleeve}″, Shoulder {specs.shoulder}″ ({specs.fabric}).
-                  
+                  pattern reproduced from the fabric, MUFFI GOUT collar tag at the back-neck and a tonal MG monogram embroidered on the chest pocket.
+                  Sized for <span className="font-medium text-foreground">{specs.size}</span> — Chest {specs.chest}″, Length {specs.length}″, Sleeve {specs.sleeve}″, Shoulder {specs.shoulder}″ ({specs.fabric}).
                   {hd ? ' Generated in HD (4K studio quality).' : ' Standard quality — toggle HD above for sharper output.'}
                 </p>
               </div>
             </div>
 
-            <div className="grid sm:grid-cols-3 gap-3">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {[
                 { url: frontUrl, label: 'Front (with collar tag)', key: 'front' },
                 { url: backUrl, label: 'Back', key: 'back' },
                 { url: specUrl, label: 'Spec Sheet', key: 'spec' },
+                { url: highlightsUrl, label: 'Key Highlights', key: 'highlights' },
+                { url: modelUrl, label: 'Model — straight', key: 'model' },
+                { url: lifestyleUrl, label: `Lifestyle — ${pose}`, key: 'lifestyle' },
               ].map((v) => v.url ? (
                 <div key={v.key} className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -329,16 +426,14 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
               ) : null)}
             </div>
 
-            {(frontUrl && backUrl && specUrl) && (
-              <Button type="button" variant="outline" onClick={downloadAll} className="w-full h-11">
-                <Download className="h-4 w-4 mr-2" /> Download all 3 views
-              </Button>
-            )}
+            <Button type="button" variant="outline" onClick={downloadAll} className="w-full h-11">
+              <Download className="h-4 w-4 mr-2" /> Download all generated views
+            </Button>
           </CardContent>
         </Card>
       )}
 
-      {productId && (frontUrl || backUrl || specUrl) && (
+      {productId && (frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || lifestyleUrl) && (
         <Button type="button" onClick={saveToProduct} className="w-full h-12">
           <ImageIcon className="h-4 w-4 mr-2" /> Save to this product's images
         </Button>

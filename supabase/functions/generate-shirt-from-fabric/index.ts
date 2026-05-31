@@ -9,7 +9,16 @@ const corsHeaders = {
 const OWNER_EMAILS = ['otw2003@gmail.com', 'kaliasgar776@gmail.com', 'muffigout@gmail.com']
 const MONOGRAM_PATH = 'assets/chest-monogram.png'
 
-function buildPrompt(view: 'front' | 'back' | 'spec', hex?: string, hd?: boolean, specs?: { chest?: number; length?: number; sleeve?: number; shoulder?: number; size?: string; fabric?: string }) {
+type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'lifestyle'
+type Pose = 'sitting' | 'leaning' | 'walking' | 'coffee'
+
+function buildPrompt(
+  view: ViewKind,
+  hex?: string,
+  hd?: boolean,
+  specs?: { chest?: number; length?: number; sleeve?: number; shoulder?: number; size?: string; fabric?: string; fit?: string; pattern?: string; occasion?: string; collar?: string },
+  pose: Pose = 'sitting',
+) {
   const colorLock = hex
     ? `CRITICAL COLOR LOCK: The shirt body color MUST be EXACTLY hex ${hex}. Do NOT shift hue, saturation, brightness, warmth, or tint by even one step. Sample this exact color and paint every fiber of the shirt with it.`
     : `CRITICAL COLOR LOCK: Sample the EXACT dominant color from the provided fabric image and paint the shirt with that exact color pixel-for-pixel.`
@@ -45,11 +54,50 @@ and a small ${hex ? hex : 'fabric-sampled'} color swatch square next to the COLO
 Style: technical, precise, like a fashion designer's tech pack. NO model, NO mannequin, NO photographic background, NO watermark, NO brand wordmark, NO company name. All text must be perfectly legible, correctly spelled, and only the labels listed above — do not invent extra text.`
   }
 
+  if (view === 'highlights') {
+    const fit = specs?.fit || 'Regular'
+    const pattern = specs?.pattern || 'Solid'
+    const fabric = specs?.fabric || 'Cotton Blend'
+    const occasion = specs?.occasion || 'Casual'
+    const collar = specs?.collar || 'Spread'
+    return `Premium editorial e-commerce hero photograph of a men's full-sleeve button-down shirt hanging on a polished WOODEN HANGER with a small brass nameplate, suspended from a thin metal rod against a deep matte CHARCOAL / near-black studio backdrop. The shirt is fully buttoned, gently draped with natural soft folds, perfectly centered in the frame, sleeves hanging naturally. Cinematic side lighting. ${quality} ${colorLock} ${patternLock}
+
+Leave the inner back-collar band area clean — a brand label will be composited afterwards. Do NOT print any brand wordmark on the shirt or hanger.
+
+On the LEFT side of the image (over the dark background, NOT on the shirt), overlay a clean white-text "Key Highlights" panel in a modern sans-serif font with thin hairline divider lines between rows. Render EXACTLY these rows (label in small light-gray uppercase, value in bold white below it):
+HIGHLIGHTS HEADER: "Key Highlights"
+FIT: ${fit}
+PATTERN: ${pattern}
+FABRIC: ${fabric}
+OCCASION: ${occasion}
+COLLAR: ${collar}
+
+All text must be perfectly legible and correctly spelled — render ONLY the labels listed above, no extra text, no watermark, no logo.`
+  }
+
   const common = `Photorealistic flat-lay studio product photograph of a men's full-sleeve button-down shirt on a pure white seamless background. Soft even lighting, no harsh shadows on background, perfectly centered, NO model, NO mannequin, NO hands, NO props, NO text overlays, NO watermark, NO printed logo on shirt body. ${quality} ${colorLock} ${patternLock}`
   if (view === 'front') {
     return `${common} VIEW: FRONT view. Shirt laid flat and perfectly symmetric, collar at top, full placket with buttons visible down the center, chest pocket on the LEFT chest (viewer's left), both sleeves spread slightly outward, cuffs visible. Leave the inner back collar area (just under the collar band at the back of the neck) clean and unobstructed — a label tag will be composited there afterwards. Leave the CENTER of the LEFT CHEST POCKET clean — a small monogram will be composited there afterwards.`
   }
-  return `${common} VIEW: BACK view. Shirt laid flat and perfectly symmetric, back yoke visible at the shoulders, no buttons visible, smooth uninterrupted back panel, both sleeves spread slightly outward.`
+  if (view === 'back') {
+    return `${common} VIEW: BACK view. Shirt laid flat and perfectly symmetric, back yoke visible at the shoulders, no buttons visible, smooth uninterrupted back panel, both sleeves spread slightly outward.`
+  }
+
+  // Human model views
+  const modelBase = `Photorealistic high-end fashion editorial photograph of a handsome South Asian male model, age 26-30, clean groomed look, athletic regular build, wearing a men's full-sleeve button-down shirt (the hero garment), neutral mid-tone chinos or dark denim, minimal accessories. The shirt MUST be the visual hero — sharp focus on fabric. ${quality} ${colorLock} ${patternLock} The shirt color and pattern MUST exactly match the provided fabric swatch image. Natural skin tones, professional color grading, shallow depth of field, no text overlays, no watermark, no visible brand logo on shirt body.`
+
+  if (view === 'model') {
+    return `${modelBase} POSE: model standing straight, front-facing, neutral confident posture, arms relaxed at sides, looking directly at camera, against a clean light-gray seamless studio backdrop. Classic e-commerce model shot. Full upper body visible from mid-thigh up.`
+  }
+
+  // lifestyle pose
+  const poses: Record<Pose, string> = {
+    sitting: `POSE: model SITTING on the edge of a rustic wooden table, one leg up with foot resting on the table edge and the other leg hanging down, sleeves rolled neatly to just below the elbow, hands relaxed, looking off-camera with a calm confident expression. Setting: minimalist concrete-and-wood studio loft with soft window light from the side. Editorial relaxed vibe.`,
+    leaning: `POSE: model LEANING casually against a raw textured concrete wall, hands in pockets, slight 3/4 turn toward the camera, weight on one leg, looking just past the camera. Setting: outdoor urban side-street at golden hour with warm directional side light and soft rim highlight on the shoulder. Street-style editorial vibe.`,
+    walking: `POSE: model captured mid-stride WALKING through a sunlit corridor, shirt slightly billowing from movement, looking downward thoughtfully, motion-frozen sharp focus on the shirt fabric. Setting: long architectural corridor with warm directional sunlight and soft floor reflections. Cinematic magazine vibe.`,
+    coffee: `POSE: model SEATED at a small cafe table, one elbow on the table with hand near chin, the other hand resting on a ceramic coffee cup, gentle smile, looking slightly off-camera. Setting: minimalist sunlit cafe with soft window backlight, blurred warm bokeh. Premium lifestyle vibe.`,
+  }
+  return `${modelBase} ${poses[pose]}`
 }
 
 async function callImageGen(apiKey: string, prompt: string, fabricUrl: string): Promise<string> {
@@ -176,22 +224,22 @@ Deno.serve(async (req) => {
     }
     if (!allowed) throw new Error('Forbidden')
 
-    const { fabricUrl, view = 'front', colorHex, collarTagUrl, productId, hd = false, specs } = await req.json()
+    const { fabricUrl, view = 'front', colorHex, collarTagUrl, productId, hd = false, specs, pose = 'sitting' } = await req.json()
     if (!fabricUrl) throw new Error('fabricUrl required')
-    if (view !== 'front' && view !== 'back' && view !== 'spec') throw new Error('view must be front|back|spec')
+    const validViews = ['front', 'back', 'spec', 'highlights', 'model', 'lifestyle']
+    if (!validViews.includes(view)) throw new Error('invalid view')
 
-    const dataUrl = await callImageGen(lovableKey, buildPrompt(view, colorHex, hd, specs), fabricUrl)
+    const dataUrl = await callImageGen(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl)
     let { bytes, mime } = dataUrlToBytes(dataUrl)
 
-    // FRONT view: composite collar tag at back-neck AND tonal MG monogram on the chest pocket
-    if (view === 'front') {
+    // FRONT + HIGHLIGHTS views: composite collar tag at back-neck AND tonal MG monogram on chest pocket
+    if (view === 'front' || view === 'highlights') {
       try {
         let shirt = await Image.decode(bytes)
         if (collarTagUrl) {
           const tagBytes = await fetchBytes(collarTagUrl)
           shirt = await compositeCollarTag(shirt, tagBytes)
         }
-        // Always overlay chest monogram from bucket
         const monoPublic = adminClient.storage.from('product-images').getPublicUrl(MONOGRAM_PATH).data.publicUrl
         try {
           const monoBytes = await fetchBytes(monoPublic)
@@ -202,7 +250,7 @@ Deno.serve(async (req) => {
         bytes = await shirt.encode()
         mime = 'image/png'
       } catch (e) {
-        console.error('Front composite failed, returning bare shirt:', e)
+        console.error('Composite failed, returning bare shirt:', e)
       }
     }
 
