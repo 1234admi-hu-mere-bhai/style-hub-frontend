@@ -133,28 +133,37 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     } finally { setUploading(null); }
   };
 
-  const generate = async (view: 'front' | 'back' | 'spec') => {
+  const generate = async (view: ViewKind) => {
     if (!fabricUrl) { toast({ title: 'Upload a fabric image first', variant: 'destructive' }); return; }
     setGenerating(view);
     try {
+      const needsSpecs = view === 'spec' || view === 'highlights';
+      const needsTag = view === 'front' || view === 'highlights';
       const { data, error } = await supabase.functions.invoke('generate-shirt-from-fabric', {
         body: {
           fabricUrl,
           view,
           colorHex: colorHex || undefined,
-          collarTagUrl: view === 'front' ? (collarTagUrl?.split('?')[0] || undefined) : undefined,
+          collarTagUrl: needsTag ? (collarTagUrl?.split('?')[0] || undefined) : undefined,
           productId,
           hd,
-          specs: view === 'spec' ? specs : undefined,
+          specs: needsSpecs ? specs : undefined,
+          pose: view === 'lifestyle' ? pose : undefined,
         },
       });
       if (error) throw error;
       if (!data?.url) throw new Error('No image returned');
-      if (view === 'front') setFrontUrl(data.url);
-      else if (view === 'back') setBackUrl(data.url);
-      else setSpecUrl(data.url);
+      const setters: Record<ViewKind, (u: string) => void> = {
+        front: setFrontUrl, back: setBackUrl, spec: setSpecUrl,
+        highlights: setHighlightsUrl, model: setModelUrl, lifestyle: setLifestyleUrl,
+      };
+      setters[view](data.url);
       onGenerated?.({ front: view === 'front' ? data.url : frontUrl, back: view === 'back' ? data.url : backUrl });
-      toast({ title: `${view === 'front' ? 'Front' : view === 'back' ? 'Back' : 'Spec sheet'} ready` });
+      const labels: Record<ViewKind, string> = {
+        front: 'Front', back: 'Back', spec: 'Spec sheet',
+        highlights: 'Key Highlights hanger', model: 'Model (straight)', lifestyle: 'Lifestyle pose',
+      };
+      toast({ title: `${labels[view]} ready` });
     } catch (e: any) {
       toast({ title: 'Generation failed', description: e.message, variant: 'destructive' });
     } finally { setGenerating(null); }
@@ -174,9 +183,13 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
 
   const downloadAll = async () => {
     const stamp = Date.now();
-    if (frontUrl) await downloadOne(frontUrl, `muffigout-shirt-front-${stamp}.png`);
-    if (backUrl) await downloadOne(backUrl, `muffigout-shirt-back-${stamp}.png`);
-    if (specUrl) await downloadOne(specUrl, `muffigout-shirt-spec-${stamp}.png`);
+    const all: Array<[string, string]> = [
+      [frontUrl, 'front'], [backUrl, 'back'], [specUrl, 'spec'],
+      [highlightsUrl, 'highlights'], [modelUrl, 'model'], [lifestyleUrl, `lifestyle-${pose}`],
+    ];
+    for (const [url, key] of all) {
+      if (url) await downloadOne(url, `muffigout-shirt-${key}-${stamp}.png`);
+    }
   };
 
 
