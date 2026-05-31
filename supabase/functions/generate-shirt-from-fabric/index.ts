@@ -8,16 +8,19 @@ const corsHeaders = {
 
 const OWNER_EMAILS = ['otw2003@gmail.com', 'kaliasgar776@gmail.com', 'muffigout@gmail.com']
 
-function buildPrompt(view: 'front' | 'back', hex?: string) {
+function buildPrompt(view: 'front' | 'back', hex?: string, hd?: boolean) {
   const colorLock = hex
-    ? `The shirt body color MUST be EXACTLY hex ${hex} — do not shift hue, saturation, or brightness. Sample the swatch and reproduce the same color.`
-    : `Sample the EXACT color from the fabric image. Do NOT shift hue, saturation or brightness — the shirt color must match the swatch pixel-for-pixel as perceived.`
-  const patternLock = `Reproduce the EXACT pattern, weave texture, print, stripe spacing, check size, and motif scale from the fabric image. Do not invent a new pattern. Tile the fabric naturally across the garment.`
-  const common = `Photorealistic flat-lay studio product photograph of a men's full-sleeve button-down shirt. Pure white seamless background, soft even lighting, no shadows on background, centered, no model, no mannequin, no hands, no props, no text, no watermark. Crisp e-commerce style. ${colorLock} ${patternLock}`
+    ? `CRITICAL COLOR LOCK: The shirt body color MUST be EXACTLY hex ${hex}. Do NOT shift hue, saturation, brightness, warmth, or tint by even one step. Sample this exact color and paint every fiber of the shirt with it. If in doubt, err toward the swatch, never toward a "nicer" color.`
+    : `CRITICAL COLOR LOCK: Sample the EXACT dominant color from the provided fabric image and paint the shirt with that exact color pixel-for-pixel as perceived. Do NOT prettify, brighten, desaturate or shift hue.`
+  const patternLock = `CRITICAL PATTERN LOCK: Reproduce the EXACT pattern, weave, print, stripe spacing, check size, motif scale and texture from the provided fabric image. Tile it naturally across the garment following the fabric's true scale. Do NOT invent, simplify, stylize, or substitute a new pattern. If the fabric is solid, keep it perfectly solid with the same micro-texture.`
+  const quality = hd
+    ? `Ultra high resolution 4K studio photograph, razor-sharp focus, every weave fiber visible, crisp stitching, professional e-commerce hero shot quality.`
+    : `High quality studio product photograph, sharp focus, clean stitching.`
+  const common = `Photorealistic flat-lay studio product photograph of a men's full-sleeve button-down shirt on a pure white seamless background. Soft even lighting, no harsh shadows on background, perfectly centered, NO model, NO mannequin, NO hands, NO props, NO text overlays, NO watermark, NO logo on shirt body. ${quality} ${colorLock} ${patternLock}`
   if (view === 'front') {
-    return `${common} View: FRONT view, shirt laid flat and symmetric, collar at top, full placket with buttons visible down the center, chest pocket on the left chest, both sleeves spread slightly outward, cuffs visible. Leave the inner back collar area (just under the collar band at the back of the neck) clean and visible — a tag will be placed there.`
+    return `${common} VIEW: FRONT view. Shirt laid flat and perfectly symmetric, collar at top, full placket with buttons visible down the center, chest pocket on the left chest, both sleeves spread slightly outward, cuffs visible. Leave the inner back collar area (just under the collar band at the back of the neck) clean and unobstructed — a label tag will be composited there afterwards.`
   }
-  return `${common} View: BACK view, shirt laid flat and symmetric, back yoke visible at the shoulders, no buttons visible, smooth back panel, both sleeves spread slightly outward.`
+  return `${common} VIEW: BACK view. Shirt laid flat and perfectly symmetric, back yoke visible at the shoulders, no buttons visible, smooth uninterrupted back panel, both sleeves spread slightly outward.`
 }
 
 async function callImageGen(apiKey: string, prompt: string, fabricUrl: string): Promise<string> {
@@ -101,11 +104,11 @@ Deno.serve(async (req) => {
     }
     if (!allowed) throw new Error('Forbidden')
 
-    const { fabricUrl, view = 'front', colorHex, collarTagUrl, productId } = await req.json()
+    const { fabricUrl, view = 'front', colorHex, collarTagUrl, productId, hd = false } = await req.json()
     if (!fabricUrl) throw new Error('fabricUrl required')
     if (view !== 'front' && view !== 'back') throw new Error('view must be front|back')
 
-    const dataUrl = await callImageGen(lovableKey, buildPrompt(view, colorHex), fabricUrl)
+    const dataUrl = await callImageGen(lovableKey, buildPrompt(view, colorHex, hd), fabricUrl)
     let { bytes, mime } = dataUrlToBytes(dataUrl)
 
     // Overlay collar tag on FRONT view if provided
