@@ -40,10 +40,11 @@ const AdminCoupons = () => {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [showForm, setShowForm] = usePersistedState<boolean>('admin:coupons:showForm', false);
+  const [editingId, setEditingId] = usePersistedState<string | null>('admin:coupons:editingId', null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const [form, setForm] = useState(EMPTY_COUPON);
+  const [form, setForm] = usePersistedState('admin:coupons:form', EMPTY_COUPON);
+
 
   useEffect(() => { fetchCoupons(); }, []);
 
