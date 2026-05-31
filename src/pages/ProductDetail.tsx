@@ -280,7 +280,31 @@ const ProductDetail = () => {
                 <Send size={18} className="text-foreground" />
               </button>
             </div>
+
+            {/* Floating rating badge — bottom-left over gallery */}
+            <button
+              type="button"
+              onClick={() => document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' })}
+              className="absolute bottom-4 left-4 z-10 flex items-center gap-1.5 bg-card/95 backdrop-blur border border-border rounded-full px-2.5 py-1 shadow-md hover:bg-card transition-colors"
+              aria-label="View reviews"
+            >
+              {totalReviews > 0 ? (
+                <>
+                  <span className="text-sm font-semibold">{averageRating.toFixed(1)}</span>
+                  <Star size={13} className="fill-success text-success" />
+                  <span className="text-xs text-muted-foreground border-l border-border pl-1.5">
+                    {totalReviews >= 1000 ? `${(totalReviews / 1000).toFixed(1)}K+` : totalReviews}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Star size={13} className="text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">No reviews</span>
+                </>
+              )}
+            </button>
             </div>
+
 
             {galleryItems.length > 1 && (
               <div className="flex justify-center gap-1.5">
