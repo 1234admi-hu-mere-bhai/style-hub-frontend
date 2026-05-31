@@ -250,13 +250,28 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
               <Label className="text-sm">Spec sheet measurements (inches)</Label>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              <div><Label className="text-xs">Size</Label><Input className="h-10" value={specs.size} onChange={e => setSpecs(s => ({ ...s, size: e.target.value }))} /></div>
-              <div><Label className="text-xs">Chest</Label><Input className="h-10" type="number" value={specs.chest} onChange={e => setSpecs(s => ({ ...s, chest: Number(e.target.value) }))} /></div>
-              <div><Label className="text-xs">Length</Label><Input className="h-10" type="number" value={specs.length} onChange={e => setSpecs(s => ({ ...s, length: Number(e.target.value) }))} /></div>
-              <div><Label className="text-xs">Sleeve</Label><Input className="h-10" type="number" value={specs.sleeve} onChange={e => setSpecs(s => ({ ...s, sleeve: Number(e.target.value) }))} /></div>
-              <div><Label className="text-xs">Shoulder</Label><Input className="h-10" type="number" value={specs.shoulder} onChange={e => setSpecs(s => ({ ...s, shoulder: Number(e.target.value) }))} /></div>
+              <div>
+                <Label className="text-xs">Size</Label>
+                <Select
+                  value={specs.size}
+                  onValueChange={(v) => {
+                    const m = SIZE_CHART[v];
+                    setSpecs(s => m ? { ...s, size: v, ...m } : { ...s, size: v });
+                  }}
+                >
+                  <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(SIZE_CHART).map(sz => <SelectItem key={sz} value={sz}>{sz}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label className="text-xs">Chest (in)</Label><Input className="h-10" type="number" step="0.5" value={specs.chest} onChange={e => setSpecs(s => ({ ...s, chest: Number(e.target.value) }))} /></div>
+              <div><Label className="text-xs">Length (in)</Label><Input className="h-10" type="number" step="0.5" value={specs.length} onChange={e => setSpecs(s => ({ ...s, length: Number(e.target.value) }))} /></div>
+              <div><Label className="text-xs">Sleeve (in)</Label><Input className="h-10" type="number" step="0.5" value={specs.sleeve} onChange={e => setSpecs(s => ({ ...s, sleeve: Number(e.target.value) }))} /></div>
+              <div><Label className="text-xs">Shoulder (in)</Label><Input className="h-10" type="number" step="0.5" value={specs.shoulder} onChange={e => setSpecs(s => ({ ...s, shoulder: Number(e.target.value) }))} /></div>
               <div className="col-span-2 sm:col-span-1"><Label className="text-xs">Fabric</Label><Input className="h-10" value={specs.fabric} onChange={e => setSpecs(s => ({ ...s, fabric: e.target.value }))} /></div>
             </div>
+            <p className="text-xs text-muted-foreground">Pick a size to auto-fill the standard measurements. Override any field if your sample differs.</p>
           </div>
 
           {/* Generate buttons */}
