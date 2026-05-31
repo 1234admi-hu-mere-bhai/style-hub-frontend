@@ -49,13 +49,14 @@ const ProductDetail = () => {
     const alreadyPresent = variants.some((c) => c.image && c.image === baseImage);
     if (alreadyPresent) return variants;
     const original = {
-      name: 'Original',
+      name: product.colorFamily || 'Default',
       hex: '',
       image: baseImage,
       images: (product.images || []).filter((src) => src !== baseImage),
     };
     return [original, ...variants];
   }, [product]);
+
 
   // Auto-select first color (Original by default) when product loads
   useEffect(() => {
@@ -279,7 +280,31 @@ const ProductDetail = () => {
                 <Send size={18} className="text-foreground" />
               </button>
             </div>
+
+            {/* Floating rating badge — bottom-left over gallery */}
+            <button
+              type="button"
+              onClick={() => document.getElementById('reviews')?.scrollIntoView({ behavior: 'smooth' })}
+              className="absolute bottom-4 left-4 z-10 flex items-center gap-1.5 bg-card/95 backdrop-blur border border-border rounded-full px-2.5 py-1 shadow-md hover:bg-card transition-colors"
+              aria-label="View reviews"
+            >
+              {totalReviews > 0 ? (
+                <>
+                  <span className="text-sm font-semibold">{averageRating.toFixed(1)}</span>
+                  <Star size={13} className="fill-success text-success" />
+                  <span className="text-xs text-muted-foreground border-l border-border pl-1.5">
+                    {totalReviews >= 1000 ? `${(totalReviews / 1000).toFixed(1)}K+` : totalReviews}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Star size={13} className="text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">No reviews</span>
+                </>
+              )}
+            </button>
             </div>
+
 
             {galleryItems.length > 1 && (
               <div className="flex justify-center gap-1.5">
@@ -292,22 +317,9 @@ const ProductDetail = () => {
 
           <div className="space-y-6">
             <div>
-              <h1 className="font-serif text-3xl lg:text-4xl font-bold mb-3">{product.name}</h1>
-              <div className="flex items-center gap-3">
-                {totalReviews > 0 ? (
-                  <>
-                    <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={18} className={i < Math.floor(averageRating) ? 'fill-gold text-gold' : 'text-border'} />
-                      ))}
-                    </div>
-                    <span className="text-muted-foreground">{averageRating.toFixed(1)} ({totalReviews} reviews)</span>
-                  </>
-                ) : (
-                  <span className="text-muted-foreground">No reviews yet</span>
-                )}
-              </div>
+              <h1 className="font-serif text-3xl lg:text-4xl font-bold">{product.name}</h1>
             </div>
+
 
             <div className="flex items-baseline gap-4">
               <span className="text-3xl font-bold">{formatPrice(product.price)}</span>
@@ -373,7 +385,7 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <div className="flex gap-4 pb-16 md:pb-0">
+            <div className="flex gap-4">
               <Button
                 size="lg"
                 className={`flex-1 transition-all duration-300 ${
