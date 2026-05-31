@@ -48,8 +48,12 @@ const ProductDetail = () => {
     if (!baseImage) return variants;
     const alreadyPresent = variants.some((c) => c.image && c.image === baseImage);
     if (alreadyPresent) return variants;
+    // Try to derive a meaningful base color name from product fields or name
+    const KNOWN_COLORS = ['Black','White','Navy','Blue','Red','Green','Olive','Beige','Brown','Grey','Gray','Charcoal','Maroon','Burgundy','Pink','Purple','Yellow','Orange','Cream','Khaki','Teal','Mustard','Sky','Wine','Tan'];
+    const fromName = KNOWN_COLORS.find((c) => new RegExp(`\\b${c}\\b`, 'i').test(product.name));
+    const baseName = product.colorFamily || fromName || 'Original';
     const original = {
-      name: product.colorFamily || 'Default',
+      name: baseName,
       hex: '',
       image: baseImage,
       images: (product.images || []).filter((src) => src !== baseImage),
