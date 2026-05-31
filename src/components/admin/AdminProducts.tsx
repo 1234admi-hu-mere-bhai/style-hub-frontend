@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Plus, Pencil, Trash2, Package, Loader2, X, Sparkles, RotateCw, User, Upload } from 'lucide-react';
 import ColorVariantsEditor, { type ColorVariant } from './ColorVariantsEditor';
+import FabricToShirtStudio from './FabricToShirtStudio';
 import {
   FIT_OPTIONS,
   FABRIC_OPTIONS,
@@ -708,6 +709,18 @@ const AdminProducts = () => {
                   </div>
                 )}
               </div>
+
+              {/* Fabric → Shirt Studio (inline) */}
+              <div className="flex items-center gap-2 pt-3 pb-1 border-b border-border/60">
+                <span className="h-5 w-1 rounded-full bg-primary" />
+                <h4 className="text-sm font-bold uppercase tracking-wider text-foreground">Fabric → Shirt Mockups</h4>
+              </div>
+              <p className="text-xs text-muted-foreground -mt-2">
+                Upload a fabric swatch to auto-generate flat front (with collar tag) + back mockups. Color is locked to the fabric to avoid mismatch.
+              </p>
+              <FabricToShirtStudio productId={editingId || undefined} />
+
+
 
               <div className="flex items-center gap-2 pt-3 pb-1 border-b border-border/60">
                 <span className="h-5 w-1 rounded-full bg-primary" />
