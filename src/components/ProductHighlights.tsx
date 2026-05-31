@@ -123,5 +123,3 @@ const ProductHighlights = ({ product, selectedColor }: Props) => {
 };
 
 export default ProductHighlights;
-</content>
-</invoke>
