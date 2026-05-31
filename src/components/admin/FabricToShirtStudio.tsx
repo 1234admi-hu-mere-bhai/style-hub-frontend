@@ -305,7 +305,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                   Color locked to <span className="font-mono text-foreground">{colorHex || 'auto-sampled'}</span>,
                   pattern reproduced from the fabric, MUFFI GOUT collar tag at the back-neck and a tonal MG monogram embroidered on the chest pocket (front view).
                   Spec sheet matches the same fabric color & pattern, sized for <span className="font-medium text-foreground">{specs.size}</span> — Chest {specs.chest}″, Length {specs.length}″, Sleeve {specs.sleeve}″, Shoulder {specs.shoulder}″ ({specs.fabric}).
-                  and the spec sheet annotated with size {specs.size} — Chest {specs.chest}″, Length {specs.length}″, Sleeve {specs.sleeve}″, Shoulder {specs.shoulder}″ ({specs.fabric}).
+                  
                   {hd ? ' Generated in HD (4K studio quality).' : ' Standard quality — toggle HD above for sharper output.'}
                 </p>
               </div>
