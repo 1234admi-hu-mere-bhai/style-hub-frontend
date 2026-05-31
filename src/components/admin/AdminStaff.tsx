@@ -52,7 +52,7 @@ interface ActivityRow {
 
 
 const AdminStaff = () => {
-  const [tab, setTab] = useState<'team' | 'invites' | 'activity'>('team');
+  const [tab, setTab] = usePersistedState<'team' | 'invites' | 'activity'>('admin:staff:tab', 'team');
   const [staff, setStaff] = useState<StaffRow[]>([]);
   const [invites, setInvites] = useState<InviteRow[]>([]);
   const [activity, setActivity] = useState<ActivityRow[]>([]);
