@@ -215,6 +215,15 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
             </Button>
           </div>
 
+          {/* HD toggle */}
+          <div className="flex items-center justify-between rounded-md border bg-secondary/40 px-3 py-2">
+            <div>
+              <Label className="cursor-pointer">High-Definition output</Label>
+              <p className="text-xs text-muted-foreground">Ultra-sharp 4K studio quality. Slightly slower.</p>
+            </div>
+            <Switch checked={hd} onCheckedChange={setHd} />
+          </div>
+
           {/* Generate buttons */}
           <div className="grid grid-cols-2 gap-3">
             <Button type="button" onClick={() => generate('front')} disabled={!fabricUrl || generating !== null} className="h-12">
@@ -231,21 +240,42 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
 
       {/* Results */}
       {(frontUrl || backUrl) && (
-        <div className="grid sm:grid-cols-2 gap-3">
-          {[{ url: frontUrl, label: 'Front (with collar tag)' }, { url: backUrl, label: 'Back' }].map((v) => v.url ? (
-            <Card key={v.label}>
-              <CardContent className="p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <Badge variant="outline">{v.label}</Badge>
-                  <a href={v.url} download target="_blank" rel="noreferrer" className="text-xs text-primary inline-flex items-center gap-1">
-                    <Download className="h-3 w-3" /> Download
-                  </a>
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-start gap-2 rounded-md bg-secondary/40 p-3 text-sm">
+              <Info className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+              <div className="space-y-1">
+                <p className="font-medium">About this mockup</p>
+                <p className="text-xs text-muted-foreground">
+                  Men's full-sleeve button-down shirt rendered from your fabric swatch.
+                  Color locked to <span className="font-mono text-foreground">{colorHex || 'auto-sampled'}</span>,
+                  pattern reproduced from the uploaded fabric, and the MUFFI GOUT collar tag
+                  composited at the back-neck on the front view. {hd ? 'Generated in HD (4K studio quality).' : 'Standard quality — toggle HD above for sharper output.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              {[{ url: frontUrl, label: 'Front (with collar tag)' }, { url: backUrl, label: 'Back' }].map((v) => v.url ? (
+                <div key={v.label} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Badge variant="outline">{v.label}</Badge>
+                    <button onClick={() => downloadOne(v.url, `muffigout-shirt-${v.label.toLowerCase().includes('front') ? 'front' : 'back'}.png`)} className="text-xs text-primary inline-flex items-center gap-1 hover:underline">
+                      <Download className="h-3 w-3" /> Download
+                    </button>
+                  </div>
+                  <img src={v.url} alt={v.label} className="w-full aspect-square object-contain rounded-md bg-white border" />
                 </div>
-                <img src={v.url} alt={v.label} className="w-full aspect-square object-contain rounded-md bg-white" />
-              </CardContent>
-            </Card>
-          ) : null)}
-        </div>
+              ) : null)}
+            </div>
+
+            {frontUrl && backUrl && (
+              <Button type="button" variant="outline" onClick={downloadAll} className="w-full h-11">
+                <Download className="h-4 w-4 mr-2" /> Download all views
+              </Button>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {productId && (frontUrl || backUrl) && (
