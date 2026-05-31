@@ -41,11 +41,12 @@ const AdminBlog = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [showForm, setShowForm] = usePersistedState<boolean>('admin:blog:showForm', false);
+  const [editingId, setEditingId] = usePersistedState<string | null>('admin:blog:editingId', null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-  const [form, setForm] = useState(EMPTY_POST);
-  const [tagsInput, setTagsInput] = useState('');
+  const [form, setForm] = usePersistedState('admin:blog:form', EMPTY_POST);
+  const [tagsInput, setTagsInput] = usePersistedState<string>('admin:blog:tagsInput', '');
+
 
   useEffect(() => { fetchPosts(); }, []);
 
