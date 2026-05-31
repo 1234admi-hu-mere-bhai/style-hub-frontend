@@ -48,9 +48,8 @@ const ProductDetail = () => {
     if (!baseImage) return variants;
     const alreadyPresent = variants.some((c) => c.image && c.image === baseImage);
     if (alreadyPresent) return variants;
-    if (!product.colorFamily) return variants;
     const original = {
-      name: product.colorFamily,
+      name: product.colorFamily || 'Default',
       hex: '',
       image: baseImage,
       images: (product.images || []).filter((src) => src !== baseImage),
