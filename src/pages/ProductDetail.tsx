@@ -45,11 +45,12 @@ const ProductDetail = () => {
     if (!product) return [] as Array<{ name: string; hex: string; image?: string; images?: string[] }>;
     const variants = product.colors || [];
     const baseImage = product.images?.[0];
-    if (!baseImage) return variants;
+    // Only prepend base color as a swatch when we have a real color name for it
+    if (!baseImage || !product.colorFamily) return variants;
     const alreadyPresent = variants.some((c) => c.image && c.image === baseImage);
     if (alreadyPresent) return variants;
     const original = {
-      name: product.colorFamily || 'Default',
+      name: product.colorFamily,
       hex: '',
       image: baseImage,
       images: (product.images || []).filter((src) => src !== baseImage),
