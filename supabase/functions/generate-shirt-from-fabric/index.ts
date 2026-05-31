@@ -7,12 +7,13 @@ const corsHeaders = {
 }
 
 const OWNER_EMAILS = ['otw2003@gmail.com', 'kaliasgar776@gmail.com', 'muffigout@gmail.com']
+const MONOGRAM_PATH = 'assets/chest-monogram.png'
 
 function buildPrompt(view: 'front' | 'back' | 'spec', hex?: string, hd?: boolean, specs?: { chest?: number; length?: number; sleeve?: number; shoulder?: number; size?: string; fabric?: string }) {
   const colorLock = hex
-    ? `CRITICAL COLOR LOCK: The shirt body color MUST be EXACTLY hex ${hex}. Do NOT shift hue, saturation, brightness, warmth, or tint by even one step. Sample this exact color and paint every fiber of the shirt with it. If in doubt, err toward the swatch, never toward a "nicer" color.`
-    : `CRITICAL COLOR LOCK: Sample the EXACT dominant color from the provided fabric image and paint the shirt with that exact color pixel-for-pixel as perceived. Do NOT prettify, brighten, desaturate or shift hue.`
-  const patternLock = `CRITICAL PATTERN LOCK: Reproduce the EXACT pattern, weave, print, stripe spacing, check size, motif scale and texture from the provided fabric image. Tile it naturally across the garment following the fabric's true scale. Do NOT invent, simplify, stylize, or substitute a new pattern. If the fabric is solid, keep it perfectly solid with the same micro-texture.`
+    ? `CRITICAL COLOR LOCK: The shirt body color MUST be EXACTLY hex ${hex}. Do NOT shift hue, saturation, brightness, warmth, or tint by even one step. Sample this exact color and paint every fiber of the shirt with it.`
+    : `CRITICAL COLOR LOCK: Sample the EXACT dominant color from the provided fabric image and paint the shirt with that exact color pixel-for-pixel.`
+  const patternLock = `CRITICAL PATTERN LOCK: Reproduce the EXACT pattern, weave, print, stripe spacing, check size, motif scale and texture from the provided fabric image. Tile it naturally across the garment following the fabric's true scale. Do NOT invent or substitute a new pattern. If the fabric is solid, keep it perfectly solid with the same micro-texture.`
   const quality = hd
     ? `Ultra high resolution 4K studio photograph, razor-sharp focus, every weave fiber visible, crisp stitching, professional e-commerce hero shot quality.`
     : `High quality studio product photograph, sharp focus, clean stitching.`
@@ -24,8 +25,9 @@ function buildPrompt(view: 'front' | 'back' | 'spec', hex?: string, hd?: boolean
     const sleeve = specs?.sleeve ?? 25
     const shoulder = specs?.shoulder ?? 18
     const fabric = specs?.fabric || 'Premium cotton blend'
-    const colorLine = hex ? `Color swatch labeled "${hex}"` : `Color swatch sampled from fabric`
-    return `Professional apparel TECH PACK / SPEC SHEET illustration on a clean off-white paper background with faint blueprint grid. Show a men's full-sleeve button-down shirt rendered as a clean front-view technical flat (vector-style line drawing filled with the fabric color and pattern). ${colorLock} ${patternLock} ${quality}
+    return `Professional apparel TECH PACK / SPEC SHEET illustration on a clean off-white paper background with faint blueprint grid. Show a men's full-sleeve button-down shirt rendered as a clean front-view technical flat (vector-style line drawing FILLED with the EXACT fabric color and pattern from the provided fabric image — the rendered shirt MUST visually match the fabric swatch's color and pattern). ${colorLock} ${patternLock} ${quality}
+
+On the left chest pocket of the shirt, draw a SMALL tonal embroidered monogram mark (just a subtle stitched logo silhouette in a slightly lighter/darker shade of the same shirt color, no text, no wordmark) — the same monogram that appears on the photographic mockup.
 
 Around the shirt, draw crisp BLACK measurement callout lines with arrowheads and printed labels in a clean sans-serif font, exactly these four measurements and NO others:
 - "CHEST: ${chest}\\"" — horizontal line across the chest, pit-to-pit
@@ -33,20 +35,19 @@ Around the shirt, draw crisp BLACK measurement callout lines with arrowheads and
 - "SLEEVE: ${sleeve}\\"" — diagonal line from shoulder to cuff on the left sleeve
 - "SHOULDER: ${shoulder}\\"" — short horizontal line across the top yoke
 
-In the bottom-right corner add a small info panel with exactly these lines printed in clean sans-serif:
-"MUFFI GOUT APPAREL HUB"
+In the bottom-right corner add a small info panel with EXACTLY these lines printed in clean sans-serif (NO brand name, NO wordmark, NO company name):
 "SIZE: ${size}"
 "FABRIC: ${fabric}"
 "FIT: Regular"
 ${hex ? `"COLOR: ${hex}"` : `"COLOR: see swatch"`}
-and a small ${hex ? hex : 'fabric-sampled'} color swatch square next to the COLOR line. ${colorLine}.
+and a small ${hex ? hex : 'fabric-sampled'} color swatch square next to the COLOR line.
 
-Style: technical, precise, like a fashion designer's tech pack from a brand book. NO model, NO mannequin, NO photographic background, NO extra annotations, NO watermark. All text must be perfectly legible, correctly spelled, and only the labels listed above — do not invent extra text.`
+Style: technical, precise, like a fashion designer's tech pack. NO model, NO mannequin, NO photographic background, NO watermark, NO brand wordmark, NO company name. All text must be perfectly legible, correctly spelled, and only the labels listed above — do not invent extra text.`
   }
 
-  const common = `Photorealistic flat-lay studio product photograph of a men's full-sleeve button-down shirt on a pure white seamless background. Soft even lighting, no harsh shadows on background, perfectly centered, NO model, NO mannequin, NO hands, NO props, NO text overlays, NO watermark, NO logo on shirt body. ${quality} ${colorLock} ${patternLock}`
+  const common = `Photorealistic flat-lay studio product photograph of a men's full-sleeve button-down shirt on a pure white seamless background. Soft even lighting, no harsh shadows on background, perfectly centered, NO model, NO mannequin, NO hands, NO props, NO text overlays, NO watermark, NO printed logo on shirt body. ${quality} ${colorLock} ${patternLock}`
   if (view === 'front') {
-    return `${common} VIEW: FRONT view. Shirt laid flat and perfectly symmetric, collar at top, full placket with buttons visible down the center, chest pocket on the left chest, both sleeves spread slightly outward, cuffs visible. Leave the inner back collar area (just under the collar band at the back of the neck) clean and unobstructed — a label tag will be composited there afterwards.`
+    return `${common} VIEW: FRONT view. Shirt laid flat and perfectly symmetric, collar at top, full placket with buttons visible down the center, chest pocket on the LEFT chest (viewer's left), both sleeves spread slightly outward, cuffs visible. Leave the inner back collar area (just under the collar band at the back of the neck) clean and unobstructed — a label tag will be composited there afterwards. Leave the CENTER of the LEFT CHEST POCKET clean — a small monogram will be composited there afterwards.`
   }
   return `${common} VIEW: BACK view. Shirt laid flat and perfectly symmetric, back yoke visible at the shoulders, no buttons visible, smooth uninterrupted back panel, both sleeves spread slightly outward.`
 }
@@ -86,11 +87,23 @@ async function fetchBytes(url: string): Promise<Uint8Array> {
   return new Uint8Array(await r.arrayBuffer())
 }
 
-async function compositeCollarTag(shirtBytes: Uint8Array, tagBytes: Uint8Array): Promise<Uint8Array> {
-  const shirt = await Image.decode(shirtBytes)
+// Convert hex to RGB
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const h = hex.replace('#', '')
+  return { r: parseInt(h.slice(0, 2), 16), g: parseInt(h.slice(2, 4), 16), b: parseInt(h.slice(4, 6), 16) }
+}
+
+// Compute a tonal monogram color (lighter on dark fabrics, darker on light fabrics)
+function tonalColor(hex: string): { r: number; g: number; b: number } {
+  const { r, g, b } = hexToRgb(hex)
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  const shift = lum > 0.5 ? -45 : 50 // darker on light, lighter on dark
+  const clamp = (v: number) => Math.max(0, Math.min(255, v + shift))
+  return { r: clamp(r), g: clamp(g), b: clamp(b) }
+}
+
+async function compositeCollarTag(shirt: Image, tagBytes: Uint8Array): Promise<Image> {
   const tag = await Image.decode(tagBytes)
-  // Target tag width ~9% of shirt width, placed centered horizontally,
-  // approx 14% from the top (just under the back collar band on a flat-lay front view)
   const targetW = Math.round(shirt.width * 0.09)
   const ratio = targetW / tag.width
   const targetH = Math.max(1, Math.round(tag.height * ratio))
@@ -98,7 +111,38 @@ async function compositeCollarTag(shirtBytes: Uint8Array, tagBytes: Uint8Array):
   const x = Math.round((shirt.width - targetW) / 2)
   const y = Math.round(shirt.height * 0.13)
   shirt.composite(resized, x, y)
-  return await shirt.encode()
+  return shirt
+}
+
+// Composite the MG monogram on the LEFT chest pocket, tinted to a tonal shirt color
+async function compositeChestMonogram(shirt: Image, monogramBytes: Uint8Array, shirtHex?: string): Promise<Image> {
+  const mono = await Image.decode(monogramBytes)
+  const targetW = Math.round(shirt.width * 0.055)
+  const ratio = targetW / mono.width
+  const targetH = Math.max(1, Math.round(mono.height * ratio))
+  const resized = mono.resize(targetW, targetH)
+
+  // Tint pass: replace non-transparent pixels with tonal color, preserving alpha
+  if (shirtHex) {
+    const tone = tonalColor(shirtHex)
+    for (let y = 0; y < resized.height; y++) {
+      for (let x = 0; x < resized.width; x++) {
+        const px = resized.getPixelAt(x + 1, y + 1) // imagescript is 1-indexed
+        const a = px & 0xff
+        if (a === 0) continue
+        // Recompose RGBA with tonal RGB, dim alpha slightly so it reads as embroidery (not sticker)
+        const newA = Math.round(a * 0.85)
+        const rgba = ((tone.r & 0xff) << 24) | ((tone.g & 0xff) << 16) | ((tone.b & 0xff) << 8) | (newA & 0xff)
+        resized.setPixelAt(x + 1, y + 1, rgba >>> 0)
+      }
+    }
+  }
+
+  // Pocket centered on viewer's left chest: x ~ 36% from left, y ~ 36% from top
+  const x = Math.round(shirt.width * 0.36 - targetW / 2)
+  const y = Math.round(shirt.height * 0.36 - targetH / 2)
+  shirt.composite(resized, x, y)
+  return shirt
 }
 
 async function uploadBytes(adminClient: any, bytes: Uint8Array, path: string, mime: string): Promise<string> {
@@ -139,14 +183,26 @@ Deno.serve(async (req) => {
     const dataUrl = await callImageGen(lovableKey, buildPrompt(view, colorHex, hd, specs), fabricUrl)
     let { bytes, mime } = dataUrlToBytes(dataUrl)
 
-    // Overlay collar tag on FRONT view if provided
-    if (view === 'front' && collarTagUrl) {
+    // FRONT view: composite collar tag at back-neck AND tonal MG monogram on the chest pocket
+    if (view === 'front') {
       try {
-        const tagBytes = await fetchBytes(collarTagUrl)
-        bytes = await compositeCollarTag(bytes, tagBytes)
+        let shirt = await Image.decode(bytes)
+        if (collarTagUrl) {
+          const tagBytes = await fetchBytes(collarTagUrl)
+          shirt = await compositeCollarTag(shirt, tagBytes)
+        }
+        // Always overlay chest monogram from bucket
+        const monoPublic = adminClient.storage.from('product-images').getPublicUrl(MONOGRAM_PATH).data.publicUrl
+        try {
+          const monoBytes = await fetchBytes(monoPublic)
+          shirt = await compositeChestMonogram(shirt, monoBytes, colorHex)
+        } catch (e) {
+          console.error('Monogram overlay skipped:', e)
+        }
+        bytes = await shirt.encode()
         mime = 'image/png'
       } catch (e) {
-        console.error('Collar tag overlay failed, returning bare shirt:', e)
+        console.error('Front composite failed, returning bare shirt:', e)
       }
     }
 
