@@ -59,9 +59,11 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const [autoColor, setAutoColor] = useState(true);
   const [hd, setHd] = useState(true);
   const [uploading, setUploading] = useState<'fabric' | 'tag' | null>(null);
-  const [generating, setGenerating] = useState<'front' | 'back' | null>(null);
+  const [generating, setGenerating] = useState<'front' | 'back' | 'spec' | null>(null);
   const [frontUrl, setFrontUrl] = useState<string>('');
   const [backUrl, setBackUrl] = useState<string>('');
+  const [specUrl, setSpecUrl] = useState<string>('');
+  const [specs, setSpecs] = useState({ size: 'M', chest: 42, length: 29, sleeve: 25, shoulder: 18, fabric: 'Premium cotton blend' });
   const fabricInput = useRef<HTMLInputElement>(null);
   const tagInput = useRef<HTMLInputElement>(null);
 
