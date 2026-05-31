@@ -346,15 +346,26 @@ const ProductDetail = () => {
                         key={color.name}
                         onClick={() => handleSelectColor(color.name)}
                         title={color.name}
-                        className={`flex-shrink-0 w-16 h-16 rounded-md overflow-hidden border-2 transition-all bg-secondary ${
-                          isSelected ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-primary/50'
-                        }`}
+                        className="flex-shrink-0 flex flex-col items-center gap-1.5 w-16"
                       >
-                        {color.image ? (
-                          <img src={color.image} alt={color.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <span className="block w-full h-full" style={{ backgroundColor: color.hex }} />
-                        )}
+                        <span
+                          className={`w-16 h-16 rounded-md overflow-hidden border-2 transition-all bg-secondary ${
+                            isSelected ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-primary/50'
+                          }`}
+                        >
+                          {color.image ? (
+                            <img src={color.image} alt={color.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="block w-full h-full" style={{ backgroundColor: color.hex }} />
+                          )}
+                        </span>
+                        <span
+                          className={`text-[11px] leading-tight text-center truncate w-full ${
+                            isSelected ? 'text-foreground font-medium' : 'text-muted-foreground'
+                          }`}
+                        >
+                          {color.name}
+                        </span>
                       </button>
                     );
                   })}
