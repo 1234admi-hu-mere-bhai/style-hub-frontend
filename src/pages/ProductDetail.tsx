@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import SizeChartModal from '@/components/SizeChartModal';
 import ReviewSection from '@/components/ReviewSection';
+import ProductHighlights from '@/components/ProductHighlights';
 import Product360Viewer from '@/components/Product360Viewer';
 import PincodeChecker from '@/components/PincodeChecker';
 import { useDbProducts, useDbProduct } from '@/hooks/useDbProducts';
