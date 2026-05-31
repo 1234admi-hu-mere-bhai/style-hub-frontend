@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { usePersistedState } from '@/hooks/usePersistedState';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,9 +38,10 @@ const AdminPushCampaigns = () => {
   const [subscriberCount, setSubscriberCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [form, setForm] = useState({
+  const [form, setForm] = usePersistedState('admin:pushCampaigns:form', {
     title: '', message: '', url: '', category: 'announcements',
   });
+
 
   const load = async () => {
     setLoading(true);

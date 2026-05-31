@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { usePersistedState } from '@/hooks/usePersistedState';
+
 import { supabase } from '@/integrations/supabase/client';
 import { Zap, Plus, Trash2, Edit2, Loader2, Power } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -38,13 +40,14 @@ const AdminFlashSales = () => {
   const [saving, setSaving] = useState(false);
 
   // Form state
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [discountPct, setDiscountPct] = useState(20);
-  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [isActive, setIsActive] = useState(false);
+  const [title, setTitle] = usePersistedState<string>('admin:flash:title', '');
+  const [description, setDescription] = usePersistedState<string>('admin:flash:description', '');
+  const [discountPct, setDiscountPct] = usePersistedState<number>('admin:flash:discountPct', 20);
+  const [selectedProductIds, setSelectedProductIds] = usePersistedState<string[]>('admin:flash:productIds', []);
+  const [startTime, setStartTime] = usePersistedState<string>('admin:flash:startTime', '');
+  const [endTime, setEndTime] = usePersistedState<string>('admin:flash:endTime', '');
+  const [isActive, setIsActive] = usePersistedState<boolean>('admin:flash:isActive', false);
+
 
   useEffect(() => {
     fetchSales();

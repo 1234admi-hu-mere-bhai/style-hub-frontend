@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { usePersistedState } from '@/hooks/usePersistedState';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -50,17 +52,18 @@ interface ActivityRow {
 
 
 const AdminStaff = () => {
-  const [tab, setTab] = useState<'team' | 'invites' | 'activity'>('team');
+  const [tab, setTab] = usePersistedState<'team' | 'invites' | 'activity'>('admin:staff:tab', 'team');
   const [staff, setStaff] = useState<StaffRow[]>([]);
   const [invites, setInvites] = useState<InviteRow[]>([]);
   const [activity, setActivity] = useState<ActivityRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [showInvite, setShowInvite] = useState(false);
-  const [inviteForm, setInviteForm] = useState({
+  const [inviteForm, setInviteForm] = usePersistedState('admin:staff:inviteForm', {
     email: '', display_name: '',
     permissions: { ...DEFAULT_NEW_STAFF_PERMS, dashboard: true },
   });
+
   const [creating, setCreating] = useState(false);
   const [generated, setGenerated] = useState<{ email: string } | null>(null);
 
@@ -68,7 +71,7 @@ const AdminStaff = () => {
   const [savingEdit, setSavingEdit] = useState(false);
   const [removeConfirm, setRemoveConfirm] = useState<StaffRow | null>(null);
 
-  const [activityFilter, setActivityFilter] = useState<string>('');
+  const [activityFilter, setActivityFilter] = usePersistedState<string>('admin:staff:activityFilter', '');
 
   const load = async () => {
     setLoading(true);
