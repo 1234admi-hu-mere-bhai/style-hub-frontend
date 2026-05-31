@@ -72,7 +72,7 @@ const formatDate = (dateStr: string) =>
   new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 
 const AdminCustomers = ({ customers }: AdminCustomersProps) => {
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = usePersistedState<string>('admin:customers:search', '');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [viewingCustomer, setViewingCustomer] = useState<Customer | null>(null);
 
