@@ -224,22 +224,22 @@ Deno.serve(async (req) => {
     }
     if (!allowed) throw new Error('Forbidden')
 
-    const { fabricUrl, view = 'front', colorHex, collarTagUrl, productId, hd = false, specs } = await req.json()
+    const { fabricUrl, view = 'front', colorHex, collarTagUrl, productId, hd = false, specs, pose = 'sitting' } = await req.json()
     if (!fabricUrl) throw new Error('fabricUrl required')
-    if (view !== 'front' && view !== 'back' && view !== 'spec') throw new Error('view must be front|back|spec')
+    const validViews = ['front', 'back', 'spec', 'highlights', 'model', 'lifestyle']
+    if (!validViews.includes(view)) throw new Error('invalid view')
 
-    const dataUrl = await callImageGen(lovableKey, buildPrompt(view, colorHex, hd, specs), fabricUrl)
+    const dataUrl = await callImageGen(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl)
     let { bytes, mime } = dataUrlToBytes(dataUrl)
 
-    // FRONT view: composite collar tag at back-neck AND tonal MG monogram on the chest pocket
-    if (view === 'front') {
+    // FRONT + HIGHLIGHTS views: composite collar tag at back-neck AND tonal MG monogram on chest pocket
+    if (view === 'front' || view === 'highlights') {
       try {
         let shirt = await Image.decode(bytes)
         if (collarTagUrl) {
           const tagBytes = await fetchBytes(collarTagUrl)
           shirt = await compositeCollarTag(shirt, tagBytes)
         }
-        // Always overlay chest monogram from bucket
         const monoPublic = adminClient.storage.from('product-images').getPublicUrl(MONOGRAM_PATH).data.publicUrl
         try {
           const monoBytes = await fetchBytes(monoPublic)
@@ -250,7 +250,7 @@ Deno.serve(async (req) => {
         bytes = await shirt.encode()
         mime = 'image/png'
       } catch (e) {
-        console.error('Front composite failed, returning bare shirt:', e)
+        console.error('Composite failed, returning bare shirt:', e)
       }
     }
 
