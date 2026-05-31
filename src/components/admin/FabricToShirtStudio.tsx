@@ -7,9 +7,21 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, Sparkles, Loader2, Image as ImageIcon, Download, Tag, Info } from 'lucide-react';
 
 const COLLAR_TAG_PATH = 'assets/collar-tag.png';
+
+// Men's regular-fit size chart (inches). Editable per generation.
+const SIZE_CHART: Record<string, { chest: number; length: number; sleeve: number; shoulder: number }> = {
+  S:   { chest: 38, length: 28, sleeve: 24,   shoulder: 17   },
+  M:   { chest: 40, length: 29, sleeve: 24.5, shoulder: 17.5 },
+  L:   { chest: 42, length: 30, sleeve: 25,   shoulder: 18   },
+  XL:  { chest: 44, length: 31, sleeve: 25.5, shoulder: 18.5 },
+  XXL: { chest: 46, length: 32, sleeve: 26,   shoulder: 19   },
+  '3XL': { chest: 48, length: 33, sleeve: 26.5, shoulder: 19.5 },
+  '4XL': { chest: 50, length: 34, sleeve: 27,   shoulder: 20   },
+};
 
 interface Props {
   /** When provided, "Save to product" buttons appear and write to that product. */
@@ -63,7 +75,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const [frontUrl, setFrontUrl] = useState<string>('');
   const [backUrl, setBackUrl] = useState<string>('');
   const [specUrl, setSpecUrl] = useState<string>('');
-  const [specs, setSpecs] = useState({ size: 'M', chest: 42, length: 29, sleeve: 25, shoulder: 18, fabric: 'Premium cotton blend' });
+  const [specs, setSpecs] = useState({ size: 'M', chest: SIZE_CHART.M.chest, length: SIZE_CHART.M.length, sleeve: SIZE_CHART.M.sleeve, shoulder: SIZE_CHART.M.shoulder, fabric: 'Premium cotton blend' });
   const fabricInput = useRef<HTMLInputElement>(null);
   const tagInput = useRef<HTMLInputElement>(null);
 
@@ -238,13 +250,28 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
               <Label className="text-sm">Spec sheet measurements (inches)</Label>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              <div><Label className="text-xs">Size</Label><Input className="h-10" value={specs.size} onChange={e => setSpecs(s => ({ ...s, size: e.target.value }))} /></div>
-              <div><Label className="text-xs">Chest</Label><Input className="h-10" type="number" value={specs.chest} onChange={e => setSpecs(s => ({ ...s, chest: Number(e.target.value) }))} /></div>
-              <div><Label className="text-xs">Length</Label><Input className="h-10" type="number" value={specs.length} onChange={e => setSpecs(s => ({ ...s, length: Number(e.target.value) }))} /></div>
-              <div><Label className="text-xs">Sleeve</Label><Input className="h-10" type="number" value={specs.sleeve} onChange={e => setSpecs(s => ({ ...s, sleeve: Number(e.target.value) }))} /></div>
-              <div><Label className="text-xs">Shoulder</Label><Input className="h-10" type="number" value={specs.shoulder} onChange={e => setSpecs(s => ({ ...s, shoulder: Number(e.target.value) }))} /></div>
+              <div>
+                <Label className="text-xs">Size</Label>
+                <Select
+                  value={specs.size}
+                  onValueChange={(v) => {
+                    const m = SIZE_CHART[v];
+                    setSpecs(s => m ? { ...s, size: v, ...m } : { ...s, size: v });
+                  }}
+                >
+                  <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(SIZE_CHART).map(sz => <SelectItem key={sz} value={sz}>{sz}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div><Label className="text-xs">Chest (in)</Label><Input className="h-10" type="number" step="0.5" value={specs.chest} onChange={e => setSpecs(s => ({ ...s, chest: Number(e.target.value) }))} /></div>
+              <div><Label className="text-xs">Length (in)</Label><Input className="h-10" type="number" step="0.5" value={specs.length} onChange={e => setSpecs(s => ({ ...s, length: Number(e.target.value) }))} /></div>
+              <div><Label className="text-xs">Sleeve (in)</Label><Input className="h-10" type="number" step="0.5" value={specs.sleeve} onChange={e => setSpecs(s => ({ ...s, sleeve: Number(e.target.value) }))} /></div>
+              <div><Label className="text-xs">Shoulder (in)</Label><Input className="h-10" type="number" step="0.5" value={specs.shoulder} onChange={e => setSpecs(s => ({ ...s, shoulder: Number(e.target.value) }))} /></div>
               <div className="col-span-2 sm:col-span-1"><Label className="text-xs">Fabric</Label><Input className="h-10" value={specs.fabric} onChange={e => setSpecs(s => ({ ...s, fabric: e.target.value }))} /></div>
             </div>
+            <p className="text-xs text-muted-foreground">Pick a size to auto-fill the standard measurements. Override any field if your sample differs.</p>
           </div>
 
           {/* Generate buttons */}
@@ -276,8 +303,9 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                 <p className="text-xs text-muted-foreground">
                   Men's full-sleeve button-down shirt rendered from your fabric swatch.
                   Color locked to <span className="font-mono text-foreground">{colorHex || 'auto-sampled'}</span>,
-                  pattern reproduced from the uploaded fabric, MUFFI GOUT collar tag composited on the front view,
-                  and the spec sheet annotated with size {specs.size} — Chest {specs.chest}″, Length {specs.length}″, Sleeve {specs.sleeve}″, Shoulder {specs.shoulder}″ ({specs.fabric}).
+                  pattern reproduced from the fabric, MUFFI GOUT collar tag at the back-neck and a tonal MG monogram embroidered on the chest pocket (front view).
+                  Spec sheet matches the same fabric color & pattern, sized for <span className="font-medium text-foreground">{specs.size}</span> — Chest {specs.chest}″, Length {specs.length}″, Sleeve {specs.sleeve}″, Shoulder {specs.shoulder}″ ({specs.fabric}).
+                  
                   {hd ? ' Generated in HD (4K studio quality).' : ' Standard quality — toggle HD above for sharper output.'}
                 </p>
               </div>
