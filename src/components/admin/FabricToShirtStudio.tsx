@@ -7,9 +7,21 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, Sparkles, Loader2, Image as ImageIcon, Download, Tag, Info } from 'lucide-react';
 
 const COLLAR_TAG_PATH = 'assets/collar-tag.png';
+
+// Men's regular-fit size chart (inches). Editable per generation.
+const SIZE_CHART: Record<string, { chest: number; length: number; sleeve: number; shoulder: number }> = {
+  S:   { chest: 38, length: 28, sleeve: 24,   shoulder: 17   },
+  M:   { chest: 40, length: 29, sleeve: 24.5, shoulder: 17.5 },
+  L:   { chest: 42, length: 30, sleeve: 25,   shoulder: 18   },
+  XL:  { chest: 44, length: 31, sleeve: 25.5, shoulder: 18.5 },
+  XXL: { chest: 46, length: 32, sleeve: 26,   shoulder: 19   },
+  '3XL': { chest: 48, length: 33, sleeve: 26.5, shoulder: 19.5 },
+  '4XL': { chest: 50, length: 34, sleeve: 27,   shoulder: 20   },
+};
 
 interface Props {
   /** When provided, "Save to product" buttons appear and write to that product. */
