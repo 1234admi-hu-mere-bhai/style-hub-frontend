@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { usePersistedState } from '@/hooks/usePersistedState';
+
 import { supabase } from '@/integrations/supabase/client';
 import { Zap, Plus, Trash2, Edit2, Loader2, Power } from 'lucide-react';
 import { Button } from '@/components/ui/button';
