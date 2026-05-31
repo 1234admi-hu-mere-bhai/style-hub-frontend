@@ -115,7 +115,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     try {
       const url = await uploadToBucket(file, `fabric-uploads/${crypto.randomUUID()}-${file.name}`);
       setFabricUrl(url);
-      setFrontUrl(''); setBackUrl('');
+      setFrontUrl(''); setBackUrl(''); setSpecUrl(''); setHighlightsUrl(''); setModelUrl(''); setLifestyleUrl('');
     } catch (e: any) {
       toast({ title: 'Upload failed', description: e.message, variant: 'destructive' });
     } finally { setUploading(null); }
