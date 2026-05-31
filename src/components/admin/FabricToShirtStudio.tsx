@@ -231,22 +231,42 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
             <Switch checked={hd} onCheckedChange={setHd} />
           </div>
 
+          {/* Spec sheet inputs */}
+          <div className="rounded-md border bg-secondary/40 p-3 space-y-3">
+            <div className="flex items-center gap-1.5">
+              <Info className="h-3.5 w-3.5 text-primary" />
+              <Label className="text-sm">Spec sheet measurements (inches)</Label>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <div><Label className="text-xs">Size</Label><Input className="h-10" value={specs.size} onChange={e => setSpecs(s => ({ ...s, size: e.target.value }))} /></div>
+              <div><Label className="text-xs">Chest</Label><Input className="h-10" type="number" value={specs.chest} onChange={e => setSpecs(s => ({ ...s, chest: Number(e.target.value) }))} /></div>
+              <div><Label className="text-xs">Length</Label><Input className="h-10" type="number" value={specs.length} onChange={e => setSpecs(s => ({ ...s, length: Number(e.target.value) }))} /></div>
+              <div><Label className="text-xs">Sleeve</Label><Input className="h-10" type="number" value={specs.sleeve} onChange={e => setSpecs(s => ({ ...s, sleeve: Number(e.target.value) }))} /></div>
+              <div><Label className="text-xs">Shoulder</Label><Input className="h-10" type="number" value={specs.shoulder} onChange={e => setSpecs(s => ({ ...s, shoulder: Number(e.target.value) }))} /></div>
+              <div className="col-span-2 sm:col-span-1"><Label className="text-xs">Fabric</Label><Input className="h-10" value={specs.fabric} onChange={e => setSpecs(s => ({ ...s, fabric: e.target.value }))} /></div>
+            </div>
+          </div>
+
           {/* Generate buttons */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Button type="button" onClick={() => generate('front')} disabled={!fabricUrl || generating !== null} className="h-12">
               {generating === 'front' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-              Generate Front
+              Front
             </Button>
             <Button type="button" onClick={() => generate('back')} disabled={!fabricUrl || generating !== null} variant="secondary" className="h-12">
               {generating === 'back' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-              Generate Back
+              Back
+            </Button>
+            <Button type="button" onClick={() => generate('spec')} disabled={!fabricUrl || generating !== null} variant="outline" className="h-12">
+              {generating === 'spec' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Info className="h-4 w-4 mr-2" />}
+              Spec Sheet
             </Button>
           </div>
         </CardContent>
       </Card>
 
       {/* Results */}
-      {(frontUrl || backUrl) && (
+      {(frontUrl || backUrl || specUrl) && (
         <Card>
           <CardContent className="p-4 space-y-3">
             <div className="flex items-start gap-2 rounded-md bg-secondary/40 p-3 text-sm">
@@ -256,18 +276,23 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                 <p className="text-xs text-muted-foreground">
                   Men's full-sleeve button-down shirt rendered from your fabric swatch.
                   Color locked to <span className="font-mono text-foreground">{colorHex || 'auto-sampled'}</span>,
-                  pattern reproduced from the uploaded fabric, and the MUFFI GOUT collar tag
-                  composited at the back-neck on the front view. {hd ? 'Generated in HD (4K studio quality).' : 'Standard quality — toggle HD above for sharper output.'}
+                  pattern reproduced from the uploaded fabric, MUFFI GOUT collar tag composited on the front view,
+                  and the spec sheet annotated with size {specs.size} — Chest {specs.chest}″, Length {specs.length}″, Sleeve {specs.sleeve}″, Shoulder {specs.shoulder}″ ({specs.fabric}).
+                  {hd ? ' Generated in HD (4K studio quality).' : ' Standard quality — toggle HD above for sharper output.'}
                 </p>
               </div>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-3">
-              {[{ url: frontUrl, label: 'Front (with collar tag)' }, { url: backUrl, label: 'Back' }].map((v) => v.url ? (
-                <div key={v.label} className="space-y-2">
+            <div className="grid sm:grid-cols-3 gap-3">
+              {[
+                { url: frontUrl, label: 'Front (with collar tag)', key: 'front' },
+                { url: backUrl, label: 'Back', key: 'back' },
+                { url: specUrl, label: 'Spec Sheet', key: 'spec' },
+              ].map((v) => v.url ? (
+                <div key={v.key} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Badge variant="outline">{v.label}</Badge>
-                    <button onClick={() => downloadOne(v.url, `muffigout-shirt-${v.label.toLowerCase().includes('front') ? 'front' : 'back'}.png`)} className="text-xs text-primary inline-flex items-center gap-1 hover:underline">
+                    <button onClick={() => downloadOne(v.url, `muffigout-shirt-${v.key}.png`)} className="text-xs text-primary inline-flex items-center gap-1 hover:underline">
                       <Download className="h-3 w-3" /> Download
                     </button>
                   </div>
@@ -276,16 +301,16 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
               ) : null)}
             </div>
 
-            {frontUrl && backUrl && (
+            {(frontUrl && backUrl && specUrl) && (
               <Button type="button" variant="outline" onClick={downloadAll} className="w-full h-11">
-                <Download className="h-4 w-4 mr-2" /> Download all views
+                <Download className="h-4 w-4 mr-2" /> Download all 3 views
               </Button>
             )}
           </CardContent>
         </Card>
       )}
 
-      {productId && (frontUrl || backUrl) && (
+      {productId && (frontUrl || backUrl || specUrl) && (
         <Button type="button" onClick={saveToProduct} className="w-full h-12">
           <ImageIcon className="h-4 w-4 mr-2" /> Save to this product's images
         </Button>
