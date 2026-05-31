@@ -74,11 +74,23 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const [autoColor, setAutoColor] = useState(true);
   const [hd, setHd] = useState(true);
   const [uploading, setUploading] = useState<'fabric' | 'tag' | null>(null);
-  const [generating, setGenerating] = useState<'front' | 'back' | 'spec' | null>(null);
+  const [generating, setGenerating] = useState<ViewKind | null>(null);
   const [frontUrl, setFrontUrl] = useState<string>('');
   const [backUrl, setBackUrl] = useState<string>('');
   const [specUrl, setSpecUrl] = useState<string>('');
-  const [specs, setSpecs] = useState({ size: 'M', chest: SIZE_CHART.M.chest, length: SIZE_CHART.M.length, sleeve: SIZE_CHART.M.sleeve, shoulder: SIZE_CHART.M.shoulder, fabric: 'Premium cotton blend' });
+  const [highlightsUrl, setHighlightsUrl] = useState<string>('');
+  const [modelUrl, setModelUrl] = useState<string>('');
+  const [lifestyleUrl, setLifestyleUrl] = useState<string>('');
+  const [pose, setPose] = useState<Pose>('sitting');
+  const [specs, setSpecs] = useState({
+    size: 'M',
+    chest: SIZE_CHART.M.chest, length: SIZE_CHART.M.length, sleeve: SIZE_CHART.M.sleeve, shoulder: SIZE_CHART.M.shoulder,
+    fabric: 'Cotton Blend',
+    fit: 'Regular',
+    pattern: 'Solid',
+    occasion: 'Casual',
+    collar: 'Spread',
+  });
   const fabricInput = useRef<HTMLInputElement>(null);
   const tagInput = useRef<HTMLInputElement>(null);
 
