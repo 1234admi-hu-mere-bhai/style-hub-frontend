@@ -8,7 +8,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, Sparkles, Loader2, Image as ImageIcon, Download, Tag, Info } from 'lucide-react';
+import { Upload, Sparkles, Loader2, Image as ImageIcon, Download, Tag, Info, Shirt, User } from 'lucide-react';
+
+type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'lifestyle';
+type Pose = 'sitting' | 'leaning' | 'walking' | 'coffee';
 
 const COLLAR_TAG_PATH = 'assets/collar-tag.png';
 
