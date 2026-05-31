@@ -71,7 +71,7 @@ const AdminStaff = () => {
   const [savingEdit, setSavingEdit] = useState(false);
   const [removeConfirm, setRemoveConfirm] = useState<StaffRow | null>(null);
 
-  const [activityFilter, setActivityFilter] = useState<string>('');
+  const [activityFilter, setActivityFilter] = usePersistedState<string>('admin:staff:activityFilter', '');
 
   const load = async () => {
     setLoading(true);
