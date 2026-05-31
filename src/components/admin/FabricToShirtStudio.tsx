@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Upload, Sparkles, Loader2, Image as ImageIcon, Download, Tag } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Upload, Sparkles, Loader2, Image as ImageIcon, Download, Tag, Info } from 'lucide-react';
 
 const COLLAR_TAG_PATH = 'assets/collar-tag.png';
 
