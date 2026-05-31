@@ -42,6 +42,39 @@ async function uploadToBucket(file: Blob, path: string): Promise<string> {
   return data.publicUrl;
 }
 
+// Nearest named-color lookup for the hex input.
+const NAMED_COLORS: Array<[string, string]> = [
+  ['Black','#000000'],['White','#ffffff'],['Ivory','#fffff0'],['Cream','#fffdd0'],['Beige','#f5f5dc'],
+  ['Sand','#c2b280'],['Khaki','#c3b091'],['Tan','#d2b48c'],['Camel','#c19a6b'],['Taupe','#483c32'],
+  ['Brown','#8b4513'],['Chocolate','#5d3a1a'],['Coffee','#6f4e37'],['Maroon','#800000'],['Burgundy','#800020'],
+  ['Wine','#722f37'],['Red','#e10600'],['Crimson','#dc143c'],['Coral','#ff7f50'],['Salmon','#fa8072'],
+  ['Peach','#ffdab9'],['Orange','#ff7f00'],['Rust','#b7410e'],['Mustard','#d4a017'],['Gold','#d4af37'],
+  ['Yellow','#ffd700'],['Lime','#bfff00'],['Olive','#708238'],['Sage','#9caf88'],['Mint','#98ff98'],
+  ['Green','#2e8b57'],['Forest Green','#228b22'],['Emerald','#50c878'],['Teal','#008080'],['Aqua','#00ffff'],
+  ['Sky Blue','#87ceeb'],['Powder Blue','#b0e0e6'],['Light Blue','#add8e6'],['Blue','#1e90ff'],['Royal Blue','#4169e1'],
+  ['Navy','#1a2a4f'],['Midnight Blue','#191970'],['Denim','#4a6b8a'],['Slate','#708090'],['Steel Blue','#4682b4'],
+  ['Indigo','#4b0082'],['Purple','#6a0dad'],['Violet','#8a2be2'],['Lavender','#b497bd'],['Lilac','#c8a2c8'],
+  ['Mauve','#915f6d'],['Pink','#ffc0cb'],['Hot Pink','#ff69b4'],['Magenta','#c71585'],['Rose','#c08081'],
+  ['Blush','#de5d83'],['Charcoal','#36454f'],['Graphite','#383838'],['Grey','#808080'],['Light Grey','#d3d3d3'],
+  ['Silver','#c0c0c0'],['Off White','#faf9f6'],['Stone','#a8a39d'],
+];
+function nearestColorName(hex: string): string | null {
+  const h = hex.trim().replace('#','');
+  if (!/^[0-9a-fA-F]{6}$/.test(h)) return null;
+  const r = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16);
+  let best = NAMED_COLORS[0][0], bestD = Infinity;
+  for (const [name, nhex] of NAMED_COLORS) {
+    const nh = nhex.replace('#','');
+    const dr = r - parseInt(nh.slice(0,2),16);
+    const dg = g - parseInt(nh.slice(2,4),16);
+    const db = b - parseInt(nh.slice(4,6),16);
+    const d = dr*dr + dg*dg + db*db;
+    if (d < bestD) { bestD = d; best = name; }
+  }
+  return best;
+}
+
+
 /** Sample average color from an image URL (best effort, ignores CORS failures). */
 async function sampleAverageHex(url: string): Promise<string | null> {
   return new Promise((resolve) => {
