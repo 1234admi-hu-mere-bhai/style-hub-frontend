@@ -49,13 +49,14 @@ const ProductDetail = () => {
     const alreadyPresent = variants.some((c) => c.image && c.image === baseImage);
     if (alreadyPresent) return variants;
     const original = {
-      name: 'Original',
+      name: product.colorFamily || 'Default',
       hex: '',
       image: baseImage,
       images: (product.images || []).filter((src) => src !== baseImage),
     };
     return [original, ...variants];
   }, [product]);
+
 
   // Auto-select first color (Original by default) when product loads
   useEffect(() => {
