@@ -24,8 +24,9 @@ interface ReviewRow {
 const AdminReviews = () => {
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [ratingFilter, setRatingFilter] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = usePersistedState<string>('admin:reviews:search', '');
+  const [ratingFilter, setRatingFilter] = usePersistedState<number | null>('admin:reviews:rating', null);
+
 
   const fetchReviews = async () => {
     setLoading(true);
