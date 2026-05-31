@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Heart, Minus, Plus, Star, Truck, RefreshCw, Shield, Ruler, Loader2, ChevronRight } from 'lucide-react';
+import { Heart, Minus, Plus, Star, Truck, RefreshCw, Shield, Ruler, Loader2, ChevronRight, Send } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
@@ -204,6 +204,25 @@ const ProductDetail = () => {
     }
   };
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    const shareData = {
+      title: product.name,
+      text: `Check out ${product.name} on MUFFIGOUT APPAREL HUB`,
+      url,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copied to clipboard');
+      }
+    } catch (err) {
+      // user cancelled or share unsupported
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -220,6 +239,7 @@ const ProductDetail = () => {
 
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
           <div className="space-y-3">
+            <div className="relative">
             <div ref={scrollRef} className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 lg:mx-0 lg:px-0 scroll-smooth">
               {galleryItems.map((item, index) => (
                 <div key={item.type === 'image' ? item.src : `rotation-${index}`} className="relative min-w-full aspect-[3/4] snap-center rounded-lg overflow-hidden bg-secondary">
@@ -240,6 +260,25 @@ const ProductDetail = () => {
                   )}
                 </div>
               ))}
+            </div>
+
+            {/* Floating action buttons over image */}
+            <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
+              <button
+                onClick={handleWishlist}
+                aria-label="Add to wishlist"
+                className="w-10 h-10 rounded-md bg-card/95 backdrop-blur border border-border shadow-md flex items-center justify-center hover:bg-card transition-colors"
+              >
+                <Heart size={18} className={inWishlist ? 'fill-primary text-primary' : 'text-foreground'} />
+              </button>
+              <button
+                onClick={handleShare}
+                aria-label="Share product"
+                className="w-10 h-10 rounded-md bg-card/95 backdrop-blur border border-border shadow-md flex items-center justify-center hover:bg-card transition-colors"
+              >
+                <Send size={18} className="text-foreground" />
+              </button>
+            </div>
             </div>
 
             {galleryItems.length > 1 && (
