@@ -126,6 +126,42 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   });
   const fabricInput = useRef<HTMLInputElement>(null);
   const tagInput = useRef<HTMLInputElement>(null);
+  const storageKey = `fabric-studio:${productId || 'global'}`;
+  const hydrated = useRef(false);
+
+  // Restore previous session from localStorage
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const s = JSON.parse(raw);
+        if (s.fabricUrl) setFabricUrl(s.fabricUrl);
+        if (s.colorHex) setColorHex(s.colorHex);
+        if (typeof s.autoColor === 'boolean') setAutoColor(s.autoColor);
+        if (typeof s.hd === 'boolean') setHd(s.hd);
+        if (s.specs) setSpecs(s.specs);
+        if (s.pose) setPose(s.pose);
+        if (s.frontUrl) setFrontUrl(s.frontUrl);
+        if (s.backUrl) setBackUrl(s.backUrl);
+        if (s.specUrl) setSpecUrl(s.specUrl);
+        if (s.highlightsUrl) setHighlightsUrl(s.highlightsUrl);
+        if (s.modelUrl) setModelUrl(s.modelUrl);
+        if (s.lifestyleUrl) setLifestyleUrl(s.lifestyleUrl);
+      }
+    } catch {}
+    hydrated.current = true;
+  }, [storageKey]);
+
+  // Auto-save on any state change
+  useEffect(() => {
+    if (!hydrated.current) return;
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({
+        fabricUrl, colorHex, autoColor, hd, specs, pose,
+        frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, lifestyleUrl,
+      }));
+    } catch {}
+  }, [storageKey, fabricUrl, colorHex, autoColor, hd, specs, pose, frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, lifestyleUrl]);
 
   // Load existing collar tag if previously uploaded
   useEffect(() => {
@@ -141,6 +177,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     if (!fabricUrl || !autoColor) return;
     sampleAverageHex(fabricUrl).then(hex => { if (hex) setColorHex(hex); });
   }, [fabricUrl, autoColor]);
+
 
   const handleFabricFile = async (file: File | undefined) => {
     if (!file) return;
