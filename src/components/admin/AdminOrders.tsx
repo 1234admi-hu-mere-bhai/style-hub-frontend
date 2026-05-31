@@ -65,7 +65,7 @@ const ORDER_STATUSES = ['pending', 'placed', 'confirmed', 'shipped', 'out_for_de
 const AdminOrders = ({ orders, onRefresh }: AdminOrdersProps) => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = usePersistedState<string>('admin:orders:filterStatus', 'all');
   const [creatingShipment, setCreatingShipment] = useState(false);
   const [shipmentWeight, setShipmentWeight] = useState('0.5');
   const [pickupName, setPickupName] = useState('Muffigout Warehouse');
