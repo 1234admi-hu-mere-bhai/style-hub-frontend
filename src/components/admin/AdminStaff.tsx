@@ -59,10 +59,11 @@ const AdminStaff = () => {
   const [loading, setLoading] = useState(true);
 
   const [showInvite, setShowInvite] = useState(false);
-  const [inviteForm, setInviteForm] = useState({
+  const [inviteForm, setInviteForm] = usePersistedState('admin:staff:inviteForm', {
     email: '', display_name: '',
     permissions: { ...DEFAULT_NEW_STAFF_PERMS, dashboard: true },
   });
+
   const [creating, setCreating] = useState(false);
   const [generated, setGenerated] = useState<{ email: string } | null>(null);
 
