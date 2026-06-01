@@ -200,10 +200,10 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     try {
       localStorage.setItem(storageKey, JSON.stringify({
         fabricUrl, colorHex, autoColor, hd, specs, pose,
-        frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, lifestyleUrl,
+        frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, bulkSpec,
       }));
     } catch {}
-  }, [storageKey, fabricUrl, colorHex, autoColor, hd, specs, pose, frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, lifestyleUrl]);
+  }, [storageKey, fabricUrl, colorHex, autoColor, hd, specs, pose, frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, bulkSpec]);
 
   // Load existing collar tag if previously uploaded
   useEffect(() => {
