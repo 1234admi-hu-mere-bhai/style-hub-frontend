@@ -186,6 +186,8 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
         if (s.specUrl) setSpecUrl(s.specUrl);
         if (s.highlightsUrl) setHighlightsUrl(s.highlightsUrl);
         if (s.modelUrl) setModelUrl(s.modelUrl);
+        if (s.modelBackUrl) setModelBackUrl(s.modelBackUrl);
+        if (Array.isArray(s.bulkSpec)) setBulkSpec(s.bulkSpec);
         if (s.lifestyleUrl) setLifestyleUrl(s.lifestyleUrl);
       }
     } catch {}
