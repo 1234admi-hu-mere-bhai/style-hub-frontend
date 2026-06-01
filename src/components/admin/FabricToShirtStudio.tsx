@@ -576,7 +576,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
       )}
 
       {/* Results */}
-      {(frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || lifestyleUrl) && (
+      {(frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || modelBackUrl || lifestyleUrl) && (
         <Card>
           <CardContent className="p-4 space-y-3">
             <div className="flex items-start gap-2 rounded-md bg-secondary/40 p-3 text-sm">
@@ -599,7 +599,8 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                 { url: backUrl, label: 'Back', key: 'back' },
                 { url: specUrl, label: 'Spec Sheet', key: 'spec' },
                 { url: highlightsUrl, label: 'Key Highlights', key: 'highlights' },
-                { url: modelUrl, label: 'Model — straight', key: 'model' },
+                { url: modelUrl, label: 'Model — front', key: 'model' },
+                { url: modelBackUrl, label: 'Model — back', key: 'model-back' },
                 { url: lifestyleUrl, label: `Lifestyle — ${pose}`, key: 'lifestyle' },
               ].map((v) => v.url ? (
                 <div key={v.key} className="space-y-2">
@@ -621,7 +622,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
         </Card>
       )}
 
-      {productId && (frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || lifestyleUrl) && (
+      {productId && (frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || modelBackUrl || lifestyleUrl) && (
         <Button type="button" onClick={saveToProduct} className="w-full h-12">
           <ImageIcon className="h-4 w-4 mr-2" /> Save to this product's images
         </Button>
