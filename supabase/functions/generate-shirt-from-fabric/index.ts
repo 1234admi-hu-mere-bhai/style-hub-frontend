@@ -190,33 +190,34 @@ function tonalColor(hex: string): { r: number; g: number; b: number } {
 
 async function compositeCollarTag(shirt: Image, tagBytes: Uint8Array): Promise<Image> {
   const tag = await Image.decode(tagBytes)
-  const targetW = Math.round(shirt.width * 0.09)
+  // Smaller tag, sized to fit inside the back-collar band
+  const targetW = Math.round(shirt.width * 0.06)
   const ratio = targetW / tag.width
   const targetH = Math.max(1, Math.round(tag.height * ratio))
   const resized = tag.resize(targetW, targetH)
   const x = Math.round((shirt.width - targetW) / 2)
-  const y = Math.round(shirt.height * 0.13)
+  // Sit just under the collar band so it reads as a sewn-in inner-neck label
+  const y = Math.round(shirt.height * 0.16)
   shirt.composite(resized, x, y)
   return shirt
 }
 
-// Composite the MG monogram on the LEFT chest pocket, tinted to a tonal shirt color
+// Composite the MG monogram CENTERED ON the chest pocket (viewer's right chest on a flat-lay front view)
 async function compositeChestMonogram(shirt: Image, monogramBytes: Uint8Array, shirtHex?: string): Promise<Image> {
   const mono = await Image.decode(monogramBytes)
-  const targetW = Math.round(shirt.width * 0.055)
+  // Smaller logo so it reads as a subtle embroidered pocket emblem
+  const targetW = Math.round(shirt.width * 0.038)
   const ratio = targetW / mono.width
   const targetH = Math.max(1, Math.round(mono.height * ratio))
   const resized = mono.resize(targetW, targetH)
 
-  // Tint pass: replace non-transparent pixels with tonal color, preserving alpha
   if (shirtHex) {
     const tone = tonalColor(shirtHex)
     for (let y = 0; y < resized.height; y++) {
       for (let x = 0; x < resized.width; x++) {
-        const px = resized.getPixelAt(x + 1, y + 1) // imagescript is 1-indexed
+        const px = resized.getPixelAt(x + 1, y + 1)
         const a = px & 0xff
         if (a === 0) continue
-        // Recompose RGBA with tonal RGB, dim alpha slightly so it reads as embroidery (not sticker)
         const newA = Math.round(a * 0.85)
         const rgba = ((tone.r & 0xff) << 24) | ((tone.g & 0xff) << 16) | ((tone.b & 0xff) << 8) | (newA & 0xff)
         resized.setPixelAt(x + 1, y + 1, rgba >>> 0)
@@ -224,9 +225,9 @@ async function compositeChestMonogram(shirt: Image, monogramBytes: Uint8Array, s
     }
   }
 
-  // Pocket centered on viewer's left chest: x ~ 36% from left, y ~ 36% from top
-  const x = Math.round(shirt.width * 0.36 - targetW / 2)
-  const y = Math.round(shirt.height * 0.36 - targetH / 2)
+  // Pocket is on the viewer's RIGHT chest of a front-facing/flat-lay shirt (~62% from left, ~40% from top)
+  const x = Math.round(shirt.width * 0.62 - targetW / 2)
+  const y = Math.round(shirt.height * 0.40 - targetH / 2)
   shirt.composite(resized, x, y)
   return shirt
 }
