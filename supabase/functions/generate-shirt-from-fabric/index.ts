@@ -9,8 +9,14 @@ const corsHeaders = {
 const OWNER_EMAILS = ['otw2003@gmail.com', 'kaliasgar776@gmail.com', 'muffigout@gmail.com']
 const MONOGRAM_PATH = 'assets/chest-monogram.png'
 
-type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'lifestyle'
-type Pose = 'sitting' | 'leaning' | 'walking' | 'coffee'
+type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'model-back' | 'lifestyle'
+type Pose =
+  | 'sitting' | 'leaning' | 'walking' | 'coffee'
+  | 'standing-hands-pockets' | 'arms-crossed' | 'hand-in-hair' | 'looking-away'
+  | 'jacket-over-shoulder' | 'on-bike' | 'on-stairs' | 'against-car'
+  | 'rooftop' | 'beach-walk' | 'forest-path' | 'studio-profile'
+  | 'laughing' | 'phone-call' | 'reading-book' | 'sunglasses-pose'
+  | 'denim-jacket-layered' | 'window-light' | 'graffiti-wall' | 'train-station'
 
 function buildPrompt(
   view: ViewKind,
