@@ -10,13 +10,47 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, Sparkles, Loader2, Image as ImageIcon, Download, Tag, Info, Shirt, User } from 'lucide-react';
 
-type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'lifestyle';
-type Pose = 'sitting' | 'leaning' | 'walking' | 'coffee';
+type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'model-back' | 'lifestyle';
+type Pose =
+  | 'sitting' | 'leaning' | 'walking' | 'coffee'
+  | 'standing-hands-pockets' | 'arms-crossed' | 'hand-in-hair' | 'looking-away'
+  | 'jacket-over-shoulder' | 'on-bike' | 'on-stairs' | 'against-car'
+  | 'rooftop' | 'beach-walk' | 'forest-path' | 'studio-profile'
+  | 'laughing' | 'phone-call' | 'reading-book' | 'sunglasses-pose'
+  | 'denim-jacket-layered' | 'window-light' | 'graffiti-wall' | 'train-station';
+
+const POSE_OPTIONS: Array<{ value: Pose; label: string }> = [
+  { value: 'sitting', label: 'Sitting on a wooden table' },
+  { value: 'leaning', label: 'Leaning against a concrete wall' },
+  { value: 'walking', label: 'Walking through a sunlit corridor' },
+  { value: 'coffee', label: 'Seated at a cafe table' },
+  { value: 'standing-hands-pockets', label: 'Standing — hands in pockets' },
+  { value: 'arms-crossed', label: 'Standing — arms crossed' },
+  { value: 'hand-in-hair', label: 'Hand running through hair' },
+  { value: 'looking-away', label: 'Three-quarter, looking away' },
+  { value: 'jacket-over-shoulder', label: 'Jacket slung over shoulder' },
+  { value: 'on-bike', label: 'Sitting on a vintage bike' },
+  { value: 'on-stairs', label: 'Sitting on stone stairs' },
+  { value: 'against-car', label: 'Leaning against a classic car' },
+  { value: 'rooftop', label: 'Rooftop golden-hour' },
+  { value: 'beach-walk', label: 'Beach walk at sunset' },
+  { value: 'forest-path', label: 'Forest path stroll' },
+  { value: 'studio-profile', label: 'Studio side profile' },
+  { value: 'laughing', label: 'Candid laughing' },
+  { value: 'phone-call', label: 'On a phone call' },
+  { value: 'reading-book', label: 'Reading a book on a bench' },
+  { value: 'sunglasses-pose', label: 'Adjusting sunglasses' },
+  { value: 'denim-jacket-layered', label: 'Layered with denim jacket' },
+  { value: 'window-light', label: 'Window-light portrait' },
+  { value: 'graffiti-wall', label: 'In front of a graffiti wall' },
+  { value: 'train-station', label: 'Empty train station platform' },
+];
 
 const COLLAR_TAG_PATH = 'assets/collar-tag.png';
 
 // Men's regular-fit size chart (inches). Editable per generation.
 const SIZE_CHART: Record<string, { chest: number; length: number; sleeve: number; shoulder: number }> = {
+  XS:  { chest: 36, length: 27, sleeve: 23.5, shoulder: 16.5 },
   S:   { chest: 38, length: 28, sleeve: 24,   shoulder: 17   },
   M:   { chest: 40, length: 29, sleeve: 24.5, shoulder: 17.5 },
   L:   { chest: 42, length: 30, sleeve: 25,   shoulder: 18   },
@@ -24,7 +58,10 @@ const SIZE_CHART: Record<string, { chest: number; length: number; sleeve: number
   XXL: { chest: 46, length: 32, sleeve: 26,   shoulder: 19   },
   '3XL': { chest: 48, length: 33, sleeve: 26.5, shoulder: 19.5 },
   '4XL': { chest: 50, length: 34, sleeve: 27,   shoulder: 20   },
+  '5XL': { chest: 52, length: 35, sleeve: 27.5, shoulder: 20.5 },
+  '6XL': { chest: 54, length: 36, sleeve: 28,   shoulder: 21   },
 };
+const ALL_SIZES = Object.keys(SIZE_CHART);
 
 interface Props {
   /** When provided, "Save to product" buttons appear and write to that product. */
@@ -114,6 +151,9 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const [highlightsUrl, setHighlightsUrl] = useState<string>('');
   const [modelUrl, setModelUrl] = useState<string>('');
   const [lifestyleUrl, setLifestyleUrl] = useState<string>('');
+  const [modelBackUrl, setModelBackUrl] = useState<string>('');
+  const [bulkSpec, setBulkSpec] = useState<{ size: string; url: string }[]>([]);
+  const [bulkGenerating, setBulkGenerating] = useState(false);
   const [pose, setPose] = useState<Pose>('sitting');
   const [specs, setSpecs] = useState({
     size: 'M',
@@ -146,6 +186,8 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
         if (s.specUrl) setSpecUrl(s.specUrl);
         if (s.highlightsUrl) setHighlightsUrl(s.highlightsUrl);
         if (s.modelUrl) setModelUrl(s.modelUrl);
+        if (s.modelBackUrl) setModelBackUrl(s.modelBackUrl);
+        if (Array.isArray(s.bulkSpec)) setBulkSpec(s.bulkSpec);
         if (s.lifestyleUrl) setLifestyleUrl(s.lifestyleUrl);
       }
     } catch {}
@@ -158,10 +200,10 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     try {
       localStorage.setItem(storageKey, JSON.stringify({
         fabricUrl, colorHex, autoColor, hd, specs, pose,
-        frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, lifestyleUrl,
+        frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, bulkSpec,
       }));
     } catch {}
-  }, [storageKey, fabricUrl, colorHex, autoColor, hd, specs, pose, frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, lifestyleUrl]);
+  }, [storageKey, fabricUrl, colorHex, autoColor, hd, specs, pose, frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, bulkSpec]);
 
   // Load existing collar tag if previously uploaded
   useEffect(() => {
@@ -185,7 +227,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     try {
       const url = await uploadToBucket(file, `fabric-uploads/${crypto.randomUUID()}-${file.name}`);
       setFabricUrl(url);
-      setFrontUrl(''); setBackUrl(''); setSpecUrl(''); setHighlightsUrl(''); setModelUrl(''); setLifestyleUrl('');
+      setFrontUrl(''); setBackUrl(''); setSpecUrl(''); setHighlightsUrl(''); setModelUrl(''); setModelBackUrl(''); setLifestyleUrl(''); setBulkSpec([]);
     } catch (e: any) {
       toast({ title: 'Upload failed', description: e.message, variant: 'destructive' });
     } finally { setUploading(null); }
@@ -225,13 +267,13 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
       if (!data?.url) throw new Error('No image returned');
       const setters: Record<ViewKind, (u: string) => void> = {
         front: setFrontUrl, back: setBackUrl, spec: setSpecUrl,
-        highlights: setHighlightsUrl, model: setModelUrl, lifestyle: setLifestyleUrl,
+        highlights: setHighlightsUrl, model: setModelUrl, 'model-back': setModelBackUrl, lifestyle: setLifestyleUrl,
       };
       setters[view](data.url);
       onGenerated?.({ front: view === 'front' ? data.url : frontUrl, back: view === 'back' ? data.url : backUrl });
       const labels: Record<ViewKind, string> = {
         front: 'Front', back: 'Back', spec: 'Spec sheet',
-        highlights: 'Key Highlights hanger', model: 'Model (straight)', lifestyle: 'Lifestyle pose',
+        highlights: 'Key Highlights', model: 'Model (front)', 'model-back': 'Model (back)', lifestyle: 'Lifestyle pose',
       };
       toast({ title: `${labels[view]} ready` });
     } catch (e: any) {
@@ -255,11 +297,42 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     const stamp = Date.now();
     const all: Array<[string, string]> = [
       [frontUrl, 'front'], [backUrl, 'back'], [specUrl, 'spec'],
-      [highlightsUrl, 'highlights'], [modelUrl, 'model'], [lifestyleUrl, `lifestyle-${pose}`],
+      [highlightsUrl, 'highlights'], [modelUrl, 'model-front'], [modelBackUrl, 'model-back'],
+      [lifestyleUrl, `lifestyle-${pose}`],
     ];
     for (const [url, key] of all) {
       if (url) await downloadOne(url, `muffigout-shirt-${key}-${stamp}.png`);
     }
+    for (const item of bulkSpec) {
+      await downloadOne(item.url, `muffigout-shirt-spec-${item.size}-${stamp}.png`);
+    }
+  };
+
+  const generateAllSpecSizes = async () => {
+    if (!fabricUrl) { toast({ title: 'Upload a fabric image first', variant: 'destructive' }); return; }
+    setBulkGenerating(true);
+    setBulkSpec([]);
+    const results: { size: string; url: string }[] = [];
+    try {
+      for (const size of ALL_SIZES) {
+        const m = SIZE_CHART[size];
+        const sizedSpecs = { ...specs, size, ...m };
+        try {
+          const { data, error } = await supabase.functions.invoke('generate-shirt-from-fabric', {
+            body: { fabricUrl, view: 'spec', colorHex: colorHex || undefined, productId, hd, specs: sizedSpecs },
+          });
+          if (error) throw error;
+          if (data?.url) {
+            results.push({ size, url: data.url });
+            setBulkSpec([...results]);
+            toast({ title: `Spec sheet ${size} ready (${results.length}/${ALL_SIZES.length})` });
+          }
+        } catch (e: any) {
+          toast({ title: `Spec ${size} failed`, description: e.message, variant: 'destructive' });
+        }
+      }
+      toast({ title: `All ${results.length} spec sheets generated` });
+    } finally { setBulkGenerating(false); }
   };
 
 
@@ -420,11 +493,10 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
             </div>
             <Select value={pose} onValueChange={(v) => setPose(v as Pose)}>
               <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sitting">Sitting on a wooden table</SelectItem>
-                <SelectItem value="leaning">Leaning against a concrete wall</SelectItem>
-                <SelectItem value="walking">Walking through a sunlit corridor</SelectItem>
-                <SelectItem value="coffee">Seated at a cafe table</SelectItem>
+              <SelectContent className="max-h-72">
+                {POSE_OPTIONS.map(p => (
+                  <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -450,11 +522,19 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                 Key Highlights
               </Button>
             </div>
+            <Button type="button" onClick={generateAllSpecSizes} disabled={!fabricUrl || bulkGenerating || generating !== null} variant="outline" className="w-full h-11">
+              {bulkGenerating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+              Generate spec sheets — all sizes (XS → 6XL)
+            </Button>
             <Label className="text-xs uppercase tracking-wider text-muted-foreground pt-2 block">Human model (optional)</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <Button type="button" onClick={() => generate('model')} disabled={!fabricUrl || generating !== null} variant="outline" className="h-11">
                 {generating === 'model' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <User className="h-4 w-4 mr-2" />}
-                Model (straight)
+                Model (front)
+              </Button>
+              <Button type="button" onClick={() => generate('model-back')} disabled={!fabricUrl || generating !== null} variant="outline" className="h-11">
+                {generating === 'model-back' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <User className="h-4 w-4 mr-2" />}
+                Model (back)
               </Button>
               <Button type="button" onClick={() => generate('lifestyle')} disabled={!fabricUrl || generating !== null} className="h-11">
                 {generating === 'lifestyle' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
@@ -465,8 +545,38 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
         </CardContent>
       </Card>
 
+      {/* Bulk spec sheets results */}
+      {bulkSpec.length > 0 && (
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm">Spec sheets — all sizes ({bulkSpec.length}/{ALL_SIZES.length})</Label>
+              <Button type="button" size="sm" variant="outline" onClick={async () => {
+                const stamp = Date.now();
+                for (const it of bulkSpec) await downloadOne(it.url, `muffigout-spec-${it.size}-${stamp}.png`);
+              }}>
+                <Download className="h-3.5 w-3.5 mr-1.5" /> Download all sizes
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {bulkSpec.map(it => (
+                <div key={it.size} className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Badge>{it.size}</Badge>
+                    <button onClick={() => downloadOne(it.url, `muffigout-spec-${it.size}.png`)} className="text-xs text-primary inline-flex items-center gap-1 hover:underline">
+                      <Download className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <img src={it.url} alt={`Spec ${it.size}`} className="w-full aspect-square object-contain rounded-md bg-white border" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Results */}
-      {(frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || lifestyleUrl) && (
+      {(frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || modelBackUrl || lifestyleUrl) && (
         <Card>
           <CardContent className="p-4 space-y-3">
             <div className="flex items-start gap-2 rounded-md bg-secondary/40 p-3 text-sm">
@@ -489,7 +599,8 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                 { url: backUrl, label: 'Back', key: 'back' },
                 { url: specUrl, label: 'Spec Sheet', key: 'spec' },
                 { url: highlightsUrl, label: 'Key Highlights', key: 'highlights' },
-                { url: modelUrl, label: 'Model — straight', key: 'model' },
+                { url: modelUrl, label: 'Model — front', key: 'model' },
+                { url: modelBackUrl, label: 'Model — back', key: 'model-back' },
                 { url: lifestyleUrl, label: `Lifestyle — ${pose}`, key: 'lifestyle' },
               ].map((v) => v.url ? (
                 <div key={v.key} className="space-y-2">
@@ -511,7 +622,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
         </Card>
       )}
 
-      {productId && (frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || lifestyleUrl) && (
+      {productId && (frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || modelBackUrl || lifestyleUrl) && (
         <Button type="button" onClick={saveToProduct} className="w-full h-12">
           <ImageIcon className="h-4 w-4 mr-2" /> Save to this product's images
         </Button>

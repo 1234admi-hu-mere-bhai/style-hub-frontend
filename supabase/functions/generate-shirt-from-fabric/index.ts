@@ -9,8 +9,14 @@ const corsHeaders = {
 const OWNER_EMAILS = ['otw2003@gmail.com', 'kaliasgar776@gmail.com', 'muffigout@gmail.com']
 const MONOGRAM_PATH = 'assets/chest-monogram.png'
 
-type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'lifestyle'
-type Pose = 'sitting' | 'leaning' | 'walking' | 'coffee'
+type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'model-back' | 'lifestyle'
+type Pose =
+  | 'sitting' | 'leaning' | 'walking' | 'coffee'
+  | 'standing-hands-pockets' | 'arms-crossed' | 'hand-in-hair' | 'looking-away'
+  | 'jacket-over-shoulder' | 'on-bike' | 'on-stairs' | 'against-car'
+  | 'rooftop' | 'beach-walk' | 'forest-path' | 'studio-profile'
+  | 'laughing' | 'phone-call' | 'reading-book' | 'sunglasses-pose'
+  | 'denim-jacket-layered' | 'window-light' | 'graffiti-wall' | 'train-station'
 
 function buildPrompt(
   view: ViewKind,
@@ -60,19 +66,18 @@ Style: technical, precise, like a fashion designer's tech pack. NO model, NO man
     const fabric = specs?.fabric || 'Cotton Blend'
     const occasion = specs?.occasion || 'Casual'
     const collar = specs?.collar || 'Spread'
-    return `Premium editorial e-commerce hero photograph of a men's full-sleeve button-down shirt hanging on a polished WOODEN HANGER with a small brass nameplate, suspended from a thin metal rod against a deep matte CHARCOAL / near-black studio backdrop. The shirt is fully buttoned, gently draped with natural soft folds, perfectly centered in the frame, sleeves hanging naturally. Cinematic side lighting. ${quality} ${colorLock} ${patternLock}
+    return `Premium editorial e-commerce hero photograph: a tight portrait CLOSE-UP of a handsome South Asian male model (age 26-30, clean groomed look, athletic build) wearing the men's full-sleeve button-down shirt — framed from mid-chest to top of head, the model's face partially visible on the RIGHT side of the frame, the SHIRT collar, top buttons, and upper chest area clearly visible occupying the lower-right portion of the frame. The model has a calm direct gaze. Soft natural studio lighting, slightly muted gray-blue background, shallow depth of field. ${quality} ${colorLock} ${patternLock}
 
-Leave the inner back-collar band area clean — a brand label will be composited afterwards. Do NOT print any brand wordmark on the shirt or hanger.
+CRITICAL OVERLAY: On the LEFT side of the image (over the muted background area, NOT on the model's face or the shirt), overlay a clean WHITE-text "Key Highlights" panel in a modern bold sans-serif font with thin light hairline divider lines between each row. The panel must read EXACTLY these rows from top to bottom (label in small uppercase light-gray ABOVE the value, value in large bold white BELOW the label, each row separated by a thin divider):
 
-On the LEFT side of the image (over the dark background, NOT on the shirt), overlay a clean white-text "Key Highlights" panel in a modern sans-serif font with thin hairline divider lines between rows. Render EXACTLY these rows (label in small light-gray uppercase, value in bold white below it):
-HIGHLIGHTS HEADER: "Key Highlights"
-FIT: ${fit}
-PATTERN: ${pattern}
-FABRIC: ${fabric}
-OCCASION: ${occasion}
-COLLAR: ${collar}
+Title row: "Key Highlights" (large bold white)
+Row 1 label: "Fit"  →  Row 1 value: "${fit}"
+Row 2 label: "Collar"  →  Row 2 value: "${collar}"
+Row 3 label: "Fabric"  →  Row 3 value: "${fabric}"
+Row 4 label: "Pattern"  →  Row 4 value: "${pattern}"
+Row 5 label: "Occasion"  →  Row 5 value: "${occasion}"
 
-All text must be perfectly legible and correctly spelled — render ONLY the labels listed above, no extra text, no watermark, no logo.`
+All text must be perfectly legible and correctly spelled — render ONLY the labels and values listed above, no extra text, no watermark, no logo. Leave the inner back-collar band area clean — a brand label will be composited afterwards. Leave the center of the LEFT chest pocket clean — a small monogram will be composited afterwards.`
   }
 
   const common = `Photorealistic flat-lay studio product photograph of a men's full-sleeve button-down shirt on a pure white seamless background. Soft even lighting, no harsh shadows on background, perfectly centered, NO model, NO mannequin, NO hands, NO props, NO text overlays, NO watermark, NO printed logo on shirt body. ${quality} ${colorLock} ${patternLock}`
@@ -87,7 +92,11 @@ All text must be perfectly legible and correctly spelled — render ONLY the lab
   const modelBase = `Photorealistic high-end fashion editorial photograph of a handsome South Asian male model, age 26-30, clean groomed look, athletic regular build, wearing a men's full-sleeve button-down shirt (the hero garment), neutral mid-tone chinos or dark denim, minimal accessories. The shirt MUST be the visual hero — sharp focus on fabric. ${quality} ${colorLock} ${patternLock} The shirt color and pattern MUST exactly match the provided fabric swatch image. Natural skin tones, professional color grading, shallow depth of field, no text overlays, no watermark, no visible brand logo on shirt body.`
 
   if (view === 'model') {
-    return `${modelBase} POSE: model standing straight, front-facing, neutral confident posture, arms relaxed at sides, looking directly at camera, against a clean light-gray seamless studio backdrop. Classic e-commerce model shot. Full upper body visible from mid-thigh up.`
+    return `${modelBase} POSE: model standing straight, FRONT-FACING toward the camera, neutral confident posture, arms relaxed at sides, looking directly at camera, against a clean light-gray seamless studio backdrop. Classic e-commerce model shot. Full upper body visible from mid-thigh up. The full shirt front including collar, placket buttons, and chest pocket must be clearly visible and sharp.`
+  }
+
+  if (view === 'model-back') {
+    return `${modelBase} POSE: model standing straight, BACK FACING the camera (showing the BACK of the shirt), head turned slightly over the shoulder in profile, arms relaxed at sides, against a clean light-gray seamless studio backdrop. Full upper body visible from mid-thigh up. The full back panel of the shirt — back yoke, sleeves, and back hem — must be clearly visible, sharp, and show the EXACT pattern and color from the fabric swatch.`
   }
 
   // lifestyle pose
@@ -96,16 +105,36 @@ All text must be perfectly legible and correctly spelled — render ONLY the lab
     leaning: `POSE: model LEANING casually against a raw textured concrete wall, hands in pockets, slight 3/4 turn toward the camera, weight on one leg, looking just past the camera. Setting: outdoor urban side-street at golden hour with warm directional side light and soft rim highlight on the shoulder. Street-style editorial vibe.`,
     walking: `POSE: model captured mid-stride WALKING through a sunlit corridor, shirt slightly billowing from movement, looking downward thoughtfully, motion-frozen sharp focus on the shirt fabric. Setting: long architectural corridor with warm directional sunlight and soft floor reflections. Cinematic magazine vibe.`,
     coffee: `POSE: model SEATED at a small cafe table, one elbow on the table with hand near chin, the other hand resting on a ceramic coffee cup, gentle smile, looking slightly off-camera. Setting: minimalist sunlit cafe with soft window backlight, blurred warm bokeh. Premium lifestyle vibe.`,
+    'standing-hands-pockets': `POSE: model standing straight with both hands tucked casually in front trouser pockets, confident relaxed posture, slight smile, looking directly at camera. Setting: clean neutral studio with soft diffused front light. Classic catalog vibe.`,
+    'arms-crossed': `POSE: model standing with arms crossed across chest, confident bold stance, chin slightly lifted, direct intense gaze at camera. Setting: dark moody studio with dramatic side light and deep shadow on opposite side. Premium editorial vibe.`,
+    'hand-in-hair': `POSE: model with one hand running through hair, head tilted slightly back, eyes closed or looking up, candid relaxed expression. Setting: outdoor at golden hour with warm rim light from behind. Fashion-magazine vibe.`,
+    'looking-away': `POSE: model in three-quarter turn away from camera, looking off into the distance over the shoulder with thoughtful expression. Setting: minimalist concrete plaza with soft overcast light. Contemplative editorial vibe.`,
+    'jacket-over-shoulder': `POSE: model walking forward with a lightweight blazer or jacket slung casually over one shoulder hooked on one finger, sleeves of the shirt visible, confident stride. Setting: marble-floored upscale lobby with soft warm light. Luxury vibe.`,
+    'on-bike': `POSE: model seated on a vintage Royal Enfield style motorcycle, one foot on the ground, hands resting on handlebars, looking off-camera with calm confidence. Setting: cobblestone street at dusk with warm streetlight bokeh. Heritage vibe.`,
+    'on-stairs': `POSE: model SEATED on weathered stone outdoor stairs, elbows resting on knees, hands clasped loosely, looking directly at camera with relaxed half-smile. Setting: old European-style courtyard at midday with dappled shade. Travel vibe.`,
+    'against-car': `POSE: model leaning hip against the side of a classic vintage car (no visible brand badges), arms loosely crossed, sunglasses optional, confident half-turn toward camera. Setting: empty desert road at golden hour with warm dust haze. Cinematic vibe.`,
+    rooftop: `POSE: model standing on a rooftop terrace, hands in pockets, city skyline behind, slight side-on stance, looking toward horizon. Setting: urban rooftop at golden hour with warm sky gradient. Aspirational vibe.`,
+    'beach-walk': `POSE: model walking barefoot along a beach at sunset, shirt sleeves rolled to forearm, gentle ocean breeze lifting the fabric slightly, looking down at the sand with calm expression. Setting: empty sandy beach with warm sunset glow and soft wave bokeh. Resort vibe.`,
+    'forest-path': `POSE: model walking slowly along a leaf-strewn forest path, hands in pockets, looking off to one side with serene expression. Setting: tall trees with morning sunbeams piercing through canopy. Nature-luxury vibe.`,
+    'studio-profile': `POSE: model in clean side profile facing left, arms relaxed at sides, neutral expression, shoulders square. Setting: pure light-gray seamless studio with crisp single key light. Premium catalog vibe.`,
+    laughing: `POSE: model laughing genuinely, head tipped slightly back, eyes crinkled, one hand near collar of shirt, candid joyful moment. Setting: bright sunlit courtyard with soft bounce light. Lifestyle vibe.`,
+    'phone-call': `POSE: model holding a smartphone to ear with one hand, free hand in pocket, slight smile, mid-conversation, looking off into middle distance. Setting: glass-walled modern office corridor with cool daylight. Professional vibe.`,
+    'reading-book': `POSE: model SEATED on a park bench, one leg crossed over the other, holding an open hardcover book in both hands, eyes down on the page with focused calm expression. Setting: leafy park at late afternoon with soft golden side light. Quiet luxury vibe.`,
+    'sunglasses-pose': `POSE: model adjusting a pair of dark sunglasses on the bridge of the nose with one hand, head tilted slightly, confident smirk. Setting: bright midday city street with strong sunlight and crisp shadows. Street-style vibe.`,
+    'denim-jacket-layered': `POSE: model standing with a denim jacket worn open OVER the shirt (shirt clearly visible underneath through the open jacket front), hands tucked into front jacket pockets, casual stance, looking at camera. Setting: brick-wall alley with warm tungsten ambient. Layered casual vibe.`,
+    'window-light': `POSE: model standing in profile beside a large window, soft window light raking across face and shirt, looking out the window thoughtfully. Setting: minimalist loft interior with neutral walls. Editorial portrait vibe.`,
+    'graffiti-wall': `POSE: model standing in front of a colorful graffiti-painted wall, hands in pockets, slight lean back against the wall, cool confident expression. Setting: urban street with bright daylight. Streetwear vibe.`,
+    'train-station': `POSE: model standing alone on an empty train station platform, small leather duffel bag at feet, hands in pockets, looking down the tracks. Setting: vintage European train station at early morning with warm low light. Travel-cinematic vibe.`,
   }
   return `${modelBase} ${poses[pose]}`
 }
 
-async function callImageGen(apiKey: string, prompt: string, fabricUrl: string): Promise<string> {
+async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, model = 'google/gemini-3-pro-image-preview'): Promise<string> {
   const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'google/gemini-3-pro-image-preview',
+      model,
       messages: [{
         role: 'user',
         content: [
@@ -121,6 +150,15 @@ async function callImageGen(apiKey: string, prompt: string, fabricUrl: string): 
   const b64 = data.choices?.[0]?.message?.images?.[0]?.image_url?.url
   if (!b64) throw new Error('No image returned')
   return b64
+}
+
+async function callImageGenWithFallback(apiKey: string, prompt: string, fabricUrl: string): Promise<string> {
+  try {
+    return await callImageGen(apiKey, prompt, fabricUrl, 'google/gemini-3-pro-image-preview')
+  } catch (e) {
+    console.warn('Pro image model failed, falling back to flash:', (e as Error).message)
+    return await callImageGen(apiKey, prompt, fabricUrl, 'google/gemini-2.5-flash-image')
+  }
 }
 
 function dataUrlToBytes(dataUrl: string): { bytes: Uint8Array; mime: string } {
@@ -152,33 +190,34 @@ function tonalColor(hex: string): { r: number; g: number; b: number } {
 
 async function compositeCollarTag(shirt: Image, tagBytes: Uint8Array): Promise<Image> {
   const tag = await Image.decode(tagBytes)
-  const targetW = Math.round(shirt.width * 0.09)
+  // Smaller tag, sized to fit inside the back-collar band
+  const targetW = Math.round(shirt.width * 0.06)
   const ratio = targetW / tag.width
   const targetH = Math.max(1, Math.round(tag.height * ratio))
   const resized = tag.resize(targetW, targetH)
   const x = Math.round((shirt.width - targetW) / 2)
-  const y = Math.round(shirt.height * 0.13)
+  // Sit just under the collar band so it reads as a sewn-in inner-neck label
+  const y = Math.round(shirt.height * 0.16)
   shirt.composite(resized, x, y)
   return shirt
 }
 
-// Composite the MG monogram on the LEFT chest pocket, tinted to a tonal shirt color
+// Composite the MG monogram CENTERED ON the chest pocket (viewer's right chest on a flat-lay front view)
 async function compositeChestMonogram(shirt: Image, monogramBytes: Uint8Array, shirtHex?: string): Promise<Image> {
   const mono = await Image.decode(monogramBytes)
-  const targetW = Math.round(shirt.width * 0.055)
+  // Smaller logo so it reads as a subtle embroidered pocket emblem
+  const targetW = Math.round(shirt.width * 0.038)
   const ratio = targetW / mono.width
   const targetH = Math.max(1, Math.round(mono.height * ratio))
   const resized = mono.resize(targetW, targetH)
 
-  // Tint pass: replace non-transparent pixels with tonal color, preserving alpha
   if (shirtHex) {
     const tone = tonalColor(shirtHex)
     for (let y = 0; y < resized.height; y++) {
       for (let x = 0; x < resized.width; x++) {
-        const px = resized.getPixelAt(x + 1, y + 1) // imagescript is 1-indexed
+        const px = resized.getPixelAt(x + 1, y + 1)
         const a = px & 0xff
         if (a === 0) continue
-        // Recompose RGBA with tonal RGB, dim alpha slightly so it reads as embroidery (not sticker)
         const newA = Math.round(a * 0.85)
         const rgba = ((tone.r & 0xff) << 24) | ((tone.g & 0xff) << 16) | ((tone.b & 0xff) << 8) | (newA & 0xff)
         resized.setPixelAt(x + 1, y + 1, rgba >>> 0)
@@ -186,9 +225,9 @@ async function compositeChestMonogram(shirt: Image, monogramBytes: Uint8Array, s
     }
   }
 
-  // Pocket centered on viewer's left chest: x ~ 36% from left, y ~ 36% from top
-  const x = Math.round(shirt.width * 0.36 - targetW / 2)
-  const y = Math.round(shirt.height * 0.36 - targetH / 2)
+  // Pocket is on the viewer's RIGHT chest of a front-facing/flat-lay shirt (~62% from left, ~40% from top)
+  const x = Math.round(shirt.width * 0.62 - targetW / 2)
+  const y = Math.round(shirt.height * 0.40 - targetH / 2)
   shirt.composite(resized, x, y)
   return shirt
 }
@@ -226,8 +265,10 @@ Deno.serve(async (req) => {
 
     const { fabricUrl, view = 'front', colorHex, collarTagUrl, productId, hd = false, specs, pose = 'sitting' } = await req.json()
     if (!fabricUrl) throw new Error('fabricUrl required')
-    const validViews = ['front', 'back', 'spec', 'highlights', 'model', 'lifestyle']
+    const validViews = ['front', 'back', 'spec', 'highlights', 'model', 'model-back', 'lifestyle']
     if (!validViews.includes(view)) throw new Error('invalid view')
+
+    const dataUrl = await callImageGenWithFallback(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl)
 
     const dataUrl = await callImageGen(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl)
     let { bytes, mime } = dataUrlToBytes(dataUrl)
