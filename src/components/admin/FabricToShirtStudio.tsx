@@ -10,13 +10,47 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Upload, Sparkles, Loader2, Image as ImageIcon, Download, Tag, Info, Shirt, User } from 'lucide-react';
 
-type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'lifestyle';
-type Pose = 'sitting' | 'leaning' | 'walking' | 'coffee';
+type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'model-back' | 'lifestyle';
+type Pose =
+  | 'sitting' | 'leaning' | 'walking' | 'coffee'
+  | 'standing-hands-pockets' | 'arms-crossed' | 'hand-in-hair' | 'looking-away'
+  | 'jacket-over-shoulder' | 'on-bike' | 'on-stairs' | 'against-car'
+  | 'rooftop' | 'beach-walk' | 'forest-path' | 'studio-profile'
+  | 'laughing' | 'phone-call' | 'reading-book' | 'sunglasses-pose'
+  | 'denim-jacket-layered' | 'window-light' | 'graffiti-wall' | 'train-station';
+
+const POSE_OPTIONS: Array<{ value: Pose; label: string }> = [
+  { value: 'sitting', label: 'Sitting on a wooden table' },
+  { value: 'leaning', label: 'Leaning against a concrete wall' },
+  { value: 'walking', label: 'Walking through a sunlit corridor' },
+  { value: 'coffee', label: 'Seated at a cafe table' },
+  { value: 'standing-hands-pockets', label: 'Standing — hands in pockets' },
+  { value: 'arms-crossed', label: 'Standing — arms crossed' },
+  { value: 'hand-in-hair', label: 'Hand running through hair' },
+  { value: 'looking-away', label: 'Three-quarter, looking away' },
+  { value: 'jacket-over-shoulder', label: 'Jacket slung over shoulder' },
+  { value: 'on-bike', label: 'Sitting on a vintage bike' },
+  { value: 'on-stairs', label: 'Sitting on stone stairs' },
+  { value: 'against-car', label: 'Leaning against a classic car' },
+  { value: 'rooftop', label: 'Rooftop golden-hour' },
+  { value: 'beach-walk', label: 'Beach walk at sunset' },
+  { value: 'forest-path', label: 'Forest path stroll' },
+  { value: 'studio-profile', label: 'Studio side profile' },
+  { value: 'laughing', label: 'Candid laughing' },
+  { value: 'phone-call', label: 'On a phone call' },
+  { value: 'reading-book', label: 'Reading a book on a bench' },
+  { value: 'sunglasses-pose', label: 'Adjusting sunglasses' },
+  { value: 'denim-jacket-layered', label: 'Layered with denim jacket' },
+  { value: 'window-light', label: 'Window-light portrait' },
+  { value: 'graffiti-wall', label: 'In front of a graffiti wall' },
+  { value: 'train-station', label: 'Empty train station platform' },
+];
 
 const COLLAR_TAG_PATH = 'assets/collar-tag.png';
 
 // Men's regular-fit size chart (inches). Editable per generation.
 const SIZE_CHART: Record<string, { chest: number; length: number; sleeve: number; shoulder: number }> = {
+  XS:  { chest: 36, length: 27, sleeve: 23.5, shoulder: 16.5 },
   S:   { chest: 38, length: 28, sleeve: 24,   shoulder: 17   },
   M:   { chest: 40, length: 29, sleeve: 24.5, shoulder: 17.5 },
   L:   { chest: 42, length: 30, sleeve: 25,   shoulder: 18   },
@@ -24,7 +58,10 @@ const SIZE_CHART: Record<string, { chest: number; length: number; sleeve: number
   XXL: { chest: 46, length: 32, sleeve: 26,   shoulder: 19   },
   '3XL': { chest: 48, length: 33, sleeve: 26.5, shoulder: 19.5 },
   '4XL': { chest: 50, length: 34, sleeve: 27,   shoulder: 20   },
+  '5XL': { chest: 52, length: 35, sleeve: 27.5, shoulder: 20.5 },
+  '6XL': { chest: 54, length: 36, sleeve: 28,   shoulder: 21   },
 };
+const ALL_SIZES = Object.keys(SIZE_CHART);
 
 interface Props {
   /** When provided, "Save to product" buttons appear and write to that product. */
