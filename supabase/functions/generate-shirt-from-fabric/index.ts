@@ -265,8 +265,10 @@ Deno.serve(async (req) => {
 
     const { fabricUrl, view = 'front', colorHex, collarTagUrl, productId, hd = false, specs, pose = 'sitting' } = await req.json()
     if (!fabricUrl) throw new Error('fabricUrl required')
-    const validViews = ['front', 'back', 'spec', 'highlights', 'model', 'lifestyle']
+    const validViews = ['front', 'back', 'spec', 'highlights', 'model', 'model-back', 'lifestyle']
     if (!validViews.includes(view)) throw new Error('invalid view')
+
+    const dataUrl = await callImageGenWithFallback(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl)
 
     const dataUrl = await callImageGen(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl)
     let { bytes, mime } = dataUrlToBytes(dataUrl)
