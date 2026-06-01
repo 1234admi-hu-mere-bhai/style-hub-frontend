@@ -151,6 +151,9 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const [highlightsUrl, setHighlightsUrl] = useState<string>('');
   const [modelUrl, setModelUrl] = useState<string>('');
   const [lifestyleUrl, setLifestyleUrl] = useState<string>('');
+  const [modelBackUrl, setModelBackUrl] = useState<string>('');
+  const [bulkSpec, setBulkSpec] = useState<{ size: string; url: string }[]>([]);
+  const [bulkGenerating, setBulkGenerating] = useState(false);
   const [pose, setPose] = useState<Pose>('sitting');
   const [specs, setSpecs] = useState({
     size: 'M',
