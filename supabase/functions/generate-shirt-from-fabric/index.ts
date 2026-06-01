@@ -66,19 +66,18 @@ Style: technical, precise, like a fashion designer's tech pack. NO model, NO man
     const fabric = specs?.fabric || 'Cotton Blend'
     const occasion = specs?.occasion || 'Casual'
     const collar = specs?.collar || 'Spread'
-    return `Premium editorial e-commerce hero photograph of a men's full-sleeve button-down shirt hanging on a polished WOODEN HANGER with a small brass nameplate, suspended from a thin metal rod against a deep matte CHARCOAL / near-black studio backdrop. The shirt is fully buttoned, gently draped with natural soft folds, perfectly centered in the frame, sleeves hanging naturally. Cinematic side lighting. ${quality} ${colorLock} ${patternLock}
+    return `Premium editorial e-commerce hero photograph: a tight portrait CLOSE-UP of a handsome South Asian male model (age 26-30, clean groomed look, athletic build) wearing the men's full-sleeve button-down shirt — framed from mid-chest to top of head, the model's face partially visible on the RIGHT side of the frame, the SHIRT collar, top buttons, and upper chest area clearly visible occupying the lower-right portion of the frame. The model has a calm direct gaze. Soft natural studio lighting, slightly muted gray-blue background, shallow depth of field. ${quality} ${colorLock} ${patternLock}
 
-Leave the inner back-collar band area clean — a brand label will be composited afterwards. Do NOT print any brand wordmark on the shirt or hanger.
+CRITICAL OVERLAY: On the LEFT side of the image (over the muted background area, NOT on the model's face or the shirt), overlay a clean WHITE-text "Key Highlights" panel in a modern bold sans-serif font with thin light hairline divider lines between each row. The panel must read EXACTLY these rows from top to bottom (label in small uppercase light-gray ABOVE the value, value in large bold white BELOW the label, each row separated by a thin divider):
 
-On the LEFT side of the image (over the dark background, NOT on the shirt), overlay a clean white-text "Key Highlights" panel in a modern sans-serif font with thin hairline divider lines between rows. Render EXACTLY these rows (label in small light-gray uppercase, value in bold white below it):
-HIGHLIGHTS HEADER: "Key Highlights"
-FIT: ${fit}
-PATTERN: ${pattern}
-FABRIC: ${fabric}
-OCCASION: ${occasion}
-COLLAR: ${collar}
+Title row: "Key Highlights" (large bold white)
+Row 1 label: "Fit"  →  Row 1 value: "${fit}"
+Row 2 label: "Collar"  →  Row 2 value: "${collar}"
+Row 3 label: "Fabric"  →  Row 3 value: "${fabric}"
+Row 4 label: "Pattern"  →  Row 4 value: "${pattern}"
+Row 5 label: "Occasion"  →  Row 5 value: "${occasion}"
 
-All text must be perfectly legible and correctly spelled — render ONLY the labels listed above, no extra text, no watermark, no logo.`
+All text must be perfectly legible and correctly spelled — render ONLY the labels and values listed above, no extra text, no watermark, no logo. Leave the inner back-collar band area clean — a brand label will be composited afterwards. Leave the center of the LEFT chest pocket clean — a small monogram will be composited afterwards.`
   }
 
   const common = `Photorealistic flat-lay studio product photograph of a men's full-sleeve button-down shirt on a pure white seamless background. Soft even lighting, no harsh shadows on background, perfectly centered, NO model, NO mannequin, NO hands, NO props, NO text overlays, NO watermark, NO printed logo on shirt body. ${quality} ${colorLock} ${patternLock}`
