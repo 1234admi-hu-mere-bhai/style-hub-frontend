@@ -129,12 +129,12 @@ All text must be perfectly legible and correctly spelled — render ONLY the lab
   return `${modelBase} ${poses[pose]}`
 }
 
-async function callImageGen(apiKey: string, prompt: string, fabricUrl: string): Promise<string> {
+async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, model = 'google/gemini-3-pro-image-preview'): Promise<string> {
   const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'google/gemini-3-pro-image-preview',
+      model,
       messages: [{
         role: 'user',
         content: [
@@ -150,6 +150,15 @@ async function callImageGen(apiKey: string, prompt: string, fabricUrl: string): 
   const b64 = data.choices?.[0]?.message?.images?.[0]?.image_url?.url
   if (!b64) throw new Error('No image returned')
   return b64
+}
+
+async function callImageGenWithFallback(apiKey: string, prompt: string, fabricUrl: string): Promise<string> {
+  try {
+    return await callImageGen(apiKey, prompt, fabricUrl, 'google/gemini-3-pro-image-preview')
+  } catch (e) {
+    console.warn('Pro image model failed, falling back to flash:', (e as Error).message)
+    return await callImageGen(apiKey, prompt, fabricUrl, 'google/gemini-2.5-flash-image')
+  }
 }
 
 function dataUrlToBytes(dataUrl: string): { bytes: Uint8Array; mime: string } {
