@@ -297,11 +297,42 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     const stamp = Date.now();
     const all: Array<[string, string]> = [
       [frontUrl, 'front'], [backUrl, 'back'], [specUrl, 'spec'],
-      [highlightsUrl, 'highlights'], [modelUrl, 'model'], [lifestyleUrl, `lifestyle-${pose}`],
+      [highlightsUrl, 'highlights'], [modelUrl, 'model-front'], [modelBackUrl, 'model-back'],
+      [lifestyleUrl, `lifestyle-${pose}`],
     ];
     for (const [url, key] of all) {
       if (url) await downloadOne(url, `muffigout-shirt-${key}-${stamp}.png`);
     }
+    for (const item of bulkSpec) {
+      await downloadOne(item.url, `muffigout-shirt-spec-${item.size}-${stamp}.png`);
+    }
+  };
+
+  const generateAllSpecSizes = async () => {
+    if (!fabricUrl) { toast({ title: 'Upload a fabric image first', variant: 'destructive' }); return; }
+    setBulkGenerating(true);
+    setBulkSpec([]);
+    const results: { size: string; url: string }[] = [];
+    try {
+      for (const size of ALL_SIZES) {
+        const m = SIZE_CHART[size];
+        const sizedSpecs = { ...specs, size, ...m };
+        try {
+          const { data, error } = await supabase.functions.invoke('generate-shirt-from-fabric', {
+            body: { fabricUrl, view: 'spec', colorHex: colorHex || undefined, productId, hd, specs: sizedSpecs },
+          });
+          if (error) throw error;
+          if (data?.url) {
+            results.push({ size, url: data.url });
+            setBulkSpec([...results]);
+            toast({ title: `Spec sheet ${size} ready (${results.length}/${ALL_SIZES.length})` });
+          }
+        } catch (e: any) {
+          toast({ title: `Spec ${size} failed`, description: e.message, variant: 'destructive' });
+        }
+      }
+      toast({ title: `All ${results.length} spec sheets generated` });
+    } finally { setBulkGenerating(false); }
   };
 
 
