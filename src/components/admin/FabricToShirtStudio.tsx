@@ -493,11 +493,10 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
             </div>
             <Select value={pose} onValueChange={(v) => setPose(v as Pose)}>
               <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sitting">Sitting on a wooden table</SelectItem>
-                <SelectItem value="leaning">Leaning against a concrete wall</SelectItem>
-                <SelectItem value="walking">Walking through a sunlit corridor</SelectItem>
-                <SelectItem value="coffee">Seated at a cafe table</SelectItem>
+              <SelectContent className="max-h-72">
+                {POSE_OPTIONS.map(p => (
+                  <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -523,11 +522,19 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                 Key Highlights
               </Button>
             </div>
+            <Button type="button" onClick={generateAllSpecSizes} disabled={!fabricUrl || bulkGenerating || generating !== null} variant="outline" className="w-full h-11">
+              {bulkGenerating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+              Generate spec sheets — all sizes (XS → 6XL)
+            </Button>
             <Label className="text-xs uppercase tracking-wider text-muted-foreground pt-2 block">Human model (optional)</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <Button type="button" onClick={() => generate('model')} disabled={!fabricUrl || generating !== null} variant="outline" className="h-11">
                 {generating === 'model' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <User className="h-4 w-4 mr-2" />}
-                Model (straight)
+                Model (front)
+              </Button>
+              <Button type="button" onClick={() => generate('model-back')} disabled={!fabricUrl || generating !== null} variant="outline" className="h-11">
+                {generating === 'model-back' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <User className="h-4 w-4 mr-2" />}
+                Model (back)
               </Button>
               <Button type="button" onClick={() => generate('lifestyle')} disabled={!fabricUrl || generating !== null} className="h-11">
                 {generating === 'lifestyle' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
@@ -537,6 +544,36 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Bulk spec sheets results */}
+      {bulkSpec.length > 0 && (
+        <Card>
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm">Spec sheets — all sizes ({bulkSpec.length}/{ALL_SIZES.length})</Label>
+              <Button type="button" size="sm" variant="outline" onClick={async () => {
+                const stamp = Date.now();
+                for (const it of bulkSpec) await downloadOne(it.url, `muffigout-spec-${it.size}-${stamp}.png`);
+              }}>
+                <Download className="h-3.5 w-3.5 mr-1.5" /> Download all sizes
+              </Button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {bulkSpec.map(it => (
+                <div key={it.size} className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Badge>{it.size}</Badge>
+                    <button onClick={() => downloadOne(it.url, `muffigout-spec-${it.size}.png`)} className="text-xs text-primary inline-flex items-center gap-1 hover:underline">
+                      <Download className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <img src={it.url} alt={`Spec ${it.size}`} className="w-full aspect-square object-contain rounded-md bg-white border" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Results */}
       {(frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || lifestyleUrl) && (
