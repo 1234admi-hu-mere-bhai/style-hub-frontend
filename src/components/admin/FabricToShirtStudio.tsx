@@ -265,13 +265,13 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
       if (!data?.url) throw new Error('No image returned');
       const setters: Record<ViewKind, (u: string) => void> = {
         front: setFrontUrl, back: setBackUrl, spec: setSpecUrl,
-        highlights: setHighlightsUrl, model: setModelUrl, lifestyle: setLifestyleUrl,
+        highlights: setHighlightsUrl, model: setModelUrl, 'model-back': setModelBackUrl, lifestyle: setLifestyleUrl,
       };
       setters[view](data.url);
       onGenerated?.({ front: view === 'front' ? data.url : frontUrl, back: view === 'back' ? data.url : backUrl });
       const labels: Record<ViewKind, string> = {
         front: 'Front', back: 'Back', spec: 'Spec sheet',
-        highlights: 'Key Highlights hanger', model: 'Model (straight)', lifestyle: 'Lifestyle pose',
+        highlights: 'Key Highlights', model: 'Model (front)', 'model-back': 'Model (back)', lifestyle: 'Lifestyle pose',
       };
       toast({ title: `${labels[view]} ready` });
     } catch (e: any) {
