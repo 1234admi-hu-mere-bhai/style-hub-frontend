@@ -129,7 +129,7 @@ All text must be perfectly legible and correctly spelled — render ONLY the lab
   return `${modelBase} ${poses[pose]}`
 }
 
-async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, model = 'google/gemini-3-pro-image-preview'): Promise<string> {
+async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, model = 'google/gemini-3.1-flash-image-preview'): Promise<string> {
   const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
@@ -145,18 +145,25 @@ async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, m
       modalities: ['image', 'text'],
     }),
   })
-  if (!resp.ok) throw new Error(`AI gateway ${resp.status}: ${await resp.text()}`)
+  if (!resp.ok) {
+    const text = await resp.text()
+    if (resp.status === 429) throw new Error('Image generation is rate limited. Please wait a minute and try again.')
+    if (resp.status === 402) throw new Error('Lovable AI credits are exhausted. Please add credits before generating more mockups.')
+    throw new Error(`AI gateway ${resp.status}: ${text}`)
+  }
   const data = await resp.json()
-  const b64 = data.choices?.[0]?.message?.images?.[0]?.image_url?.url
-  if (!b64) throw new Error('No image returned')
+  const b64 = data.choices?.[0]?.message?.images?.[0]?.image_url?.url || data.data?.[0]?.b64_json
+  if (!b64) throw new Error('No image returned from the image model')
+  if (typeof b64 === 'string' && b64.startsWith('data:')) return b64
+  if (typeof b64 === 'string') return `data:image/png;base64,${b64}`
   return b64
 }
 
 async function callImageGenWithFallback(apiKey: string, prompt: string, fabricUrl: string): Promise<string> {
   try {
-    return await callImageGen(apiKey, prompt, fabricUrl, 'google/gemini-3-pro-image-preview')
+    return await callImageGen(apiKey, prompt, fabricUrl, 'google/gemini-3.1-flash-image-preview')
   } catch (e) {
-    console.warn('Pro image model failed, falling back to flash:', (e as Error).message)
+    console.warn('Primary image model failed, falling back:', (e as Error).message)
     return await callImageGen(apiKey, prompt, fabricUrl, 'google/gemini-2.5-flash-image')
   }
 }
