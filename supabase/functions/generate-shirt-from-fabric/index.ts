@@ -163,7 +163,9 @@ async function callImageGenWithFallback(apiKey: string, prompt: string, fabricUr
   try {
     return await callImageGen(apiKey, prompt, fabricUrl, 'google/gemini-3.1-flash-image-preview')
   } catch (e) {
-    console.warn('Primary image model failed, falling back:', (e as Error).message)
+    const message = (e as Error).message
+    if (message.includes('AI gateway 4') || message.includes('rate limited') || message.includes('credits are exhausted')) throw e
+    console.warn('Primary image model failed, falling back:', message)
     return await callImageGen(apiKey, prompt, fabricUrl, 'google/gemini-2.5-flash-image')
   }
 }
