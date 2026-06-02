@@ -265,7 +265,13 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
           pose: view === 'lifestyle' ? pose : undefined,
         },
       });
-      if (error) throw error;
+      if (error) {
+        const message = [error.message, error.context?.error, error.context?.message, error.context?.details]
+          .filter(Boolean)
+          .join(' — ');
+        throw new Error(message || 'Generation failed');
+      }
+      if (data?.error) throw new Error(data.error);
       if (!data?.url) throw new Error('No image returned');
       const setters: Record<ViewKind, (u: string) => void> = {
         front: setFrontUrl, back: setBackUrl, spec: setSpecUrl,
@@ -316,18 +322,24 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     setBulkSpec([]);
     const results: { size: string; url: string }[] = [];
     try {
-      for (const size of ALL_SIZES) {
+      for (const size of BULK_SPEC_SIZES) {
         const m = SIZE_CHART[size];
         const sizedSpecs = { ...specs, size, ...m };
         try {
           const { data, error } = await supabase.functions.invoke('generate-shirt-from-fabric', {
             body: { fabricUrl, view: 'spec', colorHex: colorHex || undefined, productId, hd, specs: sizedSpecs },
           });
-          if (error) throw error;
+          if (error) {
+            const message = [error.message, error.context?.error, error.context?.message, error.context?.details]
+              .filter(Boolean)
+              .join(' — ');
+            throw new Error(message || 'Generation failed');
+          }
+          if (data?.error) throw new Error(data.error);
           if (data?.url) {
             results.push({ size, url: data.url });
             setBulkSpec([...results]);
-            toast({ title: `Spec sheet ${size} ready (${results.length}/${ALL_SIZES.length})` });
+            toast({ title: `Spec sheet ${size} ready (${results.length}/${BULK_SPEC_SIZES.length})` });
           }
         } catch (e: any) {
           toast({ title: `Spec ${size} failed`, description: e.message, variant: 'destructive' });
