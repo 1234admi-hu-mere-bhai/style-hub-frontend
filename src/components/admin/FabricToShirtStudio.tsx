@@ -62,6 +62,7 @@ const SIZE_CHART: Record<string, { chest: number; length: number; sleeve: number
   '6XL': { chest: 54, length: 36, sleeve: 28,   shoulder: 21   },
 };
 const ALL_SIZES = Object.keys(SIZE_CHART);
+const BULK_SPEC_SIZES = ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'];
 
 interface Props {
   /** When provided, "Save to product" buttons appear and write to that product. */
@@ -176,6 +177,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
       if (raw) {
         const s = JSON.parse(raw);
         if (s.fabricUrl) setFabricUrl(s.fabricUrl);
+        if (s.collarTagUrl) setCollarTagUrl(s.collarTagUrl);
         if (s.colorHex) setColorHex(s.colorHex);
         if (typeof s.autoColor === 'boolean') setAutoColor(s.autoColor);
         if (typeof s.hd === 'boolean') setHd(s.hd);
@@ -199,11 +201,11 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     if (!hydrated.current) return;
     try {
       localStorage.setItem(storageKey, JSON.stringify({
-        fabricUrl, colorHex, autoColor, hd, specs, pose,
+        fabricUrl, collarTagUrl, colorHex, autoColor, hd, specs, pose,
         frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, bulkSpec,
       }));
     } catch {}
-  }, [storageKey, fabricUrl, colorHex, autoColor, hd, specs, pose, frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, bulkSpec]);
+  }, [storageKey, fabricUrl, collarTagUrl, colorHex, autoColor, hd, specs, pose, frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, bulkSpec]);
 
   // Load existing collar tag if previously uploaded
   useEffect(() => {
