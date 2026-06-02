@@ -276,8 +276,6 @@ Deno.serve(async (req) => {
     if (!validViews.includes(view)) throw new Error('invalid view')
 
     const dataUrl = await callImageGenWithFallback(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl)
-
-    const dataUrl = await callImageGen(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl)
     let { bytes, mime } = dataUrlToBytes(dataUrl)
 
     // FRONT + HIGHLIGHTS views: composite collar tag at back-neck AND tonal MG monogram on chest pocket
