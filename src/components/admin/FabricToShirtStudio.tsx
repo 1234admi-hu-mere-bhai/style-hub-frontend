@@ -538,7 +538,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
             </div>
             <Button type="button" onClick={generateAllSpecSizes} disabled={!fabricUrl || bulkGenerating || generating !== null} variant="outline" className="w-full h-11">
               {bulkGenerating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
-              Generate spec sheets — all sizes (XS → 6XL)
+              Generate spec sheets — all sizes (S → 5XL)
             </Button>
             <Label className="text-xs uppercase tracking-wider text-muted-foreground pt-2 block">Human model (optional)</Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -564,7 +564,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
         <Card>
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-sm">Spec sheets — all sizes ({bulkSpec.length}/{ALL_SIZES.length})</Label>
+              <Label className="text-sm">Spec sheets — all sizes ({bulkSpec.length}/{BULK_SPEC_SIZES.length})</Label>
               <Button type="button" size="sm" variant="outline" onClick={async () => {
                 const stamp = Date.now();
                 for (const it of bulkSpec) await downloadOne(it.url, `muffigout-spec-${it.size}-${stamp}.png`);
