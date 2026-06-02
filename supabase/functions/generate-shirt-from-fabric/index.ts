@@ -3,7 +3,7 @@ import { Image } from 'https://deno.land/x/imagescript@1.2.17/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
 const OWNER_EMAILS = ['otw2003@gmail.com', 'kaliasgar776@gmail.com', 'muffigout@gmail.com']
@@ -66,9 +66,9 @@ Style: technical, precise, like a fashion designer's tech pack. NO model, NO man
     const fabric = specs?.fabric || 'Cotton Blend'
     const occasion = specs?.occasion || 'Casual'
     const collar = specs?.collar || 'Spread'
-    return `Premium editorial e-commerce hero photograph: a tight portrait CLOSE-UP of a handsome South Asian male model (age 26-30, clean groomed look, athletic build) wearing the men's full-sleeve button-down shirt — framed from mid-chest to top of head, the model's face partially visible on the RIGHT side of the frame, the SHIRT collar, top buttons, and upper chest area clearly visible occupying the lower-right portion of the frame. The model has a calm direct gaze. Soft natural studio lighting, slightly muted gray-blue background, shallow depth of field. ${quality} ${colorLock} ${patternLock}
+    return `Flipkart-style mobile product-gallery Key Highlights image for a men's shirt listing. Use a full-bleed close-up fashion photograph background like Flipkart: a handsome South Asian male model (age 26-30, clean groomed look, athletic build) wearing the men's full-sleeve button-down shirt — framed from chest to head, face on the RIGHT side, collar, placket, chest pocket, and upper shirt area clearly visible. The background should feel like a Flipkart/Myntra product image: clean gray studio, premium catalog lighting, high contrast white typography overlay, no card frame. ${quality} ${colorLock} ${patternLock}
 
-CRITICAL OVERLAY: On the LEFT side of the image (over the muted background area, NOT on the model's face or the shirt), overlay a clean WHITE-text "Key Highlights" panel in a modern bold sans-serif font with thin light hairline divider lines between each row. The panel must read EXACTLY these rows from top to bottom (label in small uppercase light-gray ABOVE the value, value in large bold white BELOW the label, each row separated by a thin divider):
+CRITICAL OVERLAY: On the LEFT side of the image (over the muted background area, NOT on the model's face or the shirt), overlay a Flipkart-style WHITE text panel. Use bold rounded sans-serif typography similar to Flipkart app product pages: large title, small light-gray labels, big bold white values, thin semi-transparent divider lines. Add a subtle dark translucent gradient strip behind the left text only, so the text is readable but the photo remains visible. The panel must read EXACTLY these rows from top to bottom:
 
 Title row: "Key Highlights" (large bold white)
 Row 1 label: "Fit"  →  Row 1 value: "${fit}"
