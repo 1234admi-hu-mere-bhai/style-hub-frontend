@@ -80,6 +80,22 @@ async function uploadToBucket(file: Blob, path: string): Promise<string> {
   return data.publicUrl;
 }
 
+async function getFunctionErrorMessage(error: any) {
+  const context = error?.context;
+  let backendMessage = '';
+  if (context instanceof Response) {
+    try {
+      const payload = await context.clone().json();
+      backendMessage = payload?.error || payload?.message || '';
+    } catch {
+      try { backendMessage = await context.clone().text(); } catch {}
+    }
+  } else {
+    backendMessage = context?.error || context?.message || context?.details || '';
+  }
+  return [backendMessage, error?.message].filter(Boolean).join(' — ') || 'Generation failed';
+}
+
 // Nearest named-color lookup for the hex input.
 const NAMED_COLORS: Array<[string, string]> = [
   ['Black','#000000'],['White','#ffffff'],['Ivory','#fffff0'],['Cream','#fffdd0'],['Beige','#f5f5dc'],
@@ -266,10 +282,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
         },
       });
       if (error) {
-        const message = [error.message, error.context?.error, error.context?.message, error.context?.details]
-          .filter(Boolean)
-          .join(' — ');
-        throw new Error(message || 'Generation failed');
+        throw new Error(await getFunctionErrorMessage(error));
       }
       if (data?.error) throw new Error(data.error);
       if (!data?.url) throw new Error('No image returned');
@@ -330,10 +343,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
             body: { fabricUrl, view: 'spec', colorHex: colorHex || undefined, productId, hd, specs: sizedSpecs },
           });
           if (error) {
-            const message = [error.message, error.context?.error, error.context?.message, error.context?.details]
-              .filter(Boolean)
-              .join(' — ');
-            throw new Error(message || 'Generation failed');
+            throw new Error(await getFunctionErrorMessage(error));
           }
           if (data?.error) throw new Error(data.error);
           if (data?.url) {
