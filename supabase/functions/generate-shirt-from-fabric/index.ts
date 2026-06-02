@@ -3,7 +3,7 @@ import { Image } from 'https://deno.land/x/imagescript@1.2.17/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
 const OWNER_EMAILS = ['otw2003@gmail.com', 'kaliasgar776@gmail.com', 'muffigout@gmail.com']
@@ -42,7 +42,7 @@ function buildPrompt(
     const fabric = specs?.fabric || 'Premium cotton blend'
     return `Professional apparel TECH PACK / SPEC SHEET illustration on a clean off-white paper background with faint blueprint grid. Show a men's full-sleeve button-down shirt rendered as a clean front-view technical flat (vector-style line drawing FILLED with the EXACT fabric color and pattern from the provided fabric image — the rendered shirt MUST visually match the fabric swatch's color and pattern). ${colorLock} ${patternLock} ${quality}
 
-On the left chest pocket of the shirt, draw a SMALL tonal embroidered monogram mark (just a subtle stitched logo silhouette in a slightly lighter/darker shade of the same shirt color, no text, no wordmark) — the same monogram that appears on the photographic mockup.
+The shirt MUST have one visible chest pocket on the wearer's LEFT side (viewer’s RIGHT side). On the center of that pocket, draw a SMALL tonal embroidered monogram mark (just a subtle stitched logo silhouette in a slightly lighter/darker shade of the same shirt color, no text, no wordmark) — the same monogram that appears on the photographic mockup.
 
 Around the shirt, draw crisp BLACK measurement callout lines with arrowheads and printed labels in a clean sans-serif font, exactly these four measurements and NO others:
 - "CHEST: ${chest}\\"" — horizontal line across the chest, pit-to-pit
@@ -66,9 +66,9 @@ Style: technical, precise, like a fashion designer's tech pack. NO model, NO man
     const fabric = specs?.fabric || 'Cotton Blend'
     const occasion = specs?.occasion || 'Casual'
     const collar = specs?.collar || 'Spread'
-    return `Premium editorial e-commerce hero photograph: a tight portrait CLOSE-UP of a handsome South Asian male model (age 26-30, clean groomed look, athletic build) wearing the men's full-sleeve button-down shirt — framed from mid-chest to top of head, the model's face partially visible on the RIGHT side of the frame, the SHIRT collar, top buttons, and upper chest area clearly visible occupying the lower-right portion of the frame. The model has a calm direct gaze. Soft natural studio lighting, slightly muted gray-blue background, shallow depth of field. ${quality} ${colorLock} ${patternLock}
+    return `Flipkart-style mobile product-gallery Key Highlights image for a men's shirt listing. Use a full-bleed close-up fashion photograph background like Flipkart: a handsome South Asian male model (age 26-30, clean groomed look, athletic build) wearing the men's full-sleeve button-down shirt — framed from chest to head, face on the RIGHT side, collar, placket, mandatory chest pocket on the shirt, and upper shirt area clearly visible. The background should feel like a Flipkart/Myntra product image: clean gray studio, premium catalog lighting, high contrast white typography overlay, no card frame. ${quality} ${colorLock} ${patternLock}
 
-CRITICAL OVERLAY: On the LEFT side of the image (over the muted background area, NOT on the model's face or the shirt), overlay a clean WHITE-text "Key Highlights" panel in a modern bold sans-serif font with thin light hairline divider lines between each row. The panel must read EXACTLY these rows from top to bottom (label in small uppercase light-gray ABOVE the value, value in large bold white BELOW the label, each row separated by a thin divider):
+CRITICAL OVERLAY: On the LEFT side of the image (over the muted background area, NOT on the model's face or the shirt), overlay a Flipkart-style WHITE text panel. Use bold rounded sans-serif typography similar to Flipkart app product pages: large title, small light-gray labels, big bold white values, thin semi-transparent divider lines. Add a subtle dark translucent gradient strip behind the left text only, so the text is readable but the photo remains visible. The panel must read EXACTLY these rows from top to bottom:
 
 Title row: "Key Highlights" (large bold white)
 Row 1 label: "Fit"  →  Row 1 value: "${fit}"
@@ -80,9 +80,9 @@ Row 5 label: "Occasion"  →  Row 5 value: "${occasion}"
 All text must be perfectly legible and correctly spelled — render ONLY the labels and values listed above, no extra text, no watermark, no logo. Leave the inner back-collar band area clean — a brand label will be composited afterwards. Leave the center of the LEFT chest pocket clean — a small monogram will be composited afterwards.`
   }
 
-  const common = `Photorealistic flat-lay studio product photograph of a men's full-sleeve button-down shirt on a pure white seamless background. Soft even lighting, no harsh shadows on background, perfectly centered, NO model, NO mannequin, NO hands, NO props, NO text overlays, NO watermark, NO printed logo on shirt body. ${quality} ${colorLock} ${patternLock}`
+  const common = `Photorealistic flat-lay studio product photograph of a men's full-sleeve button-down shirt on a pure white seamless background. The shirt MUST include one neat chest pocket on the wearer's LEFT side (viewer’s RIGHT side) in every front-facing output. Soft even lighting, no harsh shadows on background, perfectly centered, NO model, NO mannequin, NO hands, NO props, NO text overlays, NO watermark, NO printed logo on shirt body. ${quality} ${colorLock} ${patternLock}`
   if (view === 'front') {
-    return `${common} VIEW: FRONT view. Shirt laid flat and perfectly symmetric, collar at top, full placket with buttons visible down the center, chest pocket on the LEFT chest (viewer's left), both sleeves spread slightly outward, cuffs visible. Leave the inner back collar area (just under the collar band at the back of the neck) clean and unobstructed — a label tag will be composited there afterwards. Leave the CENTER of the LEFT CHEST POCKET clean — a small monogram will be composited there afterwards.`
+    return `${common} VIEW: FRONT view. Shirt laid flat and perfectly symmetric, collar at top, full placket with buttons visible down the center, chest pocket on the wearer's LEFT chest (viewer's RIGHT side), both sleeves spread slightly outward, cuffs visible. Leave the inner back collar area (just under the collar band at the back of the neck) clean and unobstructed — a label tag will be composited there afterwards. Leave the CENTER of the CHEST POCKET clean — a small monogram will be composited there afterwards.`
   }
   if (view === 'back') {
     return `${common} VIEW: BACK view. Shirt laid flat and perfectly symmetric, back yoke visible at the shoulders, no buttons visible, smooth uninterrupted back panel, both sleeves spread slightly outward.`
@@ -129,7 +129,7 @@ All text must be perfectly legible and correctly spelled — render ONLY the lab
   return `${modelBase} ${poses[pose]}`
 }
 
-async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, model = 'google/gemini-3-pro-image-preview'): Promise<string> {
+async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, model = 'google/gemini-3.1-flash-image-preview'): Promise<string> {
   const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
@@ -145,18 +145,27 @@ async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, m
       modalities: ['image', 'text'],
     }),
   })
-  if (!resp.ok) throw new Error(`AI gateway ${resp.status}: ${await resp.text()}`)
+  if (!resp.ok) {
+    const text = await resp.text()
+    if (resp.status === 429) throw new Error('Image generation is rate limited. Please wait a minute and try again.')
+    if (resp.status === 402) throw new Error('Lovable AI credits are exhausted. Please add credits before generating more mockups.')
+    throw new Error(`AI gateway ${resp.status}: ${text}`)
+  }
   const data = await resp.json()
-  const b64 = data.choices?.[0]?.message?.images?.[0]?.image_url?.url
-  if (!b64) throw new Error('No image returned')
+  const b64 = data.choices?.[0]?.message?.images?.[0]?.image_url?.url || data.data?.[0]?.b64_json
+  if (!b64) throw new Error('No image returned from the image model')
+  if (typeof b64 === 'string' && b64.startsWith('data:')) return b64
+  if (typeof b64 === 'string') return `data:image/png;base64,${b64}`
   return b64
 }
 
 async function callImageGenWithFallback(apiKey: string, prompt: string, fabricUrl: string): Promise<string> {
   try {
-    return await callImageGen(apiKey, prompt, fabricUrl, 'google/gemini-3-pro-image-preview')
+    return await callImageGen(apiKey, prompt, fabricUrl, 'google/gemini-3.1-flash-image-preview')
   } catch (e) {
-    console.warn('Pro image model failed, falling back to flash:', (e as Error).message)
+    const message = (e as Error).message
+    if (message.includes('AI gateway 4') || message.includes('rate limited') || message.includes('credits are exhausted')) throw e
+    console.warn('Primary image model failed, falling back:', message)
     return await callImageGen(apiKey, prompt, fabricUrl, 'google/gemini-2.5-flash-image')
   }
 }
@@ -269,8 +278,6 @@ Deno.serve(async (req) => {
     if (!validViews.includes(view)) throw new Error('invalid view')
 
     const dataUrl = await callImageGenWithFallback(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl)
-
-    const dataUrl = await callImageGen(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl)
     let { bytes, mime } = dataUrlToBytes(dataUrl)
 
     // FRONT + HIGHLIGHTS views: composite collar tag at back-neck AND tonal MG monogram on chest pocket

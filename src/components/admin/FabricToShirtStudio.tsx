@@ -62,6 +62,7 @@ const SIZE_CHART: Record<string, { chest: number; length: number; sleeve: number
   '6XL': { chest: 54, length: 36, sleeve: 28,   shoulder: 21   },
 };
 const ALL_SIZES = Object.keys(SIZE_CHART);
+const BULK_SPEC_SIZES = ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL'];
 
 interface Props {
   /** When provided, "Save to product" buttons appear and write to that product. */
@@ -77,6 +78,22 @@ async function uploadToBucket(file: Blob, path: string): Promise<string> {
   if (error) throw error;
   const { data } = supabase.storage.from('product-images').getPublicUrl(path);
   return data.publicUrl;
+}
+
+async function getFunctionErrorMessage(error: any) {
+  const context = error?.context;
+  let backendMessage = '';
+  if (context instanceof Response) {
+    try {
+      const payload = await context.clone().json();
+      backendMessage = payload?.error || payload?.message || '';
+    } catch {
+      try { backendMessage = await context.clone().text(); } catch {}
+    }
+  } else {
+    backendMessage = context?.error || context?.message || context?.details || '';
+  }
+  return [backendMessage, error?.message].filter(Boolean).join(' — ') || 'Generation failed';
 }
 
 // Nearest named-color lookup for the hex input.
@@ -176,6 +193,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
       if (raw) {
         const s = JSON.parse(raw);
         if (s.fabricUrl) setFabricUrl(s.fabricUrl);
+        if (s.collarTagUrl) setCollarTagUrl(s.collarTagUrl);
         if (s.colorHex) setColorHex(s.colorHex);
         if (typeof s.autoColor === 'boolean') setAutoColor(s.autoColor);
         if (typeof s.hd === 'boolean') setHd(s.hd);
@@ -199,11 +217,11 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     if (!hydrated.current) return;
     try {
       localStorage.setItem(storageKey, JSON.stringify({
-        fabricUrl, colorHex, autoColor, hd, specs, pose,
+        fabricUrl, collarTagUrl, colorHex, autoColor, hd, specs, pose,
         frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, bulkSpec,
       }));
     } catch {}
-  }, [storageKey, fabricUrl, colorHex, autoColor, hd, specs, pose, frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, bulkSpec]);
+  }, [storageKey, fabricUrl, collarTagUrl, colorHex, autoColor, hd, specs, pose, frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, bulkSpec]);
 
   // Load existing collar tag if previously uploaded
   useEffect(() => {
@@ -263,7 +281,10 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
           pose: view === 'lifestyle' ? pose : undefined,
         },
       });
-      if (error) throw error;
+      if (error) {
+        throw new Error(await getFunctionErrorMessage(error));
+      }
+      if (data?.error) throw new Error(data.error);
       if (!data?.url) throw new Error('No image returned');
       const setters: Record<ViewKind, (u: string) => void> = {
         front: setFrontUrl, back: setBackUrl, spec: setSpecUrl,
@@ -314,18 +335,21 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     setBulkSpec([]);
     const results: { size: string; url: string }[] = [];
     try {
-      for (const size of ALL_SIZES) {
+      for (const size of BULK_SPEC_SIZES) {
         const m = SIZE_CHART[size];
         const sizedSpecs = { ...specs, size, ...m };
         try {
           const { data, error } = await supabase.functions.invoke('generate-shirt-from-fabric', {
             body: { fabricUrl, view: 'spec', colorHex: colorHex || undefined, productId, hd, specs: sizedSpecs },
           });
-          if (error) throw error;
+          if (error) {
+            throw new Error(await getFunctionErrorMessage(error));
+          }
+          if (data?.error) throw new Error(data.error);
           if (data?.url) {
             results.push({ size, url: data.url });
             setBulkSpec([...results]);
-            toast({ title: `Spec sheet ${size} ready (${results.length}/${ALL_SIZES.length})` });
+            toast({ title: `Spec sheet ${size} ready (${results.length}/${BULK_SPEC_SIZES.length})` });
           }
         } catch (e: any) {
           toast({ title: `Spec ${size} failed`, description: e.message, variant: 'destructive' });
@@ -524,7 +548,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
             </div>
             <Button type="button" onClick={generateAllSpecSizes} disabled={!fabricUrl || bulkGenerating || generating !== null} variant="outline" className="w-full h-11">
               {bulkGenerating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
-              Generate spec sheets — all sizes (XS → 6XL)
+              Generate spec sheets — all sizes (S → 5XL)
             </Button>
             <Label className="text-xs uppercase tracking-wider text-muted-foreground pt-2 block">Human model (optional)</Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -550,7 +574,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
         <Card>
           <CardContent className="p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-sm">Spec sheets — all sizes ({bulkSpec.length}/{ALL_SIZES.length})</Label>
+              <Label className="text-sm">Spec sheets — all sizes ({bulkSpec.length}/{BULK_SPEC_SIZES.length})</Label>
               <Button type="button" size="sm" variant="outline" onClick={async () => {
                 const stamp = Date.now();
                 for (const it of bulkSpec) await downloadOne(it.url, `muffigout-spec-${it.size}-${stamp}.png`);
