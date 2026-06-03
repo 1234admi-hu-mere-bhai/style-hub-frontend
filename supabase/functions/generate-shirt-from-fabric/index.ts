@@ -274,16 +274,17 @@ Deno.serve(async (req) => {
     }
     if (!allowed) throw new Error('Forbidden')
 
-    const { fabricUrl, view = 'front', colorHex, collarTagUrl, productId, hd = false, specs, pose = 'sitting' } = await req.json()
+    const { fabricUrl, view = 'front', colorHex, collarTagUrl, referenceImageUrl, productId, hd = false, specs, pose = 'sitting' } = await req.json()
     if (!fabricUrl) throw new Error('fabricUrl required')
     const validViews = ['front', 'back', 'spec', 'highlights', 'model', 'model-back', 'lifestyle']
     if (!validViews.includes(view)) throw new Error('invalid view')
 
-    const dataUrl = await callImageGenWithFallback(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl)
+    const dataUrl = await callImageGenWithFallback(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl, referenceImageUrl)
     let { bytes, mime } = dataUrlToBytes(dataUrl)
 
-    // FRONT + HIGHLIGHTS views: composite collar tag at back-neck AND tonal MG monogram on chest pocket
-    if (view === 'front' || view === 'highlights') {
+    // FRONT only: composite collar tag at back-neck AND tonal MG monogram on chest pocket.
+    // Key Highlights must stay clean with no tag/logo overlays.
+    if (view === 'front') {
       try {
         let shirt = await Image.decode(bytes)
         if (collarTagUrl) {
