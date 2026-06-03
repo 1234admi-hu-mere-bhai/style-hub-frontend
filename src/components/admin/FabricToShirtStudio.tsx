@@ -265,6 +265,10 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
 
   const generate = async (view: ViewKind) => {
     if (!fabricUrl) { toast({ title: 'Upload a fabric image first', variant: 'destructive' }); return; }
+    if (!frontUrl && ['back', 'highlights', 'model', 'model-back', 'lifestyle'].includes(view)) {
+      toast({ title: 'Generate Front first', description: 'Other views now use the front mockup as the color and pattern reference to avoid mismatched results.', variant: 'destructive' });
+      return;
+    }
     setGenerating(view);
     try {
       const needsSpecs = view === 'spec' || view === 'highlights';
