@@ -226,12 +226,12 @@ async function compositeChestMonogram(shirt: Image, monogramBytes: Uint8Array, s
     const tone = tonalColor(shirtHex)
     for (let y = 0; y < resized.height; y++) {
       for (let x = 0; x < resized.width; x++) {
-        const px = resized.getPixelAt(x + 1, y + 1)
+        const px = resized.getPixelAt(x, y)
         const a = px & 0xff
         if (a === 0) continue
         const newA = Math.round(a * 0.85)
         const rgba = ((tone.r & 0xff) << 24) | ((tone.g & 0xff) << 16) | ((tone.b & 0xff) << 8) | (newA & 0xff)
-        resized.setPixelAt(x + 1, y + 1, rgba >>> 0)
+        resized.setPixelAt(x, y, rgba >>> 0)
       }
     }
   }
