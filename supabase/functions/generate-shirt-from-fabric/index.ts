@@ -26,9 +26,9 @@ function buildPrompt(
   pose: Pose = 'sitting',
 ) {
   const colorLock = hex
-    ? `CRITICAL COLOR LOCK: The shirt body color MUST be EXACTLY hex ${hex}. Do NOT shift hue, saturation, brightness, warmth, or tint by even one step. Sample this exact color and paint every fiber of the shirt with it.`
-    : `CRITICAL COLOR LOCK: Sample the EXACT dominant color from the provided fabric image and paint the shirt with that exact color pixel-for-pixel.`
-  const patternLock = `CRITICAL PATTERN LOCK: Reproduce the EXACT pattern, weave, print, stripe spacing, check size, motif scale and texture from the provided fabric image. Tile it naturally across the garment following the fabric's true scale. Do NOT invent or substitute a new pattern. If the fabric is solid, keep it perfectly solid with the same micro-texture.`
+    ? `CRITICAL COLOR LOCK: The shirt body color MUST be EXACTLY hex ${hex}. Do NOT shift hue, saturation, brightness, warmth, or tint. Front view, back view, model view, and highlights MUST all use this same exact fabric color.`
+    : `CRITICAL COLOR LOCK: Sample the EXACT dominant fabric color from the provided fabric image, ignoring any white/background area, and use that same color consistently across every generated view.`
+  const patternLock = `CRITICAL PATTERN LOCK: Reproduce the EXACT pattern, weave, print, stripe spacing, check size, motif scale and texture from the provided fabric image. If a generated front mockup/reference image is provided, match its shirt color and pattern exactly for all other views. Tile the fabric naturally across the garment following the fabric's true scale. Do NOT invent, warm, brighten, fade, recolor, or substitute a new pattern. If the fabric is solid, keep it perfectly solid with the same micro-texture.`
   const quality = hd
     ? `Ultra high resolution 4K studio photograph, razor-sharp focus, every weave fiber visible, crisp stitching, professional e-commerce hero shot quality.`
     : `High quality studio product photograph, sharp focus, clean stitching.`
@@ -66,9 +66,9 @@ Style: technical, precise, like a fashion designer's tech pack. NO model, NO man
     const fabric = specs?.fabric || 'Cotton Blend'
     const occasion = specs?.occasion || 'Casual'
     const collar = specs?.collar || 'Spread'
-    return `Flipkart-style mobile product-gallery Key Highlights image for a men's shirt listing. Use a full-bleed close-up fashion photograph background like Flipkart: a handsome South Asian male model (age 26-30, clean groomed look, athletic build) wearing the men's full-sleeve button-down shirt — framed from chest to head, face on the RIGHT side, collar, placket, mandatory chest pocket on the shirt, and upper shirt area clearly visible. The background should feel like a Flipkart/Myntra product image: clean gray studio, premium catalog lighting, high contrast white typography overlay, no card frame. ${quality} ${colorLock} ${patternLock}
+    return `Create a portrait 9:16 Flipkart-style mobile product-gallery Key Highlights image for a men's shirt listing. Use a full-bleed close-up fashion photograph background like the provided Flipkart reference: a handsome South Asian male model (age 26-30, clean groomed look, athletic build) wearing the men's full-sleeve button-down shirt — face and upper body cropped large, collar/placket/chest area visible, product photo style, no card frame. The shirt's color and pattern MUST match the provided fabric/reference mockup exactly. ${quality} ${colorLock} ${patternLock}
 
-CRITICAL OVERLAY: On the LEFT side of the image (over the muted background area, NOT on the model's face or the shirt), overlay a Flipkart-style WHITE text panel. Use bold rounded sans-serif typography similar to Flipkart app product pages: large title, small light-gray labels, big bold white values, thin semi-transparent divider lines. Add a subtle dark translucent gradient strip behind the left text only, so the text is readable but the photo remains visible. The panel must read EXACTLY these rows from top to bottom:
+CRITICAL FLIPKART UI: Copy the visual style of a Flipkart mobile gallery highlight overlay: bold white rounded sans-serif title at top-left, small light-gray labels, large bold white values below each label, thin semi-transparent divider lines, and a soft dark translucent gradient strip on the left third only. Add a small rounded rating chip at the bottom-left reading "3.8 ★ | 35.5K+" in Flipkart style. Do NOT include phone status bar, ads, product title, selected color row, thumbnails, add-to-cart buttons, or any browser chrome. The left panel must read EXACTLY these rows from top to bottom:
 
 Title row: "Key Highlights" (large bold white)
 Row 1 label: "Fit"  →  Row 1 value: "${fit}"
@@ -77,15 +77,15 @@ Row 3 label: "Fabric"  →  Row 3 value: "${fabric}"
 Row 4 label: "Pattern"  →  Row 4 value: "${pattern}"
 Row 5 label: "Occasion"  →  Row 5 value: "${occasion}"
 
-All text must be perfectly legible and correctly spelled — render ONLY the labels and values listed above, no extra text, no watermark, no logo. Leave the inner back-collar band area clean — a brand label will be composited afterwards. Leave the center of the LEFT chest pocket clean — a small monogram will be composited afterwards.`
+All text must be perfectly legible and correctly spelled — render ONLY the labels and values listed above plus the rating chip. CRITICAL BRAND CLEANUP: key highlights must contain NO collar tag, NO neck label, NO chest logo, NO monogram, NO watermark, NO brand wordmark, and NO floating brand mark anywhere. The shirt should look plain except for its fabric, seams, buttons, and pocket.`
   }
 
-  const common = `Photorealistic flat-lay studio product photograph of a men's full-sleeve button-down shirt on a pure white seamless background. The shirt MUST include one neat chest pocket on the wearer's LEFT side (viewer’s RIGHT side) in every front-facing output. Soft even lighting, no harsh shadows on background, perfectly centered, NO model, NO mannequin, NO hands, NO props, NO text overlays, NO watermark, NO printed logo on shirt body. ${quality} ${colorLock} ${patternLock}`
+  const common = `Photorealistic flat-lay studio product photograph of a men's full-sleeve button-down shirt on a pure white seamless background. The shirt MUST include one neat chest pocket on the wearer's LEFT side (viewer’s RIGHT side) in every front-facing output. Soft even lighting, no harsh shadows on background, perfectly centered, NO model, NO mannequin, NO hands, NO props, NO text overlays, NO watermark, NO printed logo on shirt body. Front and back outputs must look like the exact same garment photographed from two sides, with identical color, fabric texture, pattern scale, seam style, sleeve/cuff design, and hem shape. ${quality} ${colorLock} ${patternLock}`
   if (view === 'front') {
     return `${common} VIEW: FRONT view. Shirt laid flat and perfectly symmetric, collar at top, full placket with buttons visible down the center, chest pocket on the wearer's LEFT chest (viewer's RIGHT side), both sleeves spread slightly outward, cuffs visible. Leave the inner back collar area (just under the collar band at the back of the neck) clean and unobstructed — a label tag will be composited there afterwards. Leave the CENTER of the CHEST POCKET clean — a small monogram will be composited there afterwards.`
   }
   if (view === 'back') {
-    return `${common} VIEW: BACK view. Shirt laid flat and perfectly symmetric, back yoke visible at the shoulders, no buttons visible, smooth uninterrupted back panel, both sleeves spread slightly outward.`
+    return `${common} VIEW: BACK view. Shirt laid flat and perfectly symmetric, back yoke visible at the shoulders, no buttons visible, smooth uninterrupted back panel, both sleeves spread slightly outward. The back view MUST match the front reference garment exactly in color, pattern density, sleeve angle, collar construction, cuff design, fabric brightness, and scale.`
   }
 
   // Human model views
