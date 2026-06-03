@@ -268,13 +268,15 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     setGenerating(view);
     try {
       const needsSpecs = view === 'spec' || view === 'highlights';
-      const needsTag = view === 'front' || view === 'highlights';
+      const needsTag = view === 'front';
+      const referenceImageUrl = view !== 'front' && view !== 'spec' ? frontUrl || undefined : undefined;
       const { data, error } = await supabase.functions.invoke('generate-shirt-from-fabric', {
         body: {
           fabricUrl,
           view,
           colorHex: colorHex || undefined,
           collarTagUrl: needsTag ? (collarTagUrl?.split('?')[0] || undefined) : undefined,
+          referenceImageUrl,
           productId,
           hd,
           specs: needsSpecs ? specs : undefined,
