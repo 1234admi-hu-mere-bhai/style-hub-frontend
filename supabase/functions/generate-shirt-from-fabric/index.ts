@@ -129,7 +129,12 @@ All text must be perfectly legible and correctly spelled — render ONLY the lab
   return `${modelBase} ${poses[pose]}`
 }
 
-async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, model = 'google/gemini-3.1-flash-image-preview'): Promise<string> {
+async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string, model = 'google/gemini-3.1-flash-image-preview'): Promise<string> {
+  const content: Array<any> = [
+    { type: 'text', text: referenceUrl ? `${prompt}\n\nTwo images are provided: image 1 is the original fabric swatch; image 2 is the approved front mockup/reference garment. Match BOTH, and for color/pattern consistency prioritize image 2 while preserving the fabric from image 1.` : prompt },
+    { type: 'image_url', image_url: { url: fabricUrl } },
+  ]
+  if (referenceUrl) content.push({ type: 'image_url', image_url: { url: referenceUrl } })
   const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
@@ -137,10 +142,7 @@ async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, m
       model,
       messages: [{
         role: 'user',
-        content: [
-          { type: 'text', text: prompt },
-          { type: 'image_url', image_url: { url: fabricUrl } },
-        ],
+        content,
       }],
       modalities: ['image', 'text'],
     }),
@@ -159,14 +161,14 @@ async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, m
   return b64
 }
 
-async function callImageGenWithFallback(apiKey: string, prompt: string, fabricUrl: string): Promise<string> {
+async function callImageGenWithFallback(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string): Promise<string> {
   try {
-    return await callImageGen(apiKey, prompt, fabricUrl, 'google/gemini-3.1-flash-image-preview')
+    return await callImageGen(apiKey, prompt, fabricUrl, referenceUrl, 'google/gemini-3.1-flash-image-preview')
   } catch (e) {
     const message = (e as Error).message
     if (message.includes('AI gateway 4') || message.includes('rate limited') || message.includes('credits are exhausted')) throw e
     console.warn('Primary image model failed, falling back:', message)
-    return await callImageGen(apiKey, prompt, fabricUrl, 'google/gemini-2.5-flash-image')
+    return await callImageGen(apiKey, prompt, fabricUrl, referenceUrl, 'google/gemini-2.5-flash-image')
   }
 }
 
@@ -199,14 +201,14 @@ function tonalColor(hex: string): { r: number; g: number; b: number } {
 
 async function compositeCollarTag(shirt: Image, tagBytes: Uint8Array): Promise<Image> {
   const tag = await Image.decode(tagBytes)
-  // Smaller tag, sized to fit inside the back-collar band
-  const targetW = Math.round(shirt.width * 0.06)
+  // Normal sewn-in label size: readable but still seated inside the back-collar band
+  const targetW = Math.round(shirt.width * 0.085)
   const ratio = targetW / tag.width
   const targetH = Math.max(1, Math.round(tag.height * ratio))
   const resized = tag.resize(targetW, targetH)
   const x = Math.round((shirt.width - targetW) / 2)
   // Sit just under the collar band so it reads as a sewn-in inner-neck label
-  const y = Math.round(shirt.height * 0.16)
+  const y = Math.round(shirt.height * 0.155)
   shirt.composite(resized, x, y)
   return shirt
 }
