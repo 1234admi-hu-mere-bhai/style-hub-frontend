@@ -386,9 +386,16 @@ Deno.serve(async (req) => {
     if (view === 'front') {
       try {
         let shirt = await Image.decode(bytes)
+        // Always generate a crisp text tag in-function. If a tag PNG was uploaded,
+        // use it as a small logo glyph above the text (otherwise text-only tag).
+        let logoBytes: Uint8Array | undefined
         if (collarTagUrl) {
-          const tagBytes = await fetchBytes(collarTagUrl)
-          shirt = await compositeCollarTag(shirt, tagBytes)
+          try { logoBytes = await fetchBytes(collarTagUrl) } catch { /* ignore */ }
+        }
+        try {
+          shirt = await compositeCollarTag(shirt, logoBytes)
+        } catch (e) {
+          console.error('Collar tag overlay skipped:', e)
         }
         const monoPublic = adminClient.storage.from('product-images').getPublicUrl(MONOGRAM_PATH).data.publicUrl
         try {
