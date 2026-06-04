@@ -131,7 +131,7 @@ All text must be perfectly legible and correctly spelled — render ONLY the lab
     return `${common} VIEW: FRONT view. Shirt laid flat and perfectly symmetric, collar at top, full placket with buttons visible down the center, chest pocket on the wearer's LEFT chest (viewer's RIGHT side), both sleeves spread slightly outward, cuffs visible. Leave the inner back collar area (just under the collar band at the back of the neck) clean and unobstructed — a label tag will be composited there afterwards. Leave the CENTER of the CHEST POCKET clean — a small monogram will be composited there afterwards.`
   }
   if (view === 'back') {
-    return `${common} VIEW: BACK view. Shirt laid flat and perfectly symmetric, back yoke visible at the shoulders, no buttons visible, smooth uninterrupted back panel, both sleeves spread slightly outward. The back view MUST match the front reference garment exactly in color, pattern density, sleeve angle, collar construction, cuff design, fabric brightness, and scale.`
+    return `${common} VIEW: BACK view. Shirt laid flat and perfectly symmetric, back yoke visible at the shoulders, no buttons visible, smooth uninterrupted back panel, both sleeves spread slightly outward. The back view MUST match the front reference garment exactly in color, pattern density, sleeve angle, collar construction, cuff design, fabric brightness, and scale. CRITICAL: do NOT render any collar tag, neck label, sewn-in label, brand tag, woven tag, hang tag, sticker, monogram, embroidery, printed text, or any visible label anywhere on the back of the shirt — the entire back, including the inside back-collar/neckband area, must be completely clean fabric only. NO tag, NO label of any kind.`
   }
 
   // Human model views
