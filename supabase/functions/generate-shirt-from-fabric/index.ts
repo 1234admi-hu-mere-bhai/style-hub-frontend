@@ -66,7 +66,8 @@ Style: technical, precise, like a fashion designer's tech pack. NO model, NO man
     const fabric = specs?.fabric || 'Cotton Blend'
     const occasion = specs?.occasion || 'Casual'
     const collar = specs?.collar || 'Spread'
-    return `Create a portrait 9:16 Flipkart-style mobile product-gallery Key Highlights image for a men's shirt listing. Use a full-bleed close-up fashion photograph background like the provided Flipkart reference: a handsome South Asian male model (age 26-30, clean groomed look, athletic build) wearing the men's full-sleeve button-down shirt — face and upper body cropped large, collar/placket/chest area visible, product photo style, no card frame. The shirt's color and pattern MUST match the provided fabric/reference mockup exactly. ${quality} ${colorLock} ${patternLock}
+    const poseFlavor = HIGHLIGHT_POSES[pose] || HIGHLIGHT_POSES['standing-hands-pockets']
+    return `Create a portrait 9:16 Flipkart-style mobile product-gallery Key Highlights image for a men's shirt listing. Use a full-bleed UNIQUE fashion photograph background: a handsome South Asian male model (age 26-30, clean groomed look, athletic build) wearing the men's full-sleeve button-down shirt. ${poseFlavor} The shirt's color and pattern MUST match the provided fabric/reference mockup exactly. ${quality} ${colorLock} ${patternLock} ${bgContrastRule(hex)}
 
 CRITICAL FLIPKART UI: Copy the visual style of a Flipkart mobile gallery highlight overlay: bold white rounded sans-serif title at top-left, small light-gray labels, large bold white values below each label, thin semi-transparent divider lines, and a soft dark translucent gradient strip on the left third only. Add a small rounded rating chip at the bottom-left reading "3.8 ★ | 35.5K+" in Flipkart style. Do NOT include phone status bar, ads, product title, selected color row, thumbnails, add-to-cart buttons, or any browser chrome. The left panel must read EXACTLY these rows from top to bottom:
 
