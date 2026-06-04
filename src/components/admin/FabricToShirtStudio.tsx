@@ -359,7 +359,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
         const sizedSpecs = { ...specs, size, ...m };
         try {
           const { data, error } = await supabase.functions.invoke('generate-shirt-from-fabric', {
-            body: { fabricUrl, view: 'spec', colorHex: colorHex || undefined, productId, hd, specs: sizedSpecs },
+            body: { fabricUrl, view: 'spec', colorHex: colorHex || undefined, productId, hd, specs: sizedSpecs, userGeminiKey: userGeminiKey?.trim() || undefined },
           });
           if (error) {
             throw new Error(await getFunctionErrorMessage(error));
