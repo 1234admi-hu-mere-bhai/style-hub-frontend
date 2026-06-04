@@ -172,6 +172,10 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const [bulkSpec, setBulkSpec] = useState<{ size: string; url: string }[]>([]);
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [pose, setPose] = useState<Pose>('sitting');
+  const [userGeminiKey, setUserGeminiKey] = useState<string>(() => {
+    try { return localStorage.getItem('fabric-studio:gemini-key') || ''; } catch { return ''; }
+  });
+  const [showKey, setShowKey] = useState(false);
   const [specs, setSpecs] = useState({
     size: 'M',
     chest: SIZE_CHART.M.chest, length: SIZE_CHART.M.length, sleeve: SIZE_CHART.M.sleeve, shoulder: SIZE_CHART.M.shoulder,
@@ -185,6 +189,14 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const tagInput = useRef<HTMLInputElement>(null);
   const storageKey = `fabric-studio:${productId || 'global'}`;
   const hydrated = useRef(false);
+
+  // Persist Gemini key separately
+  useEffect(() => {
+    try {
+      if (userGeminiKey) localStorage.setItem('fabric-studio:gemini-key', userGeminiKey);
+      else localStorage.removeItem('fabric-studio:gemini-key');
+    } catch {}
+  }, [userGeminiKey]);
 
   // Restore previous session from localStorage
   useEffect(() => {
