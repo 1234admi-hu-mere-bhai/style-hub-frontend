@@ -172,7 +172,7 @@ All text must be perfectly legible and correctly spelled — render ONLY the lab
     'graffiti-wall': `POSE: model standing in front of a colorful graffiti-painted wall, hands in pockets, slight lean back against the wall, cool confident expression. Setting: urban street with bright daylight. Streetwear vibe.`,
     'train-station': `POSE: model standing alone on an empty train station platform, small leather duffel bag at feet, hands in pockets, looking down the tracks. Setting: vintage European train station at early morning with warm low light. Travel-cinematic vibe.`,
   }
-  return `${modelBase} ${poses[pose]}`
+  return `${modelBase} ${poses[pose]} ${bgContrastRule(hex)}`
 }
 
 async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string, model = 'google/gemini-3.1-flash-image-preview'): Promise<string> {
