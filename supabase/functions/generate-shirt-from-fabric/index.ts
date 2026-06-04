@@ -175,28 +175,25 @@ All text must be perfectly legible and correctly spelled — render ONLY the lab
   return `${modelBase} ${poses[pose]} ${bgContrastRule(hex)}`
 }
 
-async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string, model = 'google/gemini-3.1-flash-image-preview'): Promise<string> {
+async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string, model = 'google/gemini-3.1-flash-image-preview', endpoint = 'https://ai.gateway.lovable.dev/v1/chat/completions'): Promise<string> {
   const content: Array<any> = [
     { type: 'text', text: referenceUrl ? `${prompt}\n\nTwo images are provided: image 1 is the original fabric swatch; image 2 is the approved front mockup/reference garment. Match BOTH, and for color/pattern consistency prioritize image 2 while preserving the fabric from image 1.` : prompt },
     { type: 'image_url', image_url: { url: fabricUrl } },
   ]
   if (referenceUrl) content.push({ type: 'image_url', image_url: { url: referenceUrl } })
-  const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+  const resp = await fetch(endpoint, {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model,
-      messages: [{
-        role: 'user',
-        content,
-      }],
+      messages: [{ role: 'user', content }],
       modalities: ['image', 'text'],
     }),
   })
   if (!resp.ok) {
     const text = await resp.text()
     if (resp.status === 429) throw new Error('Image generation is rate limited. Please wait a minute and try again.')
-    if (resp.status === 402) throw new Error('Lovable AI credits are exhausted. Please add credits before generating more mockups.')
+    if (resp.status === 402) throw new Error('Lovable AI credits are exhausted. Add your own Gemini API key in Fabric Studio for unlimited generation.')
     throw new Error(`AI gateway ${resp.status}: ${text}`)
   }
   const data = await resp.json()
@@ -207,7 +204,18 @@ async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, r
   return b64
 }
 
-async function callImageGenWithFallback(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string): Promise<string> {
+async function callImageGenWithFallback(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string, userGeminiKey?: string): Promise<string> {
+  // BYOK: if user provided their own Gemini API key, call Google's OpenAI-compat endpoint directly (unlimited under their plan).
+  if (userGeminiKey) {
+    const googleEndpoint = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
+    try {
+      return await callImageGen(userGeminiKey, prompt, fabricUrl, referenceUrl, 'gemini-2.5-flash-image-preview', googleEndpoint)
+    } catch (e) {
+      const msg = (e as Error).message
+      console.warn('BYOK Gemini failed, falling back to Lovable gateway:', msg)
+      // fall through to Lovable
+    }
+  }
   try {
     return await callImageGen(apiKey, prompt, fabricUrl, referenceUrl, 'google/gemini-3.1-flash-image-preview')
   } catch (e) {
