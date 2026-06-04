@@ -381,12 +381,12 @@ Deno.serve(async (req) => {
     }
     if (!allowed) throw new Error('Forbidden')
 
-    const { fabricUrl, view = 'front', colorHex, collarTagUrl, referenceImageUrl, productId, hd = false, specs, pose = 'sitting' } = await req.json()
+    const { fabricUrl, view = 'front', colorHex, collarTagUrl, referenceImageUrl, productId, hd = false, specs, pose = 'sitting', userGeminiKey } = await req.json()
     if (!fabricUrl) throw new Error('fabricUrl required')
     const validViews = ['front', 'back', 'spec', 'highlights', 'model', 'model-back', 'lifestyle']
     if (!validViews.includes(view)) throw new Error('invalid view')
 
-    const dataUrl = await callImageGenWithFallback(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl, referenceImageUrl)
+    const dataUrl = await callImageGenWithFallback(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl, referenceImageUrl, userGeminiKey)
     let { bytes, mime } = dataUrlToBytes(dataUrl)
 
     // FRONT only: composite collar tag at back-neck AND tonal MG monogram on chest pocket.
