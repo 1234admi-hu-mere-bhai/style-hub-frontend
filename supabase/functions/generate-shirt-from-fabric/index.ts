@@ -18,6 +18,50 @@ type Pose =
   | 'laughing' | 'phone-call' | 'reading-book' | 'sunglasses-pose'
   | 'denim-jacket-layered' | 'window-light' | 'graffiti-wall' | 'train-station'
 
+// --- Background contrast helper: keep lifestyle/highlights bg from blending with shirt color ---
+function hexLum(hex?: string): number | null {
+  if (!hex) return null
+  const h = hex.replace('#', '')
+  if (h.length !== 6) return null
+  const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16)
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255
+}
+function bgContrastRule(hex?: string): string {
+  const l = hexLum(hex)
+  if (l === null) return `CRITICAL BACKGROUND CONTRAST: Choose set/wardrobe/props/walls whose dominant tone clearly contrasts with the shirt color so the garment never blends in. Avoid same-tone backgrounds.`
+  if (l > 0.75) return `CRITICAL BACKGROUND CONTRAST: The shirt is VERY LIGHT/WHITE — do NOT place model against white walls, white furniture, white tables, white chairs, white curtains, white seamless. Use mid-to-dark contrasting environment (charcoal concrete, walnut wood, deep green foliage, terracotta brick, navy textile, warm brown leather) so the shirt clearly stands apart from the background.`
+  if (l < 0.25) return `CRITICAL BACKGROUND CONTRAST: The shirt is VERY DARK — do NOT place model against black, charcoal, or deep-shadow backdrops. Use light/warm contrasting environment (off-white plaster wall, pale linen drapery, sand beach, cream marble, blonde-wood interior) so the shirt clearly stands apart.`
+  return `CRITICAL BACKGROUND CONTRAST: Choose a background whose tone clearly contrasts with the shirt color (avoid same-hue or same-brightness walls/props/furniture). The shirt must read as the visual hero against the scene.`
+}
+
+// Unique pose flavors for the highlights image so it never repeats
+const HIGHLIGHT_POSES: Record<string, string> = {
+  sitting: 'Half-body shot: model perched on a wooden stool turned slightly, one elbow on knee, calm gaze toward camera.',
+  leaning: 'Half-body shot: model leaning shoulder against textured concrete wall, hand near collar, looking off-camera.',
+  walking: 'Mid-stride upper body crop: model walking forward, soft motion in shirt placket, looking ahead.',
+  coffee: 'Half-body shot: model holding ceramic cup near chest, slight smile, soft cafe bokeh behind.',
+  'standing-hands-pockets': 'Confident chest-up portrait: model standing straight, hands tucked in pockets, direct eye contact.',
+  'arms-crossed': 'Chest-up portrait: model arms crossed, chin slightly lifted, bold intense gaze.',
+  'hand-in-hair': 'Half-body crop: one hand sweeping through hair, eyes closed in candid moment.',
+  'looking-away': 'Three-quarter chest-up: model turned 45°, gazing into distance.',
+  'jacket-over-shoulder': 'Half-body: blazer hooked on one finger over shoulder, shirt clearly visible underneath.',
+  'on-bike': 'Half-body crop: model astride vintage bike, hands on bars, calm sideways glance.',
+  'on-stairs': 'Half-body: model seated on stone stairs, elbows on knees, hands clasped.',
+  'against-car': 'Half-body: model leaning hip against classic car door, arm resting on roof.',
+  rooftop: 'Chest-up portrait against blurred city-skyline rooftop golden-hour sky.',
+  'beach-walk': 'Half-body crop: model on beach at sunset, breeze lifting shirt placket gently.',
+  'forest-path': 'Half-body crop: model on leafy forest path, soft dappled sunlight on shirt.',
+  'studio-profile': 'Sharp side-profile chest-up portrait, single key light raking across shirt fabric.',
+  laughing: 'Candid half-body: model mid-laugh, head tipped slightly, hand near collar.',
+  'phone-call': 'Half-body: model holding phone to ear, slight smile, modern interior behind.',
+  'reading-book': 'Half-body: model seated, open hardcover book in both hands, eyes on page.',
+  'sunglasses-pose': 'Half-body: model adjusting dark sunglasses with one hand, smirk.',
+  'denim-jacket-layered': 'Half-body: open denim jacket over the shirt, hands in jacket pockets.',
+  'window-light': 'Half-body profile: model beside large window, soft window light raking shirt.',
+  'graffiti-wall': 'Half-body: model in front of colorful graffiti wall, slight lean back, cool expression.',
+  'train-station': 'Half-body: model alone on station platform, hands in pockets, looking down tracks.',
+}
+
 function buildPrompt(
   view: ViewKind,
   hex?: string,
@@ -26,12 +70,13 @@ function buildPrompt(
   pose: Pose = 'sitting',
 ) {
   const colorLock = hex
-    ? `CRITICAL COLOR LOCK: The shirt body color MUST be EXACTLY hex ${hex}. Do NOT shift hue, saturation, brightness, warmth, or tint. Front view, back view, model view, and highlights MUST all use this same exact fabric color.`
+    ? `CRITICAL COLOR LOCK: The shirt body color MUST be EXACTLY hex ${hex}. Do NOT shift hue, saturation, brightness, warmth, or tint. Front view, back view, model view, and highlights MUST all use this same exact fabric color. If the rendered shirt color drifts from ${hex} by more than a tiny amount, the image is unacceptable.`
     : `CRITICAL COLOR LOCK: Sample the EXACT dominant fabric color from the provided fabric image, ignoring any white/background area, and use that same color consistently across every generated view.`
   const patternLock = `CRITICAL PATTERN LOCK: Reproduce the EXACT pattern, weave, print, stripe spacing, check size, motif scale and texture from the provided fabric image. If a generated front mockup/reference image is provided, match its shirt color and pattern exactly for all other views. Tile the fabric naturally across the garment following the fabric's true scale. Do NOT invent, warm, brighten, fade, recolor, or substitute a new pattern. If the fabric is solid, keep it perfectly solid with the same micro-texture.`
   const quality = hd
     ? `Ultra high resolution 4K studio photograph, razor-sharp focus, every weave fiber visible, crisp stitching, professional e-commerce hero shot quality.`
     : `High quality studio product photograph, sharp focus, clean stitching.`
+
 
   if (view === 'spec') {
     const size = specs?.size || 'M'
