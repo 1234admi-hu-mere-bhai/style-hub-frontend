@@ -172,6 +172,10 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const [bulkSpec, setBulkSpec] = useState<{ size: string; url: string }[]>([]);
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [pose, setPose] = useState<Pose>('sitting');
+  const [userGeminiKey, setUserGeminiKey] = useState<string>(() => {
+    try { return localStorage.getItem('fabric-studio:gemini-key') || ''; } catch { return ''; }
+  });
+  const [showKey, setShowKey] = useState(false);
   const [specs, setSpecs] = useState({
     size: 'M',
     chest: SIZE_CHART.M.chest, length: SIZE_CHART.M.length, sleeve: SIZE_CHART.M.sleeve, shoulder: SIZE_CHART.M.shoulder,
@@ -185,6 +189,14 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const tagInput = useRef<HTMLInputElement>(null);
   const storageKey = `fabric-studio:${productId || 'global'}`;
   const hydrated = useRef(false);
+
+  // Persist Gemini key separately
+  useEffect(() => {
+    try {
+      if (userGeminiKey) localStorage.setItem('fabric-studio:gemini-key', userGeminiKey);
+      else localStorage.removeItem('fabric-studio:gemini-key');
+    } catch {}
+  }, [userGeminiKey]);
 
   // Restore previous session from localStorage
   useEffect(() => {
@@ -285,6 +297,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
           hd,
           specs: needsSpecs ? specs : undefined,
           pose: view === 'lifestyle' ? pose : undefined,
+          userGeminiKey: userGeminiKey?.trim() || undefined,
         },
       });
       if (error) {
@@ -346,7 +359,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
         const sizedSpecs = { ...specs, size, ...m };
         try {
           const { data, error } = await supabase.functions.invoke('generate-shirt-from-fabric', {
-            body: { fabricUrl, view: 'spec', colorHex: colorHex || undefined, productId, hd, specs: sizedSpecs },
+            body: { fabricUrl, view: 'spec', colorHex: colorHex || undefined, productId, hd, specs: sizedSpecs, userGeminiKey: userGeminiKey?.trim() || undefined },
           });
           if (error) {
             throw new Error(await getFunctionErrorMessage(error));
@@ -451,6 +464,39 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
             </div>
             <Switch checked={hd} onCheckedChange={setHd} />
           </div>
+
+          {/* BYOK Gemini key — unlimited generation under user's own Google AI plan */}
+          <div className="rounded-md border bg-secondary/40 p-3 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <Label className="flex items-center gap-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-primary" /> Your Gemini API key <span className="text-xs text-muted-foreground font-normal">(optional — unlimited)</span>
+              </Label>
+              {userGeminiKey && (
+                <Badge variant="outline" className="text-[10px]">BYOK active</Badge>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type={showKey ? 'text' : 'password'}
+                value={userGeminiKey}
+                onChange={(e) => setUserGeminiKey(e.target.value)}
+                placeholder="AIza... (paste your Google AI Studio key)"
+                className="h-10 bg-background font-mono text-xs"
+              />
+              <Button type="button" variant="outline" size="sm" className="h-10" onClick={() => setShowKey(s => !s)}>
+                {showKey ? 'Hide' : 'Show'}
+              </Button>
+              {userGeminiKey && (
+                <Button type="button" variant="ghost" size="sm" className="h-10" onClick={() => setUserGeminiKey('')}>Clear</Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Bypass Lovable AI credit limits using your own Gemini Pro plan. Get a free key at{' '}
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary underline">aistudio.google.com/app/apikey</a>.
+              Stored only in your browser. Falls back to Lovable AI automatically if your key fails.
+            </p>
+          </div>
+
 
           {/* Spec sheet inputs */}
           <div className="rounded-md border bg-secondary/40 p-3 space-y-3">
@@ -597,7 +643,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                       <Download className="h-3 w-3" />
                     </button>
                   </div>
-                  <img src={it.url} alt={`Spec ${it.size}`} className="w-full aspect-square object-contain rounded-md bg-white border" />
+                  <img src={it.url} alt={`Spec ${it.size}`} className="w-full h-auto max-h-[60vh] object-contain rounded-md bg-white border" />
                 </div>
               ))}
             </div>
@@ -609,20 +655,6 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
       {(frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || modelBackUrl || lifestyleUrl) && (
         <Card>
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-start gap-2 rounded-md bg-secondary/40 p-3 text-sm">
-              <Info className="h-4 w-4 mt-0.5 text-primary shrink-0" />
-              <div className="space-y-1">
-                <p className="font-medium">About these mockups</p>
-                <p className="text-xs text-muted-foreground">
-                  Men's full-sleeve button-down shirt rendered from your fabric swatch.
-                  Color locked to <span className="font-mono text-foreground">{colorHex || 'auto-sampled'}</span>,
-                  pattern reproduced from the fabric, MUFFI GOUT collar tag at the back-neck and a tonal MG monogram embroidered on the chest pocket.
-                  Sized for <span className="font-medium text-foreground">{specs.size}</span> — Chest {specs.chest}″, Length {specs.length}″, Sleeve {specs.sleeve}″, Shoulder {specs.shoulder}″ ({specs.fabric}).
-                  {hd ? ' Generated in HD (4K studio quality).' : ' Standard quality — toggle HD above for sharper output.'}
-                </p>
-              </div>
-            </div>
-
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {[
                 { url: frontUrl, label: 'Front (with collar tag)', key: 'front' },
@@ -640,7 +672,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                       <Download className="h-3 w-3" /> Download
                     </button>
                   </div>
-                  <img src={v.url} alt={v.label} className="w-full aspect-square object-contain rounded-md bg-white border" />
+                  <img src={v.url} alt={v.label} className="w-full h-auto max-h-[80vh] object-contain rounded-md bg-white border" />
                 </div>
               ) : null)}
             </div>
@@ -648,9 +680,25 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
             <Button type="button" variant="outline" onClick={downloadAll} className="w-full h-11">
               <Download className="h-4 w-4 mr-2" /> Download all generated views
             </Button>
+
+            {/* Info moved to bottom */}
+            <div className="flex items-start gap-2 rounded-md bg-secondary/40 p-3 text-sm">
+              <Info className="h-4 w-4 mt-0.5 text-primary shrink-0" />
+              <div className="space-y-1">
+                <p className="font-medium">About these mockups</p>
+                <p className="text-xs text-muted-foreground">
+                  Men's full-sleeve button-down shirt rendered from your fabric swatch.
+                  Color locked to <span className="font-mono text-foreground">{colorHex || 'auto-sampled'}</span>,
+                  pattern reproduced from the fabric, MUFFI GOUT collar tag at the back-neck and a tonal MG monogram embroidered on the chest pocket.
+                  Sized for <span className="font-medium text-foreground">{specs.size}</span> — Chest {specs.chest}″, Length {specs.length}″, Sleeve {specs.sleeve}″, Shoulder {specs.shoulder}″ ({specs.fabric}).
+                  {hd ? ' Generated in HD (4K studio quality).' : ' Standard quality — toggle HD above for sharper output.'}
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
+
 
       {productId && (frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || modelBackUrl || lifestyleUrl) && (
         <Button type="button" onClick={saveToProduct} className="w-full h-12">

@@ -112,7 +112,7 @@ Style: technical, precise, like a fashion designer's tech pack. NO model, NO man
     const occasion = specs?.occasion || 'Casual'
     const collar = specs?.collar || 'Spread'
     const poseFlavor = HIGHLIGHT_POSES[pose] || HIGHLIGHT_POSES['standing-hands-pockets']
-    return `Create a portrait 9:16 Flipkart-style mobile product-gallery Key Highlights image for a men's shirt listing. Use a full-bleed UNIQUE fashion photograph background: a handsome South Asian male model (age 26-30, clean groomed look, athletic build) wearing the men's full-sleeve button-down shirt. ${poseFlavor} The shirt's color and pattern MUST match the provided fabric/reference mockup exactly. ${quality} ${colorLock} ${patternLock} ${bgContrastRule(hex)}
+    return `Create a portrait 9:16 Flipkart-style mobile product-gallery Key Highlights image for a men's shirt listing. CRITICAL FRAMING: the ENTIRE composition must fit inside ONE single 9:16 frame with generous safe margins — model framed from the top of the head down to mid-torso (chest + shirt clearly visible), nothing cropped at the top, sides, or bottom. The text panel on the left and the model on the right must BOTH be fully visible inside the frame. Use a full-bleed UNIQUE fashion photograph background: a handsome South Asian male model (age 26-30, clean groomed look, athletic build) wearing the men's full-sleeve button-down shirt. ${poseFlavor} The shirt's color and pattern MUST match the provided fabric/reference mockup exactly. ${quality} ${colorLock} ${patternLock} ${bgContrastRule(hex)}
 
 CRITICAL FLIPKART UI: Copy the visual style of a Flipkart mobile gallery highlight overlay: bold white rounded sans-serif title at top-left, small light-gray labels, large bold white values below each label, thin semi-transparent divider lines, and a soft dark translucent gradient strip on the left third only. Add a small rounded rating chip at the bottom-left reading "3.8 ★ | 35.5K+" in Flipkart style. Do NOT include phone status bar, ads, product title, selected color row, thumbnails, add-to-cart buttons, or any browser chrome. The left panel must read EXACTLY these rows from top to bottom:
 
@@ -131,7 +131,7 @@ All text must be perfectly legible and correctly spelled — render ONLY the lab
     return `${common} VIEW: FRONT view. Shirt laid flat and perfectly symmetric, collar at top, full placket with buttons visible down the center, chest pocket on the wearer's LEFT chest (viewer's RIGHT side), both sleeves spread slightly outward, cuffs visible. Leave the inner back collar area (just under the collar band at the back of the neck) clean and unobstructed — a label tag will be composited there afterwards. Leave the CENTER of the CHEST POCKET clean — a small monogram will be composited there afterwards.`
   }
   if (view === 'back') {
-    return `${common} VIEW: BACK view. Shirt laid flat and perfectly symmetric, back yoke visible at the shoulders, no buttons visible, smooth uninterrupted back panel, both sleeves spread slightly outward. The back view MUST match the front reference garment exactly in color, pattern density, sleeve angle, collar construction, cuff design, fabric brightness, and scale.`
+    return `${common} VIEW: BACK view. Shirt laid flat and perfectly symmetric, back yoke visible at the shoulders, no buttons visible, smooth uninterrupted back panel, both sleeves spread slightly outward. The back view MUST match the front reference garment exactly in color, pattern density, sleeve angle, collar construction, cuff design, fabric brightness, and scale. CRITICAL: do NOT render any collar tag, neck label, sewn-in label, brand tag, woven tag, hang tag, sticker, monogram, embroidery, printed text, or any visible label anywhere on the back of the shirt — the entire back, including the inside back-collar/neckband area, must be completely clean fabric only. NO tag, NO label of any kind.`
   }
 
   // Human model views
@@ -175,28 +175,25 @@ All text must be perfectly legible and correctly spelled — render ONLY the lab
   return `${modelBase} ${poses[pose]} ${bgContrastRule(hex)}`
 }
 
-async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string, model = 'google/gemini-3.1-flash-image-preview'): Promise<string> {
+async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string, model = 'google/gemini-3.1-flash-image-preview', endpoint = 'https://ai.gateway.lovable.dev/v1/chat/completions'): Promise<string> {
   const content: Array<any> = [
     { type: 'text', text: referenceUrl ? `${prompt}\n\nTwo images are provided: image 1 is the original fabric swatch; image 2 is the approved front mockup/reference garment. Match BOTH, and for color/pattern consistency prioritize image 2 while preserving the fabric from image 1.` : prompt },
     { type: 'image_url', image_url: { url: fabricUrl } },
   ]
   if (referenceUrl) content.push({ type: 'image_url', image_url: { url: referenceUrl } })
-  const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+  const resp = await fetch(endpoint, {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model,
-      messages: [{
-        role: 'user',
-        content,
-      }],
+      messages: [{ role: 'user', content }],
       modalities: ['image', 'text'],
     }),
   })
   if (!resp.ok) {
     const text = await resp.text()
     if (resp.status === 429) throw new Error('Image generation is rate limited. Please wait a minute and try again.')
-    if (resp.status === 402) throw new Error('Lovable AI credits are exhausted. Please add credits before generating more mockups.')
+    if (resp.status === 402) throw new Error('Lovable AI credits are exhausted. Add your own Gemini API key in Fabric Studio for unlimited generation.')
     throw new Error(`AI gateway ${resp.status}: ${text}`)
   }
   const data = await resp.json()
@@ -207,7 +204,18 @@ async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, r
   return b64
 }
 
-async function callImageGenWithFallback(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string): Promise<string> {
+async function callImageGenWithFallback(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string, userGeminiKey?: string): Promise<string> {
+  // BYOK: if user provided their own Gemini API key, call Google's OpenAI-compat endpoint directly (unlimited under their plan).
+  if (userGeminiKey) {
+    const googleEndpoint = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
+    try {
+      return await callImageGen(userGeminiKey, prompt, fabricUrl, referenceUrl, 'gemini-2.5-flash-image-preview', googleEndpoint)
+    } catch (e) {
+      const msg = (e as Error).message
+      console.warn('BYOK Gemini failed, falling back to Lovable gateway:', msg)
+      // fall through to Lovable
+    }
+  }
   try {
     return await callImageGen(apiKey, prompt, fabricUrl, referenceUrl, 'google/gemini-3.1-flash-image-preview')
   } catch (e) {
@@ -373,12 +381,12 @@ Deno.serve(async (req) => {
     }
     if (!allowed) throw new Error('Forbidden')
 
-    const { fabricUrl, view = 'front', colorHex, collarTagUrl, referenceImageUrl, productId, hd = false, specs, pose = 'sitting' } = await req.json()
+    const { fabricUrl, view = 'front', colorHex, collarTagUrl, referenceImageUrl, productId, hd = false, specs, pose = 'sitting', userGeminiKey } = await req.json()
     if (!fabricUrl) throw new Error('fabricUrl required')
     const validViews = ['front', 'back', 'spec', 'highlights', 'model', 'model-back', 'lifestyle']
     if (!validViews.includes(view)) throw new Error('invalid view')
 
-    const dataUrl = await callImageGenWithFallback(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl, referenceImageUrl)
+    const dataUrl = await callImageGenWithFallback(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl, referenceImageUrl, userGeminiKey)
     let { bytes, mime } = dataUrlToBytes(dataUrl)
 
     // FRONT only: composite collar tag at back-neck AND tonal MG monogram on chest pocket.
