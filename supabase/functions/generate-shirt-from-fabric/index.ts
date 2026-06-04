@@ -18,6 +18,50 @@ type Pose =
   | 'laughing' | 'phone-call' | 'reading-book' | 'sunglasses-pose'
   | 'denim-jacket-layered' | 'window-light' | 'graffiti-wall' | 'train-station'
 
+// --- Background contrast helper: keep lifestyle/highlights bg from blending with shirt color ---
+function hexLum(hex?: string): number | null {
+  if (!hex) return null
+  const h = hex.replace('#', '')
+  if (h.length !== 6) return null
+  const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16)
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255
+}
+function bgContrastRule(hex?: string): string {
+  const l = hexLum(hex)
+  if (l === null) return `CRITICAL BACKGROUND CONTRAST: Choose set/wardrobe/props/walls whose dominant tone clearly contrasts with the shirt color so the garment never blends in. Avoid same-tone backgrounds.`
+  if (l > 0.75) return `CRITICAL BACKGROUND CONTRAST: The shirt is VERY LIGHT/WHITE — do NOT place model against white walls, white furniture, white tables, white chairs, white curtains, white seamless. Use mid-to-dark contrasting environment (charcoal concrete, walnut wood, deep green foliage, terracotta brick, navy textile, warm brown leather) so the shirt clearly stands apart from the background.`
+  if (l < 0.25) return `CRITICAL BACKGROUND CONTRAST: The shirt is VERY DARK — do NOT place model against black, charcoal, or deep-shadow backdrops. Use light/warm contrasting environment (off-white plaster wall, pale linen drapery, sand beach, cream marble, blonde-wood interior) so the shirt clearly stands apart.`
+  return `CRITICAL BACKGROUND CONTRAST: Choose a background whose tone clearly contrasts with the shirt color (avoid same-hue or same-brightness walls/props/furniture). The shirt must read as the visual hero against the scene.`
+}
+
+// Unique pose flavors for the highlights image so it never repeats
+const HIGHLIGHT_POSES: Record<string, string> = {
+  sitting: 'Half-body shot: model perched on a wooden stool turned slightly, one elbow on knee, calm gaze toward camera.',
+  leaning: 'Half-body shot: model leaning shoulder against textured concrete wall, hand near collar, looking off-camera.',
+  walking: 'Mid-stride upper body crop: model walking forward, soft motion in shirt placket, looking ahead.',
+  coffee: 'Half-body shot: model holding ceramic cup near chest, slight smile, soft cafe bokeh behind.',
+  'standing-hands-pockets': 'Confident chest-up portrait: model standing straight, hands tucked in pockets, direct eye contact.',
+  'arms-crossed': 'Chest-up portrait: model arms crossed, chin slightly lifted, bold intense gaze.',
+  'hand-in-hair': 'Half-body crop: one hand sweeping through hair, eyes closed in candid moment.',
+  'looking-away': 'Three-quarter chest-up: model turned 45°, gazing into distance.',
+  'jacket-over-shoulder': 'Half-body: blazer hooked on one finger over shoulder, shirt clearly visible underneath.',
+  'on-bike': 'Half-body crop: model astride vintage bike, hands on bars, calm sideways glance.',
+  'on-stairs': 'Half-body: model seated on stone stairs, elbows on knees, hands clasped.',
+  'against-car': 'Half-body: model leaning hip against classic car door, arm resting on roof.',
+  rooftop: 'Chest-up portrait against blurred city-skyline rooftop golden-hour sky.',
+  'beach-walk': 'Half-body crop: model on beach at sunset, breeze lifting shirt placket gently.',
+  'forest-path': 'Half-body crop: model on leafy forest path, soft dappled sunlight on shirt.',
+  'studio-profile': 'Sharp side-profile chest-up portrait, single key light raking across shirt fabric.',
+  laughing: 'Candid half-body: model mid-laugh, head tipped slightly, hand near collar.',
+  'phone-call': 'Half-body: model holding phone to ear, slight smile, modern interior behind.',
+  'reading-book': 'Half-body: model seated, open hardcover book in both hands, eyes on page.',
+  'sunglasses-pose': 'Half-body: model adjusting dark sunglasses with one hand, smirk.',
+  'denim-jacket-layered': 'Half-body: open denim jacket over the shirt, hands in jacket pockets.',
+  'window-light': 'Half-body profile: model beside large window, soft window light raking shirt.',
+  'graffiti-wall': 'Half-body: model in front of colorful graffiti wall, slight lean back, cool expression.',
+  'train-station': 'Half-body: model alone on station platform, hands in pockets, looking down tracks.',
+}
+
 function buildPrompt(
   view: ViewKind,
   hex?: string,
@@ -26,12 +70,13 @@ function buildPrompt(
   pose: Pose = 'sitting',
 ) {
   const colorLock = hex
-    ? `CRITICAL COLOR LOCK: The shirt body color MUST be EXACTLY hex ${hex}. Do NOT shift hue, saturation, brightness, warmth, or tint. Front view, back view, model view, and highlights MUST all use this same exact fabric color.`
+    ? `CRITICAL COLOR LOCK: The shirt body color MUST be EXACTLY hex ${hex}. Do NOT shift hue, saturation, brightness, warmth, or tint. Front view, back view, model view, and highlights MUST all use this same exact fabric color. If the rendered shirt color drifts from ${hex} by more than a tiny amount, the image is unacceptable.`
     : `CRITICAL COLOR LOCK: Sample the EXACT dominant fabric color from the provided fabric image, ignoring any white/background area, and use that same color consistently across every generated view.`
   const patternLock = `CRITICAL PATTERN LOCK: Reproduce the EXACT pattern, weave, print, stripe spacing, check size, motif scale and texture from the provided fabric image. If a generated front mockup/reference image is provided, match its shirt color and pattern exactly for all other views. Tile the fabric naturally across the garment following the fabric's true scale. Do NOT invent, warm, brighten, fade, recolor, or substitute a new pattern. If the fabric is solid, keep it perfectly solid with the same micro-texture.`
   const quality = hd
     ? `Ultra high resolution 4K studio photograph, razor-sharp focus, every weave fiber visible, crisp stitching, professional e-commerce hero shot quality.`
     : `High quality studio product photograph, sharp focus, clean stitching.`
+
 
   if (view === 'spec') {
     const size = specs?.size || 'M'
@@ -66,7 +111,8 @@ Style: technical, precise, like a fashion designer's tech pack. NO model, NO man
     const fabric = specs?.fabric || 'Cotton Blend'
     const occasion = specs?.occasion || 'Casual'
     const collar = specs?.collar || 'Spread'
-    return `Create a portrait 9:16 Flipkart-style mobile product-gallery Key Highlights image for a men's shirt listing. Use a full-bleed close-up fashion photograph background like the provided Flipkart reference: a handsome South Asian male model (age 26-30, clean groomed look, athletic build) wearing the men's full-sleeve button-down shirt — face and upper body cropped large, collar/placket/chest area visible, product photo style, no card frame. The shirt's color and pattern MUST match the provided fabric/reference mockup exactly. ${quality} ${colorLock} ${patternLock}
+    const poseFlavor = HIGHLIGHT_POSES[pose] || HIGHLIGHT_POSES['standing-hands-pockets']
+    return `Create a portrait 9:16 Flipkart-style mobile product-gallery Key Highlights image for a men's shirt listing. Use a full-bleed UNIQUE fashion photograph background: a handsome South Asian male model (age 26-30, clean groomed look, athletic build) wearing the men's full-sleeve button-down shirt. ${poseFlavor} The shirt's color and pattern MUST match the provided fabric/reference mockup exactly. ${quality} ${colorLock} ${patternLock} ${bgContrastRule(hex)}
 
 CRITICAL FLIPKART UI: Copy the visual style of a Flipkart mobile gallery highlight overlay: bold white rounded sans-serif title at top-left, small light-gray labels, large bold white values below each label, thin semi-transparent divider lines, and a soft dark translucent gradient strip on the left third only. Add a small rounded rating chip at the bottom-left reading "3.8 ★ | 35.5K+" in Flipkart style. Do NOT include phone status bar, ads, product title, selected color row, thumbnails, add-to-cart buttons, or any browser chrome. The left panel must read EXACTLY these rows from top to bottom:
 
@@ -126,7 +172,7 @@ All text must be perfectly legible and correctly spelled — render ONLY the lab
     'graffiti-wall': `POSE: model standing in front of a colorful graffiti-painted wall, hands in pockets, slight lean back against the wall, cool confident expression. Setting: urban street with bright daylight. Streetwear vibe.`,
     'train-station': `POSE: model standing alone on an empty train station platform, small leather duffel bag at feet, hands in pockets, looking down the tracks. Setting: vintage European train station at early morning with warm low light. Travel-cinematic vibe.`,
   }
-  return `${modelBase} ${poses[pose]}`
+  return `${modelBase} ${poses[pose]} ${bgContrastRule(hex)}`
 }
 
 async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string, model = 'google/gemini-3.1-flash-image-preview'): Promise<string> {
@@ -199,17 +245,70 @@ function tonalColor(hex: string): { r: number; g: number; b: number } {
   return { r: clamp(r), g: clamp(g), b: clamp(b) }
 }
 
-async function compositeCollarTag(shirt: Image, tagBytes: Uint8Array): Promise<Image> {
-  const tag = await Image.decode(tagBytes)
-  // Normal sewn-in label size: readable but still seated inside the back-collar band
-  const targetW = Math.round(shirt.width * 0.085)
-  const ratio = targetW / tag.width
-  const targetH = Math.max(1, Math.round(tag.height * ratio))
-  const resized = tag.resize(targetW, targetH)
-  const x = Math.round((shirt.width - targetW) / 2)
-  // Sit just under the collar band so it reads as a sewn-in inner-neck label
+// Fetch and cache a TTF font (Inter Bold) so we can render crisp tag text at the exact target px.
+let cachedFontBytes: Uint8Array | null = null
+async function getTagFont(): Promise<Uint8Array> {
+  if (cachedFontBytes) return cachedFontBytes
+  const sources = [
+    'https://github.com/rsms/inter/raw/master/docs/font-files/Inter-Bold.ttf',
+    'https://cdn.jsdelivr.net/gh/rsms/inter@master/docs/font-files/Inter-Bold.ttf',
+  ]
+  for (const u of sources) {
+    try {
+      const r = await fetch(u)
+      if (r.ok) {
+        cachedFontBytes = new Uint8Array(await r.arrayBuffer())
+        return cachedFontBytes
+      }
+    } catch { /* try next */ }
+  }
+  throw new Error('Could not load tag font')
+}
+
+// Build a fresh crisp collar tag image at the target pixel size — no downscaling = no blur.
+// If `logoBytes` is provided, it's composited as a small logo above the text.
+async function buildCollarTag(targetW: number, logoBytes?: Uint8Array): Promise<Image> {
+  const w = targetW
+  const h = Math.round(w * 0.62) // tall-ish tag like a sewn-in label
+  const tag = new Image(w, h).fill(0xfafafaff) // off-white tag
+  // subtle 2px darker border for stitched look
+  const border = 0xc8c8c8ff
+  for (let x = 0; x < w; x++) { tag.setPixelAt(x, 0, border); tag.setPixelAt(x, h - 1, border) }
+  for (let y = 0; y < h; y++) { tag.setPixelAt(0, y, border); tag.setPixelAt(w - 1, y, border) }
+
+  const font = await getTagFont()
+  // Render text at native pixel size for the tag — sharp, no resampling.
+  const titleSize = Math.max(14, Math.round(h * 0.30))
+  const subSize = Math.max(9, Math.round(h * 0.18))
+  const title = Image.renderText(font, titleSize, 'MUFFIGOUT', 0x111111ff)
+  const sub = Image.renderText(font, subSize, 'APPAREL HUB', 0x444444ff)
+
+  let cursorY = Math.round(h * 0.18)
+  if (logoBytes) {
+    try {
+      const logo = await Image.decode(logoBytes)
+      const logoTargetH = Math.round(h * 0.30)
+      const ratio = logoTargetH / logo.height
+      const logoTargetW = Math.max(1, Math.round(logo.width * ratio))
+      const resizedLogo = logo.resize(Math.min(logoTargetW, Math.round(w * 0.55)), logoTargetH)
+      tag.composite(resizedLogo, Math.round((w - resizedLogo.width) / 2), cursorY)
+      cursorY += resizedLogo.height + Math.round(h * 0.06)
+    } catch { /* ignore bad logo */ }
+  } else {
+    cursorY = Math.round(h * 0.22)
+  }
+  tag.composite(title, Math.round((w - title.width) / 2), cursorY)
+  tag.composite(sub, Math.round((w - sub.width) / 2), cursorY + title.height + Math.max(2, Math.round(h * 0.04)))
+  return tag
+}
+
+async function compositeCollarTag(shirt: Image, logoBytes?: Uint8Array): Promise<Image> {
+  // Sized so text is readable but the tag sits naturally under the back-collar band.
+  const targetW = Math.round(shirt.width * 0.095)
+  const tag = await buildCollarTag(targetW, logoBytes)
+  const x = Math.round((shirt.width - tag.width) / 2)
   const y = Math.round(shirt.height * 0.155)
-  shirt.composite(resized, x, y)
+  shirt.composite(tag, x, y)
   return shirt
 }
 
@@ -287,9 +386,16 @@ Deno.serve(async (req) => {
     if (view === 'front') {
       try {
         let shirt = await Image.decode(bytes)
+        // Always generate a crisp text tag in-function. If a tag PNG was uploaded,
+        // use it as a small logo glyph above the text (otherwise text-only tag).
+        let logoBytes: Uint8Array | undefined
         if (collarTagUrl) {
-          const tagBytes = await fetchBytes(collarTagUrl)
-          shirt = await compositeCollarTag(shirt, tagBytes)
+          try { logoBytes = await fetchBytes(collarTagUrl) } catch { /* ignore */ }
+        }
+        try {
+          shirt = await compositeCollarTag(shirt, logoBytes)
+        } catch (e) {
+          console.error('Collar tag overlay skipped:', e)
         }
         const monoPublic = adminClient.storage.from('product-images').getPublicUrl(MONOGRAM_PATH).data.publicUrl
         try {
