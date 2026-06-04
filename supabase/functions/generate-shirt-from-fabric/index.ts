@@ -245,17 +245,70 @@ function tonalColor(hex: string): { r: number; g: number; b: number } {
   return { r: clamp(r), g: clamp(g), b: clamp(b) }
 }
 
-async function compositeCollarTag(shirt: Image, tagBytes: Uint8Array): Promise<Image> {
-  const tag = await Image.decode(tagBytes)
-  // Normal sewn-in label size: readable but still seated inside the back-collar band
-  const targetW = Math.round(shirt.width * 0.085)
-  const ratio = targetW / tag.width
-  const targetH = Math.max(1, Math.round(tag.height * ratio))
-  const resized = tag.resize(targetW, targetH)
-  const x = Math.round((shirt.width - targetW) / 2)
-  // Sit just under the collar band so it reads as a sewn-in inner-neck label
+// Fetch and cache a TTF font (Inter Bold) so we can render crisp tag text at the exact target px.
+let cachedFontBytes: Uint8Array | null = null
+async function getTagFont(): Promise<Uint8Array> {
+  if (cachedFontBytes) return cachedFontBytes
+  const sources = [
+    'https://github.com/rsms/inter/raw/master/docs/font-files/Inter-Bold.ttf',
+    'https://cdn.jsdelivr.net/gh/rsms/inter@master/docs/font-files/Inter-Bold.ttf',
+  ]
+  for (const u of sources) {
+    try {
+      const r = await fetch(u)
+      if (r.ok) {
+        cachedFontBytes = new Uint8Array(await r.arrayBuffer())
+        return cachedFontBytes
+      }
+    } catch { /* try next */ }
+  }
+  throw new Error('Could not load tag font')
+}
+
+// Build a fresh crisp collar tag image at the target pixel size — no downscaling = no blur.
+// If `logoBytes` is provided, it's composited as a small logo above the text.
+async function buildCollarTag(targetW: number, logoBytes?: Uint8Array): Promise<Image> {
+  const w = targetW
+  const h = Math.round(w * 0.62) // tall-ish tag like a sewn-in label
+  const tag = new Image(w, h).fill(0xfafafaff) // off-white tag
+  // subtle 2px darker border for stitched look
+  const border = 0xc8c8c8ff
+  for (let x = 0; x < w; x++) { tag.setPixelAt(x, 0, border); tag.setPixelAt(x, h - 1, border) }
+  for (let y = 0; y < h; y++) { tag.setPixelAt(0, y, border); tag.setPixelAt(w - 1, y, border) }
+
+  const font = await getTagFont()
+  // Render text at native pixel size for the tag — sharp, no resampling.
+  const titleSize = Math.max(14, Math.round(h * 0.30))
+  const subSize = Math.max(9, Math.round(h * 0.18))
+  const title = Image.renderText(font, titleSize, 'MUFFIGOUT', 0x111111ff)
+  const sub = Image.renderText(font, subSize, 'APPAREL HUB', 0x444444ff)
+
+  let cursorY = Math.round(h * 0.18)
+  if (logoBytes) {
+    try {
+      const logo = await Image.decode(logoBytes)
+      const logoTargetH = Math.round(h * 0.30)
+      const ratio = logoTargetH / logo.height
+      const logoTargetW = Math.max(1, Math.round(logo.width * ratio))
+      const resizedLogo = logo.resize(Math.min(logoTargetW, Math.round(w * 0.55)), logoTargetH)
+      tag.composite(resizedLogo, Math.round((w - resizedLogo.width) / 2), cursorY)
+      cursorY += resizedLogo.height + Math.round(h * 0.06)
+    } catch { /* ignore bad logo */ }
+  } else {
+    cursorY = Math.round(h * 0.22)
+  }
+  tag.composite(title, Math.round((w - title.width) / 2), cursorY)
+  tag.composite(sub, Math.round((w - sub.width) / 2), cursorY + title.height + Math.max(2, Math.round(h * 0.04)))
+  return tag
+}
+
+async function compositeCollarTag(shirt: Image, logoBytes?: Uint8Array): Promise<Image> {
+  // Sized so text is readable but the tag sits naturally under the back-collar band.
+  const targetW = Math.round(shirt.width * 0.095)
+  const tag = await buildCollarTag(targetW, logoBytes)
+  const x = Math.round((shirt.width - tag.width) / 2)
   const y = Math.round(shirt.height * 0.155)
-  shirt.composite(resized, x, y)
+  shirt.composite(tag, x, y)
   return shirt
 }
 
