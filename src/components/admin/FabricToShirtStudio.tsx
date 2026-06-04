@@ -643,7 +643,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                       <Download className="h-3 w-3" />
                     </button>
                   </div>
-                  <img src={it.url} alt={`Spec ${it.size}`} className="w-full aspect-square object-contain rounded-md bg-white border" />
+                  <img src={it.url} alt={`Spec ${it.size}`} className="w-full h-auto max-h-[60vh] object-contain rounded-md bg-white border" />
                 </div>
               ))}
             </div>
