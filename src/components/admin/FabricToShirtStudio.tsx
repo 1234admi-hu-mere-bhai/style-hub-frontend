@@ -297,6 +297,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
           hd,
           specs: needsSpecs ? specs : undefined,
           pose: view === 'lifestyle' ? pose : undefined,
+          userGeminiKey: userGeminiKey?.trim() || undefined,
         },
       });
       if (error) {
