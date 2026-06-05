@@ -465,37 +465,16 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
             <Switch checked={hd} onCheckedChange={setHd} />
           </div>
 
-          {/* BYOK Gemini key — unlimited generation under user's own Google AI plan */}
-          <div className="rounded-md border bg-secondary/40 p-3 space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <Label className="flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-primary" /> Your Gemini API key <span className="text-xs text-muted-foreground font-normal">(optional — unlimited)</span>
-              </Label>
-              {userGeminiKey && (
-                <Badge variant="outline" className="text-[10px]">BYOK active</Badge>
-              )}
+          {/* Unlimited generation via server-side Gemini key */}
+          <div className="rounded-md border bg-secondary/40 p-3 flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium">Unlimited generation enabled</p>
+              <p className="text-xs text-muted-foreground">Routed through your Gemini API key (server-side). No Lovable credit limits apply.</p>
             </div>
-            <div className="flex gap-2">
-              <Input
-                type={showKey ? 'text' : 'password'}
-                value={userGeminiKey}
-                onChange={(e) => setUserGeminiKey(e.target.value)}
-                placeholder="AIza... (paste your Google AI Studio key)"
-                className="h-10 bg-background font-mono text-xs"
-              />
-              <Button type="button" variant="outline" size="sm" className="h-10" onClick={() => setShowKey(s => !s)}>
-                {showKey ? 'Hide' : 'Show'}
-              </Button>
-              {userGeminiKey && (
-                <Button type="button" variant="ghost" size="sm" className="h-10" onClick={() => setUserGeminiKey('')}>Clear</Button>
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Bypass Lovable AI credit limits using your own Gemini Pro plan. Get a free key at{' '}
-              <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary underline">aistudio.google.com/app/apikey</a>.
-              Stored only in your browser. Falls back to Lovable AI automatically if your key fails.
-            </p>
+            <Badge variant="outline" className="text-[10px]">Gemini</Badge>
           </div>
+
 
 
           {/* Spec sheet inputs */}
