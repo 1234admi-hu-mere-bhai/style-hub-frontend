@@ -647,11 +647,29 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                 <div key={v.key} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Badge variant="outline">{v.label}</Badge>
-                    <button onClick={() => downloadOne(v.url, `muffigout-shirt-${v.key}.png`)} className="text-xs text-primary inline-flex items-center gap-1 hover:underline">
-                      <Download className="h-3 w-3" /> Download
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <a href={v.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary inline-flex items-center gap-1 hover:underline">
+                        Open
+                      </a>
+                      <button onClick={() => downloadOne(v.url, `muffigout-shirt-${v.key}.png`)} className="text-xs text-primary inline-flex items-center gap-1 hover:underline">
+                        <Download className="h-3 w-3" /> Download
+                      </button>
+                    </div>
                   </div>
-                  <img src={v.url} alt={v.label} className="w-full h-auto max-h-[80vh] object-contain rounded-md bg-white border" />
+                  <img
+                    src={v.url}
+                    alt={v.label}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      const img = e.currentTarget;
+                      if (!img.dataset.retried) {
+                        img.dataset.retried = '1';
+                        img.src = `${v.url}${v.url.includes('?') ? '&' : '?'}r=${Date.now()}`;
+                      }
+                    }}
+                    className="w-full h-auto max-h-[80vh] object-contain rounded-md bg-white border"
+                  />
                 </div>
               ) : null)}
             </div>
