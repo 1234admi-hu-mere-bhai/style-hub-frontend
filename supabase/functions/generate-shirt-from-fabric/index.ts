@@ -442,9 +442,9 @@ Deno.serve(async (req) => {
     const validViews = ['front', 'back', 'spec', 'highlights', 'model', 'model-back', 'lifestyle']
     if (!validViews.includes(view)) throw new Error('invalid view')
 
-    // Prefer server-side GEMINI_API_KEY (unlimited under workspace plan); fall back to client BYOK; finally Lovable gateway.
+    // Prefer server-side GEMINI_API_KEY (unlimited under workspace plan); fall back to legacy client BYOK; finally Lovable gateway.
     const serverGeminiKey = Deno.env.get('GEMINI_API_KEY') || undefined
-    const effectiveByokKey = userGeminiKey || serverGeminiKey
+    const effectiveByokKey = serverGeminiKey || userGeminiKey
     const dataUrl = await callImageGenWithFallback(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl, referenceImageUrl, effectiveByokKey)
     let { bytes, mime } = dataUrlToBytes(dataUrl)
 
