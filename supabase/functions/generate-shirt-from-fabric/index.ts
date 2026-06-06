@@ -204,16 +204,72 @@ async function callImageGen(apiKey: string, prompt: string, fabricUrl: string, r
   return b64
 }
 
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = ''
+  const chunk = 0x8000
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk))
+  }
+  return btoa(binary)
+}
+
+async function imageSourceToGeminiPart(source: string): Promise<any> {
+  if (source.startsWith('data:')) {
+    const match = source.match(/^data:(.+?);base64,(.+)$/)
+    if (!match) throw new Error('Invalid data image')
+    return { inline_data: { mime_type: match[1], data: match[2].replace(/\s/g, '') } }
+  }
+
+  const response = await fetch(source)
+  if (!response.ok) throw new Error(`Could not read image: ${response.status}`)
+  const mime = response.headers.get('content-type')?.split(';')[0] || 'image/png'
+  const bytes = new Uint8Array(await response.arrayBuffer())
+  return { inline_data: { mime_type: mime, data: bytesToBase64(bytes) } }
+}
+
+async function callGeminiDirect(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string): Promise<string> {
+  const models = ['gemini-2.5-flash-image-preview', 'gemini-2.5-flash-image']
+  const parts = [
+    { text: referenceUrl ? `${prompt}\n\nTwo images are provided: image 1 is the original fabric swatch; image 2 is the approved front mockup/reference garment. Match BOTH, and for color/pattern consistency prioritize image 2 while preserving the fabric from image 1.` : prompt },
+    await imageSourceToGeminiPart(fabricUrl),
+  ]
+  if (referenceUrl) parts.push(await imageSourceToGeminiPart(referenceUrl))
+
+  let lastError = ''
+  for (const model of models) {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts }],
+        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+      }),
+    })
+
+    if (!resp.ok) {
+      lastError = `${resp.status}: ${await resp.text().catch(() => '')}`
+      if (resp.status !== 404 && resp.status !== 400) break
+      continue
+    }
+
+    const data = await resp.json()
+    const imagePart = data.candidates?.[0]?.content?.parts?.find((part: any) => part.inlineData?.data || part.inline_data?.data)
+    const inline = imagePart?.inlineData || imagePart?.inline_data
+    if (inline?.data) return `data:${inline.mimeType || inline.mime_type || 'image/png'};base64,${inline.data}`
+    lastError = 'No image returned from Gemini'
+  }
+  throw new Error(lastError || 'Gemini image generation failed')
+}
+
 async function callImageGenWithFallback(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string, userGeminiKey?: string): Promise<string> {
-  // BYOK: if user provided their own Gemini API key, call Google's OpenAI-compat endpoint directly (unlimited under their plan).
+  // BYOK: if a Gemini API key is configured, use it directly and do not spend Lovable AI credits.
   if (userGeminiKey) {
-    const googleEndpoint = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions'
     try {
-      return await callImageGen(userGeminiKey, prompt, fabricUrl, referenceUrl, 'gemini-2.5-flash-image-preview', googleEndpoint)
+      return await callGeminiDirect(userGeminiKey, prompt, fabricUrl, referenceUrl)
     } catch (e) {
       const msg = (e as Error).message
-      console.warn('BYOK Gemini failed, falling back to Lovable gateway:', msg)
-      // fall through to Lovable
+      console.error('Gemini API generation failed:', msg)
+      throw new Error(`Gemini API generation failed: ${msg}`)
     }
   }
   try {
