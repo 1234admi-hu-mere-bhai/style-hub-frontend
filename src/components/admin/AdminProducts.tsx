@@ -664,7 +664,10 @@ const AdminProducts = () => {
                 </div>
                 {form.mannequin_image && (
                   <div className="flex items-start gap-3">
-                    <img src={form.mannequin_image} alt="Mannequin preview" className="w-24 h-32 object-cover rounded-md bg-muted" />
+                    <img src={form.mannequin_image} alt="Mannequin preview" className="w-24 h-32 object-contain rounded-md bg-muted" />
+                    <Button type="button" size="sm" variant="ghost" onClick={() => window.open(form.mannequin_image, '_blank', 'noopener,noreferrer')}>
+                      Open
+                    </Button>
                     <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={() => setForm(f => ({ ...f, mannequin_image: '' }))}>
                       <X className="h-3.5 w-3.5 mr-1" /> Remove
                     </Button>
@@ -695,7 +698,10 @@ const AdminProducts = () => {
                 </div>
                 {form.human_model_image && (
                   <div className="flex items-start gap-3">
-                    <img src={form.human_model_image} alt="Human model preview" className="w-24 h-32 object-cover rounded-md bg-muted" />
+                    <img src={form.human_model_image} alt="Human model preview" className="w-24 h-32 object-contain rounded-md bg-muted" />
+                    <Button type="button" size="sm" variant="ghost" onClick={() => window.open(form.human_model_image, '_blank', 'noopener,noreferrer')}>
+                      Open
+                    </Button>
                     <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={() => setForm(f => ({ ...f, human_model_image: '' }))}>
                       <X className="h-3.5 w-3.5 mr-1" /> Remove
                     </Button>
@@ -733,7 +739,7 @@ const AdminProducts = () => {
                     <p className="text-xs text-muted-foreground">{form.rotation_frames.length} frames</p>
                     <div className="flex gap-1.5 overflow-x-auto">
                       {form.rotation_frames.map((url, i) => (
-                        <img key={i} src={url} alt={`Frame ${i + 1}`} className="w-12 h-16 object-cover rounded bg-muted flex-shrink-0" />
+                        <img key={i} src={url} alt={`Frame ${i + 1}`} className="w-12 h-16 object-contain rounded bg-muted flex-shrink-0" />
                       ))}
                     </div>
                     <Button type="button" size="sm" variant="ghost" className="text-destructive" onClick={() => setForm(f => ({ ...f, rotation_frames: [] }))}>
