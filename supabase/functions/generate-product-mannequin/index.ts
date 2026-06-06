@@ -133,6 +133,7 @@ Deno.serve(async (req) => {
     const supabaseAnon = Deno.env.get('SUPABASE_ANON_KEY')!
     const supabaseService = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const lovableKey = Deno.env.get('LOVABLE_API_KEY')!
+    const geminiKey = Deno.env.get('GEMINI_API_KEY') || undefined
 
     // Auth
     const authHeader = req.headers.get('Authorization')
@@ -161,7 +162,7 @@ Deno.serve(async (req) => {
 
     if (action === 'mannequin' || action === 'human') {
       const subj: 'mannequin' | 'human' = action === 'human' ? 'human' : 'mannequin'
-      const dataUrl = await callImageGen(lovableKey, buildPrompt(region, subj), productImage)
+      const dataUrl = await generateImage(lovableKey, buildPrompt(region, subj), productImage, geminiKey)
       const folder = subj === 'human' ? 'humans' : 'mannequins'
       const url = await uploadDataUrl(adminClient, dataUrl, `${folder}/${idSlug}/front-${Date.now()}.png`)
       return new Response(JSON.stringify({ url, region }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -184,7 +185,7 @@ Deno.serve(async (req) => {
       for (let i = 0; i < count; i++) {
         const prompt = buildPrompt(region, subj, angleLabels[i]) + ' Keep the subject pose, lighting, and background IDENTICAL to the reference — only change the camera angle around the subject.'
         try {
-          const dataUrl = await callImageGen(lovableKey, prompt, base)
+          const dataUrl = await generateImage(lovableKey, prompt, base, geminiKey)
           const url = await uploadDataUrl(adminClient, dataUrl, `rotations/${idSlug}/${subj}-${i}-${Date.now()}.png`)
           frames.push(url)
         } catch (e) {
