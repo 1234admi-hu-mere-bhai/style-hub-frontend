@@ -23,12 +23,12 @@ function buildPrompt(region: 'upper' | 'lower' | 'full', subject: 'mannequin' | 
     ? 'a realistic Indian male human model in his mid-20s with short dark hair, friendly neutral expression'
     : 'a realistic neutral male mannequin (faceless)'
   if (region === 'upper') {
-    return `Dress the garment from this product photo onto ${model}, showing ONLY the upper body from the waist up. No legs visible. Clean light grey studio background, soft even lighting, photorealistic e-commerce style. Preserve exact color, pattern, fabric texture, collar, buttons, and stitching of the original garment.${angle}`
+    return `Dress the garment from this product photo onto ${model}. Show a complete upper-body e-commerce pose from head/neck to mid-thigh with the whole garment fully visible and never cropped. Clean light grey studio background, soft even lighting, photorealistic e-commerce style. Preserve exact color, pattern, fabric texture, collar, buttons, and stitching of the original garment.${angle}`
   }
   if (region === 'lower') {
     return `Dress the garment from this product photo onto ${model}, showing ONLY the lower body from the waist down to the feet. No torso or head visible. Clean light grey studio background, soft even lighting, photorealistic e-commerce style. Preserve exact color, pattern, fabric texture, pockets, and stitching of the original garment.${angle}`
   }
-  return `Dress the garment from this product photo onto ${model}, full body. Clean light grey studio background, soft even lighting, photorealistic e-commerce style. Preserve exact garment details.${angle}`
+  return `Dress the garment from this product photo onto ${model}, full body with generous margins so head, shoulders, sleeves, hem, legs and feet are fully visible. Clean light grey studio background, soft even lighting, photorealistic e-commerce style. Preserve exact garment details.${angle}`
 }
 
 async function callImageGen(apiKey: string, prompt: string, imageUrl: string): Promise<string> {
@@ -56,6 +56,60 @@ async function callImageGen(apiKey: string, prompt: string, imageUrl: string): P
   const b64 = images?.[0]?.image_url?.url
   if (!b64) throw new Error('No image returned')
   return b64 // data URL
+}
+
+function bytesToBase64(bytes: Uint8Array): string {
+  let binary = ''
+  const chunk = 0x8000
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk))
+  }
+  return btoa(binary)
+}
+
+async function imageSourceToGeminiPart(source: string): Promise<any> {
+  if (source.startsWith('data:')) {
+    const match = source.match(/^data:(.+?);base64,(.+)$/)
+    if (!match) throw new Error('Invalid product image data')
+    return { inline_data: { mime_type: match[1], data: match[2].replace(/\s/g, '') } }
+  }
+  const response = await fetch(source)
+  if (!response.ok) throw new Error(`Could not read product image: ${response.status}`)
+  const mime = response.headers.get('content-type')?.split(';')[0] || 'image/png'
+  const bytes = new Uint8Array(await response.arrayBuffer())
+  return { inline_data: { mime_type: mime, data: bytesToBase64(bytes) } }
+}
+
+async function callGeminiDirect(apiKey: string, prompt: string, imageUrl: string): Promise<string> {
+  const models = ['gemini-2.5-flash-image-preview', 'gemini-2.5-flash-image']
+  const parts = [{ text: prompt }, await imageSourceToGeminiPart(imageUrl)]
+  let lastError = ''
+  for (const model of models) {
+    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts }],
+        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+      }),
+    })
+    if (!resp.ok) {
+      lastError = `${resp.status}: ${await resp.text().catch(() => '')}`
+      if (resp.status !== 404 && resp.status !== 400) break
+      continue
+    }
+    const data = await resp.json()
+    const imagePart = data.candidates?.[0]?.content?.parts?.find((part: any) => part.inlineData?.data || part.inline_data?.data)
+    const inline = imagePart?.inlineData || imagePart?.inline_data
+    if (inline?.data) return `data:${inline.mimeType || inline.mime_type || 'image/png'};base64,${inline.data}`
+    lastError = 'No image returned from Gemini'
+  }
+  throw new Error(lastError || 'Gemini image generation failed')
+}
+
+async function generateImage(lovableKey: string, prompt: string, imageUrl: string, geminiKey?: string): Promise<string> {
+  if (geminiKey) return await callGeminiDirect(geminiKey, prompt, imageUrl)
+  return await callImageGen(lovableKey, prompt, imageUrl)
 }
 
 async function uploadDataUrl(adminClient: any, dataUrl: string, path: string): Promise<string> {
