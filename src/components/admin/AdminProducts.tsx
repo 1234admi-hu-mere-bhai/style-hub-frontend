@@ -264,11 +264,43 @@ const AdminProducts = () => {
     return data.publicUrl;
   };
 
+  const getFunctionErrorMessage = async (error: any) => {
+    const context = error?.context;
+    let backendMessage = '';
+    if (context instanceof Response) {
+      try {
+        const payload = await context.clone().json();
+        backendMessage = payload?.error || payload?.message || '';
+      } catch {
+        try { backendMessage = await context.clone().text(); } catch {}
+      }
+    }
+    return [backendMessage, error?.message].filter(Boolean).join(' — ') || 'Generation failed';
+  };
+
+  const imageUrlToDataUrl = async (url: string): Promise<string> => {
+    if (!url || url.startsWith('data:')) return url;
+    try {
+      const response = await fetch(url, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`Image fetch failed: ${response.status}`);
+      const blob = await response.blob();
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return url;
+    }
+  };
+
   const generateModelImage = async (action: 'mannequin' | 'human', productImage: string) => {
+    const productImageForAi = await imageUrlToDataUrl(productImage);
     const { data, error } = await supabase.functions.invoke('generate-product-mannequin', {
-      body: { action, productImage, subcategory: form.subcategory, productId: editingId || undefined },
+      body: { action, productImage: productImageForAi, subcategory: form.subcategory, productId: editingId || undefined },
     });
-    if (error) throw error;
+    if (error) throw new Error(await getFunctionErrorMessage(error));
     if (!data?.url) throw new Error('No image returned');
     return data as { url: string; region: string };
   };
@@ -344,10 +376,11 @@ const AdminProducts = () => {
     }
     setGenerating360(true);
     try {
+      const baseForAi = await imageUrlToDataUrl(base);
       const { data, error } = await supabase.functions.invoke('generate-product-mannequin', {
-        body: { action: 'rotation', baseImage: base, subject: rotationBase === 'human' ? 'human' : 'mannequin', subcategory: form.subcategory, productId: editingId || undefined, frameCount: 12 },
+        body: { action: 'rotation', baseImage: baseForAi, subject: rotationBase === 'human' ? 'human' : 'mannequin', subcategory: form.subcategory, productId: editingId || undefined, frameCount: 12 },
       });
-      if (error) throw error;
+      if (error) throw new Error(await getFunctionErrorMessage(error));
       if (!data?.frames?.length) throw new Error('No frames returned');
       setForm(f => ({ ...f, rotation_frames: data.frames }));
       toast({ title: '360° frames generated', description: `${data.frames.length} frames ready. Remember to Save.` });
