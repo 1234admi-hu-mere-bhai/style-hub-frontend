@@ -8,6 +8,7 @@ import { Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Truck, RefreshCw, Shield, Headphones, Loader2, SlidersHorizontal, X, Mic, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
@@ -29,7 +30,7 @@ import {
   PRICE_CHIPS,
 } from '@/lib/product-attributes';
 
-import categoryMen from '@/assets/category-men.jpg';
+import categoryShirts from '@/assets/category-shirts.jpg';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -220,7 +221,7 @@ const Index = () => {
 
 
   const categories = [
-    { name: 'Men', image: categoryMen, href: '/products?category=men' },
+    { name: 'Shirts', image: categoryShirts, href: '/products?subcategory=Shirt' },
   ];
 
   const features = [
@@ -260,10 +261,10 @@ const Index = () => {
         <div className="px-3 lg:container lg:mx-auto lg:px-4">
           <div className="text-center mb-4 lg:mb-12">
             <h2 className="font-serif text-2xl lg:text-4xl font-bold mb-1 lg:mb-4">
-              Shop by Category
+              Shirt Collection
             </h2>
             <p className="text-xs lg:text-base text-muted-foreground max-w-xl mx-auto">
-              Discover our thoughtfully curated men's collection
+              Explore sharp everyday shirts crafted for confident men
             </p>
           </div>
 
@@ -272,18 +273,23 @@ const Index = () => {
               <Link
                 key={cat.name}
                 to={cat.href}
-                className="group relative h-[260px] lg:h-[500px] overflow-hidden rounded-none lg:rounded-lg -mx-3 lg:mx-0"
+                className="group relative h-[280px] lg:h-[520px] overflow-hidden rounded-none lg:rounded-lg -mx-3 lg:mx-0 shadow-elevated"
               >
                 <img
                   src={cat.image}
-                  alt={cat.name}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  alt="Premium men's shirt collection"
+                  width={1280}
+                  height={900}
+                  loading="lazy"
+                  className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-transparent to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-cream">
-                  <h3 className="font-serif text-2xl font-bold mb-2">{cat.name}</h3>
-                  <span className="inline-flex items-center text-sm font-medium uppercase tracking-wider group-hover:underline">
-                    Explore Collection
+                <div className="absolute inset-0 bg-gradient-to-t from-charcoal/85 via-charcoal/20 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-6 lg:p-8 text-cream">
+                  <Badge variant="outline" className="mb-3 border-cream/50 bg-charcoal/40 text-cream backdrop-blur-sm">Premium Shirts</Badge>
+                  <h3 className="font-serif text-3xl lg:text-5xl font-bold mb-2">{cat.name}</h3>
+                  <p className="mb-4 max-w-xs text-sm text-cream/85">Crisp fits, rich fabrics, and styling-ready colors.</p>
+                  <span className="inline-flex items-center rounded-full bg-primary px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-primary-foreground shadow-glow transition-transform group-hover:translate-x-1">
+                    Shop Shirts
                     <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </span>
                 </div>
