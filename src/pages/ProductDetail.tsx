@@ -251,11 +251,18 @@ const ProductDetail = () => {
               {galleryItems.map((item, index) => (
                 <div key={item.type === 'image' ? item.src : `rotation-${index}`} className="relative min-w-full aspect-[3/4] snap-center rounded-lg overflow-hidden bg-secondary">
                   {item.type === 'image' ? (
-                    <img
-                      src={item.src}
-                      alt={item.alt}
-                      className={`w-full h-full transition-all duration-300 ${item.fit === 'contain' ? 'object-contain' : 'object-cover'}`}
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setZoomSrc(item.src)}
+                      aria-label="Open full view"
+                      className="w-full h-full block cursor-zoom-in"
+                    >
+                      <img
+                        src={item.src}
+                        alt={item.alt}
+                        className={`w-full h-full transition-all duration-300 ${item.fit === 'contain' ? 'object-contain' : 'object-cover'}`}
+                      />
+                    </button>
                   ) : (
                     <Product360Viewer frames={item.frames} className="h-full rounded-lg" />
                   )}
