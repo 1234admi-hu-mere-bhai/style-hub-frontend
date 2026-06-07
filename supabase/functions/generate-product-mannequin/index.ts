@@ -108,7 +108,13 @@ async function callGeminiDirect(apiKey: string, prompt: string, imageUrl: string
 }
 
 async function generateImage(lovableKey: string, prompt: string, imageUrl: string, geminiKey?: string): Promise<string> {
-  if (geminiKey) return await callGeminiDirect(geminiKey, prompt, imageUrl)
+  if (geminiKey) {
+    try {
+      return await callGeminiDirect(geminiKey, prompt, imageUrl)
+    } catch (e) {
+      console.warn('Gemini direct generation failed; falling back to Lovable AI:', (e as Error).message)
+    }
+  }
   return await callImageGen(lovableKey, prompt, imageUrl)
 }
 
