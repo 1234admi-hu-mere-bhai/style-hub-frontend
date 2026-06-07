@@ -505,6 +505,7 @@ const ProductDetail = () => {
       </main>
       <Footer />
       <SizeChartModal open={sizeChartOpen} onOpenChange={setSizeChartOpen} category={product.category} />
+      <ImageZoomDialog open={!!zoomSrc} onOpenChange={(o) => !o && setZoomSrc(null)} src={zoomSrc || ''} alt={product.name} />
     </div>
   );
 };
