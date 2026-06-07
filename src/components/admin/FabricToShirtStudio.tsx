@@ -475,8 +475,8 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
           <div className="rounded-md border bg-secondary/40 p-3 flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary shrink-0" />
             <div className="flex-1">
-              <p className="text-sm font-medium">Unlimited generation enabled</p>
-              <p className="text-xs text-muted-foreground">Routed through your Gemini API key (server-side). No Lovable credit limits apply.</p>
+              <p className="text-sm font-medium">Gemini API routing enabled</p>
+              <p className="text-xs text-muted-foreground">Uses your saved Gemini API key when Google API quota is active; quota errors now stop before fallback credits are used.</p>
             </div>
             <Badge variant="outline" className="text-[10px]">Gemini</Badge>
           </div>
