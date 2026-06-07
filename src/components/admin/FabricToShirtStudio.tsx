@@ -200,6 +200,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const [promptDialogOpen, setPromptDialogOpen] = useState(false);
   const [promptExports, setPromptExports] = useState<Array<{ view: ViewKind; label: string; prompt: string }>>([]);
   const [exportingPrompts, setExportingPrompts] = useState(false);
+  const [promptMode, setPromptMode] = useState(false);
 
   // Persist Gemini key separately
   useEffect(() => {
@@ -288,10 +289,11 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
 
   const generate = async (view: ViewKind) => {
     if (!fabricUrl) { toast({ title: 'Upload a fabric image first', variant: 'destructive' }); return; }
-    if (!frontUrl && ['back', 'highlights', 'model', 'model-back', 'lifestyle'].includes(view)) {
+    if (!frontUrl && ['back', 'highlights', 'model', 'model-back', 'lifestyle'].includes(view) && !promptMode) {
       toast({ title: 'Generate Front first', description: 'Other views now use the front mockup as the color and pattern reference to avoid mismatched results.', variant: 'destructive' });
       return;
     }
+    if (promptMode) { await exportSinglePrompt(view); return; }
     setGenerating(view);
     try {
       const needsSpecs = view === 'spec' || view === 'highlights';
@@ -390,6 +392,39 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   };
 
 
+
+  const VIEW_LABELS: Record<ViewKind, string> = {
+    front: 'Front (flat-lay)', back: 'Back (flat-lay)', spec: 'Spec Sheet',
+    highlights: 'Key Highlights', model: 'Model — front', 'model-back': 'Model — back', lifestyle: `Lifestyle — ${pose}`,
+  };
+
+  // Per-view prompt export — opens dialog with just one prompt.
+  const exportSinglePrompt = async (view: ViewKind) => {
+    if (!fabricUrl) { toast({ title: 'Upload a fabric image first', variant: 'destructive' }); return; }
+    setExportingPrompts(true);
+    try {
+      const needsSpecs = view === 'spec' || view === 'highlights';
+      const { data, error } = await supabase.functions.invoke('generate-shirt-from-fabric', {
+        body: {
+          fabricUrl,
+          view,
+          colorHex: colorHex || undefined,
+          referenceImageUrl: view !== 'front' ? frontUrl || undefined : undefined,
+          productId,
+          hd,
+          specs: needsSpecs ? specs : undefined,
+          pose: view === 'lifestyle' ? pose : undefined,
+          promptOnly: true,
+        },
+      });
+      if (error) throw new Error(await getFunctionErrorMessage(error));
+      if (!data?.prompt) throw new Error('No prompt returned');
+      setPromptExports([{ view, label: VIEW_LABELS[view], prompt: data.prompt }]);
+      setPromptDialogOpen(true);
+    } catch (e: any) {
+      toast({ title: 'Could not build prompt', description: e.message, variant: 'destructive' });
+    } finally { setExportingPrompts(false); }
+  };
 
   // Export all prompts WITHOUT calling Gemini — copy/paste into any AI tool (Gemini app, AI Studio, ChatGPT, etc.)
   const exportPrompts = async () => {
@@ -617,13 +652,20 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
 
           {/* Generate buttons */}
           <div className="space-y-2">
+            <div className="flex items-center justify-between rounded-md border bg-secondary/40 px-3 py-2">
+              <div>
+                <Label className="cursor-pointer">Prompt mode (no API)</Label>
+                <p className="text-xs text-muted-foreground">When ON, clicking any view below opens its ready-to-paste prompt instead of calling the AI.</p>
+              </div>
+              <Switch checked={promptMode} onCheckedChange={setPromptMode} />
+            </div>
             <Label className="text-xs uppercase tracking-wider text-muted-foreground">Garment views</Label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               <Button type="button" onClick={() => generate('front')} disabled={!fabricUrl || generating !== null} className="h-11">
                 {generating === 'front' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
                 Front
               </Button>
-              <Button type="button" onClick={() => generate('back')} disabled={!fabricUrl || !frontUrl || generating !== null} variant="secondary" className="h-11">
+              <Button type="button" onClick={() => generate('back')} disabled={!fabricUrl || (!promptMode && !frontUrl) || generating !== null} variant="secondary" className="h-11">
                 {generating === 'back' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
                 Back
               </Button>
@@ -631,7 +673,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                 {generating === 'spec' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Info className="h-4 w-4 mr-2" />}
                 Spec Sheet
               </Button>
-              <Button type="button" onClick={() => generate('highlights')} disabled={!fabricUrl || !frontUrl || generating !== null} variant="outline" className="h-11">
+              <Button type="button" onClick={() => generate('highlights')} disabled={!fabricUrl || (!promptMode && !frontUrl) || generating !== null} variant="outline" className="h-11">
                 {generating === 'highlights' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Shirt className="h-4 w-4 mr-2" />}
                 Key Highlights
               </Button>
@@ -642,15 +684,15 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
             </Button>
             <Label className="text-xs uppercase tracking-wider text-muted-foreground pt-2 block">Human model (optional)</Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <Button type="button" onClick={() => generate('model')} disabled={!fabricUrl || !frontUrl || generating !== null} variant="outline" className="h-11">
+              <Button type="button" onClick={() => generate('model')} disabled={!fabricUrl || (!promptMode && !frontUrl) || generating !== null} variant="outline" className="h-11">
                 {generating === 'model' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <User className="h-4 w-4 mr-2" />}
                 Model (front)
               </Button>
-              <Button type="button" onClick={() => generate('model-back')} disabled={!fabricUrl || !frontUrl || generating !== null} variant="outline" className="h-11">
+              <Button type="button" onClick={() => generate('model-back')} disabled={!fabricUrl || (!promptMode && !frontUrl) || generating !== null} variant="outline" className="h-11">
                 {generating === 'model-back' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <User className="h-4 w-4 mr-2" />}
                 Model (back)
               </Button>
-              <Button type="button" onClick={() => generate('lifestyle')} disabled={!fabricUrl || !frontUrl || generating !== null} className="h-11">
+              <Button type="button" onClick={() => generate('lifestyle')} disabled={!fabricUrl || (!promptMode && !frontUrl) || generating !== null} className="h-11">
                 {generating === 'lifestyle' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
                 Lifestyle pose
               </Button>
