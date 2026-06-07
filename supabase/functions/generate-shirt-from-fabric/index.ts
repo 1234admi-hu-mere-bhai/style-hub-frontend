@@ -34,6 +34,10 @@ function bgContrastRule(hex?: string): string {
   return `CRITICAL BACKGROUND CONTRAST: Choose a background whose tone clearly contrasts with the shirt color (avoid same-hue or same-brightness walls/props/furniture). The shirt must read as the visual hero against the scene.`
 }
 
+function isGeminiQuotaOrAuthError(message: string): boolean {
+  return /RESOURCE_EXHAUSTED|quota exceeded|GenerateRequests|rate.?limit|429|API key not valid|UNAUTHENTICATED|invalid authentication|401/i.test(message)
+}
+
 // Unique pose flavors for the highlights image so it never repeats
 const HIGHLIGHT_POSES: Record<string, string> = {
   sitting: 'Half-body shot: model perched on a wooden stool turned slightly, one elbow on knee, calm gaze toward camera.',
@@ -147,7 +151,7 @@ All text must be perfectly legible and correctly spelled — render ONLY the lab
 
   // lifestyle pose
   const poses: Record<Pose, string> = {
-    sitting: `POSE: model SITTING on the edge of a rustic wooden table, one leg up with foot resting on the table edge and the other leg hanging down, sleeves rolled neatly to just below the elbow, hands relaxed, looking off-camera with a calm confident expression. Setting: minimalist concrete-and-wood studio loft with soft window light from the side. Editorial relaxed vibe.`,
+    sitting: `POSE: model SITTING on the edge of a clean matte white table, one leg up with foot resting near the table edge and the other leg hanging down, sleeves rolled neatly to just below the elbow, hands relaxed, looking off-camera with a calm confident expression. Setting: bright minimalist white-table studio with soft window light from the side, subtle off-white/gray walls, clean premium catalog vibe. The table must be WHITE, not wooden, not brown, not rustic.`,
     leaning: `POSE: model LEANING casually against a raw textured concrete wall, hands in pockets, slight 3/4 turn toward the camera, weight on one leg, looking just past the camera. Setting: outdoor urban side-street at golden hour with warm directional side light and soft rim highlight on the shoulder. Street-style editorial vibe.`,
     walking: `POSE: model captured mid-stride WALKING through a sunlit corridor, shirt slightly billowing from movement, looking downward thoughtfully, motion-frozen sharp focus on the shirt fabric. Setting: long architectural corridor with warm directional sunlight and soft floor reflections. Cinematic magazine vibe.`,
     coffee: `POSE: model SEATED at a small cafe table, one elbow on the table with hand near chin, the other hand resting on a ceramic coffee cup, gentle smile, looking slightly off-camera. Setting: minimalist sunlit cafe with soft window backlight, blurred warm bokeh. Premium lifestyle vibe.`,
@@ -269,7 +273,8 @@ async function callImageGenWithFallback(apiKey: string, prompt: string, fabricUr
       return await callGeminiDirect(userGeminiKey, prompt, fabricUrl, referenceUrl)
     } catch (e) {
       const msg = (e as Error).message
-      console.warn('Gemini direct generation failed; falling back to Lovable AI:', msg)
+      console.warn('Gemini direct generation failed:', msg)
+      if (isGeminiQuotaOrAuthError(msg)) throw new Error(`Gemini API key cannot generate right now: ${msg}`)
     }
   }
   try {
