@@ -393,6 +393,39 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
 
 
 
+  const VIEW_LABELS: Record<ViewKind, string> = {
+    front: 'Front (flat-lay)', back: 'Back (flat-lay)', spec: 'Spec Sheet',
+    highlights: 'Key Highlights', model: 'Model — front', 'model-back': 'Model — back', lifestyle: `Lifestyle — ${pose}`,
+  };
+
+  // Per-view prompt export — opens dialog with just one prompt.
+  const exportSinglePrompt = async (view: ViewKind) => {
+    if (!fabricUrl) { toast({ title: 'Upload a fabric image first', variant: 'destructive' }); return; }
+    setExportingPrompts(true);
+    try {
+      const needsSpecs = view === 'spec' || view === 'highlights';
+      const { data, error } = await supabase.functions.invoke('generate-shirt-from-fabric', {
+        body: {
+          fabricUrl,
+          view,
+          colorHex: colorHex || undefined,
+          referenceImageUrl: view !== 'front' ? frontUrl || undefined : undefined,
+          productId,
+          hd,
+          specs: needsSpecs ? specs : undefined,
+          pose: view === 'lifestyle' ? pose : undefined,
+          promptOnly: true,
+        },
+      });
+      if (error) throw new Error(await getFunctionErrorMessage(error));
+      if (!data?.prompt) throw new Error('No prompt returned');
+      setPromptExports([{ view, label: VIEW_LABELS[view], prompt: data.prompt }]);
+      setPromptDialogOpen(true);
+    } catch (e: any) {
+      toast({ title: 'Could not build prompt', description: e.message, variant: 'destructive' });
+    } finally { setExportingPrompts(false); }
+  };
+
   // Export all prompts WITHOUT calling Gemini — copy/paste into any AI tool (Gemini app, AI Studio, ChatGPT, etc.)
   const exportPrompts = async () => {
     if (!fabricUrl) { toast({ title: 'Upload a fabric image first', variant: 'destructive' }); return; }
