@@ -35,6 +35,10 @@ function isGeminiQuotaOrAuthError(message: string): boolean {
   return /RESOURCE_EXHAUSTED|quota exceeded|GenerateRequests|rate.?limit|429|API key not valid|UNAUTHENTICATED|invalid authentication|401/i.test(message)
 }
 
+function isGeminiModelUnavailableError(message: string): boolean {
+  return /404|not found|not supported|not available|400|INVALID_ARGUMENT/i.test(message)
+}
+
 async function callImageGen(apiKey: string, prompt: string, imageUrl: string): Promise<string> {
   const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
@@ -85,7 +89,7 @@ async function imageSourceToGeminiPart(source: string): Promise<any> {
 }
 
 async function callGeminiDirect(apiKey: string, prompt: string, imageUrl: string): Promise<string> {
-  const models = ['gemini-2.5-flash-image-preview', 'gemini-2.5-flash-image']
+  const models = ['gemini-2.5-flash-image-preview', 'gemini-2.5-flash-preview-image', 'gemini-2.5-flash-image']
   const parts = [{ text: prompt }, await imageSourceToGeminiPart(imageUrl)]
   let lastError = ''
   for (const model of models) {
@@ -99,7 +103,8 @@ async function callGeminiDirect(apiKey: string, prompt: string, imageUrl: string
     })
     if (!resp.ok) {
       lastError = `${resp.status}: ${await resp.text().catch(() => '')}`
-      if (resp.status !== 404 && resp.status !== 400) break
+      if (isGeminiQuotaOrAuthError(lastError)) continue
+      if (!isGeminiModelUnavailableError(lastError)) break
       continue
     }
     const data = await resp.json()
