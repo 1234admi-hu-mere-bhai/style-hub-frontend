@@ -12,7 +12,7 @@ import { Upload, Sparkles, Loader2, Image as ImageIcon, Download, Tag, Info, Shi
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 
-type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'model-back' | 'lifestyle';
+type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'model-back' | 'lifestyle' | 'mannequin' | 'rotation-360';
 type Pose =
   | 'sitting' | 'leaning' | 'walking' | 'coffee'
   | 'standing-hands-pockets' | 'arms-crossed' | 'hand-in-hair' | 'looking-away'
@@ -177,6 +177,8 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const [modelUrl, setModelUrl] = useState<string>('');
   const [lifestyleUrl, setLifestyleUrl] = useState<string>('');
   const [modelBackUrl, setModelBackUrl] = useState<string>('');
+  const [mannequinUrl, setMannequinUrl] = useState<string>('');
+  const [rotation360Url, setRotation360Url] = useState<string>('');
   const [bulkSpec, setBulkSpec] = useState<{ size: string; url: string }[]>([]);
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [pose, setPose] = useState<Pose>('sitting');
@@ -229,6 +231,8 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
         if (s.highlightsUrl) setHighlightsUrl(s.highlightsUrl);
         if (s.modelUrl) setModelUrl(s.modelUrl);
         if (s.modelBackUrl) setModelBackUrl(s.modelBackUrl);
+        if (s.mannequinUrl) setMannequinUrl(s.mannequinUrl);
+        if (s.rotation360Url) setRotation360Url(s.rotation360Url);
         if (Array.isArray(s.bulkSpec)) setBulkSpec(s.bulkSpec);
         if (s.lifestyleUrl) setLifestyleUrl(s.lifestyleUrl);
       }
@@ -242,10 +246,10 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     try {
       localStorage.setItem(storageKey, JSON.stringify({
         fabricUrl, collarTagUrl, colorHex, autoColor, hd, specs, pose,
-        frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, bulkSpec,
+        frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, mannequinUrl, rotation360Url, bulkSpec,
       }));
     } catch {}
-  }, [storageKey, fabricUrl, collarTagUrl, colorHex, autoColor, hd, specs, pose, frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, bulkSpec]);
+  }, [storageKey, fabricUrl, collarTagUrl, colorHex, autoColor, hd, specs, pose, frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, mannequinUrl, rotation360Url, bulkSpec]);
 
   // Load existing collar tag if previously uploaded
   useEffect(() => {
@@ -269,7 +273,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     try {
       const url = await uploadToBucket(file, `fabric-uploads/${crypto.randomUUID()}-${file.name}`);
       setFabricUrl(url);
-      setFrontUrl(''); setBackUrl(''); setSpecUrl(''); setHighlightsUrl(''); setModelUrl(''); setModelBackUrl(''); setLifestyleUrl(''); setBulkSpec([]);
+      setFrontUrl(''); setBackUrl(''); setSpecUrl(''); setHighlightsUrl(''); setModelUrl(''); setModelBackUrl(''); setLifestyleUrl(''); setMannequinUrl(''); setRotation360Url(''); setBulkSpec([]);
     } catch (e: any) {
       toast({ title: 'Upload failed', description: e.message, variant: 'destructive' });
     } finally { setUploading(null); }
@@ -289,7 +293,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
 
   const generate = async (view: ViewKind) => {
     if (!fabricUrl) { toast({ title: 'Upload a fabric image first', variant: 'destructive' }); return; }
-    if (!frontUrl && ['back', 'highlights', 'model', 'model-back', 'lifestyle'].includes(view) && !promptMode) {
+    if (!frontUrl && ['back', 'highlights', 'model', 'model-back', 'lifestyle', 'mannequin', 'rotation-360'].includes(view) && !promptMode) {
       toast({ title: 'Generate Front first', description: 'Other views now use the front mockup as the color and pattern reference to avoid mismatched results.', variant: 'destructive' });
       return;
     }
@@ -321,12 +325,14 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
       const setters: Record<ViewKind, (u: string) => void> = {
         front: setFrontUrl, back: setBackUrl, spec: setSpecUrl,
         highlights: setHighlightsUrl, model: setModelUrl, 'model-back': setModelBackUrl, lifestyle: setLifestyleUrl,
+        mannequin: setMannequinUrl, 'rotation-360': setRotation360Url,
       };
       setters[view](data.url);
       onGenerated?.({ front: view === 'front' ? data.url : frontUrl, back: view === 'back' ? data.url : backUrl });
       const labels: Record<ViewKind, string> = {
         front: 'Front', back: 'Back', spec: 'Spec sheet',
         highlights: 'Key Highlights', model: 'Model (front)', 'model-back': 'Model (back)', lifestyle: 'Lifestyle pose',
+        mannequin: 'Mannequin', 'rotation-360': '360° rotation',
       };
       toast({ title: `${labels[view]} ready` });
     } catch (e: any) {
@@ -351,7 +357,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     const all: Array<[string, string]> = [
       [frontUrl, 'front'], [backUrl, 'back'], [specUrl, 'spec'],
       [highlightsUrl, 'highlights'], [modelUrl, 'model-front'], [modelBackUrl, 'model-back'],
-      [lifestyleUrl, `lifestyle-${pose}`],
+      [lifestyleUrl, `lifestyle-${pose}`], [mannequinUrl, 'mannequin'], [rotation360Url, 'rotation-360'],
     ];
     for (const [url, key] of all) {
       if (url) await downloadOne(url, `muffigout-shirt-${key}-${stamp}.png`);
@@ -396,6 +402,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const VIEW_LABELS: Record<ViewKind, string> = {
     front: 'Front (flat-lay)', back: 'Back (flat-lay)', spec: 'Spec Sheet',
     highlights: 'Key Highlights', model: 'Model — front', 'model-back': 'Model — back', lifestyle: `Lifestyle — ${pose}`,
+    mannequin: 'Mannequin', 'rotation-360': '360° rotation',
   };
 
   // Per-view prompt export — opens dialog with just one prompt.
@@ -439,6 +446,8 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
       { view: 'model', label: 'Model — front' },
       { view: 'model-back', label: 'Model — back' },
       { view: 'lifestyle', label: `Lifestyle — ${pose}` },
+      { view: 'mannequin', label: 'Mannequin' },
+      { view: 'rotation-360', label: '360° rotation' },
     ];
     const results: typeof promptExports = [];
     try {
@@ -698,6 +707,18 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
               </Button>
             </div>
 
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground pt-2 block">Mannequin & 360°</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <Button type="button" onClick={() => generate('mannequin')} disabled={!fabricUrl || (!promptMode && !frontUrl) || generating !== null} variant="outline" className="h-11">
+                {generating === 'mannequin' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Shirt className="h-4 w-4 mr-2" />}
+                Mannequin
+              </Button>
+              <Button type="button" onClick={() => generate('rotation-360')} disabled={!fabricUrl || (!promptMode && !frontUrl) || generating !== null} variant="outline" className="h-11">
+                {generating === 'rotation-360' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                360° rotation
+              </Button>
+            </div>
+
             {/* Manual prompt export — no Gemini quota used */}
             <div className="pt-2 space-y-2">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground">Manual — no API needed</Label>
@@ -783,7 +804,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
       )}
 
       {/* Results */}
-      {(frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || modelBackUrl || lifestyleUrl) && (
+      {(frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || modelBackUrl || lifestyleUrl || mannequinUrl || rotation360Url) && (
         <Card>
           <CardContent className="p-4 space-y-3">
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -795,6 +816,8 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                 { url: modelUrl, label: 'Model — front', key: 'model' },
                 { url: modelBackUrl, label: 'Model — back', key: 'model-back' },
                 { url: lifestyleUrl, label: `Lifestyle — ${pose}`, key: 'lifestyle' },
+                { url: mannequinUrl, label: 'Mannequin', key: 'mannequin' },
+                { url: rotation360Url, label: '360° rotation', key: 'rotation-360' },
               ].map((v) => v.url ? (
                 <div key={v.key} className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -849,7 +872,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
       )}
 
 
-      {productId && (frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || modelBackUrl || lifestyleUrl) && (
+      {productId && (frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || modelBackUrl || lifestyleUrl || mannequinUrl || rotation360Url) && (
         <Button type="button" onClick={saveToProduct} className="w-full h-12">
           <ImageIcon className="h-4 w-4 mr-2" /> Save to this product's images
         </Button>
