@@ -20,7 +20,7 @@ type Pose =
   | 'denim-jacket-layered' | 'window-light' | 'graffiti-wall' | 'train-station';
 
 const POSE_OPTIONS: Array<{ value: Pose; label: string }> = [
-  { value: 'sitting', label: 'Sitting on a wooden table' },
+  { value: 'sitting', label: 'Sitting on a clean white table' },
   { value: 'leaning', label: 'Leaning against a concrete wall' },
   { value: 'walking', label: 'Walking through a sunlit corridor' },
   { value: 'coffee', label: 'Seated at a cafe table' },
@@ -95,10 +95,10 @@ async function getFunctionErrorMessage(error: any) {
   }
   const raw = [backendMessage, error?.message].filter(Boolean).join(' — ') || 'Generation failed';
   if (/401|UNAUTHENTICATED|API key not valid|invalid authentication|ACCESS_TOKEN_TYPE_UNSUPPORTED/i.test(raw)) {
-    return 'The saved Gemini key is not valid for API generation. I will use the built-in image generator fallback; if this still appears, update or remove the Gemini key.';
+    return 'The saved Gemini API key is not valid for generation. Please update it with a Google AI Studio API key.';
   }
-  if (/rate limited|429/i.test(raw)) return 'Image generation is busy right now. Please wait a minute and try again.';
-  if (/credits are exhausted|402/i.test(raw)) return 'Image generation credits are exhausted. Please add credits or connect a valid generation API key.';
+  if (/RESOURCE_EXHAUSTED|quota exceeded|quota|rate.?limit|rate limited|429/i.test(raw)) return 'Your Gemini API quota is exhausted or not enabled for API billing. Gemini app Pro subscription does not include API quota — enable billing/quota for this API key, then try again.';
+  if (/credits are exhausted|402/i.test(raw)) return 'Built-in image generation credits are exhausted. Add Cloud AI balance or use a Gemini API key with enabled API quota.';
   return raw.length > 220 ? `${raw.slice(0, 220)}…` : raw;
 }
 
@@ -475,8 +475,8 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
           <div className="rounded-md border bg-secondary/40 p-3 flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-primary shrink-0" />
             <div className="flex-1">
-              <p className="text-sm font-medium">Unlimited generation enabled</p>
-              <p className="text-xs text-muted-foreground">Routed through your Gemini API key (server-side). No Lovable credit limits apply.</p>
+              <p className="text-sm font-medium">Gemini API routing enabled</p>
+              <p className="text-xs text-muted-foreground">Uses your saved Gemini API key when Google API quota is active; quota errors now stop before fallback credits are used.</p>
             </div>
             <Badge variant="outline" className="text-[10px]">Gemini</Badge>
           </div>

@@ -31,6 +31,10 @@ function buildPrompt(region: 'upper' | 'lower' | 'full', subject: 'mannequin' | 
   return `Dress the garment from this product photo onto ${model}, full body with generous margins so head, shoulders, sleeves, hem, legs and feet are fully visible. Clean light grey studio background, soft even lighting, photorealistic e-commerce style. Preserve exact garment details.${angle}`
 }
 
+function isGeminiQuotaOrAuthError(message: string): boolean {
+  return /RESOURCE_EXHAUSTED|quota exceeded|GenerateRequests|rate.?limit|429|API key not valid|UNAUTHENTICATED|invalid authentication|401/i.test(message)
+}
+
 async function callImageGen(apiKey: string, prompt: string, imageUrl: string): Promise<string> {
   const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
@@ -112,7 +116,9 @@ async function generateImage(lovableKey: string, prompt: string, imageUrl: strin
     try {
       return await callGeminiDirect(geminiKey, prompt, imageUrl)
     } catch (e) {
-      console.warn('Gemini direct generation failed; falling back to Lovable AI:', (e as Error).message)
+      const msg = (e as Error).message
+      console.warn('Gemini direct generation failed:', msg)
+      if (isGeminiQuotaOrAuthError(msg)) throw new Error(`Gemini API key cannot generate right now: ${msg}`)
     }
   }
   return await callImageGen(lovableKey, prompt, imageUrl)
