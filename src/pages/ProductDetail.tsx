@@ -92,14 +92,14 @@ const ProductDetail = () => {
     };
 
     if (product.colors.length > 0 && selectedColorVariant) {
-      if (selectedColorVariant.image) push(selectedColorVariant.image, `${product.name} in ${selectedColorVariant.name}`, 'cover', selectedColorVariant.name);
-      (selectedColorVariant.images || []).forEach((src, i) => push(src, `${product.name} ${selectedColorVariant.name} ${i + 2}`, 'cover', selectedColorVariant.name));
+      if (selectedColorVariant.image) push(selectedColorVariant.image, `${product.name} in ${selectedColorVariant.name}`, 'contain', selectedColorVariant.name);
+      (selectedColorVariant.images || []).forEach((src, i) => push(src, `${product.name} ${selectedColorVariant.name} ${i + 2}`, 'contain', selectedColorVariant.name));
 
       if (items.length === 0) {
-        product.images.forEach((src, i) => push(src, `${product.name} photo ${i + 1}`, 'cover'));
+        product.images.forEach((src, i) => push(src, `${product.name} photo ${i + 1}`, 'contain'));
       }
     } else {
-      product.images.forEach((src, i) => push(src, `${product.name} photo ${i + 1}`, 'cover'));
+      product.images.forEach((src, i) => push(src, `${product.name} photo ${i + 1}`, 'contain'));
     }
 
     if (product.mannequinImage) push(product.mannequinImage, `${product.name} on mannequin`, 'contain');
