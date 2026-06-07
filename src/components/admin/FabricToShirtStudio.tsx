@@ -93,7 +93,13 @@ async function getFunctionErrorMessage(error: any) {
   } else {
     backendMessage = context?.error || context?.message || context?.details || '';
   }
-  return [backendMessage, error?.message].filter(Boolean).join(' — ') || 'Generation failed';
+  const raw = [backendMessage, error?.message].filter(Boolean).join(' — ') || 'Generation failed';
+  if (/401|UNAUTHENTICATED|API key not valid|invalid authentication|ACCESS_TOKEN_TYPE_UNSUPPORTED/i.test(raw)) {
+    return 'The saved Gemini key is not valid for API generation. I will use the built-in image generator fallback; if this still appears, update or remove the Gemini key.';
+  }
+  if (/rate limited|429/i.test(raw)) return 'Image generation is busy right now. Please wait a minute and try again.';
+  if (/credits are exhausted|402/i.test(raw)) return 'Image generation credits are exhausted. Please add credits or connect a valid generation API key.';
+  return raw.length > 220 ? `${raw.slice(0, 220)}…` : raw;
 }
 
 // Nearest named-color lookup for the hex input.

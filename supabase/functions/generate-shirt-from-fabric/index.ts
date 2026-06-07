@@ -262,14 +262,14 @@ async function callGeminiDirect(apiKey: string, prompt: string, fabricUrl: strin
 }
 
 async function callImageGenWithFallback(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string, userGeminiKey?: string): Promise<string> {
-  // BYOK: if a Gemini API key is configured, use it directly and do not spend Lovable AI credits.
+  // BYOK/server key is optional. If it is expired, pasted incorrectly, or not a Generative Language API key,
+  // fall back to Lovable AI instead of blocking the admin workflow with raw Google auth errors.
   if (userGeminiKey) {
     try {
       return await callGeminiDirect(userGeminiKey, prompt, fabricUrl, referenceUrl)
     } catch (e) {
       const msg = (e as Error).message
-      console.error('Gemini API generation failed:', msg)
-      throw new Error(`Gemini API generation failed: ${msg}`)
+      console.warn('Gemini direct generation failed; falling back to Lovable AI:', msg)
     }
   }
   try {
