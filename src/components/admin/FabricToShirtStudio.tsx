@@ -652,6 +652,13 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
 
           {/* Generate buttons */}
           <div className="space-y-2">
+            <div className="flex items-center justify-between rounded-md border bg-secondary/40 px-3 py-2">
+              <div>
+                <Label className="cursor-pointer">Prompt mode (no API)</Label>
+                <p className="text-xs text-muted-foreground">When ON, clicking any view below opens its ready-to-paste prompt instead of calling the AI.</p>
+              </div>
+              <Switch checked={promptMode} onCheckedChange={setPromptMode} />
+            </div>
             <Label className="text-xs uppercase tracking-wider text-muted-foreground">Garment views</Label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               <Button type="button" onClick={() => generate('front')} disabled={!fabricUrl || generating !== null} className="h-11">
