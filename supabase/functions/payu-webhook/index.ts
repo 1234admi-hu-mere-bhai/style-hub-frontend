@@ -106,8 +106,16 @@ Deno.serve(async (req) => {
       return Response.redirect(`${baseRedirect}?status=success&txnid=${txnid}`, 303);
     }
 
+    // Idempotency guard for wallet top-ups: PayU retries on network failures, and
+    // wallet top-ups don't have an order_id to dedupe against. Bail out if we
+    // already credited the wallet for this txnid.
+    if (pending.is_wallet_topup && pending.status === 'completed') {
+      return Response.redirect(`${baseRedirect}?status=success&txnid=${txnid}&type=wallet`, 303);
+    }
+
     // ===== WALLET TOP-UP BRANCH =====
     if (pending.is_wallet_topup) {
+
       const topupAmount = Number(pending.total);
       const bonus = Number(pending.topup_bonus || 0);
       try {
