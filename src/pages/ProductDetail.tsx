@@ -8,6 +8,7 @@ import SizeChartModal from '@/components/SizeChartModal';
 import ReviewSection from '@/components/ReviewSection';
 import ProductHighlights from '@/components/ProductHighlights';
 import Product360Viewer from '@/components/Product360Viewer';
+import ImageZoomDialog from '@/components/ImageZoomDialog';
 import PincodeChecker from '@/components/PincodeChecker';
 import { useDbProducts, useDbProduct } from '@/hooks/useDbProducts';
 import { useProductReviews } from '@/hooks/useProductReviews';
@@ -38,6 +39,7 @@ const ProductDetail = () => {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [zoomSrc, setZoomSrc] = useState<string | null>(null);
 
   // Build the display color list, prepending the product's original/base
   // color (from product.image) so users can always revert to it.
@@ -90,14 +92,14 @@ const ProductDetail = () => {
     };
 
     if (product.colors.length > 0 && selectedColorVariant) {
-      if (selectedColorVariant.image) push(selectedColorVariant.image, `${product.name} in ${selectedColorVariant.name}`, 'cover', selectedColorVariant.name);
-      (selectedColorVariant.images || []).forEach((src, i) => push(src, `${product.name} ${selectedColorVariant.name} ${i + 2}`, 'cover', selectedColorVariant.name));
+      if (selectedColorVariant.image) push(selectedColorVariant.image, `${product.name} in ${selectedColorVariant.name}`, 'contain', selectedColorVariant.name);
+      (selectedColorVariant.images || []).forEach((src, i) => push(src, `${product.name} ${selectedColorVariant.name} ${i + 2}`, 'contain', selectedColorVariant.name));
 
       if (items.length === 0) {
-        product.images.forEach((src, i) => push(src, `${product.name} photo ${i + 1}`, 'cover'));
+        product.images.forEach((src, i) => push(src, `${product.name} photo ${i + 1}`, 'contain'));
       }
     } else {
-      product.images.forEach((src, i) => push(src, `${product.name} photo ${i + 1}`, 'cover'));
+      product.images.forEach((src, i) => push(src, `${product.name} photo ${i + 1}`, 'contain'));
     }
 
     if (product.mannequinImage) push(product.mannequinImage, `${product.name} on mannequin`, 'contain');
@@ -249,11 +251,18 @@ const ProductDetail = () => {
               {galleryItems.map((item, index) => (
                 <div key={item.type === 'image' ? item.src : `rotation-${index}`} className="relative min-w-full aspect-[3/4] snap-center rounded-lg overflow-hidden bg-secondary">
                   {item.type === 'image' ? (
-                    <img
-                      src={item.src}
-                      alt={item.alt}
-                      className={`w-full h-full transition-all duration-300 ${item.fit === 'contain' ? 'object-contain' : 'object-cover'}`}
-                    />
+                    <button
+                      type="button"
+                      onClick={() => setZoomSrc(item.src)}
+                      aria-label="Open full view"
+                      className="w-full h-full block cursor-zoom-in"
+                    >
+                      <img
+                        src={item.src}
+                        alt={item.alt}
+                        className={`w-full h-full transition-all duration-300 ${item.fit === 'contain' ? 'object-contain' : 'object-cover'}`}
+                      />
+                    </button>
                   ) : (
                     <Product360Viewer frames={item.frames} className="h-full rounded-lg" />
                   )}
@@ -496,6 +505,7 @@ const ProductDetail = () => {
       </main>
       <Footer />
       <SizeChartModal open={sizeChartOpen} onOpenChange={setSizeChartOpen} category={product.category} />
+      <ImageZoomDialog open={!!zoomSrc} onOpenChange={(o) => !o && setZoomSrc(null)} src={zoomSrc || ''} alt={product.name} />
     </div>
   );
 };
