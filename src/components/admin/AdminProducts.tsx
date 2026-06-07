@@ -277,10 +277,10 @@ const AdminProducts = () => {
     }
     const raw = [backendMessage, error?.message].filter(Boolean).join(' — ') || 'Generation failed';
     if (/401|UNAUTHENTICATED|API key not valid|invalid authentication|ACCESS_TOKEN_TYPE_UNSUPPORTED/i.test(raw)) {
-      return 'The saved Gemini key is not valid for API generation. The generator will use the built-in fallback; if this still appears, update or remove the Gemini key.';
+      return 'The saved Gemini API key is not valid for generation. Please update it with a Google AI Studio API key.';
     }
-    if (/rate limited|429/i.test(raw)) return 'Image generation is busy right now. Please wait a minute and try again.';
-    if (/credits are exhausted|402/i.test(raw)) return 'Image generation credits are exhausted. Please add credits or connect a valid generation API key.';
+    if (/RESOURCE_EXHAUSTED|quota exceeded|quota|rate.?limit|rate limited|429/i.test(raw)) return 'Your Gemini API quota is exhausted or not enabled for API billing. Gemini app Pro subscription does not include API quota — enable billing/quota for this API key, then try again.';
+    if (/credits are exhausted|402/i.test(raw)) return 'Built-in image generation credits are exhausted. Add Cloud AI balance or use a Gemini API key with enabled API quota.';
     return raw.length > 220 ? `${raw.slice(0, 220)}…` : raw;
   };
 
