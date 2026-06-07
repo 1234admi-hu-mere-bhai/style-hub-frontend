@@ -4,6 +4,7 @@ const corsHeaders = {
 };
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { requireServiceRole } from '../_shared/require-service-role.ts';
 
 const DELHIVERY_BASE = 'https://track.delhivery.com';
 
@@ -26,6 +27,10 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+  const denied = requireServiceRole(req, corsHeaders);
+  if (denied) return denied;
+
+
 
   const DELHIVERY_API_KEY = Deno.env.get('DELHIVERY_API_KEY');
   if (!DELHIVERY_API_KEY) {
