@@ -9,7 +9,7 @@ const corsHeaders = {
 const OWNER_EMAILS = ['otw2003@gmail.com', 'kaliasgar776@gmail.com', 'muffigout@gmail.com']
 const MONOGRAM_PATH = 'assets/chest-monogram.png'
 
-type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'model-back' | 'lifestyle'
+type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'model-back' | 'lifestyle' | 'mannequin' | 'rotation-360'
 type Pose =
   | 'sitting' | 'leaning' | 'walking' | 'coffee'
   | 'standing-hands-pockets' | 'arms-crossed' | 'hand-in-hair' | 'looking-away'
@@ -166,6 +166,26 @@ CRITICAL POCKET EMBROIDERY (MG monogram — MANDATORY, must be clearly visible o
 
   if (view === 'model-back') {
     return `${modelBase} POSE: model standing straight, BACK FACING the camera (showing the BACK of the shirt), head turned slightly over the shoulder in profile, arms relaxed at sides, against a clean light-gray seamless studio backdrop. Full upper body visible from mid-thigh up. The full back panel of the shirt — back yoke, sleeves, and back hem — must be clearly visible, sharp, and show the EXACT pattern and color from the fabric swatch.`
+  }
+
+  if (view === 'mannequin') {
+    return `Photorealistic high-end e-commerce studio product photograph of a faceless neutral male mannequin (matte light-grey display mannequin, no head features, no hands beyond plain mannequin forms) wearing the men's full-sleeve button-down shirt as the hero garment. Front-facing pose, perfectly upright, arms slightly away from torso so both sleeves and side seams are visible, shirt hangs naturally with crisp shoulder line. Bottom of frame ends at the mannequin hip — full collar, placket, both sleeves, cuffs, and chest pocket clearly visible and sharp. Pure light-grey seamless studio backdrop, soft even diffused lighting, gentle contact shadow under mannequin, no harsh highlights. ${quality} ${colorLock} ${patternLock} ${fabricFidelity}
+
+CRITICAL FABRIC MATCH: The shirt body, collar, collar stand, placket, sleeves, cuffs, and pocket MUST be cut from the EXACT same fabric in the provided swatch / front reference image — identical hue, brightness, saturation, pattern (stripe spacing / check size / motif scale / weave direction). Do NOT shift the color or simplify the pattern.
+
+CRITICAL DETAIL CONSISTENCY: Keep the SAME chest pocket on the wearer's LEFT chest (viewer's RIGHT) with the SAME tonal MG monogram embroidered in its top-left corner, and the SAME MUFFIGOUT woven collar tag visible at the inside back neck if the collar opening reveals it — matching the front mockup exactly. NO model, NO human skin, NO face, NO printed graphics or large logos on the shirt body, NO text overlays, NO watermark, NO brand wordmark anywhere except the small tonal MG pocket embroidery and the inside collar tag.`
+  }
+
+  if (view === 'rotation-360') {
+    return `Photorealistic 360° product rotation contact sheet for a men's full-sleeve button-down shirt, presented as ONE single image: a clean 4x2 grid (4 columns × 2 rows = 8 frames) on a pure white seamless background with thin neutral gridlines between frames. Each frame shows the SAME mannequin wearing the SAME shirt from a different camera angle around the mannequin, in this exact order left-to-right, top-to-bottom:
+1) 0° front, 2) 45° front-right, 3) 90° right side, 4) 135° right-back,
+5) 180° back, 6) 225° left-back, 7) 270° left side, 8) 315° front-left.
+
+Each of the 8 frames must use IDENTICAL mannequin, IDENTICAL pose (arms slightly away from torso, upright stance, hip-up framing), IDENTICAL lighting (soft even studio diffusion), IDENTICAL distance from camera, and IDENTICAL crop — only the camera angle around the mannequin changes. A faint small angle label ("0°", "45°", "90°", "135°", "180°", "225°", "270°", "315°") appears in the bottom-right corner of each frame in clean small grey sans-serif. ${quality} ${colorLock} ${patternLock} ${fabricFidelity}
+
+CRITICAL FABRIC MATCH: In every one of the 8 frames the shirt body, collar, collar stand, placket, sleeves, cuffs, and pocket MUST be cut from the EXACT same fabric in the provided swatch / front reference image — identical hue, brightness, saturation, and pattern (stripe spacing / check size / motif scale / weave direction). Do NOT shift the color or recolor between frames. A side-by-side of the swatch and any frame must be visually indistinguishable.
+
+CRITICAL DETAIL CONSISTENCY: Keep the SAME chest pocket on the wearer's LEFT chest with the SAME tonal MG embroidered monogram, and the SAME MUFFIGOUT woven collar tag in the inside back neck (visible only in back and 3/4 back frames if the collar reveals the inner neckband). The back frame (180°) must show a completely clean back panel — no tag, no logo, no embroidery on the back body. NO human model, NO face, NO hands, NO printed graphics or large logos on the shirt body, NO additional text overlays beyond the eight small angle labels, NO watermark, NO brand wordmark on the background.`
   }
 
   // lifestyle pose
@@ -464,7 +484,7 @@ Deno.serve(async (req) => {
 
     const { fabricUrl, view = 'front', colorHex, collarTagUrl, referenceImageUrl, productId, hd = false, specs, pose = 'sitting', userGeminiKey, promptOnly = false } = await req.json()
     if (!fabricUrl) throw new Error('fabricUrl required')
-    const validViews = ['front', 'back', 'spec', 'highlights', 'model', 'model-back', 'lifestyle']
+    const validViews = ['front', 'back', 'spec', 'highlights', 'model', 'model-back', 'lifestyle', 'mannequin', 'rotation-360']
     if (!validViews.includes(view)) throw new Error('invalid view')
 
     const prompt = buildPrompt(view, colorHex, hd, specs, pose)
