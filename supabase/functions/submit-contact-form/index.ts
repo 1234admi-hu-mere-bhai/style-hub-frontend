@@ -88,9 +88,12 @@ Deno.serve(async (req) => {
       templateName: 'contact-support-ack',
       recipientEmail: email,
       idempotencyKey: `contact-ack-${submissionId}`,
-      templateData: { customerName: name, subject, message },
+      // Intentionally omit subject/message to prevent abuse of this unauthenticated
+      // endpoint as an email-relay carrying attacker-controlled content.
+      templateData: { customerName: name },
     },
   })
+
 
   const [notifyRes, ackRes] = await Promise.all([notifyPromise, ackPromise])
 
