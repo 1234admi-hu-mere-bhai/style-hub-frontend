@@ -39,6 +39,7 @@ const ProductDetail = () => {
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [zoomSrc, setZoomSrc] = useState<string | null>(null);
 
   // Build the display color list, prepending the product's original/base
   // color (from product.image) so users can always revert to it.
