@@ -133,7 +133,11 @@ const Admin = () => {
   };
 
   const fetchAnalytics = async () => {
-    setLoading(true);
+    // Only show full-page loader on the very first load. Background refreshes
+    // (e.g. after browser-tab focus / token refresh) must NOT unmount the
+    // currently-open admin tab — otherwise in-progress work (like a typed
+    // Fabric Studio prompt) gets wiped.
+    if (!analytics) setLoading(true);
     setError(null);
     try {
       const { data, error: fnError } = await supabase.functions.invoke('admin-analytics');
