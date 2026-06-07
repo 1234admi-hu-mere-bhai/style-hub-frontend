@@ -655,9 +655,60 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                 Lifestyle pose
               </Button>
             </div>
+
+            {/* Manual prompt export — no Gemini quota used */}
+            <div className="pt-2 space-y-2">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Manual — no API needed</Label>
+              <Button type="button" onClick={exportPrompts} disabled={!fabricUrl || exportingPrompts} variant="outline" className="w-full h-11">
+                {exportingPrompts ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ClipboardCopy className="h-4 w-4 mr-2" />}
+                Export prompts (paste into Gemini app)
+              </Button>
+              <p className="text-xs text-muted-foreground">Copy each ready-made prompt + the fabric image into the Gemini app (or any AI image tool). Uses zero API quota.</p>
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Prompt export dialog */}
+      <Dialog open={promptDialogOpen} onOpenChange={setPromptDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Ready-to-paste prompts</DialogTitle>
+            <DialogDescription>
+              Open the Gemini app, attach the fabric image (and the Front mockup for other views), then paste a prompt below. No API quota used.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            {fabricUrl && (
+              <div className="flex items-center gap-3 rounded-md border bg-secondary/40 p-2">
+                <img src={fabricUrl} alt="Fabric" className="h-14 w-14 object-cover rounded" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium">Fabric image</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{fabricUrl}</p>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => copyText(fabricUrl)}><Copy className="h-3.5 w-3.5 mr-1" />Copy URL</Button>
+                <Button size="sm" variant="outline" onClick={() => downloadOne(fabricUrl, 'fabric.png')}><Download className="h-3.5 w-3.5" /></Button>
+              </div>
+            )}
+            {promptExports.length === 0 && <p className="text-sm text-muted-foreground">No prompts generated.</p>}
+            {promptExports.map((p) => (
+              <div key={p.view} className="space-y-1.5 rounded-md border p-3 bg-card">
+                <div className="flex items-center justify-between">
+                  <Badge>{p.label}</Badge>
+                  <Button size="sm" variant="outline" onClick={() => copyText(p.prompt)}><Copy className="h-3.5 w-3.5 mr-1" />Copy prompt</Button>
+                </div>
+                <Textarea readOnly value={p.prompt} className="text-xs font-mono min-h-[120px] max-h-[200px]" />
+              </div>
+            ))}
+            {promptExports.length > 0 && (
+              <Button type="button" variant="secondary" className="w-full" onClick={() => copyText(promptExports.map(p => `=== ${p.label} ===\n${p.prompt}`).join('\n\n'))}>
+                <Copy className="h-4 w-4 mr-2" /> Copy ALL prompts
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
 
       {/* Bulk spec sheets results */}
       {bulkSpec.length > 0 && (
