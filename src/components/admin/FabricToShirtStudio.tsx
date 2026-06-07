@@ -665,7 +665,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                 {generating === 'front' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
                 Front
               </Button>
-              <Button type="button" onClick={() => generate('back')} disabled={!fabricUrl || !frontUrl || generating !== null} variant="secondary" className="h-11">
+              <Button type="button" onClick={() => generate('back')} disabled={!fabricUrl || (!promptMode && !frontUrl) || generating !== null} variant="secondary" className="h-11">
                 {generating === 'back' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
                 Back
               </Button>
@@ -673,7 +673,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                 {generating === 'spec' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Info className="h-4 w-4 mr-2" />}
                 Spec Sheet
               </Button>
-              <Button type="button" onClick={() => generate('highlights')} disabled={!fabricUrl || !frontUrl || generating !== null} variant="outline" className="h-11">
+              <Button type="button" onClick={() => generate('highlights')} disabled={!fabricUrl || (!promptMode && !frontUrl) || generating !== null} variant="outline" className="h-11">
                 {generating === 'highlights' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Shirt className="h-4 w-4 mr-2" />}
                 Key Highlights
               </Button>
@@ -684,15 +684,15 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
             </Button>
             <Label className="text-xs uppercase tracking-wider text-muted-foreground pt-2 block">Human model (optional)</Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <Button type="button" onClick={() => generate('model')} disabled={!fabricUrl || !frontUrl || generating !== null} variant="outline" className="h-11">
+              <Button type="button" onClick={() => generate('model')} disabled={!fabricUrl || (!promptMode && !frontUrl) || generating !== null} variant="outline" className="h-11">
                 {generating === 'model' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <User className="h-4 w-4 mr-2" />}
                 Model (front)
               </Button>
-              <Button type="button" onClick={() => generate('model-back')} disabled={!fabricUrl || !frontUrl || generating !== null} variant="outline" className="h-11">
+              <Button type="button" onClick={() => generate('model-back')} disabled={!fabricUrl || (!promptMode && !frontUrl) || generating !== null} variant="outline" className="h-11">
                 {generating === 'model-back' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <User className="h-4 w-4 mr-2" />}
                 Model (back)
               </Button>
-              <Button type="button" onClick={() => generate('lifestyle')} disabled={!fabricUrl || !frontUrl || generating !== null} className="h-11">
+              <Button type="button" onClick={() => generate('lifestyle')} disabled={!fabricUrl || (!promptMode && !frontUrl) || generating !== null} className="h-11">
                 {generating === 'lifestyle' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
                 Lifestyle pose
               </Button>
