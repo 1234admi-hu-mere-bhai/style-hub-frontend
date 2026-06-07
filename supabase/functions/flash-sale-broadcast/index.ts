@@ -1,6 +1,7 @@
 // Cron-triggered: detects flash sales whose start_time just passed (within last 15min)
 // and broadcasts a push to ALL subscribed users with flash_sales=ON.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { requireServiceRole } from '../_shared/require-service-role.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,6 +10,10 @@ const corsHeaders = {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
+  const denied = requireServiceRole(req, corsHeaders);
+  if (denied) return denied;
+
+
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
