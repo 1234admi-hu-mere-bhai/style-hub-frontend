@@ -391,6 +391,54 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
 
 
 
+  // Export all prompts WITHOUT calling Gemini — copy/paste into any AI tool (Gemini app, AI Studio, ChatGPT, etc.)
+  const exportPrompts = async () => {
+    if (!fabricUrl) { toast({ title: 'Upload a fabric image first', variant: 'destructive' }); return; }
+    setExportingPrompts(true);
+    setPromptExports([]);
+    const views: Array<{ view: ViewKind; label: string }> = [
+      { view: 'front', label: 'Front (flat-lay)' },
+      { view: 'back', label: 'Back (flat-lay)' },
+      { view: 'spec', label: 'Spec Sheet' },
+      { view: 'highlights', label: 'Key Highlights' },
+      { view: 'model', label: 'Model — front' },
+      { view: 'model-back', label: 'Model — back' },
+      { view: 'lifestyle', label: `Lifestyle — ${pose}` },
+    ];
+    const results: typeof promptExports = [];
+    try {
+      for (const v of views) {
+        try {
+          const needsSpecs = v.view === 'spec' || v.view === 'highlights';
+          const { data, error } = await supabase.functions.invoke('generate-shirt-from-fabric', {
+            body: {
+              fabricUrl,
+              view: v.view,
+              colorHex: colorHex || undefined,
+              referenceImageUrl: v.view !== 'front' ? frontUrl || undefined : undefined,
+              productId,
+              hd,
+              specs: needsSpecs ? specs : undefined,
+              pose: v.view === 'lifestyle' ? pose : undefined,
+              promptOnly: true,
+            },
+          });
+          if (error) throw new Error(await getFunctionErrorMessage(error));
+          if (data?.prompt) results.push({ view: v.view, label: v.label, prompt: data.prompt });
+        } catch (e: any) {
+          console.warn(`prompt export ${v.view} failed`, e?.message);
+        }
+      }
+      setPromptExports(results);
+      setPromptDialogOpen(true);
+    } finally { setExportingPrompts(false); }
+  };
+
+  const copyText = async (text: string) => {
+    try { await navigator.clipboard.writeText(text); toast({ title: 'Copied to clipboard' }); }
+    catch { toast({ title: 'Copy failed', variant: 'destructive' }); }
+  };
+
   const saveToProduct = async () => {
     if (!productId) return;
     if (!frontUrl && !backUrl) { toast({ title: 'Generate at least one view first', variant: 'destructive' }); return; }
