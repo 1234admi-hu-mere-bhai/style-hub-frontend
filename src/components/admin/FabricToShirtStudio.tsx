@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Upload, Sparkles, Loader2, Image as ImageIcon, Download, Tag, Info, Shirt, User, Copy, ClipboardCopy } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import Spin360Viewer from './Spin360Viewer';
 
 type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'model-back' | 'lifestyle' | 'mannequin' | 'rotation-360';
 type Pose =
@@ -831,20 +832,24 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                       </button>
                     </div>
                   </div>
-                  <img
-                    src={v.url}
-                    alt={v.label}
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      const img = e.currentTarget;
-                      if (!img.dataset.retried) {
-                        img.dataset.retried = '1';
-                        img.src = `${v.url}${v.url.includes('?') ? '&' : '?'}r=${Date.now()}`;
-                      }
-                    }}
-                    className="w-full h-auto max-h-[80vh] object-contain rounded-md bg-white border"
-                  />
+                  {v.key === 'rotation-360' ? (
+                    <Spin360Viewer gridUrl={v.url} />
+                  ) : (
+                    <img
+                      src={v.url}
+                      alt={v.label}
+                      loading="lazy"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        const img = e.currentTarget;
+                        if (!img.dataset.retried) {
+                          img.dataset.retried = '1';
+                          img.src = `${v.url}${v.url.includes('?') ? '&' : '?'}r=${Date.now()}`;
+                        }
+                      }}
+                      className="w-full h-auto max-h-[80vh] object-contain rounded-md bg-white border"
+                    />
+                  )}
                 </div>
               ) : null)}
             </div>
