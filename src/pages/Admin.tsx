@@ -95,10 +95,13 @@ const Admin = () => {
       setLoading(false);
       return;
     }
-    if (user) {
+    if (user?.id) {
       fetchAnalytics();
     }
-  }, [user, authLoading]);
+    // Only re-fetch when the actual user identity changes — not on every token refresh
+    // (which would otherwise unmount the current tab and wipe in-progress work).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, authLoading]);
 
   // Pending count for owner badge
   useEffect(() => {
