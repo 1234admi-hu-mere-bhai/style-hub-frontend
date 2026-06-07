@@ -37,6 +37,14 @@ Deno.serve(async (req) => {
     const match = candidate.match(/campaign-([0-9a-f-]{36})/i);
     if (match) campaignId = match[1];
 
+    // Validate campaign exists before writing event/counter rows, so an attacker
+    // can't flood push_events or inflate counters with arbitrary UUIDs.
+    if (campaignId) {
+      const { data: campaign } = await adminClient
+        .from("push_campaigns").select("id").eq("id", campaignId).maybeSingle();
+      if (!campaign) campaignId = null;
+    }
+
     await adminClient.from("push_events").insert({
       campaign_id: campaignId,
       dedupe_key: dedupeKey || null,
@@ -53,6 +61,7 @@ Deno.serve(async (req) => {
         await adminClient.from("push_campaigns").update({ [column]: current + 1 }).eq("id", campaignId);
       }
     }
+
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
