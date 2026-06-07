@@ -447,15 +447,25 @@ Deno.serve(async (req) => {
     }
     if (!allowed) throw new Error('Forbidden')
 
-    const { fabricUrl, view = 'front', colorHex, collarTagUrl, referenceImageUrl, productId, hd = false, specs, pose = 'sitting', userGeminiKey } = await req.json()
+    const { fabricUrl, view = 'front', colorHex, collarTagUrl, referenceImageUrl, productId, hd = false, specs, pose = 'sitting', userGeminiKey, promptOnly = false } = await req.json()
     if (!fabricUrl) throw new Error('fabricUrl required')
     const validViews = ['front', 'back', 'spec', 'highlights', 'model', 'model-back', 'lifestyle']
     if (!validViews.includes(view)) throw new Error('invalid view')
 
+    const prompt = buildPrompt(view, colorHex, hd, specs, pose)
+
+    // Prompt-only mode: returns the constructed prompt WITHOUT calling any image model.
+    // Lets the admin copy/paste into Gemini app / AI Studio / any other tool without burning quota.
+    if (promptOnly) {
+      return new Response(JSON.stringify({ prompt, view, fabricUrl, referenceImageUrl: referenceImageUrl || null }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     // Prefer server-side GEMINI_API_KEY (unlimited under workspace plan); fall back to legacy client BYOK; finally Lovable gateway.
     const serverGeminiKey = Deno.env.get('GEMINI_API_KEY') || undefined
     const effectiveByokKey = serverGeminiKey || userGeminiKey
-    const dataUrl = await callImageGenWithFallback(lovableKey, buildPrompt(view, colorHex, hd, specs, pose), fabricUrl, referenceImageUrl, effectiveByokKey)
+    const dataUrl = await callImageGenWithFallback(lovableKey, prompt, fabricUrl, referenceImageUrl, effectiveByokKey)
     let { bytes, mime } = dataUrlToBytes(dataUrl)
 
     // FRONT only: composite collar tag at back-neck AND tonal MG monogram on chest pocket.

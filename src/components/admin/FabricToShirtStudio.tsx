@@ -8,7 +8,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, Sparkles, Loader2, Image as ImageIcon, Download, Tag, Info, Shirt, User } from 'lucide-react';
+import { Upload, Sparkles, Loader2, Image as ImageIcon, Download, Tag, Info, Shirt, User, Copy, ClipboardCopy } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 
 type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'model-back' | 'lifestyle';
 type Pose =
@@ -195,6 +197,9 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const tagInput = useRef<HTMLInputElement>(null);
   const storageKey = `fabric-studio:${productId || 'global'}`;
   const hydrated = useRef(false);
+  const [promptDialogOpen, setPromptDialogOpen] = useState(false);
+  const [promptExports, setPromptExports] = useState<Array<{ view: ViewKind; label: string; prompt: string }>>([]);
+  const [exportingPrompts, setExportingPrompts] = useState(false);
 
   // Persist Gemini key separately
   useEffect(() => {
@@ -385,6 +390,54 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   };
 
 
+
+  // Export all prompts WITHOUT calling Gemini — copy/paste into any AI tool (Gemini app, AI Studio, ChatGPT, etc.)
+  const exportPrompts = async () => {
+    if (!fabricUrl) { toast({ title: 'Upload a fabric image first', variant: 'destructive' }); return; }
+    setExportingPrompts(true);
+    setPromptExports([]);
+    const views: Array<{ view: ViewKind; label: string }> = [
+      { view: 'front', label: 'Front (flat-lay)' },
+      { view: 'back', label: 'Back (flat-lay)' },
+      { view: 'spec', label: 'Spec Sheet' },
+      { view: 'highlights', label: 'Key Highlights' },
+      { view: 'model', label: 'Model — front' },
+      { view: 'model-back', label: 'Model — back' },
+      { view: 'lifestyle', label: `Lifestyle — ${pose}` },
+    ];
+    const results: typeof promptExports = [];
+    try {
+      for (const v of views) {
+        try {
+          const needsSpecs = v.view === 'spec' || v.view === 'highlights';
+          const { data, error } = await supabase.functions.invoke('generate-shirt-from-fabric', {
+            body: {
+              fabricUrl,
+              view: v.view,
+              colorHex: colorHex || undefined,
+              referenceImageUrl: v.view !== 'front' ? frontUrl || undefined : undefined,
+              productId,
+              hd,
+              specs: needsSpecs ? specs : undefined,
+              pose: v.view === 'lifestyle' ? pose : undefined,
+              promptOnly: true,
+            },
+          });
+          if (error) throw new Error(await getFunctionErrorMessage(error));
+          if (data?.prompt) results.push({ view: v.view, label: v.label, prompt: data.prompt });
+        } catch (e: any) {
+          console.warn(`prompt export ${v.view} failed`, e?.message);
+        }
+      }
+      setPromptExports(results);
+      setPromptDialogOpen(true);
+    } finally { setExportingPrompts(false); }
+  };
+
+  const copyText = async (text: string) => {
+    try { await navigator.clipboard.writeText(text); toast({ title: 'Copied to clipboard' }); }
+    catch { toast({ title: 'Copy failed', variant: 'destructive' }); }
+  };
 
   const saveToProduct = async () => {
     if (!productId) return;
@@ -602,9 +655,60 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
                 Lifestyle pose
               </Button>
             </div>
+
+            {/* Manual prompt export — no Gemini quota used */}
+            <div className="pt-2 space-y-2">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground">Manual — no API needed</Label>
+              <Button type="button" onClick={exportPrompts} disabled={!fabricUrl || exportingPrompts} variant="outline" className="w-full h-11">
+                {exportingPrompts ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ClipboardCopy className="h-4 w-4 mr-2" />}
+                Export prompts (paste into Gemini app)
+              </Button>
+              <p className="text-xs text-muted-foreground">Copy each ready-made prompt + the fabric image into the Gemini app (or any AI image tool). Uses zero API quota.</p>
+            </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Prompt export dialog */}
+      <Dialog open={promptDialogOpen} onOpenChange={setPromptDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Ready-to-paste prompts</DialogTitle>
+            <DialogDescription>
+              Open the Gemini app, attach the fabric image (and the Front mockup for other views), then paste a prompt below. No API quota used.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            {fabricUrl && (
+              <div className="flex items-center gap-3 rounded-md border bg-secondary/40 p-2">
+                <img src={fabricUrl} alt="Fabric" className="h-14 w-14 object-cover rounded" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium">Fabric image</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{fabricUrl}</p>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => copyText(fabricUrl)}><Copy className="h-3.5 w-3.5 mr-1" />Copy URL</Button>
+                <Button size="sm" variant="outline" onClick={() => downloadOne(fabricUrl, 'fabric.png')}><Download className="h-3.5 w-3.5" /></Button>
+              </div>
+            )}
+            {promptExports.length === 0 && <p className="text-sm text-muted-foreground">No prompts generated.</p>}
+            {promptExports.map((p) => (
+              <div key={p.view} className="space-y-1.5 rounded-md border p-3 bg-card">
+                <div className="flex items-center justify-between">
+                  <Badge>{p.label}</Badge>
+                  <Button size="sm" variant="outline" onClick={() => copyText(p.prompt)}><Copy className="h-3.5 w-3.5 mr-1" />Copy prompt</Button>
+                </div>
+                <Textarea readOnly value={p.prompt} className="text-xs font-mono min-h-[120px] max-h-[200px]" />
+              </div>
+            ))}
+            {promptExports.length > 0 && (
+              <Button type="button" variant="secondary" className="w-full" onClick={() => copyText(promptExports.map(p => `=== ${p.label} ===\n${p.prompt}`).join('\n\n'))}>
+                <Copy className="h-4 w-4 mr-2" /> Copy ALL prompts
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
 
       {/* Bulk spec sheets results */}
       {bulkSpec.length > 0 && (
