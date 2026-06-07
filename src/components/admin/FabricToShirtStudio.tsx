@@ -197,6 +197,9 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const tagInput = useRef<HTMLInputElement>(null);
   const storageKey = `fabric-studio:${productId || 'global'}`;
   const hydrated = useRef(false);
+  const [promptDialogOpen, setPromptDialogOpen] = useState(false);
+  const [promptExports, setPromptExports] = useState<Array<{ view: ViewKind; label: string; prompt: string }>>([]);
+  const [exportingPrompts, setExportingPrompts] = useState(false);
 
   // Persist Gemini key separately
   useEffect(() => {
