@@ -38,6 +38,10 @@ function isGeminiQuotaOrAuthError(message: string): boolean {
   return /RESOURCE_EXHAUSTED|quota exceeded|GenerateRequests|rate.?limit|429|API key not valid|UNAUTHENTICATED|invalid authentication|401/i.test(message)
 }
 
+function isGeminiModelUnavailableError(message: string): boolean {
+  return /404|not found|not supported|not available|400|INVALID_ARGUMENT/i.test(message)
+}
+
 // Unique pose flavors for the highlights image so it never repeats
 const HIGHLIGHT_POSES: Record<string, string> = {
   sitting: 'Half-body shot: model perched on a wooden stool turned slightly, one elbow on knee, calm gaze toward camera.',
@@ -232,7 +236,7 @@ async function imageSourceToGeminiPart(source: string): Promise<any> {
 }
 
 async function callGeminiDirect(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string): Promise<string> {
-  const models = ['gemini-2.5-flash-image-preview', 'gemini-2.5-flash-image']
+  const models = ['gemini-2.5-flash-image-preview', 'gemini-2.5-flash-preview-image', 'gemini-2.5-flash-image']
   const parts = [
     { text: referenceUrl ? `${prompt}\n\nTwo images are provided: image 1 is the original fabric swatch; image 2 is the approved front mockup/reference garment. Match BOTH, and for color/pattern consistency prioritize image 2 while preserving the fabric from image 1.` : prompt },
     await imageSourceToGeminiPart(fabricUrl),
@@ -252,7 +256,8 @@ async function callGeminiDirect(apiKey: string, prompt: string, fabricUrl: strin
 
     if (!resp.ok) {
       lastError = `${resp.status}: ${await resp.text().catch(() => '')}`
-      if (resp.status !== 404 && resp.status !== 400) break
+      if (isGeminiQuotaOrAuthError(lastError)) continue
+      if (!isGeminiModelUnavailableError(lastError)) break
       continue
     }
 
@@ -266,8 +271,8 @@ async function callGeminiDirect(apiKey: string, prompt: string, fabricUrl: strin
 }
 
 async function callImageGenWithFallback(apiKey: string, prompt: string, fabricUrl: string, referenceUrl?: string, userGeminiKey?: string): Promise<string> {
-  // BYOK/server key is optional. If it is expired, pasted incorrectly, or not a Generative Language API key,
-  // fall back to Lovable AI instead of blocking the admin workflow with raw Google auth errors.
+  // If a Gemini key is configured, use it first and do not silently fall back on quota/auth failures.
+  // That prevents unexpected built-in AI credit usage when the user's Google API quota is blocked.
   if (userGeminiKey) {
     try {
       return await callGeminiDirect(userGeminiKey, prompt, fabricUrl, referenceUrl)
