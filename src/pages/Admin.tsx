@@ -95,10 +95,13 @@ const Admin = () => {
       setLoading(false);
       return;
     }
-    if (user) {
+    if (user?.id) {
       fetchAnalytics();
     }
-  }, [user, authLoading]);
+    // Only re-fetch when the actual user identity changes — not on every token refresh
+    // (which would otherwise unmount the current tab and wipe in-progress work).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, authLoading]);
 
   // Pending count for owner badge
   useEffect(() => {
@@ -130,7 +133,11 @@ const Admin = () => {
   };
 
   const fetchAnalytics = async () => {
-    setLoading(true);
+    // Only show full-page loader on the very first load. Background refreshes
+    // (e.g. after browser-tab focus / token refresh) must NOT unmount the
+    // currently-open admin tab — otherwise in-progress work (like a typed
+    // Fabric Studio prompt) gets wiped.
+    if (!analytics) setLoading(true);
     setError(null);
     try {
       const { data, error: fnError } = await supabase.functions.invoke('admin-analytics');
