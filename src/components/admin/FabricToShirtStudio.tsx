@@ -8,7 +8,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Upload, Sparkles, Loader2, Image as ImageIcon, Download, Tag, Info, Shirt, User } from 'lucide-react';
+import { Upload, Sparkles, Loader2, Image as ImageIcon, Download, Tag, Info, Shirt, User, Copy, ClipboardCopy } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 
 type ViewKind = 'front' | 'back' | 'spec' | 'highlights' | 'model' | 'model-back' | 'lifestyle';
 type Pose =
