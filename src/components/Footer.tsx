@@ -15,8 +15,13 @@ const Footer = () => {
                 className="h-24 w-auto rounded-full mb-3"
               />
               <div className="flex flex-col leading-none">
-                <span className="font-serif text-2xl font-bold">MUFFIGOUT</span>
-                <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary mt-1.5">Apparel Hub</span>
+                <span
+                  className="text-3xl font-medium uppercase"
+                  style={{ fontFamily: "'Cormorant Garamond', serif", letterSpacing: '0.35em' }}
+                >
+                  MUFFIGOUT
+                </span>
+                <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary mt-2">Apparel Hub</span>
               </div>
             </div>
             <p className="text-cream/70 mb-6">
