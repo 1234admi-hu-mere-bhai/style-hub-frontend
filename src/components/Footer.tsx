@@ -8,15 +8,15 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
           <div>
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex flex-col items-center text-center mb-4">
               <img 
                 src="/assets/logo-new.png" 
                 alt="MUFFIGOUT APPAREL HUB" 
-                className="h-14 w-auto rounded-full"
+                className="h-24 w-auto rounded-full mb-3"
               />
               <div className="flex flex-col leading-none">
-                <span className="font-serif text-xl font-bold">MUFFIGOUT</span>
-                <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary mt-1">Apparel Hub</span>
+                <span className="font-serif text-2xl font-bold">MUFFIGOUT</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary mt-1.5">Apparel Hub</span>
               </div>
             </div>
             <p className="text-cream/70 mb-6">
