@@ -16,20 +16,34 @@ const Footer = () => {
                   className="h-24 w-auto rounded-full"
                 />
               </div>
-              <div className="flex flex-col items-center leading-none">
-                <div className="relative inline-block">
-                  <span
-                    className="text-3xl font-bold uppercase relative"
-                    style={{ fontFamily: "'Cormorant Garamond', serif", letterSpacing: '0.04em' }}
-                  >
-                    MUFFIGOUT
-                    <sup className="text-[0.5rem] font-normal ml-0.5 -top-3">™</sup>
-                  </span>
-                  <span className="absolute left-0 -bottom-1 w-4 h-[2px] bg-cream/90" />
-                  <span className="absolute right-3 -bottom-1 w-4 h-[2px] bg-cream/90" />
+              <div
+                className="flex flex-col items-center leading-none"
+                style={{ fontFamily: "'Cormorant Garamond', serif", letterSpacing: '0.04em' }}
+              >
+                <div className="inline-block">
+                  {/* Top continuous line: M → G → T */}
+                  <div className="h-[2px] bg-cream/90 mb-1.5" />
+
+                  {/* Wordmark with M, G, T enlarged */}
+                  <div className="flex items-end font-bold uppercase relative">
+                    <span className="text-4xl">M</span>
+                    <span className="text-3xl">UFFI</span>
+                    <span className="text-4xl">G</span>
+                    <span className="text-3xl">OU</span>
+                    <span className="text-4xl">T</span>
+                    <sup className="text-[0.5rem] font-normal ml-0.5 -top-4 relative">™</sup>
+                  </div>
+
+                  {/* Bottom split lines: M → G  (gap)  G → T */}
+                  <div className="flex mt-1.5">
+                    <div className="h-[2px] bg-cream/90" style={{ flex: '5' }} />
+                    <div style={{ flex: '0 0 0.6rem' }} />
+                    <div className="h-[2px] bg-cream/90" style={{ flex: '4' }} />
+                  </div>
                 </div>
-                <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary mt-3">Apparel Hub</span>
+                <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary mt-3" style={{ fontFamily: 'inherit' }}>Apparel Hub</span>
               </div>
+
 
             </div>
             <p className="text-cream/70 mb-6">
