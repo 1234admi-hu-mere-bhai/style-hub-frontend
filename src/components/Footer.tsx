@@ -17,8 +17,8 @@ const Footer = () => {
                 />
               </div>
               <div className="flex flex-col items-center leading-none">
+                <span className="w-24 h-px bg-cream/80 mb-2" />
                 <div className="flex items-start">
-                  <span className="flex-1 h-px bg-cream/80 self-center mr-2 w-8" />
                   <span
                     className="text-3xl font-bold uppercase relative"
                     style={{ fontFamily: "'Cormorant Garamond', serif", letterSpacing: '0.04em' }}
@@ -26,8 +26,8 @@ const Footer = () => {
                     MUFFIGOUT
                     <sup className="text-[0.5rem] font-normal ml-0.5 -top-3">™</sup>
                   </span>
-                  <span className="flex-1 h-px bg-cream/80 self-center ml-2 w-8" />
                 </div>
+                <span className="w-24 h-px bg-cream/80 mt-2" />
                 <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary mt-2">Apparel Hub</span>
               </div>
 
