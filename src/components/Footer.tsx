@@ -9,11 +9,11 @@ const Footer = () => {
           {/* Brand */}
           <div>
             <div className="flex flex-col items-center text-center mb-4">
-              <div className="bg-white rounded-full p-2 mb-3">
+              <div className="bg-white rounded-full mb-3 flex items-center justify-center overflow-hidden aspect-square h-28 w-28">
                 <img 
                   src="/assets/logo-new.png" 
                   alt="MUFFIGOUT APPAREL HUB" 
-                  className="h-24 w-auto rounded-full"
+                  className="h-full w-full object-contain p-2"
                 />
               </div>
               <div
