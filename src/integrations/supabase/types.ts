@@ -592,6 +592,30 @@ export type Database = {
         }
         Relationships: []
       }
+      product_views: {
+        Row: {
+          id: string
+          product_id: string
+          session_id: string | null
+          user_id: string | null
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          session_id?: string | null
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          session_id?: string | null
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           additional_images: string[] | null
@@ -1374,6 +1398,7 @@ export type Database = {
         Returns: number
       }
       get_email_by_phone: { Args: { p_phone: string }; Returns: string }
+      get_product_stats: { Args: { p_product_id: string }; Returns: Json }
       is_active_staff: { Args: { _uid: string }; Returns: boolean }
       is_owner: { Args: { _uid: string }; Returns: boolean }
       is_owner_of_order: { Args: { order_id: string }; Returns: boolean }

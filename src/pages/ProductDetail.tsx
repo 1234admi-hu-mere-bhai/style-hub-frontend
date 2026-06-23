@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Heart, Minus, Plus, Star, Truck, RefreshCw, Shield, Ruler, Loader2, ChevronRight, Send } from 'lucide-react';
 import Header from '@/components/Header';
+import ProductStatsCard from '@/components/ProductStatsCard';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import SizeChartModal from '@/components/SizeChartModal';
@@ -332,6 +333,9 @@ const ProductDetail = () => {
             <div>
               <h1 className="font-serif text-3xl lg:text-4xl font-bold">{product.name}</h1>
             </div>
+
+            <ProductStatsCard productId={product.id} />
+
 
 
             <div className="flex items-baseline gap-4">
