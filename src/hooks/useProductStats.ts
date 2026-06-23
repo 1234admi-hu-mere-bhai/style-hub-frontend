@@ -68,7 +68,7 @@ export function useProductStats(productId: string | undefined) {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'product_views', filter: `product_id=eq.${productId}` },
         () => {
-          setStats((s) => ({ ...s, views: s.views + 1 }));
+          fetchStats();
         },
       )
       .subscribe();
