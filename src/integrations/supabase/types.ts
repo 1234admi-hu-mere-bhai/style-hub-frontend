@@ -803,21 +803,18 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          private_key: string
           public_key: string
           subject: string
         }
         Insert: {
           created_at?: string
           id?: string
-          private_key: string
           public_key: string
           subject?: string
         }
         Update: {
           created_at?: string
           id?: string
-          private_key?: string
           public_key?: string
           subject?: string
         }
