@@ -239,14 +239,14 @@ const Checkout = () => {
     try {
       const { data, error } = await supabase
         .from('coupons')
-        .select('code, discount_type, discount_value, is_active, min_order_value, max_uses, used_count, expires_at')
+        .select('code, discount_type, discount_value, is_active, min_order_value, expires_at')
         .eq('code', code)
         .eq('is_active', true)
         .single();
 
       if (error || !data) { toast.error('This coupon code is not valid.'); setCouponLoading(false); return; }
       if (data.expires_at && new Date(data.expires_at) < new Date()) { toast.error('This coupon has expired.'); setCouponLoading(false); return; }
-      if (data.max_uses && data.used_count !== null && data.used_count >= data.max_uses) { toast.error('This coupon has reached its usage limit.'); setCouponLoading(false); return; }
+      // Note: usage-limit (max_uses/used_count) is enforced server-side in price-cart at order placement.
       if (data.min_order_value && totalPrice < data.min_order_value) { toast.error(`A minimum order of ₹${data.min_order_value} is required for this coupon.`); setCouponLoading(false); return; }
 
       setAppliedCoupon({ code: data.code, discount_type: data.discount_type, discount_value: data.discount_value });
