@@ -57,25 +57,13 @@ export function useProductStats(productId: string | undefined) {
     })();
   }, [productId]);
 
-  // Initial fetch + realtime subscription
+  // Initial fetch + lightweight polling (realtime removed for privacy — we don't
+  // broadcast view rows to clients anymore; instead we refetch the aggregate every 15s).
   useEffect(() => {
     if (!productId) return;
     fetchStats();
-
-    const channel = supabase
-      .channel(`product_views_${productId}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'product_views', filter: `product_id=eq.${productId}` },
-        () => {
-          fetchStats();
-        },
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const interval = setInterval(fetchStats, 15000);
+    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [productId]);
 
