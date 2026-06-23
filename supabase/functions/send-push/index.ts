@@ -72,28 +72,35 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Get VAPID keys
+    // Get VAPID keys from private schema (service-role only)
+    const { data: keys } = await adminClient
+      .schema("private")
+      .from("push_vapid_keys")
+      .select("public_key, private_key")
+      .eq("id", 1)
+      .maybeSingle();
+
     const { data: config } = await adminClient
       .from("push_config")
-      .select("*")
+      .select("subject, public_key")
       .limit(1)
       .maybeSingle();
 
-    if (!config) {
+    if (!keys || !config) {
       return new Response(JSON.stringify({ error: "Push not configured. No VAPID keys found." }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const privateKeyJwk = JSON.parse(config.private_key) as JsonWebKey & { d?: string };
+    const privateKeyJwk = JSON.parse(keys.private_key) as JsonWebKey & { d?: string };
     if (!privateKeyJwk.d) {
       return new Response(JSON.stringify({ error: "Push not configured. Invalid private key format." }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    webpush.setVapidDetails(config.subject, config.public_key, privateKeyJwk.d);
+    webpush.setVapidDetails(config.subject, config.public_key || keys.public_key, privateKeyJwk.d);
 
     // Get subscriptions (scoped to user if userId provided)
     let subQuery = adminClient.from("push_subscriptions").select("*");

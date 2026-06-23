@@ -47,20 +47,21 @@ function uint8ArrayToBase64Url(arr: Uint8Array): string {
 }
 
 async function getOrCreateVapidKeys(adminClient: any) {
-  // Check if keys exist
-  const { data: existing } = await adminClient
-    .from("push_config")
-    .select("*")
-    .limit(1)
+  // Private schema — only reachable with service role
+  const privateDb = adminClient.schema("private");
+  const { data: existing } = await privateDb
+    .from("push_vapid_keys")
+    .select("public_key, private_key")
+    .eq("id", 1)
     .maybeSingle();
 
   if (existing) {
     return { publicKey: existing.public_key, privateKey: existing.private_key };
   }
 
-  // Generate new keys
   const keys = await generateVapidKeys();
-  await adminClient.from("push_config").insert({
+  await privateDb.from("push_vapid_keys").insert({
+    id: 1,
     public_key: keys.publicKey,
     private_key: keys.privateKey,
   });
