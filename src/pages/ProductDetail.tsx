@@ -333,6 +333,9 @@ const ProductDetail = () => {
               <h1 className="font-serif text-3xl lg:text-4xl font-bold">{product.name}</h1>
             </div>
 
+            <ProductStatsCard productId={product.id} />
+
+
 
             <div className="flex items-baseline gap-4">
               <span className="text-3xl font-bold">{formatPrice(product.price)}</span>
