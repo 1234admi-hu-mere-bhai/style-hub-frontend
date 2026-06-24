@@ -271,7 +271,8 @@ const Header = () => {
           </div>
         )}
       </header>
-      <MobileDeliveryStrip />
+      {location.pathname === '/' && <MobileDeliveryStrip />}
+
 
 
 
