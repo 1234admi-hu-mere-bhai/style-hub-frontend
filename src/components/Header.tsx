@@ -24,6 +24,7 @@ import SearchCommand from './SearchCommand';
 import VoiceSearchModal from './VoiceSearchModal';
 import ImageSearchModal from './ImageSearchModal';
 import NotificationBell from './NotificationBell';
+import MobileDeliveryStrip from './MobileDeliveryStrip';
 import { toast } from 'sonner';
 
 const Header = () => {
