@@ -4,18 +4,33 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { checkPincodeDelivery } from '@/lib/pincodeChecker';
 import { fetchCityStateFromPincode } from '@/data/indianStates';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PincodeCheckerProps {
   onDeliveryInfo?: (info: { estimatedDays: string; zone: string } | null) => void;
   pincode?: string;
 }
 
+interface DeliveryShape {
+  available: boolean;
+  zone: string;
+  estimatedDays: string;
+  codAvailable: boolean;
+  expectedDate?: string;
+}
+
 interface CheckResult {
-  delivery: ReturnType<typeof checkPincodeDelivery>;
+  delivery: DeliveryShape;
   city?: string;
   state?: string;
   notFound?: boolean;
 }
+
+const formatExpectedDate = (tatDays: number): string => {
+  const d = new Date();
+  d.setDate(d.getDate() + tatDays);
+  return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+};
 
 const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeCheckerProps) => {
   const [pincode, setPincode] = useState(externalPincode || '');
@@ -25,21 +40,54 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
   const handleCheck = async () => {
     if (pincode.length !== 6) return;
     setLoading(true);
-    const delivery = checkPincodeDelivery(pincode);
+
+    let delivery: DeliveryShape;
     let city = '';
     let state = '';
     let notFound = false;
+
+    // Try Delhivery first (live courier ETA)
     try {
-      const loc = await fetchCityStateFromPincode(pincode);
-      if (loc) {
-        city = loc.city;
-        state = loc.state;
+      const { data, error } = await supabase.functions.invoke('delhivery', {
+        body: { action: 'estimate_delivery', pincode },
+      });
+      if (error) throw error;
+      if (data && data.serviceable) {
+        delivery = {
+          available: true,
+          zone: data.zone || 'Delhivery Network',
+          estimatedDays: data.estimatedDays || (data.tatDays ? String(data.tatDays) : '5–7'),
+          codAvailable: !!data.codAvailable,
+          expectedDate: data.tatDays ? formatExpectedDate(Number(data.tatDays)) : undefined,
+        };
+        if (data.city) city = data.city;
+        if (data.state) state = data.state;
+      } else if (data && data.serviceable === false) {
+        // Delhivery returned a definitive "not serviceable"
+        delivery = { available: false, zone: '', estimatedDays: '', codAvailable: false };
       } else {
-        notFound = true;
+        throw new Error('no data');
       }
     } catch {
-      notFound = true;
+      // Fallback to local static estimate
+      delivery = checkPincodeDelivery(pincode);
     }
+
+    // Always enrich city/state from India Post if Delhivery didn't provide it
+    if (!city || !state) {
+      try {
+        const loc = await fetchCityStateFromPincode(pincode);
+        if (loc) {
+          city = city || loc.city;
+          state = state || loc.state;
+        } else if (!city && !state) {
+          notFound = true;
+        }
+      } catch {
+        if (!city && !state) notFound = true;
+      }
+    }
+
     setResult({ delivery, city, state, notFound });
     setLoading(false);
     if (delivery.available && !notFound) {
@@ -48,6 +96,7 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
       onDeliveryInfo?.(null);
     }
   };
+
 
   const reset = () => {
     setResult(null);
@@ -97,6 +146,11 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
               </span>
             )}
           </div>
+          {result.delivery.expectedDate && (
+            <div className="text-foreground font-medium">
+              Get it by {result.delivery.expectedDate}
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" />
@@ -106,6 +160,7 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
               <Clock className="h-3.5 w-3.5" />
               <span>{result.delivery.estimatedDays} business days</span>
             </div>
+
             <div className="flex items-center gap-1.5">
               {result.delivery.codAvailable ? (
                 <>

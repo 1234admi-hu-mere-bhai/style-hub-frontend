@@ -592,6 +592,54 @@ export type Database = {
         }
         Relationships: []
       }
+      pincode_estimates: {
+        Row: {
+          city: string | null
+          cod_available: boolean
+          created_at: string
+          estimated_days: string | null
+          fetched_at: string
+          pincode: string
+          prepaid_available: boolean
+          raw: Json | null
+          serviceable: boolean
+          state: string | null
+          tat_days: number | null
+          updated_at: string
+          zone: string | null
+        }
+        Insert: {
+          city?: string | null
+          cod_available?: boolean
+          created_at?: string
+          estimated_days?: string | null
+          fetched_at?: string
+          pincode: string
+          prepaid_available?: boolean
+          raw?: Json | null
+          serviceable?: boolean
+          state?: string | null
+          tat_days?: number | null
+          updated_at?: string
+          zone?: string | null
+        }
+        Update: {
+          city?: string | null
+          cod_available?: boolean
+          created_at?: string
+          estimated_days?: string | null
+          fetched_at?: string
+          pincode?: string
+          prepaid_available?: boolean
+          raw?: Json | null
+          serviceable?: boolean
+          state?: string | null
+          tat_days?: number | null
+          updated_at?: string
+          zone?: string | null
+        }
+        Relationships: []
+      }
       product_views: {
         Row: {
           id: string
