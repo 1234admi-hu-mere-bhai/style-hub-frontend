@@ -136,10 +136,12 @@ const LiveSupportChat = () => {
       if (error) throw error;
 
       if (data && data.length > 0) {
-        const loaded: Message[] = data.map(m => ({
-          role: m.role as 'user' | 'assistant',
-          content: m.content,
-        }));
+        const loaded: Message[] = data
+          .filter(m => m.role === 'user' || m.role === 'assistant')
+          .map(m => ({
+            role: m.role as 'user' | 'assistant',
+            content: m.content,
+          }));
         setMessages([WELCOME_MSG, ...loaded]);
       }
     } catch (err) {
