@@ -65,7 +65,7 @@ const AppContent = () => {
       <ScrollToTop />
       <VisitorTracker />
       {!isAdmin && <InstallTopBanner />}
-      {!isAdmin && <MobileDeliveryStrip />}
+      
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/products" element={<Products />} />

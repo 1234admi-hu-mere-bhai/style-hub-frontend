@@ -24,6 +24,7 @@ import SearchCommand from './SearchCommand';
 import VoiceSearchModal from './VoiceSearchModal';
 import ImageSearchModal from './ImageSearchModal';
 import NotificationBell from './NotificationBell';
+import MobileDeliveryStrip from './MobileDeliveryStrip';
 import { toast } from 'sonner';
 
 const Header = () => {
@@ -270,6 +271,9 @@ const Header = () => {
           </div>
         )}
       </header>
+      <MobileDeliveryStrip />
+
+
 
       <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
       <VoiceSearchModal open={voiceOpen} onOpenChange={setVoiceOpen} onResult={handleVoiceResult} />
