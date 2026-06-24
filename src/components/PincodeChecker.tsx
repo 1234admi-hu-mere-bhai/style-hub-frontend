@@ -146,6 +146,11 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
               </span>
             )}
           </div>
+          {result.delivery.expectedDate && (
+            <div className="text-foreground font-medium">
+              Get it by {result.delivery.expectedDate}
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-muted-foreground">
             <div className="flex items-center gap-1.5">
               <MapPin className="h-3.5 w-3.5" />
@@ -155,6 +160,7 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
               <Clock className="h-3.5 w-3.5" />
               <span>{result.delivery.estimatedDays} business days</span>
             </div>
+
             <div className="flex items-center gap-1.5">
               {result.delivery.codAvailable ? (
                 <>
