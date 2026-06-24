@@ -36,6 +36,7 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
   const [pincode, setPincode] = useState(externalPincode || '');
   const [result, setResult] = useState<CheckResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const handleCheck = async () => {
     if (pincode.length !== 6) return;
