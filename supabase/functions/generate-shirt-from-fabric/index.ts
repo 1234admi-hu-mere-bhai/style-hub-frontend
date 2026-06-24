@@ -356,6 +356,7 @@ function dataUrlToBytes(dataUrl: string): { bytes: Uint8Array; mime: string } {
 }
 
 async function fetchBytes(url: string): Promise<Uint8Array> {
+  assertSafeImageUrl(url)
   const r = await fetch(url)
   if (!r.ok) throw new Error(`fetch ${url}: ${r.status}`)
   return new Uint8Array(await r.arrayBuffer())
