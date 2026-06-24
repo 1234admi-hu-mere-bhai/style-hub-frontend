@@ -175,7 +175,7 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
           </button>
 
           {showDetails && (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-muted-foreground pt-2 border-t border-success/20">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-muted-foreground pt-2 border-t border-success/20">
               <div className="flex items-center gap-1.5">
                 <MapPin className="h-3.5 w-3.5" />
                 <span>{result.delivery.zone}</span>
@@ -183,19 +183,6 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
               <div className="flex items-center gap-1.5">
                 <Clock className="h-3.5 w-3.5" />
                 <span>{result.delivery.estimatedDays} business days</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {result.delivery.codAvailable ? (
-                  <>
-                    <Banknote className="h-3.5 w-3.5" />
-                    <span>COD available</span>
-                  </>
-                ) : (
-                  <>
-                    <Truck className="h-3.5 w-3.5" />
-                    <span>Prepaid only</span>
-                  </>
-                )}
               </div>
             </div>
           )}
