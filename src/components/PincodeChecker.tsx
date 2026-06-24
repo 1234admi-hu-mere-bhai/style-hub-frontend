@@ -6,6 +6,7 @@ import { checkPincodeDelivery } from '@/lib/pincodeChecker';
 import { fetchCityStateFromPincode } from '@/data/indianStates';
 import { supabase } from '@/integrations/supabase/client';
 import { useAddresses } from '@/hooks/useAddresses';
+import { useActiveAddress } from '@/contexts/ActiveAddressContext';
 
 interface PincodeCheckerProps {
   onDeliveryInfo?: (info: { estimatedDays: string; zone: string } | null) => void;
@@ -41,7 +42,8 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
   const [showDetails, setShowDetails] = useState(false);
   const [autoFilled, setAutoFilled] = useState(false);
   const { addresses, getDefaultAddress, loading: addressesLoading } = useAddresses();
-  const autoCheckedRef = useRef(false);
+  const { active } = useActiveAddress();
+  const lastAutoPinRef = useRef<string | null>(null);
 
   const runCheck = useCallback(async (pin: string) => {
     if (!pin || pin.length !== 6) return;
@@ -100,19 +102,19 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
     }
   }, [onDeliveryInfo]);
 
-  // Auto-fetch on mount when a default saved address exists
+  // Auto-fetch from active address (or default) — reruns when user switches address via the strip
   useEffect(() => {
-    if (autoCheckedRef.current) return;
     if (addressesLoading) return;
-    if (pincode) return; // user already typed / external pincode provided
-    const def = getDefaultAddress();
-    if (def?.pincode && def.pincode.length === 6) {
-      autoCheckedRef.current = true;
-      setPincode(def.pincode);
-      setAutoFilled(true);
-      runCheck(def.pincode);
-    }
-  }, [addressesLoading, getDefaultAddress, pincode, runCheck]);
+    const target = active?.pincode || getDefaultAddress()?.pincode;
+    if (!target || target.length !== 6) return;
+    if (lastAutoPinRef.current === target) return;
+    // Don't override if the user has typed a different pincode manually
+    if (pincode && pincode !== target && !autoFilled) return;
+    lastAutoPinRef.current = target;
+    setPincode(target);
+    setAutoFilled(true);
+    runCheck(target);
+  }, [active?.pincode, addressesLoading, getDefaultAddress, runCheck, pincode, autoFilled]);
 
   const handleCheck = () => runCheck(pincode);
 

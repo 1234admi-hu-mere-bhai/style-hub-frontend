@@ -47,6 +47,8 @@ import InstallAppPrompt from "./components/InstallAppPrompt";
 import InstallTopBanner from "./components/InstallTopBanner";
 import SplashScreen from "./components/SplashScreen";
 import { InstallPromptProvider } from "./contexts/InstallPromptContext";
+import { ActiveAddressProvider } from "./contexts/ActiveAddressContext";
+import MobileDeliveryStrip from "./components/MobileDeliveryStrip";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +65,7 @@ const AppContent = () => {
       <ScrollToTop />
       <VisitorTracker />
       {!isAdmin && <InstallTopBanner />}
+      {!isAdmin && <MobileDeliveryStrip />}
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/products" element={<Products />} />
@@ -115,13 +118,15 @@ const App = () => (
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
-            <InstallPromptProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <AppContent />
-              </BrowserRouter>
-            </InstallPromptProvider>
+            <ActiveAddressProvider>
+              <InstallPromptProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <AppContent />
+                </BrowserRouter>
+              </InstallPromptProvider>
+            </ActiveAddressProvider>
           </WishlistProvider>
         </CartProvider>
       </AuthProvider>
