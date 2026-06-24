@@ -6,6 +6,7 @@ import { checkPincodeDelivery } from '@/lib/pincodeChecker';
 import { fetchCityStateFromPincode } from '@/data/indianStates';
 import { supabase } from '@/integrations/supabase/client';
 import { useAddresses } from '@/hooks/useAddresses';
+import { useActiveAddress } from '@/contexts/ActiveAddressContext';
 
 interface PincodeCheckerProps {
   onDeliveryInfo?: (info: { estimatedDays: string; zone: string } | null) => void;
