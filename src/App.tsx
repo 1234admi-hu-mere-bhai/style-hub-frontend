@@ -47,6 +47,8 @@ import InstallAppPrompt from "./components/InstallAppPrompt";
 import InstallTopBanner from "./components/InstallTopBanner";
 import SplashScreen from "./components/SplashScreen";
 import { InstallPromptProvider } from "./contexts/InstallPromptContext";
+import { ActiveAddressProvider } from "./contexts/ActiveAddressContext";
+import MobileDeliveryStrip from "./components/MobileDeliveryStrip";
 
 const queryClient = new QueryClient();
 
