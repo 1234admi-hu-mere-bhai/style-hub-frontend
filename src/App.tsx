@@ -118,13 +118,15 @@ const App = () => (
       <AuthProvider>
         <CartProvider>
           <WishlistProvider>
-            <InstallPromptProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <AppContent />
-              </BrowserRouter>
-            </InstallPromptProvider>
+            <ActiveAddressProvider>
+              <InstallPromptProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <AppContent />
+                </BrowserRouter>
+              </InstallPromptProvider>
+            </ActiveAddressProvider>
           </WishlistProvider>
         </CartProvider>
       </AuthProvider>
