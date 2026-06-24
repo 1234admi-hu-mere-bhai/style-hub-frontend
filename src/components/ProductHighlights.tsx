@@ -140,7 +140,7 @@ const ProductHighlights = ({ product, selectedColor }: Props) => {
                 <h3 className="text-sm font-bold text-foreground mb-1">General</h3>
                 <div className="grid grid-cols-2 gap-x-6">
                   <SpecCell label="Brand" value={brand} />
-                  <SpecCell label="Style Code" value={styleCode} />
+                  <div />
                   <SpecCell label="Closure" value={closure} />
                   <SpecCell label="Pockets" value={pockets} />
                   <SpecCell label="Fabric Care" value={fabricCare} />
