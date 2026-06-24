@@ -90,6 +90,7 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
     }
 
     setResult({ delivery, city, state, notFound });
+    setShowDetails(false);
     setLoading(false);
     if (delivery.available && !notFound) {
       onDeliveryInfo?.({ estimatedDays: delivery.estimatedDays, zone: delivery.zone });
@@ -101,6 +102,7 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
 
   const reset = () => {
     setResult(null);
+    setShowDetails(false);
     onDeliveryInfo?.(null);
   };
 
