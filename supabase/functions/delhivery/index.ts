@@ -139,6 +139,20 @@ Deno.serve(async (req) => {
       }
 
       case 'check_pincode': {
+        // Require a valid Supabase session (anon or authenticated) to prevent
+        // unauthenticated proxy abuse of our Delhivery API key.
+        const anonClientPin = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          global: { headers: { Authorization: authHeader || '' } },
+        });
+        const pinToken = authHeader?.replace('Bearer ', '') || '';
+        const { data: pinClaims, error: pinClaimsErr } = await anonClientPin.auth.getClaims(pinToken);
+        if (pinClaimsErr || !pinClaims?.claims) {
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
         // Check if pincode is serviceable by Delhivery
         const { pincode } = params;
         if (!pincode) {

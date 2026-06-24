@@ -105,9 +105,16 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const ALLOWED_ROLES = new Set(["user", "assistant"]);
     for (const m of messages) {
       if (!m || typeof m.content !== "string" || typeof m.role !== "string") {
         return new Response(JSON.stringify({ error: "Invalid message format" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (!ALLOWED_ROLES.has(m.role)) {
+        return new Response(JSON.stringify({ error: "Invalid message role" }), {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
