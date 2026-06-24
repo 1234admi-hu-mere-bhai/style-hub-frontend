@@ -62,7 +62,7 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
       if (data && data.serviceable) {
         delivery = {
           available: true,
-          zone: data.zone || 'Delhivery Network',
+          zone: data.zone && !/delhivery/i.test(data.zone) ? data.zone : 'Standard Shipping',
           estimatedDays: data.estimatedDays || (data.tatDays ? String(data.tatDays) : '5–7'),
           codAvailable: !!data.codAvailable,
           expectedDate: data.tatDays ? formatExpectedDate(Number(data.tatDays)) : undefined,
