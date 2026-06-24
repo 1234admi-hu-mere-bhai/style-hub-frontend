@@ -41,7 +41,8 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
   const [showDetails, setShowDetails] = useState(false);
   const [autoFilled, setAutoFilled] = useState(false);
   const { addresses, getDefaultAddress, loading: addressesLoading } = useAddresses();
-  const autoCheckedRef = useRef(false);
+  const { active } = useActiveAddress();
+  const lastAutoPinRef = useRef<string | null>(null);
 
   const runCheck = useCallback(async (pin: string) => {
     if (!pin || pin.length !== 6) return;
