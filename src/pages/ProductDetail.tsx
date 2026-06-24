@@ -472,13 +472,6 @@ const ProductDetail = () => {
           <ReviewSection productId={product.id} />
         </section>
 
-        {/* Product Description (moved from top) */}
-        {product.description && (
-          <section className="mt-12 rounded-2xl border border-border bg-card p-6 md:p-8">
-            <h2 className="font-serif text-2xl md:text-3xl font-bold mb-4">Product Description</h2>
-            <p className="text-muted-foreground whitespace-pre-line leading-relaxed">{product.description}</p>
-          </section>
-        )}
 
         {/* Shipping & Returns */}
         <section className="mt-12 grid md:grid-cols-2 gap-4">
