@@ -271,6 +271,9 @@ const Header = () => {
           </div>
         )}
       </header>
+      <MobileDeliveryStrip />
+
+
 
       <SearchCommand open={searchOpen} onOpenChange={setSearchOpen} />
       <VoiceSearchModal open={voiceOpen} onOpenChange={setVoiceOpen} onResult={handleVoiceResult} />
