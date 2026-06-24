@@ -178,12 +178,161 @@ Deno.serve(async (req) => {
         });
       }
 
+      case 'estimate_delivery': {
+        // Public action: returns Delhivery's serviceability + recommended TAT
+        // for our warehouse origin -> destination pincode. Results are cached
+        // for 24h in public.pincode_estimates to limit upstream calls.
+        const { pincode } = params;
+        if (!pincode || !/^\d{6}$/.test(String(pincode))) {
+          return new Response(JSON.stringify({ error: 'valid 6-digit pincode is required' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        const originPin = Deno.env.get('WAREHOUSE_PINCODE') || '';
+        const serviceClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+        // 1. Try cache (24h TTL)
+        const { data: cached } = await serviceClient
+          .from('pincode_estimates')
+          .select('*')
+          .eq('pincode', pincode)
+          .maybeSingle();
+
+        if (cached) {
+          const ageMs = Date.now() - new Date(cached.fetched_at).getTime();
+          if (ageMs < 24 * 60 * 60 * 1000) {
+            return new Response(JSON.stringify({
+              serviceable: cached.serviceable,
+              city: cached.city,
+              state: cached.state,
+              codAvailable: cached.cod_available,
+              prepaidAvailable: cached.prepaid_available,
+              tatDays: cached.tat_days,
+              estimatedDays: cached.estimated_days,
+              zone: cached.zone,
+              cached: true,
+            }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+          }
+        }
+
+        // 2. Serviceability (city/state/COD)
+        let serviceable = false;
+        let city: string | null = null;
+        let state: string | null = null;
+        let codAvailable = false;
+        let prepaidAvailable = true;
+
+        try {
+          const svcRes = await fetch(
+            `${DELHIVERY_BASE}/c/api/pin-codes/json/?filter_codes=${encodeURIComponent(pincode)}`,
+            { headers: { 'Authorization': `Token ${DELHIVERY_API_KEY}` } }
+          );
+          const svcData = await svcRes.json();
+          const pc = svcData?.delivery_codes?.[0]?.postal_code;
+          if (pc) {
+            serviceable = true;
+            city = pc.city || pc.district || null;
+            state = pc.state_code || pc.state || null;
+            codAvailable = String(pc.cod || '').toUpperCase() === 'Y';
+            prepaidAvailable = String(pc.pre_paid || 'Y').toUpperCase() === 'Y';
+          }
+        } catch (e) {
+          console.error('Delhivery serviceability lookup failed', e);
+        }
+
+        // 3. TAT (expected transit days). Best-effort: parse common shapes.
+        let tatDays: number | null = null;
+        if (serviceable && originPin) {
+          try {
+            const tatRes = await fetch(
+              `${DELHIVERY_BASE}/api/dc/expected_tat?origin_pin=${originPin}&destination_pin=${pincode}&mot=S&pdt=B2C`,
+              { headers: { 'Authorization': `Token ${DELHIVERY_API_KEY}` } }
+            );
+            if (tatRes.ok) {
+              const tatJson = await tatRes.json();
+              const raw =
+                tatJson?.data?.tat ??
+                tatJson?.tat ??
+                tatJson?.expected_tat ??
+                tatJson?.data?.expected_tat ??
+                null;
+              const n = typeof raw === 'string' ? parseInt(raw, 10) : Number(raw);
+              if (Number.isFinite(n) && n > 0) tatDays = n;
+            }
+          } catch (e) {
+            console.error('Delhivery TAT lookup failed', e);
+          }
+
+          // Fallback to invoice/charges which also returns a tat field
+          if (tatDays === null) {
+            try {
+              const chRes = await fetch(
+                `${DELHIVERY_BASE}/api/kinko/v1/invoice/charges/.json?md=S&ss=Delivered&d_pin=${pincode}&o_pin=${originPin}&cgm=500&pt=Pre-paid`,
+                { headers: { 'Authorization': `Token ${DELHIVERY_API_KEY}` } }
+              );
+              if (chRes.ok) {
+                const chJson = await chRes.json();
+                const first = Array.isArray(chJson) ? chJson[0] : chJson;
+                const raw = first?.tat ?? first?.expected_tat ?? null;
+                const n = typeof raw === 'string' ? parseInt(raw, 10) : Number(raw);
+                if (Number.isFinite(n) && n > 0) tatDays = n;
+              }
+            } catch (e) {
+              console.error('Delhivery charges TAT fallback failed', e);
+            }
+          }
+        }
+
+        // 4. Format human-readable range (add buffer day on each side)
+        let estimatedDays: string | null = null;
+        if (tatDays !== null) {
+          const lo = Math.max(1, tatDays);
+          const hi = tatDays + 2;
+          estimatedDays = `${lo}–${hi}`;
+        }
+
+        const zone = serviceable ? 'Delhivery Network' : '';
+
+        // 5. Upsert cache (best effort)
+        try {
+          await serviceClient.from('pincode_estimates').upsert({
+            pincode,
+            serviceable,
+            city,
+            state,
+            cod_available: codAvailable,
+            prepaid_available: prepaidAvailable,
+            tat_days: tatDays,
+            estimated_days: estimatedDays,
+            zone,
+            fetched_at: new Date().toISOString(),
+          });
+        } catch (e) {
+          console.error('pincode_estimates upsert failed', e);
+        }
+
+        return new Response(JSON.stringify({
+          serviceable,
+          city,
+          state,
+          codAvailable,
+          prepaidAvailable,
+          tatDays,
+          estimatedDays,
+          zone,
+          cached: false,
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+
       default:
         return new Response(JSON.stringify({ error: `Unknown action: ${action}` }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
     }
+
   } catch (error: unknown) {
     console.error('Delhivery function error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
