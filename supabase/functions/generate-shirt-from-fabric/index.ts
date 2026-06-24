@@ -260,7 +260,25 @@ function bytesToBase64(bytes: Uint8Array): string {
   return btoa(binary)
 }
 
+function assertSafeImageUrl(source: string) {
+  if (source.startsWith('data:')) return
+  let parsed: URL
+  try { parsed = new URL(source) } catch { throw new Error('Invalid image URL') }
+  if (parsed.protocol !== 'https:') throw new Error('Disallowed image URL')
+  const host = parsed.hostname.toLowerCase()
+  if (
+    host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || host === '::1' ||
+    /^10\./.test(host) ||
+    /^192\.168\./.test(host) ||
+    /^169\.254\./.test(host) ||
+    /^172\.(1[6-9]|2\d|3[01])\./.test(host) ||
+    /\.local$/.test(host) ||
+    /\.internal$/.test(host)
+  ) throw new Error('Disallowed image URL')
+}
+
 async function imageSourceToGeminiPart(source: string): Promise<any> {
+  assertSafeImageUrl(source)
   if (source.startsWith('data:')) {
     const match = source.match(/^data:(.+?);base64,(.+)$/)
     if (!match) throw new Error('Invalid data image')
