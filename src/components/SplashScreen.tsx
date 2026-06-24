@@ -89,17 +89,30 @@ const SplashScreen = () => {
       {/* Gold halo behind logo */}
       <div className="relative flex items-center justify-center splash-bloom">
         <div
-          className="absolute w-72 h-72 sm:w-80 sm:h-80 rounded-full blur-3xl opacity-60"
+          className="absolute w-80 h-80 sm:w-96 sm:h-96 rounded-full blur-3xl opacity-70"
           style={{
             background:
-              'radial-gradient(circle, rgba(212,175,55,0.55) 0%, rgba(212,175,55,0) 70%)',
+              'radial-gradient(circle, rgba(212,175,55,0.6) 0%, rgba(212,175,55,0) 70%)',
           }}
         />
-        <img
-          src={logoGold}
-          alt="MUFFIGOUT APPAREL HUB"
-          className="relative w-44 h-44 sm:w-52 sm:h-52 object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
-        />
+        {/* Decorative gold ring frame */}
+        <div
+          className="relative flex items-center justify-center rounded-full p-5 sm:p-6"
+          style={{
+            background:
+              'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), rgba(0,0,0,0.4) 70%)',
+            border: '1px solid rgba(241, 215, 122, 0.45)',
+            boxShadow:
+              '0 0 0 1px rgba(241,215,122,0.15), 0 20px 60px -10px rgba(212,175,55,0.35), inset 0 0 30px rgba(241,215,122,0.08)',
+          }}
+        >
+          <img
+            src={logoGold}
+            alt="MUFFIGOUT APPAREL HUB"
+            className="relative w-52 h-52 sm:w-60 sm:h-60 object-contain drop-shadow-[0_10px_28px_rgba(0,0,0,0.55)]"
+            style={{ imageRendering: 'auto' }}
+          />
+        </div>
       </div>
 
       {/* Wordmark */}
