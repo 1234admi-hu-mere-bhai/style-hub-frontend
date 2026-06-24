@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MapPin, CheckCircle2, XCircle, Clock, Loader2, Truck, Banknote } from 'lucide-react';
+import { MapPin, XCircle, Clock, Loader2, Truck, Banknote, ChevronDown, ChevronUp, CalendarCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { checkPincodeDelivery } from '@/lib/pincodeChecker';
@@ -36,6 +36,7 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
   const [pincode, setPincode] = useState(externalPincode || '');
   const [result, setResult] = useState<CheckResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const handleCheck = async () => {
     if (pincode.length !== 6) return;
@@ -89,6 +90,7 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
     }
 
     setResult({ delivery, city, state, notFound });
+    setShowDetails(false);
     setLoading(false);
     if (delivery.available && !notFound) {
       onDeliveryInfo?.({ estimatedDays: delivery.estimatedDays, zone: delivery.zone });
@@ -100,6 +102,7 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
 
   const reset = () => {
     setResult(null);
+    setShowDetails(false);
     onDeliveryInfo?.(null);
   };
 
@@ -136,45 +139,66 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
       </div>
 
       {showSuccess && result && (
-        <div className="rounded-lg p-3 text-sm space-y-2 bg-success/10 border border-success/20">
-          <div className="flex items-center gap-2 text-success font-medium">
-            <CheckCircle2 className="h-4 w-4" />
-            Delivery available
-            {result.city && result.state && (
-              <span className="text-foreground font-normal">
-                to {result.city}, {result.state}
-              </span>
-            )}
-          </div>
-          {result.delivery.expectedDate && (
-            <div className="text-foreground font-medium">
-              Get it by {result.delivery.expectedDate}
-            </div>
-          )}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <MapPin className="h-3.5 w-3.5" />
-              <span>{result.delivery.zone}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5" />
-              <span>{result.delivery.estimatedDays} business days</span>
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              {result.delivery.codAvailable ? (
+        <div className="rounded-lg p-3 text-sm bg-success/10 border border-success/20 space-y-2">
+          <div className="flex items-start gap-2">
+            <CalendarCheck className="h-5 w-5 text-success shrink-0 mt-0.5" />
+            <div className="flex-1">
+              {result.delivery.expectedDate ? (
                 <>
-                  <Banknote className="h-3.5 w-3.5" />
-                  <span>COD available</span>
+                  <div className="text-foreground font-semibold">
+                    Delivery by {result.delivery.expectedDate}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {result.city && result.state ? `to ${result.city}, ${result.state}` : 'Delivery available'}
+                  </div>
                 </>
               ) : (
                 <>
-                  <Truck className="h-3.5 w-3.5" />
-                  <span>Prepaid only</span>
+                  <div className="text-foreground font-semibold">
+                    Delivery in {result.delivery.estimatedDays} business days
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {result.city && result.state ? `to ${result.city}, ${result.state}` : 'Delivery available'}
+                  </div>
                 </>
               )}
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setShowDetails((s) => !s)}
+            className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+          >
+            {showDetails ? 'Hide details' : 'Additional details'}
+            {showDetails ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          </button>
+
+          {showDetails && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-muted-foreground pt-2 border-t border-success/20">
+              <div className="flex items-center gap-1.5">
+                <MapPin className="h-3.5 w-3.5" />
+                <span>{result.delivery.zone}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5" />
+                <span>{result.delivery.estimatedDays} business days</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {result.delivery.codAvailable ? (
+                  <>
+                    <Banknote className="h-3.5 w-3.5" />
+                    <span>COD available</span>
+                  </>
+                ) : (
+                  <>
+                    <Truck className="h-3.5 w-3.5" />
+                    <span>Prepaid only</span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
