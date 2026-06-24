@@ -208,7 +208,7 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
               {result.delivery.expectedDate ? (
                 <>
                   <div className="text-foreground font-semibold">
-                    Delivery by {result.delivery.expectedDate}
+                    Estimated delivery by {result.delivery.expectedDate}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {result.city && result.state ? `to ${result.city}, ${result.state}` : 'Delivery available'}
@@ -217,7 +217,7 @@ const PincodeChecker = ({ onDeliveryInfo, pincode: externalPincode }: PincodeChe
               ) : (
                 <>
                   <div className="text-foreground font-semibold">
-                    Delivery in {result.delivery.estimatedDays} business days
+                    Estimated delivery in {result.delivery.estimatedDays} business days
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {result.city && result.state ? `to ${result.city}, ${result.state}` : 'Delivery available'}
