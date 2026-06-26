@@ -179,6 +179,20 @@ Deno.serve(async (req) => {
       }
 
       case 'estimate_delivery': {
+        // Require a valid Supabase session (anon or authenticated) to prevent
+        // unauthenticated proxy abuse of our Delhivery API key/quota.
+        const anonClientEst = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          global: { headers: { Authorization: authHeader || '' } },
+        });
+        const estToken = authHeader?.replace('Bearer ', '') || '';
+        const { data: estClaims, error: estClaimsErr } = await anonClientEst.auth.getClaims(estToken);
+        if (estClaimsErr || !estClaims?.claims) {
+          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
         // Public action: returns Delhivery's serviceability + recommended TAT
         // for our warehouse origin -> destination pincode. Results are cached
         // for 24h in public.pincode_estimates to limit upstream calls.
