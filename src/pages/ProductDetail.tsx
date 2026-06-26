@@ -11,6 +11,7 @@ import ProductHighlights from '@/components/ProductHighlights';
 import Product360Viewer from '@/components/Product360Viewer';
 import ImageZoomDialog from '@/components/ImageZoomDialog';
 import PincodeChecker from '@/components/PincodeChecker';
+import NotifyMeButton from '@/components/NotifyMeButton';
 import { useDbProducts, useDbProduct } from '@/hooks/useDbProducts';
 import { useProductReviews } from '@/hooks/useProductReviews';
 import { getProductReviews } from '@/data/reviews';
