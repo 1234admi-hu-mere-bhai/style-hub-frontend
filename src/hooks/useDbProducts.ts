@@ -103,6 +103,8 @@ export const dbToStoreProduct = (p: DbProduct): StoreProduct => {
     sleeveType: p.sleeve_type || undefined,
     neckType: p.neck_type || undefined,
     collection: p.collection || undefined,
+    inStock: p.in_stock !== false,
+    stockQuantity: p.stock_quantity ?? null,
   };
 };
 
