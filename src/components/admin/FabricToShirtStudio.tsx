@@ -184,7 +184,13 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [pose, setPose] = useState<Pose>('sitting');
   const [userGeminiKey, setUserGeminiKey] = useState<string>(() => {
-    try { return localStorage.getItem('fabric-studio:gemini-key') || ''; } catch { return ''; }
+    // Use sessionStorage (cleared on tab close) instead of localStorage to limit
+    // exposure of the admin's Gemini API key. Migrate away any legacy localStorage value.
+    try {
+      const legacy = localStorage.getItem('fabric-studio:gemini-key');
+      if (legacy) localStorage.removeItem('fabric-studio:gemini-key');
+      return sessionStorage.getItem('fabric-studio:gemini-key') || legacy || '';
+    } catch { return ''; }
   });
   const [showKey, setShowKey] = useState(false);
   const [specs, setSpecs] = useState({
@@ -205,11 +211,11 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const [exportingPrompts, setExportingPrompts] = useState(false);
   const [promptMode, setPromptMode] = useState(false);
 
-  // Persist Gemini key separately
+  // Persist Gemini key in sessionStorage only (per-tab, auto-cleared on close).
   useEffect(() => {
     try {
-      if (userGeminiKey) localStorage.setItem('fabric-studio:gemini-key', userGeminiKey);
-      else localStorage.removeItem('fabric-studio:gemini-key');
+      if (userGeminiKey) sessionStorage.setItem('fabric-studio:gemini-key', userGeminiKey);
+      else sessionStorage.removeItem('fabric-studio:gemini-key');
     } catch {}
   }, [userGeminiKey]);
 
