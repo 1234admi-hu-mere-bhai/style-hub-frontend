@@ -71,8 +71,7 @@ Deno.serve(async (req) => {
         await admin.from("notifications").insert({
           user_id: row.user_id,
           title: "Back in stock",
-          message: `${product.name} is available again.`,
-          url: `/product/${product.id}`,
+          message: `${product.name} is available again. Open the app to grab yours.`,
           type: "stock",
         });
       } catch (e) {
