@@ -415,22 +415,40 @@ const ProductDetail = () => {
             </div>
 
             <div className="flex gap-4">
-              <Button
-                size="lg"
-                className={`flex-1 transition-all duration-300 ${
-                  addedToCart
-                    ? 'bg-accent hover:bg-accent/90 text-accent-foreground animate-scale-in'
-                    : ''
-                }`}
-                onClick={handleAddToCart}
-              >
-                {addedToCart ? '🛒 Go to Cart' : 'Add to Cart'}
-              </Button>
-              <Button size="lg" variant="outline" className="flex-1" onClick={handleBuyNow}>Buy Now</Button>
-              <Button size="lg" variant="outline" className="px-4" onClick={handleWishlist}>
-                <Heart size={20} className={inWishlist ? 'fill-primary text-primary' : ''} />
-              </Button>
+              {product.inStock === false ? (
+                <>
+                  <NotifyMeButton productId={product.id} productName={product.name} />
+                  <Button size="lg" variant="outline" className="px-4" onClick={handleWishlist}>
+                    <Heart size={20} className={inWishlist ? 'fill-primary text-primary' : ''} />
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    size="lg"
+                    className={`flex-1 transition-all duration-300 ${
+                      addedToCart
+                        ? 'bg-accent hover:bg-accent/90 text-accent-foreground animate-scale-in'
+                        : ''
+                    }`}
+                    onClick={handleAddToCart}
+                  >
+                    {addedToCart ? '🛒 Go to Cart' : 'Add to Cart'}
+                  </Button>
+                  <Button size="lg" variant="outline" className="flex-1" onClick={handleBuyNow}>Buy Now</Button>
+                  <Button size="lg" variant="outline" className="px-4" onClick={handleWishlist}>
+                    <Heart size={20} className={inWishlist ? 'fill-primary text-primary' : ''} />
+                  </Button>
+                </>
+              )}
             </div>
+
+            {product.inStock === false && (
+              <div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm">
+                <p className="font-medium text-destructive">Currently out of stock</p>
+                <p className="text-muted-foreground text-xs mt-0.5">Tap "Notify Me" — we'll send a push the second it's restocked.</p>
+              </div>
+            )}
 
             {/* Pincode Checker */}
             <div className="pt-6 border-t border-border">
