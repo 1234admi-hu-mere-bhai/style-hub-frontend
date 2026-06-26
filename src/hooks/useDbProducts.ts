@@ -60,6 +60,8 @@ export interface StoreProduct {
   sleeveType?: string;
   neckType?: string;
   collection?: string;
+  inStock?: boolean;
+  stockQuantity?: number | null;
 }
 
 
