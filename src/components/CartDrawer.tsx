@@ -188,19 +188,78 @@ const CartDrawer = ({ onClose }: CartDrawerProps) => {
               </>
             )}
           </div>
-          <div className="h-1.5 w-full rounded-full bg-background/70 overflow-hidden">
+          <div className="relative h-6 w-full mt-1">
+            {/* Bar */}
+            <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-background/70 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-700 ease-out ${
+                  isFreeShipping
+                    ? 'bg-gradient-to-r from-success via-success to-success/70'
+                    : 'bg-gradient-to-r from-primary via-accent to-primary'
+                }`}
+                style={{ width: `${progressPct}%` }}
+              />
+            </div>
+            {/* Moving truck rider */}
             <div
-              className={`h-full rounded-full transition-all duration-700 ease-out ${
-                isFreeShipping
-                  ? 'bg-gradient-to-r from-success via-success to-success/70'
-                  : 'bg-gradient-to-r from-primary via-accent to-primary'
-              }`}
-              style={{ width: `${progressPct}%` }}
-            />
+              className="absolute top-1/2 -translate-y-1/2 transition-all duration-700 ease-out"
+              style={{ left: `calc(${progressPct}% - 12px)` }}
+            >
+              <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center shadow-md ${
+                  isFreeShipping
+                    ? 'bg-success text-success-foreground'
+                    : 'bg-gradient-to-br from-primary to-accent text-primary-foreground'
+                } ${!isFreeShipping ? 'cart-truck-bounce' : ''}`}
+              >
+                {isFreeShipping ? <PartyPopper size={13} /> : <Truck size={13} />}
+              </div>
+            </div>
           </div>
-          <p className="text-[10px] text-muted-foreground mt-1.5 opacity-80">
+
+          {/* Milestones */}
+          <div className="relative flex justify-between mt-2 px-0.5">
+            {[
+              { pct: 1, Icon: ShoppingCart, label: 'Cart' },
+              { pct: 40, Icon: Gift, label: 'Bonus' },
+              { pct: 75, Icon: Package, label: 'Almost' },
+              { pct: 100, Icon: Truck, label: 'Free' },
+            ].map(({ pct, Icon, label }) => {
+              const reached = progressPct >= pct;
+              return (
+                <div key={label} className="flex flex-col items-center gap-0.5 flex-1">
+                  <div
+                    className={`w-6 h-6 rounded-full flex items-center justify-center border transition-all duration-500 ${
+                      reached
+                        ? 'bg-gradient-to-br from-primary/20 to-accent/20 border-primary/60 text-primary scale-110 shadow-[0_0_10px_hsl(var(--primary)/0.4)]'
+                        : 'bg-background/60 border-border/60 text-muted-foreground/50 scale-95'
+                    }`}
+                  >
+                    <Icon size={12} />
+                  </div>
+                  <span
+                    className={`text-[9px] tracking-wide transition-colors ${
+                      reached ? 'text-primary font-semibold' : 'text-muted-foreground/60'
+                    }`}
+                  >
+                    {label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          <p className="text-[10px] text-muted-foreground mt-2 opacity-80">
             West Bengal: flat ₹20 handling still applies.
           </p>
+
+          <style>{`
+            @keyframes cartTruckBounce {
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(-2px); }
+            }
+            .cart-truck-bounce { animation: cartTruckBounce 1.4s ease-in-out infinite; }
+          `}</style>
         </div>
 
         {/* Summary */}
