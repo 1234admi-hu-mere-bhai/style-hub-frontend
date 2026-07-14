@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import logoGold from '@/assets/logo-3d-gold-sharp.png';
+import logoGoldAsset from '@/assets/logo-3d-gold-sharp.png.asset.json';
+const logoGold = logoGoldAsset.url;
 
 const SPLASH_KEY = 'muffigout_splash_shown';
 
