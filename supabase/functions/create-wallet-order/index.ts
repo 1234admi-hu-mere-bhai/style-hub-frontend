@@ -128,6 +128,75 @@ Deno.serve(async (req) => {
       });
     } catch (e) { console.error('notify failed', e); }
 
+    // 📧 Order confirmation email + tax invoice (best-effort, mirrors PayU flow)
+    try {
+      if (userEmail) {
+        const { data: prof } = await admin
+          .from('profiles').select('first_name').eq('id', userId).maybeSingle();
+        const emailItems = priced.items.map((it: any) => ({
+          name: it.product_name || 'Item',
+          image: it.image || undefined,
+          size: it.size || undefined,
+          color: it.color || undefined,
+          quantity: Number(it.quantity) || 1,
+          price: Number(it.price) || 0,
+          originalPrice: it.original_price ? Number(it.original_price) : undefined,
+        }));
+        const itemCount = emailItems.reduce((a, i) => a + i.quantity, 0);
+        const orderDate = new Date().toLocaleDateString('en-IN', {
+          weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
+        });
+        const eta = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', {
+          weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
+        });
+        await admin.functions.invoke('send-transactional-email', {
+          body: {
+            templateName: 'order-placed',
+            recipientEmail: userEmail,
+            idempotencyKey: `order-placed-${order.id}`,
+            templateData: {
+              customerName: prof?.first_name || '',
+              orderNumber,
+              orderTotal: order.total,
+              subtotal: order.subtotal,
+              shippingCost: order.shipping_cost,
+              paymentMethod: 'MG Wallet',
+              itemCount,
+              items: emailItems,
+              orderDate,
+              estimatedDelivery: eta,
+              shippingAddress: shipping_address,
+            },
+          },
+        });
+        try {
+          await admin.functions.invoke('send-transactional-email', {
+            body: {
+              templateName: 'order-invoice',
+              recipientEmail: userEmail,
+              idempotencyKey: `order-invoice-${order.id}`,
+              templateData: {
+                customerName: prof?.first_name || '',
+                orderNumber,
+                invoiceNumber: `INV-${orderNumber.slice(-8)}`,
+                orderDate,
+                paymentMethod: 'MG Wallet',
+                paymentId: order.payment_id,
+                subtotal: order.subtotal,
+                shippingCost: order.shipping_cost,
+                total: order.total,
+                items: emailItems.map((it: any) => ({
+                  name: it.name, size: it.size, color: it.color,
+                  quantity: it.quantity, price: it.price,
+                })),
+                shippingAddress: shipping_address,
+              },
+            },
+          });
+        } catch (e) { console.error('wallet order-invoice email failed', e); }
+      }
+    } catch (e) { console.error('wallet order-placed email failed', e); }
+
     try {
       await admin.functions.invoke('generate-invoice', { body: { orderId: order.id } });
     } catch (_) { /* best effort */ }
