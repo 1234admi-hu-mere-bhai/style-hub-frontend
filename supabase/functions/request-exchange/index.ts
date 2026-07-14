@@ -160,6 +160,31 @@ Deno.serve(async (req) => {
       })
     } catch (e) { console.error('exchange push failed:', e) }
 
+    // 📧 Email confirmation: exchange request received
+    try {
+      const { data: au } = await admin.auth.admin.getUserById(order.user_id)
+      const { data: prof } = await admin
+        .from('profiles').select('first_name').eq('id', order.user_id).maybeSingle()
+      const recipientEmail = au?.user?.email || ''
+      if (recipientEmail) {
+        await admin.functions.invoke('send-transactional-email', {
+          body: {
+            templateName: 'return-exchange-requested',
+            recipientEmail,
+            idempotencyKey: `exchange-requested-${orderId}`,
+            templateData: {
+              customerName: prof?.first_name || '',
+              orderNumber: order.order_number,
+              requestType: 'exchange',
+              reason: reason,
+              exchangeSize: exchangeSize || undefined,
+              exchangeColor: exchangeColor || undefined,
+            },
+          },
+        })
+      }
+    } catch (e) { console.error('exchange-requested email failed:', e) }
+
     return new Response(
       JSON.stringify({ success: true, message: 'Exchange request submitted successfully' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },

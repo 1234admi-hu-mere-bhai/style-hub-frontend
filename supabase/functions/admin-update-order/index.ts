@@ -377,6 +377,41 @@ Deno.serve(async (req) => {
         } catch (e) {
           console.error('send-push invoke failed:', e);
         }
+
+        // 📧 Email for return lifecycle transitions
+        const emailEventType =
+          nextOrder.status === 'return_approved' ? 'return_approved'
+          : nextOrder.status === 'return_rejected' ? 'return_rejected'
+          : nextOrder.status === 'picked_up' && isReturnPickup ? 'return_picked_up'
+          : null;
+
+        if (emailEventType) {
+          try {
+            const { email: recipientEmail, firstName } = await getRecipient(nextOrder.user_id);
+            if (recipientEmail) {
+              const refundEtaStr = nextOrder.refund_eta
+                ? new Date(nextOrder.refund_eta).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                : undefined;
+              await adminClient.functions.invoke('send-transactional-email', {
+                body: {
+                  templateName: 'return-status-update',
+                  recipientEmail,
+                  idempotencyKey: `${emailEventType}-${nextOrder.id}`,
+                  templateData: {
+                    customerName: firstName,
+                    orderNumber: nextOrder.order_number,
+                    eventType: emailEventType,
+                    refundAmount: Number(nextOrder.refund_amount ?? prevOrder.total ?? 0),
+                    refundEta: refundEtaStr,
+                    rejectionReason: nextOrder.rejection_reason || undefined,
+                  },
+                },
+              });
+            }
+          } catch (e) {
+            console.error(`${emailEventType} email failed:`, e);
+          }
+        }
       }
     }
 
