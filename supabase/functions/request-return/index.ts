@@ -147,6 +147,29 @@ Deno.serve(async (req) => {
       })
     } catch (e) { console.error('return push failed:', e) }
 
+    // 📧 Email confirmation: return request received
+    try {
+      const { data: au } = await adminClient.auth.admin.getUserById(order.user_id)
+      const { data: prof } = await adminClient
+        .from('profiles').select('first_name').eq('id', order.user_id).maybeSingle()
+      const recipientEmail = au?.user?.email || ''
+      if (recipientEmail) {
+        await adminClient.functions.invoke('send-transactional-email', {
+          body: {
+            templateName: 'return-exchange-requested',
+            recipientEmail,
+            idempotencyKey: `return-requested-${orderId}`,
+            templateData: {
+              customerName: prof?.first_name || '',
+              orderNumber: orderRow?.order_number,
+              requestType: 'return',
+              reason: reason.trim(),
+            },
+          },
+        })
+      }
+    } catch (e) { console.error('return-requested email failed:', e) }
+
     return new Response(
       JSON.stringify({ success: true, message: 'Return request submitted successfully' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

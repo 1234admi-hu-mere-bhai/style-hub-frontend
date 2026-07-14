@@ -115,6 +115,30 @@ Deno.serve(async (req) => {
       })
     } catch (e) { console.error('replacement push failed:', e) }
 
+    // 📧 Email confirmation: replacement request received
+    try {
+      const { reason: replReason } = await req.clone().json().catch(() => ({ reason: '' }))
+      const { data: au } = await adminClient.auth.admin.getUserById(order.user_id)
+      const { data: prof } = await adminClient
+        .from('profiles').select('first_name').eq('id', order.user_id).maybeSingle()
+      const recipientEmail = au?.user?.email || ''
+      if (recipientEmail) {
+        await adminClient.functions.invoke('send-transactional-email', {
+          body: {
+            templateName: 'return-exchange-requested',
+            recipientEmail,
+            idempotencyKey: `replacement-requested-${orderId}`,
+            templateData: {
+              customerName: prof?.first_name || '',
+              orderNumber: orderRow?.order_number,
+              requestType: 'replacement',
+              reason: (replReason || '').toString(),
+            },
+          },
+        })
+      }
+    } catch (e) { console.error('replacement-requested email failed:', e) }
+
     return new Response(
       JSON.stringify({ success: true, message: 'Replacement request submitted' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
