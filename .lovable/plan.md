@@ -1,75 +1,92 @@
-## Wallet & Refund System — Implementation Plan
 
-### Scope confirmed
-- **Wallet**: Top-up via PayU, balance never expires, usable at checkout (partial wallet + PayU allowed).
-- **Top-up bonuses (preset packs only)**: ₹500→+₹25, ₹1000→+₹50, ₹2000→+₹100, ₹5000→+₹250 (flat 5%). Manual custom amount = no bonus.
-- **Refund options for user**: ① Wallet (instant on pickup) or ② Original payment source (PayU auto-refund — existing flow). **No UPI refund.**
-- **Admin window**: 6 hours after return is approved to set allowed refund methods. If unset → defaults to original source.
-- **Old memory override**: The `auto-refund-on-pickup` memory says wallet is removed — will update it.
+# Plan — Exchange flow + Free-shipping progress bar
+
+Two focused features. Both keep business logic minimal and reuse existing infra.
 
 ---
 
-### 1. Database changes
+## 1. Free-shipping progress bar (Cart Drawer)
 
-**New tables**
-- `wallets` — `user_id` (unique), `balance`, `updated_at`. RLS: user reads own; writes only via edge functions (service role).
-- `wallet_transactions` — `user_id`, `amount` (+/-), `type` (`topup` | `topup_bonus` | `purchase` | `refund` | `adjustment`), `reference_type`, `reference_id`, `balance_after`, `description`, `created_at`. RLS: user reads own.
+Replace the current static "Add ₹X more for free shipping" line with an animated progress bar that reflects the real shipping rules from `src/lib/shipping.ts` (₹999 threshold, WB flat ₹20 handling, ₹1 test items always free).
 
-**Modify `orders`**
-- `wallet_amount_used` numeric default 0
-- `payu_amount` numeric default 0 (the non-wallet portion)
+**UI (in `src/components/CartDrawer.tsx`, above the Subtotal row):**
+- Track: `h-2 bg-secondary rounded-full`, fill: gradient primary→teal, animated width transition.
+- Copy above the bar:
+  - Free unlocked → `🎉 Free shipping unlocked!` (green)
+  - Progressing → `Add {formatPrice(remaining)} more for FREE shipping` (primary)
+  - Test item present → `🎁 Free shipping on this order`
+- Small "West Bengal: ₹20 handling still applies" note stays where it is.
+- Uses `FREE_SHIPPING_THRESHOLD` from `src/lib/shipping.ts` (single source of truth — no hardcoding 999).
 
-**Modify `returns`**
-- `allowed_refund_methods` text[] default `['source']` (admin-set: `['wallet','source']`, `['wallet']`, or `['source']`)
-- `selected_refund_method` text nullable (user pick: `wallet` | `source`)
-- `admin_window_expires_at` timestamptz (set to `now() + 6h` when status → `return_approved`)
-
-**Modify `pending_payments`**
-- `wallet_amount_used` numeric default 0
-- `is_wallet_topup` boolean default false
+**No business-logic changes** — this is pure presentation. Cart totals, checkout, and shipping calc stay untouched.
 
 ---
 
-### 2. Edge functions
+## 2. Exchange flow (mirrors Return)
 
-**New**
-- `wallet-topup-initiate` — validate amount, compute bonus (preset packs only), create pending_payment with `is_wallet_topup=true`, return PayU hash.
-- `wallet-topup-complete` — called from `payu-webhook` / `verify-payment` when `is_wallet_topup`. Credits wallet atomically (amount + bonus, two transactions).
-- `select-refund-method` — user-facing. Validates choice is in `allowed_refund_methods` and return is in valid state.
-- `expire-refund-window` — cron (every 15 min). For returns past 6h with no `selected_refund_method`, lock to `source`.
+Add a customer-initiated **exchange** request for a different **size or color** of the same product, reusing the `returns` table and lifecycle. Refund logic is skipped — the outbound replacement is dispatched once the returned item is picked up.
 
-**Modified**
-- `payu-webhook` + `verify-payment` — branch on `is_wallet_topup`; for regular orders, also persist `wallet_amount_used` and decrement wallet atomically.
-- `create-cod-order` — block COD if wallet is being used (COD already pays cash, no wallet allowed) OR allow wallet to cover whole order and skip COD entirely.
-- `admin-update-order` — when admin sets return → `return_approved`, set `admin_window_expires_at = now() + 6h`. New action: `set_allowed_refund_methods`.
-- `payu-refund` (auto on pickup) — read `selected_refund_method`. If `wallet` → credit wallet instantly. If `source` → existing PayU refund. COD unchanged.
+### Schema (migration)
+Extend the existing `returns` table with 3 nullable columns:
+- `request_type text not null default 'return'` — `'return' | 'exchange'`
+- `exchange_size text`
+- `exchange_color text`
+
+Add a partial CHECK trigger: when `request_type='exchange'`, at least one of `exchange_size`/`exchange_color` must be set and must differ from the original order item.
+
+### Edge function: `request-exchange`
+Cloned from `request-return`, with these differences:
+- Accepts `{ orderId, orderItemId, exchangeSize?, exchangeColor?, reasonCode, reasonDetails }`.
+- Validates: order is `delivered`, within 7-day window (reuse existing constant), item belongs to order, at least one of size/color differs from the original.
+- Verifies the target variant exists and is `in_stock` in `products` (reads `sizes`/`colors` arrays).
+- Inserts `returns` row with `request_type='exchange'`, `allowed_refund_methods=[]` (no refund path), `status='return_requested'`.
+- Pushes notification: `🔁 Exchange requested for ••••XXXX`.
+
+### Admin (`AdminReturns.tsx`)
+- New "Type" column badge: **Return** / **Exchange** (teal).
+- Exchange rows show `Requested: Size L → M` inline.
+- Approve → sets `status='return_approved'` (same as return).
+- On `picked_up` status change:
+  - **Return** path: existing `payu-refund` runs (unchanged).
+  - **Exchange** path: skip refund entirely; auto-invoke a small `dispatch-exchange` helper that:
+    1. Creates a new `orders` row cloned from original, with `parent_order_id`, `is_exchange=true`, `total=0`, `payment_status='exchange'`.
+    2. Overrides the single `order_items` row with new size/color.
+    3. Calls existing Delhivery auto-shipment shared helper (`_shared/auto-shipment.ts`) to generate AWB.
+    4. Pushes: `📦 Exchange shipped — ••••XXXX`.
+  - New columns on `orders`: `parent_order_id uuid`, `is_exchange boolean default false` (added in the same migration).
+
+### Customer UI
+- **`ReturnExchange.tsx`** (existing page): add a top toggle **Return / Exchange**. Exchange mode shows size + color selectors (populated from the order item's product variants) and hides refund-method copy.
+- **`OrderHistory.tsx` / `TrackOrder.tsx`**: existing "Request Replacement" button becomes "Request Return or Exchange" and routes to the same page with a query param.
+- Status timeline shows: `Exchange Requested → Approved → Picked Up → Exchange Shipped → Delivered`.
+
+### Emails / notifications
+- Reuse `order-shipped` template for the exchange dispatch (subject prefixed `Exchange:`).
+- Reuse push categories `orders`; dedupe keys `exchange-req-<id>`, `exchange-ship-<id>`.
+
+### Out of scope (locked)
+- Exchange to a **different product** — same SKU only.
+- Price-difference collection — exchanges are same-variant swaps, no payment top-up.
+- COD exchanges — n/a (prepaid-only).
 
 ---
 
-### 3. UI
+## Ship order
 
-**New pages/components**
-- `/wallet` — balance card, top-up packs (4 preset cards with bonus badge) + "Custom amount" input (no bonus shown), transaction history table.
-- `WalletSection` on Profile page — balance + link to /wallet.
-- `Checkout` — "Use wallet balance" toggle (auto-applies max usable); shows split: wallet ₹X + PayU ₹Y.
-- `OrderHistory` return-request modal — after admin sets allowed methods, show radio: "Refund to Wallet (instant)" / "Refund to original payment (5-7 days)" + 6h countdown.
-
-**Admin**
-- `AdminReturns` — per return: checkboxes "Allow Wallet refund" / "Allow Source refund" (defaults both on). Shows user's selection + countdown.
-- `AdminCustomers` — wallet balance column + adjustment dialog (credit/debit with reason → `adjustment` transaction).
+1. Cart Drawer progress bar (single-file frontend change) — 1 pass.
+2. Migration for `returns` + `orders` columns.
+3. `request-exchange` edge function.
+4. `ReturnExchange.tsx` toggle UI.
+5. Admin badge + dispatch helper.
+6. Update `OrderHistory` / `TrackOrder` entry points.
 
 ---
 
-### 4. Key technical notes
-- All wallet writes use a Postgres function (`adjust_wallet_balance`) with row lock to prevent race conditions.
-- Wallet refund fires on the same `picked_up` trigger as PayU refund — instant credit + notification.
-- Coupon/flash-sale logic untouched; wallet applies AFTER discounts.
-- Min PayU amount when wallet partially covers = ₹1 (PayU rejects ₹0).
-- COD + wallet: if wallet covers full total, order becomes prepaid (no COD fee). If partial, COD is disallowed (cleaner UX).
+## Technical notes
 
----
+- Files touched: `src/components/CartDrawer.tsx`, `src/pages/ReturnExchange.tsx`, `src/components/admin/AdminReturns.tsx`, `src/pages/OrderHistory.tsx`, `src/pages/TrackOrder.tsx`, `supabase/functions/request-exchange/index.ts` (new), `supabase/functions/dispatch-exchange/index.ts` (new), one migration.
+- Reuses: `returns` table, `_shared/auto-shipment.ts`, `send-push`, existing 7-day window constant, push categories, `formatPrice`, `FREE_SHIPPING_THRESHOLD`.
+- No new secrets, no new third-party integrations.
+- Memory update: append an `mem://features/exchange-flow` entry describing the same-variant swap rule.
 
-### What will NOT be built (per your decision)
-- ❌ UPI payout refunds (no PayU Payouts integration)
-- ❌ Wallet expiry
-- ❌ Tiered bonus on custom amounts
+Approve to implement.
