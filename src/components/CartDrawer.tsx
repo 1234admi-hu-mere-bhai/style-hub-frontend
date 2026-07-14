@@ -4,6 +4,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import { Button } from '@/components/ui/button';
 import { FREE_SHIPPING_THRESHOLD } from '@/lib/shipping';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 
 interface CartDrawerProps {
   onClose: () => void;
