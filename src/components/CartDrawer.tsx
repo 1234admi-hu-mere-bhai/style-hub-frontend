@@ -4,6 +4,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import { Button } from '@/components/ui/button';
 import { FREE_SHIPPING_THRESHOLD } from '@/lib/shipping';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '@/components/ui/tooltip';
 
 interface CartDrawerProps {
   onClose: () => void;
@@ -218,36 +219,46 @@ const CartDrawer = ({ onClose }: CartDrawerProps) => {
           </div>
 
           {/* Milestones */}
-          <div className="relative flex justify-between mt-2 px-0.5">
-            {[
-              { pct: 1, Icon: ShoppingCart, label: 'Cart' },
-              { pct: 40, Icon: Gift, label: 'Bonus' },
-              { pct: 75, Icon: Package, label: 'Almost' },
-              { pct: 100, Icon: Truck, label: 'Free' },
-            ].map(({ pct, Icon, label }) => {
-              const reached = progressPct >= pct;
-              return (
-                <div key={label} className="flex flex-col items-center gap-0.5 flex-1">
-                  <div
-                    className={`w-6 h-6 rounded-full flex items-center justify-center border transition-all duration-500 ${
-                      reached
-                        ? 'bg-gradient-to-br from-primary/20 to-accent/20 border-primary/60 text-primary scale-110 shadow-[0_0_10px_hsl(var(--primary)/0.4)]'
-                        : 'bg-background/60 border-border/60 text-muted-foreground/50 scale-95'
-                    }`}
-                  >
-                    <Icon size={12} />
+          <TooltipProvider delayDuration={200}>
+            <div className="relative flex justify-between mt-2 px-0.5">
+              {[
+                { pct: 1, Icon: ShoppingCart, label: 'Cart', tooltip: 'Items added to your cart.' },
+                { pct: 40, Icon: Gift, label: 'Bonus', tooltip: 'A surprise reward unlocks around this point.' },
+                { pct: 75, Icon: Package, label: 'Almost', tooltip: 'Just a bit more to reach free shipping.' },
+                { pct: 100, Icon: Truck, label: 'Free', tooltip: 'Free shipping unlocked for this order.' },
+              ].map(({ pct, Icon, label, tooltip }) => {
+                const reached = progressPct >= pct;
+                return (
+                  <div key={label} className="flex flex-col items-center gap-0.5 flex-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          className={`w-6 h-6 rounded-full flex items-center justify-center border transition-all duration-500 cursor-help ${
+                            reached
+                              ? 'bg-gradient-to-br from-primary/20 to-accent/20 border-primary/60 text-primary scale-110 shadow-[0_0_10px_hsl(var(--primary)/0.4)]'
+                              : 'bg-background/60 border-border/60 text-muted-foreground/50 scale-95'
+                          }`}
+                        >
+                          <Icon size={12} />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-[180px] text-center">
+                        <p className="font-semibold text-xs">{label}</p>
+                        <p className="text-[11px] text-muted-foreground">{tooltip}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <span
+                      className={`text-[9px] tracking-wide transition-colors ${
+                        reached ? 'text-primary font-semibold' : 'text-muted-foreground/60'
+                      }`}
+                    >
+                      {label}
+                    </span>
                   </div>
-                  <span
-                    className={`text-[9px] tracking-wide transition-colors ${
-                      reached ? 'text-primary font-semibold' : 'text-muted-foreground/60'
-                    }`}
-                  >
-                    {label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          </TooltipProvider>
 
           <p className="text-[10px] text-muted-foreground mt-2 opacity-80">
             West Bengal: flat ₹20 handling still applies.
