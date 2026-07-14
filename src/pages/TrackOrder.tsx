@@ -132,13 +132,20 @@ const TrackOrder = () => {
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [returnReason, setReturnReason] = useState('');
   const [submittingReturn, setSubmittingReturn] = useState(false);
-  const [submittingReplacement, setSubmittingReplacement] = useState(false);
+  const [exchangeDialogOpen, setExchangeDialogOpen] = useState(false);
+  const [exchangeSize, setExchangeSize] = useState('');
+  const [exchangeColor, setExchangeColor] = useState('');
+  const [exchangeReason, setExchangeReason] = useState('');
+  const [submittingExchange, setSubmittingExchange] = useState(false);
+  const [variantOptions, setVariantOptions] = useState<{ sizes: string[]; colors: { name: string; hex: string }[] }>({ sizes: [], colors: [] });
+  const [loadingVariants, setLoadingVariants] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [refundHelpOpen, setRefundHelpOpen] = useState(false);
   const [refundMessage, setRefundMessage] = useState('');
   const [submittingRefundHelp, setSubmittingRefundHelp] = useState(false);
   const [showFullTimeline, setShowFullTimeline] = useState(false);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
+
 
   const openCancelDialog = async () => {
     if (!order) return;
