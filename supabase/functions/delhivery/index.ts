@@ -74,14 +74,25 @@ Deno.serve(async (req) => {
       }
 
       case 'create_shipment': {
-        // Admin only — create a shipment on Delhivery
-        const ADMIN_EMAILS = ['muffigout@gmail.com', 'admin@muffigout.com'];
+        // Owner only — create a shipment on Delhivery. Uses the canonical
+        // public.is_owner() DB check to stay in sync with every other admin
+        // edge function (no hardcoded stray addresses).
         const anonClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
           global: { headers: { Authorization: authHeader || '' } },
         });
-        const { data: { user }, error: authError } = await anonClient.auth.getUser();
-        if (authError || !user || !ADMIN_EMAILS.includes(user.email || '')) {
+        const shipToken = authHeader?.replace('Bearer ', '') || '';
+        const { data: shipClaims, error: shipClaimsErr } = await anonClient.auth.getClaims(shipToken);
+        const shipUid = shipClaims?.claims?.sub as string | undefined;
+        if (shipClaimsErr || !shipUid) {
           return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        const serviceRoleForAuth = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+        const { data: isOwner } = await serviceRoleForAuth.rpc('is_owner', { _uid: shipUid });
+        if (!isOwner) {
+          return new Response(JSON.stringify({ error: 'Forbidden' }), {
             status: 403,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
