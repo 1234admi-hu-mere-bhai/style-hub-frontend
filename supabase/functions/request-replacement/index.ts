@@ -117,7 +117,6 @@ Deno.serve(async (req) => {
 
     // 📧 Email confirmation: replacement request received
     try {
-      const { reason: replReason } = await req.clone().json().catch(() => ({ reason: '' }))
       const { data: au } = await adminClient.auth.admin.getUserById(order.user_id)
       const { data: prof } = await adminClient
         .from('profiles').select('first_name').eq('id', order.user_id).maybeSingle()
@@ -132,7 +131,7 @@ Deno.serve(async (req) => {
               customerName: prof?.first_name || '',
               orderNumber: orderRow?.order_number,
               requestType: 'replacement',
-              reason: (replReason || '').toString(),
+              reason: (reason || '').toString(),
             },
           },
         })
