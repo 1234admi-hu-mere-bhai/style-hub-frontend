@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
-import { Minus, Plus, Trash2 } from 'lucide-react';
+import { Minus, Plus, Trash2, Truck, PartyPopper } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useCurrency } from '@/hooks/useCurrency';
 import { Button } from '@/components/ui/button';
+import { FREE_SHIPPING_THRESHOLD } from '@/lib/shipping';
+
 
 interface CartDrawerProps {
   onClose: () => void;
@@ -100,34 +102,53 @@ const CartDrawer = ({ onClose }: CartDrawerProps) => {
       </div>
 
       <div className="border-t border-border pt-4 space-y-4">
+        {(() => {
+          const hasTestItem = items.some(i => i.price <= 1);
+          const isFreeShipping = hasTestItem || totalPrice >= FREE_SHIPPING_THRESHOLD;
+          const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - totalPrice);
+          const progressPct = hasTestItem
+            ? 100
+            : Math.min(100, Math.round((totalPrice / FREE_SHIPPING_THRESHOLD) * 100));
+          return (
+            <div className="rounded-xl bg-secondary/40 p-3 space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                {isFreeShipping ? (
+                  <>
+                    <PartyPopper size={16} className="text-success flex-shrink-0" />
+                    <span className="font-medium text-success">
+                      {hasTestItem ? 'Free shipping on this order' : 'Free shipping unlocked!'}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Truck size={16} className="text-primary flex-shrink-0" />
+                    <span className="text-foreground">
+                      Add <span className="font-semibold text-primary">{formatPrice(remaining)}</span> more for <span className="font-semibold">FREE shipping</span>
+                    </span>
+                  </>
+                )}
+              </div>
+              <div className="h-2 w-full rounded-full bg-background overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ease-out ${
+                    isFreeShipping
+                      ? 'bg-gradient-to-r from-success to-success/70'
+                      : 'bg-gradient-to-r from-primary to-accent'
+                  }`}
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                West Bengal: flat ₹20 handling still applies.
+              </p>
+            </div>
+          );
+        })()}
         <div className="flex justify-between text-lg font-semibold">
           <span>Subtotal</span>
           <span>{formatPrice(totalPrice)}</span>
         </div>
-        {(() => {
-          const hasTestItem = items.some(i => i.price <= 1);
-          const isFreeShipping = hasTestItem || totalPrice >= 999;
-          return (
-            <>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Shipping</span>
-                <span className={isFreeShipping ? 'text-success font-medium' : 'text-foreground'}>
-                  {isFreeShipping ? 'FREE' : `from ${formatPrice(20)}`}
-                </span>
-              </div>
-              {!isFreeShipping && (
-                <p className="text-xs text-primary">
-                  Add {formatPrice(999 - totalPrice)} more for free shipping (outside West Bengal). West Bengal: flat ₹20 handling.
-                </p>
-              )}
-              {isFreeShipping && (
-                <p className="text-xs text-muted-foreground">
-                  West Bengal: ₹20 handling charge applies at checkout.
-                </p>
-              )}
-            </>
-          );
-        })()}
+
         <Button className="w-full" size="lg" asChild>
           <Link to="/checkout" onClick={onClose}>
             Proceed to Checkout

@@ -132,13 +132,20 @@ const TrackOrder = () => {
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [returnReason, setReturnReason] = useState('');
   const [submittingReturn, setSubmittingReturn] = useState(false);
-  const [submittingReplacement, setSubmittingReplacement] = useState(false);
+  const [exchangeDialogOpen, setExchangeDialogOpen] = useState(false);
+  const [exchangeSize, setExchangeSize] = useState('');
+  const [exchangeColor, setExchangeColor] = useState('');
+  const [exchangeReason, setExchangeReason] = useState('');
+  const [submittingExchange, setSubmittingExchange] = useState(false);
+  const [variantOptions, setVariantOptions] = useState<{ sizes: string[]; colors: { name: string; hex: string }[] }>({ sizes: [], colors: [] });
+  const [loadingVariants, setLoadingVariants] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [refundHelpOpen, setRefundHelpOpen] = useState(false);
   const [refundMessage, setRefundMessage] = useState('');
   const [submittingRefundHelp, setSubmittingRefundHelp] = useState(false);
   const [showFullTimeline, setShowFullTimeline] = useState(false);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
+
 
   const openCancelDialog = async () => {
     if (!order) return;
@@ -211,23 +218,66 @@ const TrackOrder = () => {
     }
   };
 
-  const handleRequestReplacement = async () => {
+  const openExchangeDialog = async () => {
     if (!order) return;
-    setSubmittingReplacement(true);
+    const item = order.order_items[0];
+    setExchangeSize('');
+    setExchangeColor('');
+    setExchangeReason('');
+    setVariantOptions({ sizes: [], colors: [] });
+    setExchangeDialogOpen(true);
+    if (!item?.product_id) return;
+    setLoadingVariants(true);
     try {
-      const { data, error } = await supabase.functions.invoke('request-replacement', {
-        body: { orderId: order.id },
+      const { data } = await supabase
+        .from('products')
+        .select('sizes, colors')
+        .eq('id', item.product_id)
+        .maybeSingle();
+      if (data) {
+        setVariantOptions({
+          sizes: (data.sizes as string[]) || [],
+          colors: ((data.colors as any[]) || []).map((c: any) => ({ name: c.name, hex: c.hex })),
+        });
+      }
+    } catch { /* silent */ }
+    finally { setLoadingVariants(false); }
+  };
+
+  const handleRequestExchange = async () => {
+    if (!order) return;
+    const item = order.order_items[0];
+    if (!exchangeSize && !exchangeColor) {
+      toast.error('Please pick a new size or color');
+      return;
+    }
+    if (exchangeReason.trim().length < 5) {
+      toast.error('Please provide a reason (at least 5 characters)');
+      return;
+    }
+    setSubmittingExchange(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('request-exchange', {
+        body: {
+          orderId: order.id,
+          orderItemId: item?.id,
+          exchangeSize: exchangeSize || undefined,
+          exchangeColor: exchangeColor || undefined,
+          reason: exchangeReason.trim(),
+        },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success('Replacement request submitted successfully');
-      setOrder({ ...order, status: 'replacement_requested' });
+      toast.success('Exchange request submitted successfully');
+      setOrder({ ...order, status: 'return_requested' });
+      setExchangeDialogOpen(false);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to submit replacement request');
+      toast.error(err.message || 'Failed to submit exchange request');
     } finally {
-      setSubmittingReplacement(false);
+      setSubmittingExchange(false);
     }
   };
+
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/auth');
@@ -457,16 +507,12 @@ const TrackOrder = () => {
                     variant="outline"
                     size="sm"
                     className="rounded-full"
-                    onClick={handleRequestReplacement}
-                    disabled={submittingReplacement}
+                    onClick={openExchangeDialog}
                   >
-                    {submittingReplacement ? (
-                      <Loader2 size={16} className="mr-2 animate-spin" />
-                    ) : (
-                      <RefreshCw size={16} className="mr-2" />
-                    )}
-                    Replace
+                    <RefreshCw size={16} className="mr-2" />
+                    Exchange
                   </Button>
+
                 </>
               )}
             </div>
@@ -761,6 +807,135 @@ const TrackOrder = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Exchange dialog */}
+        <Dialog
+          open={exchangeDialogOpen}
+          onOpenChange={(open) => {
+            setExchangeDialogOpen(open);
+            if (!open) {
+              setExchangeSize('');
+              setExchangeColor('');
+              setExchangeReason('');
+            }
+          }}
+        >
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Request Exchange</DialogTitle>
+              <DialogDescription>
+                Same product, different size or color. Subject to stock availability.
+              </DialogDescription>
+            </DialogHeader>
+
+            {order && (
+              <div className="text-xs text-muted-foreground rounded-lg bg-secondary/40 p-3">
+                Original: <span className="text-foreground font-medium">{order.order_items[0]?.product_name}</span>
+                {order.order_items[0]?.size && <> · Size {order.order_items[0].size}</>}
+                {order.order_items[0]?.color && <> · Color {order.order_items[0].color}</>}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">New size</label>
+                {loadingVariants ? (
+                  <div className="text-xs text-muted-foreground">Loading options…</div>
+                ) : variantOptions.sizes.length === 0 ? (
+                  <div className="text-xs text-muted-foreground">No size options available</div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {variantOptions.sizes.map((s) => {
+                      const isOriginal = (order?.order_items[0]?.size || '').toLowerCase() === s.toLowerCase();
+                      const selected = exchangeSize === s;
+                      return (
+                        <button
+                          key={s}
+                          type="button"
+                          disabled={isOriginal}
+                          onClick={() => setExchangeSize(selected ? '' : s)}
+                          className={`min-w-[3rem] px-3 h-10 rounded-full text-sm border transition-colors ${
+                            selected
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : isOriginal
+                              ? 'opacity-40 cursor-not-allowed border-border'
+                              : 'border-border hover:border-primary'
+                          }`}
+                        >
+                          {s}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">New color</label>
+                {variantOptions.colors.length === 0 ? (
+                  <div className="text-xs text-muted-foreground">No color options available</div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {variantOptions.colors.map((c) => {
+                      const isOriginal = (order?.order_items[0]?.color || '').toLowerCase() === c.name.toLowerCase();
+                      const selected = exchangeColor === c.name;
+                      return (
+                        <button
+                          key={c.name}
+                          type="button"
+                          disabled={isOriginal}
+                          onClick={() => setExchangeColor(selected ? '' : c.name)}
+                          className={`flex items-center gap-2 h-10 px-3 rounded-full text-sm border transition-colors ${
+                            selected
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : isOriginal
+                              ? 'opacity-40 cursor-not-allowed border-border'
+                              : 'border-border hover:border-primary'
+                          }`}
+                        >
+                          <span
+                            className="inline-block w-4 h-4 rounded-full border border-border"
+                            style={{ backgroundColor: c.hex }}
+                          />
+                          {c.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Reason</label>
+                <Textarea
+                  placeholder="Wrong size, color didn't match expectations..."
+                  value={exchangeReason}
+                  onChange={(e) => setExchangeReason(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setExchangeDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleRequestExchange}
+                disabled={
+                  submittingExchange ||
+                  (!exchangeSize && !exchangeColor) ||
+                  exchangeReason.trim().length < 5
+                }
+              >
+                {submittingExchange ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
+                Submit Exchange
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+
 
         {/* Help dialog */}
         <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
