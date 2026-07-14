@@ -996,6 +996,8 @@ export type Database = {
           allowed_refund_methods: string[]
           auto_approved: boolean
           created_at: string
+          exchange_color: string | null
+          exchange_size: string | null
           id: string
           images: string[] | null
           manual_review_reason: string | null
@@ -1007,6 +1009,7 @@ export type Database = {
           refund_amount: number
           refund_method: string
           refunded_at: string | null
+          request_type: string
           selected_refund_method: string | null
           status: string
           updated_at: string
@@ -1017,6 +1020,8 @@ export type Database = {
           allowed_refund_methods?: string[]
           auto_approved?: boolean
           created_at?: string
+          exchange_color?: string | null
+          exchange_size?: string | null
           id?: string
           images?: string[] | null
           manual_review_reason?: string | null
@@ -1028,6 +1033,7 @@ export type Database = {
           refund_amount?: number
           refund_method?: string
           refunded_at?: string | null
+          request_type?: string
           selected_refund_method?: string | null
           status?: string
           updated_at?: string
@@ -1038,6 +1044,8 @@ export type Database = {
           allowed_refund_methods?: string[]
           auto_approved?: boolean
           created_at?: string
+          exchange_color?: string | null
+          exchange_size?: string | null
           id?: string
           images?: string[] | null
           manual_review_reason?: string | null
@@ -1049,6 +1057,7 @@ export type Database = {
           refund_amount?: number
           refund_method?: string
           refunded_at?: string | null
+          request_type?: string
           selected_refund_method?: string | null
           status?: string
           updated_at?: string
