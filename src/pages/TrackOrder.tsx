@@ -507,16 +507,12 @@ const TrackOrder = () => {
                     variant="outline"
                     size="sm"
                     className="rounded-full"
-                    onClick={handleRequestReplacement}
-                    disabled={submittingReplacement}
+                    onClick={openExchangeDialog}
                   >
-                    {submittingReplacement ? (
-                      <Loader2 size={16} className="mr-2 animate-spin" />
-                    ) : (
-                      <RefreshCw size={16} className="mr-2" />
-                    )}
-                    Replace
+                    <RefreshCw size={16} className="mr-2" />
+                    Exchange
                   </Button>
+
                 </>
               )}
             </div>
