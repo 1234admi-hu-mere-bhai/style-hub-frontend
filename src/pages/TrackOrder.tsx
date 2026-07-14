@@ -218,23 +218,66 @@ const TrackOrder = () => {
     }
   };
 
-  const handleRequestReplacement = async () => {
+  const openExchangeDialog = async () => {
     if (!order) return;
-    setSubmittingReplacement(true);
+    const item = order.order_items[0];
+    setExchangeSize('');
+    setExchangeColor('');
+    setExchangeReason('');
+    setVariantOptions({ sizes: [], colors: [] });
+    setExchangeDialogOpen(true);
+    if (!item?.product_id) return;
+    setLoadingVariants(true);
     try {
-      const { data, error } = await supabase.functions.invoke('request-replacement', {
-        body: { orderId: order.id },
+      const { data } = await supabase
+        .from('products')
+        .select('sizes, colors')
+        .eq('id', item.product_id)
+        .maybeSingle();
+      if (data) {
+        setVariantOptions({
+          sizes: (data.sizes as string[]) || [],
+          colors: ((data.colors as any[]) || []).map((c: any) => ({ name: c.name, hex: c.hex })),
+        });
+      }
+    } catch { /* silent */ }
+    finally { setLoadingVariants(false); }
+  };
+
+  const handleRequestExchange = async () => {
+    if (!order) return;
+    const item = order.order_items[0];
+    if (!exchangeSize && !exchangeColor) {
+      toast.error('Please pick a new size or color');
+      return;
+    }
+    if (exchangeReason.trim().length < 5) {
+      toast.error('Please provide a reason (at least 5 characters)');
+      return;
+    }
+    setSubmittingExchange(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('request-exchange', {
+        body: {
+          orderId: order.id,
+          orderItemId: item?.id,
+          exchangeSize: exchangeSize || undefined,
+          exchangeColor: exchangeColor || undefined,
+          reason: exchangeReason.trim(),
+        },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast.success('Replacement request submitted successfully');
-      setOrder({ ...order, status: 'replacement_requested' });
+      toast.success('Exchange request submitted successfully');
+      setOrder({ ...order, status: 'return_requested' });
+      setExchangeDialogOpen(false);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to submit replacement request');
+      toast.error(err.message || 'Failed to submit exchange request');
     } finally {
-      setSubmittingReplacement(false);
+      setSubmittingExchange(false);
     }
   };
+
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/auth');
