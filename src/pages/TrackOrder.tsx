@@ -808,6 +808,135 @@ const TrackOrder = () => {
           </DialogContent>
         </Dialog>
 
+        {/* Exchange dialog */}
+        <Dialog
+          open={exchangeDialogOpen}
+          onOpenChange={(open) => {
+            setExchangeDialogOpen(open);
+            if (!open) {
+              setExchangeSize('');
+              setExchangeColor('');
+              setExchangeReason('');
+            }
+          }}
+        >
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Request Exchange</DialogTitle>
+              <DialogDescription>
+                Same product, different size or color. Subject to stock availability.
+              </DialogDescription>
+            </DialogHeader>
+
+            {order && (
+              <div className="text-xs text-muted-foreground rounded-lg bg-secondary/40 p-3">
+                Original: <span className="text-foreground font-medium">{order.order_items[0]?.product_name}</span>
+                {order.order_items[0]?.size && <> · Size {order.order_items[0].size}</>}
+                {order.order_items[0]?.color && <> · Color {order.order_items[0].color}</>}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">New size</label>
+                {loadingVariants ? (
+                  <div className="text-xs text-muted-foreground">Loading options…</div>
+                ) : variantOptions.sizes.length === 0 ? (
+                  <div className="text-xs text-muted-foreground">No size options available</div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {variantOptions.sizes.map((s) => {
+                      const isOriginal = (order?.order_items[0]?.size || '').toLowerCase() === s.toLowerCase();
+                      const selected = exchangeSize === s;
+                      return (
+                        <button
+                          key={s}
+                          type="button"
+                          disabled={isOriginal}
+                          onClick={() => setExchangeSize(selected ? '' : s)}
+                          className={`min-w-[3rem] px-3 h-10 rounded-full text-sm border transition-colors ${
+                            selected
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : isOriginal
+                              ? 'opacity-40 cursor-not-allowed border-border'
+                              : 'border-border hover:border-primary'
+                          }`}
+                        >
+                          {s}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">New color</label>
+                {variantOptions.colors.length === 0 ? (
+                  <div className="text-xs text-muted-foreground">No color options available</div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {variantOptions.colors.map((c) => {
+                      const isOriginal = (order?.order_items[0]?.color || '').toLowerCase() === c.name.toLowerCase();
+                      const selected = exchangeColor === c.name;
+                      return (
+                        <button
+                          key={c.name}
+                          type="button"
+                          disabled={isOriginal}
+                          onClick={() => setExchangeColor(selected ? '' : c.name)}
+                          className={`flex items-center gap-2 h-10 px-3 rounded-full text-sm border transition-colors ${
+                            selected
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : isOriginal
+                              ? 'opacity-40 cursor-not-allowed border-border'
+                              : 'border-border hover:border-primary'
+                          }`}
+                        >
+                          <span
+                            className="inline-block w-4 h-4 rounded-full border border-border"
+                            style={{ backgroundColor: c.hex }}
+                          />
+                          {c.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Reason</label>
+                <Textarea
+                  placeholder="Wrong size, color didn't match expectations..."
+                  value={exchangeReason}
+                  onChange={(e) => setExchangeReason(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setExchangeDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleRequestExchange}
+                disabled={
+                  submittingExchange ||
+                  (!exchangeSize && !exchangeColor) ||
+                  exchangeReason.trim().length < 5
+                }
+              >
+                {submittingExchange ? <Loader2 size={14} className="animate-spin mr-1" /> : null}
+                Submit Exchange
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+
+
         {/* Help dialog */}
         <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
           <DialogContent>
