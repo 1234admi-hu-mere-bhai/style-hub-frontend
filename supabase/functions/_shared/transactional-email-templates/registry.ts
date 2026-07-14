@@ -17,6 +17,8 @@ import { template as refundProcessed } from './refund-processed.tsx'
 import { template as staffInvite } from './staff-invite.tsx'
 import { template as contactSupportNotification } from './contact-support-notification.tsx'
 import { template as contactSupportAck } from './contact-support-ack.tsx'
+import { template as returnExchangeRequested } from './return-exchange-requested.tsx'
+import { template as returnStatusUpdate } from './return-status-update.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'order-placed': orderPlaced,
@@ -27,4 +29,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'staff-invite': staffInvite,
   'contact-support-notification': contactSupportNotification,
   'contact-support-ack': contactSupportAck,
+  'return-exchange-requested': returnExchangeRequested,
+  'return-status-update': returnStatusUpdate,
 }
