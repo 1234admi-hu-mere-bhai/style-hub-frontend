@@ -31,6 +31,7 @@ import AdminPushCampaigns from '@/components/admin/AdminPushCampaigns';
 import AdminStaff from '@/components/admin/AdminStaff';
 import AdminPendingApprovals from '@/components/admin/AdminPendingApprovals';
 import FabricToShirtStudio from '@/components/admin/FabricToShirtStudio';
+import AdminBankOffers from '@/components/admin/AdminBankOffers';
 
 interface Analytics {
   totalOrders: number;
