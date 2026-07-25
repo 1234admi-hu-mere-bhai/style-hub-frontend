@@ -19,6 +19,7 @@ import { getProductReviews } from '@/data/reviews';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useCurrency } from '@/hooks/useCurrency';
+import { useActiveFlashSale } from '@/hooks/useFlashSales';
 import { Button } from '@/components/ui/button';
 
 import { toast } from 'sonner';
