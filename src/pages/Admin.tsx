@@ -61,6 +61,7 @@ const TABS = [
   { key: 'inventory', label: 'Inventory', icon: Warehouse, ownerOnly: false },
   { key: 'analytics', label: 'Analytics', icon: BarChart3, ownerOnly: false },
   { key: 'coupons', label: 'Coupons', icon: Tag, ownerOnly: false },
+  { key: 'bank-offers', label: 'Bank Offers', icon: CreditCard, ownerOnly: false },
   { key: 'flash-sales', label: 'Flash Sales', icon: Zap, ownerOnly: false },
   { key: 'reviews', label: 'Reviews', icon: MessageSquare, ownerOnly: false },
   { key: 'notifications', label: 'Notifications', icon: Bell, ownerOnly: false },
@@ -397,6 +398,7 @@ const Admin = () => {
             />
           )}
           {currentTab === 'coupons' && <AdminCoupons />}
+          {currentTab === 'bank-offers' && <AdminBankOffers />}
           {currentTab === 'flash-sales' && <AdminFlashSales />}
           {currentTab === 'reviews' && <AdminReviews />}
           {currentTab === 'notifications' && <AdminNotifications />}
