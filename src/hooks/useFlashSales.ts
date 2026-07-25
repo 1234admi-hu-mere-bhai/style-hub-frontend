@@ -41,6 +41,7 @@ export const useActiveFlashSale = () => {
           is_active: sale.is_active,
           start_time: sale.start_time,
           end_time: sale.end_time,
+          campaign_label: sale.campaign_label ?? null,
         });
       }
       setLoading(false);
