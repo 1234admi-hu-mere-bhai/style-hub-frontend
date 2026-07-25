@@ -15,6 +15,7 @@ interface FlashSale {
   id: string;
   title: string;
   description: string;
+  campaign_label?: string | null;
   discount_percentage: number;
   product_ids: string[];
   banner_color: string;
