@@ -95,6 +95,7 @@ const AdminFlashSales = () => {
     setEditingSale(sale);
     setTitle(sale.title);
     setDescription(sale.description);
+    setCampaignLabel(sale.campaign_label || '');
     setDiscountPct(sale.discount_percentage);
     setSelectedProductIds(sale.product_ids);
     setStartTime(toLocalDatetime(new Date(sale.start_time)));
