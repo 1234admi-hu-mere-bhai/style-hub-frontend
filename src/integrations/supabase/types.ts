@@ -62,12 +62,14 @@ export type Database = {
       bank_offers: {
         Row: {
           applies_to: string
+          badge_text: string | null
           banks: string[]
           created_at: string
           description: string | null
           discount_type: string
           discount_value: number
           end_time: string | null
+          footer_text: string | null
           id: string
           is_active: boolean
           max_discount: number | null
@@ -79,12 +81,14 @@ export type Database = {
         }
         Insert: {
           applies_to?: string
+          badge_text?: string | null
           banks?: string[]
           created_at?: string
           description?: string | null
           discount_type?: string
           discount_value?: number
           end_time?: string | null
+          footer_text?: string | null
           id?: string
           is_active?: boolean
           max_discount?: number | null
@@ -96,12 +100,14 @@ export type Database = {
         }
         Update: {
           applies_to?: string
+          badge_text?: string | null
           banks?: string[]
           created_at?: string
           description?: string | null
           discount_type?: string
           discount_value?: number
           end_time?: string | null
+          footer_text?: string | null
           id?: string
           is_active?: boolean
           max_discount?: number | null
@@ -338,6 +344,7 @@ export type Database = {
       flash_sales: {
         Row: {
           banner_color: string | null
+          campaign_label: string | null
           created_at: string
           description: string | null
           discount_percentage: number
@@ -351,6 +358,7 @@ export type Database = {
         }
         Insert: {
           banner_color?: string | null
+          campaign_label?: string | null
           created_at?: string
           description?: string | null
           discount_percentage?: number
@@ -364,6 +372,7 @@ export type Database = {
         }
         Update: {
           banner_color?: string | null
+          campaign_label?: string | null
           created_at?: string
           description?: string | null
           discount_percentage?: number
