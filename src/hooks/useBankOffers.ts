@@ -12,6 +12,8 @@ export interface BankOffer {
   min_order: number;
   applies_to: 'all' | 'prepaid' | 'cod';
   priority: number;
+  badge_text?: string | null;
+  footer_text?: string | null;
 }
 
 export const computeBankDiscount = (offer: BankOffer, basePrice: number): number => {
