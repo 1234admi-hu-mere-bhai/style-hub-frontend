@@ -15,6 +15,7 @@ interface FlashSale {
   id: string;
   title: string;
   description: string;
+  campaign_label?: string | null;
   discount_percentage: number;
   product_ids: string[];
   banner_color: string;
@@ -42,6 +43,7 @@ const AdminFlashSales = () => {
   // Form state
   const [title, setTitle] = usePersistedState<string>('admin:flash:title', '');
   const [description, setDescription] = usePersistedState<string>('admin:flash:description', '');
+  const [campaignLabel, setCampaignLabel] = usePersistedState<string>('admin:flash:campaignLabel', '');
   const [discountPct, setDiscountPct] = usePersistedState<number>('admin:flash:discountPct', 20);
   const [selectedProductIds, setSelectedProductIds] = usePersistedState<string[]>('admin:flash:productIds', []);
   const [startTime, setStartTime] = usePersistedState<string>('admin:flash:startTime', '');
@@ -93,6 +95,7 @@ const AdminFlashSales = () => {
     setEditingSale(sale);
     setTitle(sale.title);
     setDescription(sale.description);
+    setCampaignLabel(sale.campaign_label || '');
     setDiscountPct(sale.discount_percentage);
     setSelectedProductIds(sale.product_ids);
     setStartTime(toLocalDatetime(new Date(sale.start_time)));
@@ -115,6 +118,7 @@ const AdminFlashSales = () => {
     const record: any = {
       title: title.trim(),
       description: description.trim(),
+      campaign_label: campaignLabel.trim() || null,
       discount_percentage: discountPct,
       product_ids: selectedProductIds,
       start_time: new Date(startTime).toISOString(),
@@ -251,6 +255,10 @@ const AdminFlashSales = () => {
             <div className="space-y-1.5">
               <label className="text-sm font-medium">Description</label>
               <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional subtitle" />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Campaign label (shown under price)</label>
+              <Input value={campaignLabel} onChange={(e) => setCampaignLabel(e.target.value)} placeholder="e.g. Monsoon Carnival Price" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">

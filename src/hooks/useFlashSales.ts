@@ -11,6 +11,7 @@ export interface FlashSale {
   is_active: boolean;
   start_time: string;
   end_time: string;
+  campaign_label?: string | null;
 }
 
 export const useActiveFlashSale = () => {
@@ -40,6 +41,7 @@ export const useActiveFlashSale = () => {
           is_active: sale.is_active,
           start_time: sale.start_time,
           end_time: sale.end_time,
+          campaign_label: sale.campaign_label ?? null,
         });
       }
       setLoading(false);

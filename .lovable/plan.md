@@ -1,92 +1,58 @@
+## What we're building
 
-# Plan — Exchange flow + Free-shipping progress bar
+Match the Myntra reference for the price + Mega Deal block, and expose the pieces that need admin control.
 
-Two focused features. Both keep business logic minimal and reuse existing infra.
+### 1. Price line above the Mega Deal card (`src/pages/ProductDetail.tsx`)
 
----
+Replace the current price row with a Myntra-style line:
 
-## 1. Free-shipping progress bar (Cart Drawer)
+- `MRP ₹2,499` — grey, struck-through
+- `₹876` — big, bold, black
+- Pink pill badge `65% OFF!` — high-contrast, uppercase
+- A small orange/red **campaign label** below (e.g. `Deal of the Day`) — only shown when a campaign is active for that product
 
-Replace the current static "Add ₹X more for free shipping" line with an animated progress bar that reflects the real shipping rules from `src/lib/shipping.ts` (₹999 threshold, WB flat ₹20 handling, ₹1 test items always free).
+Percentage comes from the existing `product.originalPrice` vs `product.price` (already computed), so no data change for the % badge itself.
 
-**UI (in `src/components/CartDrawer.tsx`, above the Subtotal row):**
-- Track: `h-2 bg-secondary rounded-full`, fill: gradient primary→teal, animated width transition.
-- Copy above the bar:
-  - Free unlocked → `🎉 Free shipping unlocked!` (green)
-  - Progressing → `Add {formatPrice(remaining)} more for FREE shipping` (primary)
-  - Test item present → `🎁 Free shipping on this order`
-- Small "West Bengal: ₹20 handling still applies" note stays where it is.
-- Uses `FREE_SHIPPING_THRESHOLD` from `src/lib/shipping.ts` (single source of truth — no hardcoding 999).
+### 2. Mega Deal card (`src/components/BankOffersCard.tsx`)
 
-**No business-logic changes** — this is pure presentation. Cart totals, checkout, and shipping calc stay untouched.
+Rebuild the card to match the reference layout:
 
----
+- Left: a small **badge** (rounded "MEGA DEAL" tag styled from tokens, no external asset)
+- Middle: `Get at ₹791` in bold, with a subtle underline accent
+- Right: green pill `Extra ₹85 Off`
+- Bottom bar: `With Bank Offer` on the left, `Details ›` link on the right that expands the current offer list (kept but restyled to Myntra density)
 
-## 2. Exchange flow (mirrors Return)
+The final "Get at" price = current product price − best-applicable bank discount. That math already exists in `useBankOffers.ts`.
 
-Add a customer-initiated **exchange** request for a different **size or color** of the same product, reusing the `returns` table and lifecycle. Refund logic is skipped — the outbound replacement is dispatched once the returned item is picked up.
+### 3. New "Campaign label" concept (small addition)
 
-### Schema (migration)
-Extend the existing `returns` table with 3 nullable columns:
-- `request_type text not null default 'return'` — `'return' | 'exchange'`
-- `exchange_size text`
-- `exchange_color text`
+To power the `Deal of the Day` line, add a new column to the existing `flash_sales` table:
 
-Add a partial CHECK trigger: when `request_type='exchange'`, at least one of `exchange_size`/`exchange_color` must be set and must differ from the original order item.
+- `campaign_label text` (e.g. "Deal of the Day", "Limited Drop", "Weekend Steal")
 
-### Edge function: `request-exchange`
-Cloned from `request-return`, with these differences:
-- Accepts `{ orderId, orderItemId, exchangeSize?, exchangeColor?, reasonCode, reasonDetails }`.
-- Validates: order is `delivered`, within 7-day window (reuse existing constant), item belongs to order, at least one of size/color differs from the original.
-- Verifies the target variant exists and is `in_stock` in `products` (reads `sizes`/`colors` arrays).
-- Inserts `returns` row with `request_type='exchange'`, `allowed_refund_methods=[]` (no refund path), `status='return_requested'`.
-- Pushes notification: `🔁 Exchange requested for ••••XXXX`.
+When a product is inside an active flash sale that has a `campaign_label`, the label renders under the price. If empty, nothing renders. No new table, no new fetch — reuses the flash-sale lookup that already runs on the product page.
 
-### Admin (`AdminReturns.tsx`)
-- New "Type" column badge: **Return** / **Exchange** (teal).
-- Exchange rows show `Requested: Size L → M` inline.
-- Approve → sets `status='return_approved'` (same as return).
-- On `picked_up` status change:
-  - **Return** path: existing `payu-refund` runs (unchanged).
-  - **Exchange** path: skip refund entirely; auto-invoke a small `dispatch-exchange` helper that:
-    1. Creates a new `orders` row cloned from original, with `parent_order_id`, `is_exchange=true`, `total=0`, `payment_status='exchange'`.
-    2. Overrides the single `order_items` row with new size/color.
-    3. Calls existing Delhivery auto-shipment shared helper (`_shared/auto-shipment.ts`) to generate AWB.
-    4. Pushes: `📦 Exchange shipped — ••••XXXX`.
-  - New columns on `orders`: `parent_order_id uuid`, `is_exchange boolean default false` (added in the same migration).
+## Admin panel changes
 
-### Customer UI
-- **`ReturnExchange.tsx`** (existing page): add a top toggle **Return / Exchange**. Exchange mode shows size + color selectors (populated from the order item's product variants) and hides refund-method copy.
-- **`OrderHistory.tsx` / `TrackOrder.tsx`**: existing "Request Replacement" button becomes "Request Return or Exchange" and routes to the same page with a query param.
-- Status timeline shows: `Exchange Requested → Approved → Picked Up → Exchange Shipped → Delivered`.
+**a. Flash Sales module (`src/components/admin/AdminFlashSales.tsx`)**
+- New text field **Campaign label** in the create/edit form ("Deal of the Day" default), stored in the new `campaign_label` column.
+- Column shown in the flash-sale list so admins can see which label is live.
 
-### Emails / notifications
-- Reuse `order-shipped` template for the exchange dispatch (subject prefixed `Exchange:`).
-- Reuse push categories `orders`; dedupe keys `exchange-req-<id>`, `exchange-ship-<id>`.
+**b. Bank Offers module (`src/components/admin/AdminBankOffers.tsx`)**
+- Add **Edit** (currently only insert) so existing rows can be corrected without deleting.
+- Add **Badge text** field (defaults to `MEGA DEAL`) so the pill on the card can be renamed per offer without a code change.
+- Add **Footer text** field (defaults to `With Bank Offer`) for the bottom-left caption.
+- Add **Schedule fields** (`start_time`, `end_time`) — columns already exist, just not exposed in the UI.
+- Add a **live preview** of the finished card at the bottom of the form so admins see exactly what shoppers will see.
 
-### Out of scope (locked)
-- Exchange to a **different product** — same SKU only.
-- Price-difference collection — exchanges are same-variant swaps, no payment top-up.
-- COD exchanges — n/a (prepaid-only).
+`badge_text` and `footer_text` are two new nullable text columns on `bank_offers` (default kept in code, so old rows keep working).
 
----
+## Files touched
 
-## Ship order
+- `src/pages/ProductDetail.tsx` — new price line with MRP strike-through, bold offer price, pink `% OFF!` pill, campaign label.
+- `src/components/BankOffersCard.tsx` — Myntra-style Mega Deal card layout.
+- `src/components/admin/AdminBankOffers.tsx` — edit mode, badge/footer text, schedule fields, live preview.
+- `src/components/admin/AdminFlashSales.tsx` — campaign label field + list column.
+- One migration: add `campaign_label` to `flash_sales`, add `badge_text` + `footer_text` to `bank_offers`.
 
-1. Cart Drawer progress bar (single-file frontend change) — 1 pass.
-2. Migration for `returns` + `orders` columns.
-3. `request-exchange` edge function.
-4. `ReturnExchange.tsx` toggle UI.
-5. Admin badge + dispatch helper.
-6. Update `OrderHistory` / `TrackOrder` entry points.
-
----
-
-## Technical notes
-
-- Files touched: `src/components/CartDrawer.tsx`, `src/pages/ReturnExchange.tsx`, `src/components/admin/AdminReturns.tsx`, `src/pages/OrderHistory.tsx`, `src/pages/TrackOrder.tsx`, `supabase/functions/request-exchange/index.ts` (new), `supabase/functions/dispatch-exchange/index.ts` (new), one migration.
-- Reuses: `returns` table, `_shared/auto-shipment.ts`, `send-push`, existing 7-day window constant, push categories, `formatPrice`, `FREE_SHIPPING_THRESHOLD`.
-- No new secrets, no new third-party integrations.
-- Memory update: append an `mem://features/exchange-flow` entry describing the same-variant swap rule.
-
-Approve to implement.
+No new tables, no edge-function changes.

@@ -1,110 +1,107 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Sparkles, BadgePercent, Tag } from 'lucide-react';
-import { useActiveBankOffers, bestOfferFor, computeBankDiscount } from '@/hooks/useBankOffers';
+import { ChevronRight, Tag } from 'lucide-react';
+import { useActiveBankOffers, bestOfferFor, computeBankDiscount, type BankOffer } from '@/hooks/useBankOffers';
 import { useCurrency } from '@/hooks/useCurrency';
 
 interface Props {
   basePrice: number;
+  /** Optional preview override (used by the admin live preview) */
+  previewOffer?: BankOffer;
 }
 
-const BankOffersCard = ({ basePrice }: Props) => {
+export const MegaDealBadge = ({ text }: { text: string }) => (
+  <span className="flex-shrink-0 inline-flex flex-col items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent px-3 py-1.5 leading-[1.05] shadow-sm">
+    {text.split(' ').slice(0, 2).map((w, i) => (
+      <span key={i} className="text-[9px] font-extrabold uppercase tracking-tight text-primary-foreground">
+        {w}
+      </span>
+    ))}
+  </span>
+);
+
+const BankOffersCard = ({ basePrice, previewOffer }: Props) => {
   const { offers, loading } = useActiveBankOffers();
   const { formatPrice } = useCurrency();
   const [open, setOpen] = useState(false);
 
-  if (loading || offers.length === 0) return null;
+  const list = previewOffer ? [previewOffer] : offers;
+  if (!previewOffer && loading) return null;
+  if (list.length === 0) return null;
 
-  const best = bestOfferFor(offers, basePrice);
+  const best = bestOfferFor(list, basePrice);
   if (!best) return null;
 
   const finalPrice = Math.max(0, basePrice - best.discount);
+  const badgeText = best.offer.badge_text?.trim() || 'MEGA DEAL';
+  const footerText = best.offer.footer_text?.trim() || 'With Bank Offer';
 
   return (
-    <div className="rounded-xl border border-primary/30 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 overflow-hidden">
-      {/* Mega Deal header row */}
-      <div className="flex items-center justify-between px-4 py-3 bg-primary/10 border-b border-primary/20">
-        <div className="flex items-center gap-2">
-          <Sparkles size={16} className="text-primary" />
-          <span className="text-xs font-bold uppercase tracking-wider text-primary">
-            {best.offer.title}
-          </span>
+    <div className="rounded-2xl border border-border bg-secondary/30 overflow-hidden">
+      {/* Top row: badge + get-at price + extra off pill */}
+      <div className="flex items-center gap-3 px-3 py-3">
+        <MegaDealBadge text={badgeText} />
+        <div className="min-w-0 flex-1">
+          <p className="text-lg font-bold text-foreground leading-tight">
+            Get at {formatPrice(finalPrice)}
+          </p>
+          <span className="mt-0.5 block h-[3px] w-10 rounded-full bg-accent" />
         </div>
-        <span className="text-[11px] font-semibold text-success">
-          SAVE {formatPrice(best.discount)}
+        <span className="flex-shrink-0 rounded-lg bg-success px-3 py-2 text-xs font-bold text-success-foreground">
+          Extra {formatPrice(best.discount)} Off
         </span>
       </div>
 
-      {/* Price line */}
-      <div className="px-4 py-3 flex items-center justify-between gap-3">
-        <div>
-          <p className="text-xs text-muted-foreground">Get at</p>
-          <p className="text-2xl font-bold text-foreground">{formatPrice(finalPrice)}</p>
-        </div>
-        <div className="text-right">
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground">with Bank Offer</p>
-          <p className="text-xs font-medium text-primary">
-            Extra {formatPrice(best.discount)} Off
-          </p>
-        </div>
-      </div>
-
-      {/* Toggle button */}
+      {/* Bottom bar */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-2.5 border-t border-primary/20 text-xs font-semibold hover:bg-primary/5 transition-colors"
+        className="w-full flex items-center justify-between gap-2 px-3 py-2.5 border-t border-border bg-card hover:bg-secondary/50 transition-colors"
       >
-        <span className="flex items-center gap-2">
-          <BadgePercent size={14} className="text-primary" />
-          {offers.length} offer{offers.length > 1 ? 's' : ''} available
+        <span className="flex items-center gap-2 text-sm text-foreground">
+          <Tag size={14} className="text-primary" />
+          {footerText}
         </span>
-        {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+        <span className="flex items-center gap-0.5 text-sm font-semibold text-primary">
+          Details
+          <ChevronRight size={15} className={`transition-transform ${open ? 'rotate-90' : ''}`} />
+        </span>
       </button>
 
       {open && (
-        <div className="px-4 pb-4 space-y-2.5">
-          {offers.map((o) => {
+        <div className="px-3 pb-3 pt-2 space-y-2 bg-card border-t border-border">
+          {list.map((o) => {
             const disc = computeBankDiscount(o, basePrice);
             const eligible = disc > 0;
             return (
               <div
                 key={o.id}
-                className={`rounded-lg border p-3 ${
-                  eligible ? 'border-border bg-card' : 'border-dashed border-border/60 bg-muted/30'
+                className={`rounded-xl border p-3 ${
+                  eligible ? 'border-border bg-secondary/30' : 'border-dashed border-border/60 bg-muted/30'
                 }`}
               >
-                <div className="flex items-start gap-2">
-                  <Tag size={14} className="text-primary mt-0.5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground">
-                      {o.discount_type === 'percent'
-                        ? `${o.discount_value}% off`
-                        : `Flat ${formatPrice(Number(o.discount_value))} off`}
-                      {o.max_discount ? ` up to ${formatPrice(Number(o.max_discount))}` : ''}
-                    </p>
-                    {o.description && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{o.description}</p>
-                    )}
-                    {o.banks.length > 0 && (
-                      <p className="text-[11px] text-muted-foreground mt-1">
-                        On: {o.banks.join(', ')}
-                      </p>
-                    )}
-                    <div className="flex flex-wrap items-center gap-2 mt-1.5 text-[11px]">
-                      {o.min_order > 0 && (
-                        <span className="text-muted-foreground">Min order {formatPrice(Number(o.min_order))}</span>
-                      )}
-                      {o.applies_to !== 'all' && (
-                        <span className="text-muted-foreground uppercase tracking-wider">
-                          {o.applies_to} only
-                        </span>
-                      )}
-                      {eligible ? (
-                        <span className="text-success font-medium">You save {formatPrice(disc)}</span>
-                      ) : (
-                        <span className="text-muted-foreground italic">Not applicable on this item</span>
-                      )}
-                    </div>
-                  </div>
+                <p className="text-sm font-semibold text-foreground">
+                  {o.discount_type === 'percent'
+                    ? `${o.discount_value}% off`
+                    : `Flat ${formatPrice(Number(o.discount_value))} off`}
+                  {o.max_discount ? ` up to ${formatPrice(Number(o.max_discount))}` : ''}
+                </p>
+                {o.description && (
+                  <p className="text-xs text-muted-foreground mt-0.5">{o.description}</p>
+                )}
+                {o.banks.length > 0 && (
+                  <p className="text-[11px] text-muted-foreground mt-1">On: {o.banks.join(', ')}</p>
+                )}
+                <div className="flex flex-wrap items-center gap-2 mt-1.5 text-[11px]">
+                  {o.min_order > 0 && (
+                    <span className="text-muted-foreground">Min order {formatPrice(Number(o.min_order))}</span>
+                  )}
+                  {o.applies_to !== 'all' && (
+                    <span className="text-muted-foreground uppercase tracking-wider">{o.applies_to} only</span>
+                  )}
+                  {eligible ? (
+                    <span className="text-success font-medium">You save {formatPrice(disc)}</span>
+                  ) : (
+                    <span className="text-muted-foreground italic">Not applicable on this item</span>
+                  )}
                 </div>
               </div>
             );

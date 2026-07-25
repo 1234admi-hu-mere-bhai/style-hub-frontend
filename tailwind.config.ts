@@ -73,7 +73,11 @@ export default {
         charcoal: "hsl(var(--charcoal))",
         "warm-gray": "hsl(var(--warm-gray))",
         gold: "hsl(var(--gold))",
-        success: "hsl(var(--success))",
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        deal: "hsl(var(--deal))",
         mint: "hsl(var(--mint))",
       },
       borderRadius: {
