@@ -357,15 +357,25 @@ const ProductDetail = () => {
 
             <ProductStatsCard productId={product.id} />
 
-            <div className="flex items-baseline gap-4">
-              <span className="text-3xl font-bold">{formatPrice(product.price)}</span>
-              {product.originalPrice && (
-                <>
-                  <span className="text-xl text-muted-foreground line-through">{formatPrice(product.originalPrice)}</span>
-                  <span className="text-success font-semibold">{product.discount}% OFF</span>
-                </>
+            <div>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                {product.originalPrice && (
+                  <span className="text-base text-muted-foreground line-through">
+                    MRP {formatPrice(product.originalPrice)}
+                  </span>
+                )}
+                <span className="text-3xl font-bold text-foreground">{formatPrice(product.price)}</span>
+                {product.originalPrice && !!product.discount && (
+                  <span className="rounded-md bg-primary px-2 py-1 text-xs font-extrabold uppercase tracking-wide text-primary-foreground">
+                    {product.discount}% OFF!
+                  </span>
+                )}
+              </div>
+              {campaignLabel && (
+                <p className="mt-1 text-sm font-bold text-deal">{campaignLabel}</p>
               )}
             </div>
+
 
             <BankOffersCard basePrice={product.price} />
 
