@@ -43,6 +43,7 @@ const AdminFlashSales = () => {
   // Form state
   const [title, setTitle] = usePersistedState<string>('admin:flash:title', '');
   const [description, setDescription] = usePersistedState<string>('admin:flash:description', '');
+  const [campaignLabel, setCampaignLabel] = usePersistedState<string>('admin:flash:campaignLabel', '');
   const [discountPct, setDiscountPct] = usePersistedState<number>('admin:flash:discountPct', 20);
   const [selectedProductIds, setSelectedProductIds] = usePersistedState<string[]>('admin:flash:productIds', []);
   const [startTime, setStartTime] = usePersistedState<string>('admin:flash:startTime', '');
