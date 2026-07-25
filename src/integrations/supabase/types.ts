@@ -59,6 +59,60 @@ export type Database = {
         }
         Relationships: []
       }
+      bank_offers: {
+        Row: {
+          applies_to: string
+          banks: string[]
+          created_at: string
+          description: string | null
+          discount_type: string
+          discount_value: number
+          end_time: string | null
+          id: string
+          is_active: boolean
+          max_discount: number | null
+          min_order: number
+          priority: number
+          start_time: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          applies_to?: string
+          banks?: string[]
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          end_time?: string | null
+          id?: string
+          is_active?: boolean
+          max_discount?: number | null
+          min_order?: number
+          priority?: number
+          start_time?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          applies_to?: string
+          banks?: string[]
+          created_at?: string
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          end_time?: string | null
+          id?: string
+          is_active?: boolean
+          max_discount?: number | null
+          min_order?: number
+          priority?: number
+          start_time?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author: string | null
