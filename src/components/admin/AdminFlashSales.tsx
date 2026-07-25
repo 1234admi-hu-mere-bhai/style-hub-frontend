@@ -118,6 +118,7 @@ const AdminFlashSales = () => {
     const record: any = {
       title: title.trim(),
       description: description.trim(),
+      campaign_label: campaignLabel.trim() || null,
       discount_percentage: discountPct,
       product_ids: selectedProductIds,
       start_time: new Date(startTime).toISOString(),
