@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Heart, Minus, Plus, Star, Truck, RefreshCw, Shield, Ruler, Loader2, ChevronRight, Send } from 'lucide-react';
+import { Heart, Minus, Plus, Star, Truck, RefreshCw, Shield, Ruler, Loader2, ChevronRight, Send, RotateCw } from 'lucide-react';
+import BankOffersCard from '@/components/BankOffersCard';
 import Header from '@/components/Header';
 import ProductStatsCard from '@/components/ProductStatsCard';
 import Footer from '@/components/Footer';
