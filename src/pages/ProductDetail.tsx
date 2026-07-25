@@ -332,13 +332,46 @@ const ProductDetail = () => {
           </div>
 
           <div className="space-y-6">
-            <div>
-              <h1 className="font-serif text-3xl lg:text-4xl font-bold">{product.name}</h1>
+            <div className="space-y-2">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary">MUFFIGOUT</p>
+                  <h1 className="font-serif text-2xl lg:text-4xl font-bold mt-1 leading-tight">{product.name}</h1>
+                </div>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  {product.rotationFrames && product.rotationFrames.length > 0 && (
+                    <button
+                      onClick={() => {
+                        const idx = galleryItems.findIndex((g) => g.type === 'rotation');
+                        if (idx >= 0 && scrollRef.current) {
+                          scrollRef.current.scrollTo({ left: idx * scrollRef.current.clientWidth, behavior: 'smooth' });
+                        }
+                      }}
+                      aria-label="360° view"
+                      className="w-9 h-9 rounded-full border border-border bg-card flex items-center justify-center hover:bg-secondary transition-colors"
+                    >
+                      <RotateCw size={16} className="text-foreground" />
+                    </button>
+                  )}
+                  <button
+                    onClick={handleWishlist}
+                    aria-label="Add to wishlist"
+                    className="w-9 h-9 rounded-full border border-border bg-card flex items-center justify-center hover:bg-secondary transition-colors"
+                  >
+                    <Heart size={16} className={inWishlist ? 'fill-primary text-primary' : 'text-foreground'} />
+                  </button>
+                  <button
+                    onClick={handleShare}
+                    aria-label="Share product"
+                    className="w-9 h-9 rounded-full border border-border bg-card flex items-center justify-center hover:bg-secondary transition-colors"
+                  >
+                    <Send size={16} className="text-foreground" />
+                  </button>
+                </div>
+              </div>
             </div>
 
             <ProductStatsCard productId={product.id} />
-
-
 
             <div className="flex items-baseline gap-4">
               <span className="text-3xl font-bold">{formatPrice(product.price)}</span>
@@ -349,6 +382,9 @@ const ProductDetail = () => {
                 </>
               )}
             </div>
+
+            <BankOffersCard basePrice={product.price} />
+
 
             
 
