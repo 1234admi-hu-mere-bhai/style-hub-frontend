@@ -256,6 +256,10 @@ const AdminFlashSales = () => {
               <label className="text-sm font-medium">Description</label>
               <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Optional subtitle" />
             </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Campaign label (shown under price)</label>
+              <Input value={campaignLabel} onChange={(e) => setCampaignLabel(e.target.value)} placeholder="e.g. Monsoon Carnival Price" />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-sm font-medium">Discount %</label>
