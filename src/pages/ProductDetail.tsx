@@ -32,6 +32,11 @@ const ProductDetail = () => {
   const { addToCart, setBuyNowItem, setCartOpen } = useCart();
   const { isInWishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { formatPrice } = useCurrency();
+  const { flashSale } = useActiveFlashSale();
+  const campaignLabel =
+    flashSale && id && flashSale.product_ids.includes(id) && flashSale.campaign_label?.trim()
+      ? flashSale.campaign_label.trim()
+      : null;
 
   const [selectedSize, setSelectedSize] = useState('');
   const [addedToCart, setAddedToCart] = useState(false);
