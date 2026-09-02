@@ -289,7 +289,13 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
         if (s.modelBackUrl) setModelBackUrl(s.modelBackUrl);
         if (s.mannequinUrl) setMannequinUrl(s.mannequinUrl);
         if (s.rotation360Url) setRotation360Url(s.rotation360Url);
-        if (Array.isArray(s.bulkSpec)) setBulkSpec(s.bulkSpec);
+        if (Array.isArray(s.bulkSpec) && s.bulkSpec.length) {
+          setSpecBySize(prev => {
+            const next = { ...prev };
+            for (const it of s.bulkSpec) if (it?.size && it?.url && !next[it.size]) next[it.size] = it.url;
+            return next;
+          });
+        }
         if (s.lifestyleUrl) setLifestyleUrl(s.lifestyleUrl);
       }
     } catch {}
