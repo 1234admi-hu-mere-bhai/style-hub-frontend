@@ -848,35 +848,75 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
       </Dialog>
 
 
-      {/* Bulk spec sheets results */}
-      {bulkSpec.length > 0 && (
-        <Card>
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm">Spec sheets — all sizes ({bulkSpec.length}/{BULK_SPEC_SIZES.length})</Label>
+      {/* Spec sheet per size — switch size to swap the image instantly */}
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <Label className="text-sm">
+              Spec sheet by size ({Object.values(specBySize).filter(Boolean).length}/{ALL_SIZES.length})
+            </Label>
+            {Object.values(specBySize).some(Boolean) && (
               <Button type="button" size="sm" variant="outline" onClick={async () => {
                 const stamp = Date.now();
-                for (const it of bulkSpec) await downloadOne(it.url, `muffigout-spec-${it.size}-${stamp}.png`);
+                for (const size of ALL_SIZES) {
+                  const u = specBySize[size];
+                  if (u) await downloadOne(u, `muffigout-spec-${size}-${stamp}.png`);
+                }
               }}>
                 <Download className="h-3.5 w-3.5 mr-1.5" /> Download all sizes
               </Button>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-              {bulkSpec.map(it => (
-                <div key={it.size} className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Badge>{it.size}</Badge>
-                    <button onClick={() => downloadOne(it.url, `muffigout-spec-${it.size}.png`)} className="text-xs text-primary inline-flex items-center gap-1 hover:underline">
-                      <Download className="h-3 w-3" />
-                    </button>
-                  </div>
-                  <img src={it.url} alt={`Spec ${it.size}`} className="w-full h-auto max-h-[60vh] object-contain rounded-md bg-white border" />
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {ALL_SIZES.map(sz => {
+              const has = !!specBySize[sz];
+              const active = specs.size === sz;
+              return (
+                <button
+                  key={sz}
+                  type="button"
+                  onClick={() => {
+                    const m = SIZE_CHART[sz];
+                    setSpecs(s => m ? { ...s, size: sz, ...m } : { ...s, size: sz });
+                  }}
+                  className={`h-9 min-w-[3.75rem] rounded-full border px-3 text-sm transition-colors ${
+                    active ? 'border-primary bg-primary text-primary-foreground' : 'bg-secondary/40 hover:bg-secondary'
+                  }`}
+                >
+                  {sz}{has ? ' ✓' : ''}
+                </button>
+              );
+            })}
+          </div>
+
+          {specUrl ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Badge>{specs.size} — Chest {specs.chest}″ · Length {specs.length}″</Badge>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => downloadOne(specUrl, `muffigout-spec-${specs.size}.png`)} className="text-xs text-primary inline-flex items-center gap-1 hover:underline">
+                    <Download className="h-3 w-3" /> Download
+                  </button>
+                  <button onClick={() => setSpecBySize(m => { const n = { ...m }; delete n[specs.size]; return n; })} className="text-xs text-muted-foreground hover:underline">
+                    Clear
+                  </button>
                 </div>
-              ))}
+              </div>
+              <img src={specUrl} alt={`Spec sheet ${specs.size}`} className="w-full h-auto max-h-[80vh] object-contain rounded-md bg-white border" />
             </div>
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <div className="rounded-md border border-dashed p-6 text-center space-y-3">
+              <p className="text-sm text-muted-foreground">No spec sheet for size {specs.size} yet.</p>
+              <Button type="button" variant="outline" onClick={() => generate('spec')} disabled={!fabricUrl || generating !== null} className="h-10">
+                {generating === 'spec' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Info className="h-4 w-4 mr-2" />}
+                Generate spec sheet for {specs.size}
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
 
       {/* Results */}
       {(frontUrl || backUrl || specUrl || highlightsUrl || modelUrl || modelBackUrl || lifestyleUrl || mannequinUrl || rotation360Url) && (
