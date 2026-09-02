@@ -138,30 +138,82 @@ function nearestColorName(hex: string): string | null {
 }
 
 
-/** Sample average color from an image URL (best effort, ignores CORS failures). */
+/**
+ * Extract the dominant garment colour from an already-loaded image source.
+ * Samples the central region, drops background (near-white / near-black /
+ * washed-out) pixels, buckets the rest and averages the biggest bucket.
+ * Falls back to a plain average when nearly everything was filtered out
+ * (genuinely white / black fabrics).
+ */
+function dominantHexFromImage(img: HTMLImageElement | ImageBitmap): string | null {
+  try {
+    const S = 64;
+    const c = document.createElement('canvas');
+    c.width = S; c.height = S;
+    const ctx = c.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return null;
+    // Central 70% crop — avoids borders, backdrop and edge shadows.
+    const iw = (img as HTMLImageElement).naturalWidth || (img as ImageBitmap).width;
+    const ih = (img as HTMLImageElement).naturalHeight || (img as ImageBitmap).height;
+    if (!iw || !ih) return null;
+    const cw = iw * 0.7, ch = ih * 0.7;
+    ctx.drawImage(img as any, (iw - cw) / 2, (ih - ch) / 2, cw, ch, 0, 0, S, S);
+    const { data } = ctx.getImageData(0, 0, S, S);
+
+    let ar = 0, ag = 0, ab = 0, an = 0;
+    const buckets = new Map<string, { r: number; g: number; b: number; n: number }>();
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3];
+      if (a < 200) continue;
+      ar += r; ag += g; ab += b; an++;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      const lum = (max + min) / 2;
+      const sat = max === min ? 0 : (max - min) / (255 - Math.abs(max + min - 255) || 1);
+      // Skip likely background / highlight / shadow pixels.
+      if (lum > 238 || lum < 18) continue;
+      if (sat < 0.06 && lum > 200) continue;
+      const key = `${r >> 4}-${g >> 4}-${b >> 4}`;
+      const cur = buckets.get(key);
+      if (cur) { cur.r += r; cur.g += g; cur.b += b; cur.n++; }
+      else buckets.set(key, { r, g, b, n: 1 });
+    }
+    const toHex = (v: number) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0');
+
+    let best: { r: number; g: number; b: number; n: number } | null = null;
+    for (const v of buckets.values()) if (!best || v.n > best.n) best = v;
+    if (best && an > 0 && best.n / an > 0.04) {
+      return '#' + toHex(best.r / best.n) + toHex(best.g / best.n) + toHex(best.b / best.n);
+    }
+    if (an > 0) return '#' + toHex(ar / an) + toHex(ag / an) + toHex(ab / an);
+    return null;
+  } catch { return null; }
+}
+
+/** Detect colour from a locally picked File — no network, so never blocked by CORS. */
+async function sampleHexFromFile(file: File): Promise<string | null> {
+  const url = URL.createObjectURL(file);
+  try {
+    const hex = await new Promise<string | null>((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(dominantHexFromImage(img));
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+    return hex;
+  } finally { URL.revokeObjectURL(url); }
+}
+
+/** Fallback: sample from a remote URL (restored sessions). Ignores CORS failures. */
 async function sampleAverageHex(url: string): Promise<string | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      try {
-        const c = document.createElement('canvas');
-        const s = 32;
-        c.width = s; c.height = s;
-        const ctx = c.getContext('2d');
-        if (!ctx) return resolve(null);
-        ctx.drawImage(img, 0, 0, s, s);
-        const { data } = ctx.getImageData(0, 0, s, s);
-        let r = 0, g = 0, b = 0, n = 0;
-        for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i + 1]; b += data[i + 2]; n++; }
-        const toHex = (v: number) => Math.round(v / n).toString(16).padStart(2, '0');
-        resolve('#' + toHex(r) + toHex(g) + toHex(b));
-      } catch { resolve(null); }
-    };
+    img.onload = () => resolve(dominantHexFromImage(img));
     img.onerror = () => resolve(null);
     img.src = url;
   });
 }
+
 
 export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const [fabricUrl, setFabricUrl] = useState<string>('');
