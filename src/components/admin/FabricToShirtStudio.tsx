@@ -764,7 +764,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
             </div>
             <Button type="button" onClick={generateAllSpecSizes} disabled={!fabricUrl || bulkGenerating || generating !== null} variant="outline" className="w-full h-11">
               {bulkGenerating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
-              Generate spec sheets — all sizes (S → 5XL)
+              Generate spec sheets — all sizes (M → 2XL)
             </Button>
             <Label className="text-xs uppercase tracking-wider text-muted-foreground pt-2 block">Human model (optional)</Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -926,7 +926,6 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
               {[
                 { url: frontUrl, label: 'Front (with collar tag)', key: 'front' },
                 { url: backUrl, label: 'Back', key: 'back' },
-                { url: specUrl, label: 'Spec Sheet', key: 'spec' },
                 { url: highlightsUrl, label: 'Key Highlights', key: 'highlights' },
                 { url: modelUrl, label: 'Model — front', key: 'model' },
                 { url: modelBackUrl, label: 'Model — back', key: 'model-back' },
