@@ -226,7 +226,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
   const [modelBackUrl, setModelBackUrl] = useState<string>('');
   const [mannequinUrl, setMannequinUrl] = useState<string>('');
   const [rotation360Url, setRotation360Url] = useState<string>('');
-  const [bulkSpec, setBulkSpec] = useState<{ size: string; url: string }[]>([]);
+  const [bulkGenerating2, setBulkGenerating2] = useState(false); // reserved
   const [bulkGenerating, setBulkGenerating] = useState(false);
   const [pose, setPose] = useState<Pose>('sitting');
   const [userGeminiKey, setUserGeminiKey] = useState<string>(() => {
