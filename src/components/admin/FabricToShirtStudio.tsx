@@ -248,6 +248,8 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     occasion: 'Casual',
     collar: 'Spread',
   });
+  /** Spec-sheet image for the currently selected size. */
+  const specUrl = specBySize[specs.size] || '';
   const fabricInput = useRef<HTMLInputElement>(null);
   const tagInput = useRef<HTMLInputElement>(null);
   const storageKey = `fabric-studio:${productId || 'global'}`;
