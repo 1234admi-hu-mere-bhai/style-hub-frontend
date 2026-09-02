@@ -58,7 +58,7 @@ const Products = () => {
   });
   const [gridCols, setGridCols] = useState<2 | 3 | 4>(3);
 
-  const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const sizes = ['M', 'L', 'XL', '2XL'];
   const colors = [
     { name: 'Black', hex: '#1a1a1a' },
     { name: 'White', hex: '#ffffff' },
