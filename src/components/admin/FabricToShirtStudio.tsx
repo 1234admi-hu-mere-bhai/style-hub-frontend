@@ -282,7 +282,8 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
         if (s.pose) setPose(s.pose);
         if (s.frontUrl) setFrontUrl(s.frontUrl);
         if (s.backUrl) setBackUrl(s.backUrl);
-        if (s.specUrl) setSpecUrl(s.specUrl);
+        if (s.specBySize && typeof s.specBySize === 'object') setSpecBySize(s.specBySize);
+        else if (s.specUrl) setSpecBySize({ [s.specs?.size || 'M']: s.specUrl });
         if (s.highlightsUrl) setHighlightsUrl(s.highlightsUrl);
         if (s.modelUrl) setModelUrl(s.modelUrl);
         if (s.modelBackUrl) setModelBackUrl(s.modelBackUrl);
