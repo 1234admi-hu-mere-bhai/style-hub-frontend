@@ -1,47 +1,24 @@
-# Options for a Backend That Never Pauses
+# Fabric Studio: reliable automatic color detection on upload
 
-Current state, confirmed this turn: your hosted database and authentication service are **paused**, so every login and data request fails before it reaches your code. Nothing in the app is broken.
+## Goal
+When an admin uploads a fabric swatch (or a shirt photo) in Fabric Studio, the "Lock shirt color" field should fill in by itself with the correct garment color and its readable name — every time, immediately.
 
-Pausing happens because the backend is on a free-tier style instance that sleeps when idle. So the real question is not "which database", it is "which plan / which host keeps auth always awake and keeps my data".
+## What's happening today
+Auto-detection already exists, but it is weak in three ways:
+- It samples from the uploaded file's public URL after upload, so if the image loads without cross-origin permission the detection silently gives up and the hex stays empty.
+- It averages the whole image. On a shirt photo (white background, shadows, collar tag, buttons) the average drifts toward grey/white instead of the real fabric colour.
+- If the admin ever typed a hex manually in a past session, auto-detect stays permanently off because that choice is restored from the saved session.
 
-## Option A — Keep the current backend, remove the pausing (recommended)
+## What will change
+1. **Detect from the picked file directly** — read the colour from the local file the moment it is chosen, before/alongside the upload. No network fetch, so it can never fail on cross-origin rules. The URL-based sampling stays as a fallback for restored sessions.
+2. **Smarter colour picking** — instead of a flat average:
+   - sample from the central region of the image (where the fabric/garment actually is),
+   - drop near-white / near-black / very desaturated background and shadow pixels,
+   - group remaining pixels into colour buckets and pick the most common bucket (dominant colour), then average within that bucket for a clean hex.
+   - if almost everything got filtered out (a genuinely white or black fabric), fall back to the plain average so white/black shirts still resolve correctly.
+3. **Auto-detect re-arms on every new upload** — uploading a new fabric/shirt turns auto-colour back on and refreshes the hex, while manual typing still overrides it for that image.
+4. **Visible feedback** — after upload show a small "Detected: Navy #1a2a4f" line with the swatch (the existing nearest-name lookup), plus a "Re-detect" action next to the colour input so the admin can re-run it after a manual edit.
 
-- Resume it once (Cloud panel → Resume), then keep it from sleeping by upgrading the Cloud/backend plan to a paid always-on tier.
-- Zero code changes, zero migration, zero password resets. All orders, products, storage files, ~50 functions and secrets stay exactly as they are.
-- Fastest path back to working owner and customer login: minutes.
-
-## Option B — Your own Supabase project (paid tier), full data migration
-
-Same engine, so auth behaves identically — the gain is that you own the billing and can pick an always-on paid plan.
-
-What it takes:
-1. Create your own project on a paid plan (no auto-pause).
-2. Export schema from `supabase/migrations` and re-apply it to the new project.
-3. Copy table data (products, orders, order_items, profiles, reviews, coupons, wallets, addresses, staff tables, notifications, pincode cache) via SQL dump / CSV.
-4. Copy storage bucket objects (product images, review images, invoices).
-5. Redeploy all edge functions and re-add every secret (PayU key/salt, Delhivery, Gemini, push keys).
-6. Point the app's URL and publishable key at the new project.
-7. **Users**: auth users can be migrated with their hashed passwords only via a full `auth` schema dump, which is not exportable from Lovable Cloud — so every customer would need a password reset. This is the main cost.
-
-Effort: roughly a day of careful work plus verification of payments, shipping and push.
-
-## Option C — Self-hosted Postgres + auth on a VPS
-
-- You run Postgres, GoTrue (auth), storage and a server to replace every edge function.
-- Never pauses, but you own uptime, backups, SSL, security patching, and all ~50 functions must be re-hosted.
-- Same password-reset problem as Option B.
-- Only worth it if you have a dedicated ops reason — not to fix this outage.
-
-## Not viable — Oracle / MySQL
-
-Authentication, row-level security policies, the edge functions, storage and realtime are all Postgres-specific. Moving to Oracle or MySQL is a ground-up rebuild of the entire backend with no login benefit. I would not do this.
-
-## Data safety in every option
-
-No data is lost by pausing — the contents come back as they were on resume. In Options B and C the data is copied, not recreated, so orders and products carry over; only auth passwords cannot be carried.
-
-## Recommended sequence
-
-1. Resume the paused backend now so the store works again (I can run the resume with your approval, or you click Resume in the Cloud panel).
-2. Verify owner login and storefront end-to-end in a real browser session, and fix any genuine code issue that surfaces.
-3. Decide afterwards, with the site live, whether to stay on an always-on Cloud plan (Option A) or migrate to your own Supabase project (Option B). If you pick B, I will write a dedicated migration plan with an ordered cutover checklist.
+## Scope
+- Single file: `src/components/admin/FabricToShirtStudio.tsx`.
+- No backend, prompt, or edge-function changes; the generation prompts already consume `colorHex` as-is.
