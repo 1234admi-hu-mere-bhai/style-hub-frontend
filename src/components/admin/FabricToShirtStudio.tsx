@@ -616,16 +616,18 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
               {nearestColorName(colorHex) && (
                 <div className="flex items-center gap-2">
                   <span className="inline-block h-3 w-3 rounded-full border" style={{ backgroundColor: colorHex }} />
+                  <span className="text-xs text-muted-foreground">{autoColor ? 'Detected:' : 'Selected:'}</span>
                   <span className="text-sm font-medium text-foreground">{nearestColorName(colorHex)}</span>
                   <span className="text-xs text-muted-foreground font-mono uppercase">{colorHex}</span>
                 </div>
               )}
               <p className="text-xs text-muted-foreground">
-                {autoColor ? 'Auto-sampled from fabric. Edit to override.' : 'Manual override active.'}
+                {autoColor ? 'Auto-detected from the uploaded image. Edit to override.' : 'Manual override active.'}
               </p>
             </div>
-            <Button type="button" variant="ghost" size="sm" onClick={() => { setAutoColor(true); if (fabricUrl) sampleAverageHex(fabricUrl).then(h => h && setColorHex(h)); }}>
-              Re-sample
+            <Button type="button" variant="ghost" size="sm" disabled={!fabricUrl} onClick={() => { setAutoColor(true); localDetected.current = false; if (fabricUrl) sampleAverageHex(fabricUrl).then(h => h && setColorHex(h)); }}>
+              Re-detect
+
             </Button>
           </div>
 
