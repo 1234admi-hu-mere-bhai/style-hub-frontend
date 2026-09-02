@@ -5,11 +5,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const shirtSizes = [
-  { size: 'S', chest: '36-38', waist: '30-32', shoulder: '16.5', length: '27', chestCm: '91-97', waistCm: '76-81', shoulderCm: '42', lengthCm: '69' },
   { size: 'M', chest: '38-40', waist: '32-34', shoulder: '17.5', length: '28', chestCm: '97-102', waistCm: '81-86', shoulderCm: '44.5', lengthCm: '71' },
   { size: 'L', chest: '40-42', waist: '34-36', shoulder: '18.5', length: '29', chestCm: '102-107', waistCm: '86-91', shoulderCm: '47', lengthCm: '74' },
   { size: 'XL', chest: '42-44', waist: '36-38', shoulder: '19.5', length: '30', chestCm: '107-112', waistCm: '91-97', shoulderCm: '49.5', lengthCm: '76' },
-  { size: 'XXL', chest: '44-46', waist: '38-40', shoulder: '20.5', length: '31', chestCm: '112-117', waistCm: '97-102', shoulderCm: '52', lengthCm: '79' },
+  { size: '2XL', chest: '44-46', waist: '38-40', shoulder: '20.5', length: '31', chestCm: '112-117', waistCm: '97-102', shoulderCm: '52', lengthCm: '79' },
 ];
 
 const fitTypes = [

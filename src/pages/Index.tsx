@@ -84,7 +84,7 @@ const Index = () => {
     navigate(`/products?search=${encodeURIComponent(terms)}`);
   }, [navigate]);
 
-  const sizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL'];
+  const sizes = ['M', 'L', 'XL', '2XL'];
   const colors = [
     { name: 'Black', hex: '#1a1a1a' },
     { name: 'White', hex: '#ffffff' },
