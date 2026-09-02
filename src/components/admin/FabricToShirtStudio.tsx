@@ -319,16 +319,27 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     }).catch(() => {});
   }, []);
 
-  // Auto-sample color when fabric changes
+  // Fallback auto-sample from the stored URL (restored sessions / no local detect yet)
+  const localDetected = useRef(false);
   useEffect(() => {
-    if (!fabricUrl || !autoColor) return;
+    if (!fabricUrl || !autoColor || localDetected.current) return;
     sampleAverageHex(fabricUrl).then(hex => { if (hex) setColorHex(hex); });
   }, [fabricUrl, autoColor]);
-
 
   const handleFabricFile = async (file: File | undefined) => {
     if (!file) return;
     setUploading('fabric');
+    // Detect colour straight from the local file — instant and CORS-proof.
+    localDetected.current = false;
+    setAutoColor(true);
+    try {
+      const localHex = await sampleHexFromFile(file);
+      if (localHex) {
+        localDetected.current = true;
+        setColorHex(localHex);
+        toast({ title: 'Colour detected', description: `${nearestColorName(localHex) ?? ''} ${localHex.toUpperCase()}`.trim() });
+      }
+    } catch {}
     try {
       const url = await uploadToBucket(file, `fabric-uploads/${crypto.randomUUID()}-${file.name}`);
       setFabricUrl(url);
@@ -337,6 +348,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
       toast({ title: 'Upload failed', description: e.message, variant: 'destructive' });
     } finally { setUploading(null); }
   };
+
 
   const handleTagFile = async (file: File | undefined) => {
     if (!file) return;
