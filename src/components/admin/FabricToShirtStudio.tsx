@@ -308,10 +308,10 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     try {
       localStorage.setItem(storageKey, JSON.stringify({
         fabricUrl, collarTagUrl, colorHex, autoColor, hd, specs, pose,
-        frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, mannequinUrl, rotation360Url, bulkSpec,
+        frontUrl, backUrl, specBySize, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, mannequinUrl, rotation360Url,
       }));
     } catch {}
-  }, [storageKey, fabricUrl, collarTagUrl, colorHex, autoColor, hd, specs, pose, frontUrl, backUrl, specUrl, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, mannequinUrl, rotation360Url, bulkSpec]);
+  }, [storageKey, fabricUrl, collarTagUrl, colorHex, autoColor, hd, specs, pose, frontUrl, backUrl, specBySize, highlightsUrl, modelUrl, modelBackUrl, lifestyleUrl, mannequinUrl, rotation360Url]);
 
   // Load existing collar tag if previously uploaded
   useEffect(() => {
@@ -346,7 +346,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     try {
       const url = await uploadToBucket(file, `fabric-uploads/${crypto.randomUUID()}-${file.name}`);
       setFabricUrl(url);
-      setFrontUrl(''); setBackUrl(''); setSpecUrl(''); setHighlightsUrl(''); setModelUrl(''); setModelBackUrl(''); setLifestyleUrl(''); setMannequinUrl(''); setRotation360Url(''); setBulkSpec([]);
+      setFrontUrl(''); setBackUrl(''); setSpecBySize({}); setHighlightsUrl(''); setModelUrl(''); setModelBackUrl(''); setLifestyleUrl(''); setMannequinUrl(''); setRotation360Url('');
     } catch (e: any) {
       toast({ title: 'Upload failed', description: e.message, variant: 'destructive' });
     } finally { setUploading(null); }
@@ -397,7 +397,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
       if (data?.error) throw new Error(data.error);
       if (!data?.url) throw new Error('No image returned');
       const setters: Record<ViewKind, (u: string) => void> = {
-        front: setFrontUrl, back: setBackUrl, spec: setSpecUrl,
+        front: setFrontUrl, back: setBackUrl, spec: (u: string) => setSpecBySize(m => ({ ...m, [specs.size]: u })),
         highlights: setHighlightsUrl, model: setModelUrl, 'model-back': setModelBackUrl, lifestyle: setLifestyleUrl,
         mannequin: setMannequinUrl, 'rotation-360': setRotation360Url,
       };
@@ -436,15 +436,14 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     for (const [url, key] of all) {
       if (url) await downloadOne(url, `muffigout-shirt-${key}-${stamp}.png`);
     }
-    for (const item of bulkSpec) {
-      await downloadOne(item.url, `muffigout-shirt-spec-${item.size}-${stamp}.png`);
+    for (const [size, url] of Object.entries(specBySize)) {
+      if (url && url !== specUrl) await downloadOne(url, `muffigout-shirt-spec-${size}-${stamp}.png`);
     }
   };
 
   const generateAllSpecSizes = async () => {
     if (!fabricUrl) { toast({ title: 'Upload a fabric image first', variant: 'destructive' }); return; }
     setBulkGenerating(true);
-    setBulkSpec([]);
     const results: { size: string; url: string }[] = [];
     try {
       for (const size of BULK_SPEC_SIZES) {
@@ -460,7 +459,7 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
           if (data?.error) throw new Error(data.error);
           if (data?.url) {
             results.push({ size, url: data.url });
-            setBulkSpec([...results]);
+            setSpecBySize(m => ({ ...m, [size]: data.url }));
             toast({ title: `Spec sheet ${size} ready (${results.length}/${BULK_SPEC_SIZES.length})` });
           }
         } catch (e: any) {
