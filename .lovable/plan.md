@@ -10,16 +10,18 @@ Goal: each available size (M, L, XL, 2XL) can have its own spec-sheet image. Whe
 - If a size has no spec sheet, the block is hidden and a "View size chart" link stays available (current behaviour).
 - The size chart modal also shows the selected size's spec sheet at the top when one exists.
 
-## Admin: upload one image per size
+## Admin: sizes as a dropdown + one image per size
 
-In the product form (Admin > Products > edit), a new "Size spec sheets" section:
+The "Sizes (comma-separated)" text box is replaced by a proper size picker:
 
-- One row per size listed in that product's Sizes field.
-- Each row: small thumbnail (if set), an Upload button (single file), and Remove.
+- A dropdown listing standard sizes in order, smallest to largest: XS, S, M, L, XL, 2XL, 3XL, 4XL, 5XL, 6XL.
+- Picking a size from the dropdown adds it as a row; already-added sizes are hidden from the dropdown. Rows always stay sorted smallest to largest, no matter the order they were added.
+- Each size row has: the size name, its spec-sheet thumbnail (if uploaded), an "Upload image" button (single image, that size only), and a Remove button that drops the size and its image.
+- A free-text "Add custom size" option remains for anything outside the standard list.
 - Uploading affects only that size's slot — nothing else is overwritten.
-- Rows appear/disappear automatically as the Sizes field changes.
 
 In Fabric Studio, the existing per-size generated spec images get a "Save spec sheets to product" button that writes all filled sizes into the product's slots in one click (still one slot per size, no gallery pollution).
+
 
 ## Technical notes
 
