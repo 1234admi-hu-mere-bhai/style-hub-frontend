@@ -214,7 +214,12 @@ const AdminProducts = () => {
 
     setSaving(true);
     try {
-      const sizes = sizesInput.split(',').map(s => s.trim()).filter(Boolean);
+      const sizes = sortSizes(form.sizes || []);
+      // Keep only spec sheets whose size is still selected
+      const size_spec_sheets = Object.fromEntries(
+        Object.entries(form.size_spec_sheets || {}).filter(([sz, url]) => url && sizes.includes(sz)),
+      );
+
       // Colors managed by ColorVariantsEditor; keep only filled slots
       const colors = (form.colors as ColorVariant[]).filter(c => c && (c.image || c.name));
       const tags = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
