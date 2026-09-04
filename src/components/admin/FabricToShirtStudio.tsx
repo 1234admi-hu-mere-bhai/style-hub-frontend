@@ -1026,6 +1026,14 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
           <ImageIcon className="h-4 w-4 mr-2" /> Save to this product's images
         </Button>
       )}
+
+      {productId && Object.values(specBySize).some(Boolean) && (
+        <Button type="button" variant="outline" onClick={saveSpecSheetsToProduct} disabled={savingSpecs} className="w-full h-12">
+          {savingSpecs ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ImageIcon className="h-4 w-4 mr-2" />}
+          Save per-size spec sheets to product
+        </Button>
+      )}
+
     </div>
   );
 }
