@@ -30,10 +30,25 @@ const SizeChartModal = ({ open, onOpenChange, specImage, selectedSize }: SizeCha
           <DialogTitle className="font-serif text-2xl">Men's Size Guide</DialogTitle>
         </DialogHeader>
 
+        {specImage && (
+          <div className="mt-4 rounded-xl border border-border overflow-hidden bg-secondary/30">
+            <div className="px-4 py-2 text-sm font-medium border-b border-border">
+              Spec sheet{selectedSize ? ` — Size ${selectedSize}` : ''}
+            </div>
+            <img
+              src={specImage}
+              alt={`Size ${selectedSize || ''} spec sheet`}
+              className="w-full max-h-[45vh] object-contain bg-background"
+              loading="lazy"
+            />
+          </div>
+        )}
+
         <div className="mt-4 overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-secondary">
+
                 <th className="border border-border px-4 py-3 text-left">Size</th>
                 <th className="border border-border px-4 py-3 text-left">Chest (in)</th>
                 <th className="border border-border px-4 py-3 text-left">Waist (in)</th>
