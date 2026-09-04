@@ -195,8 +195,8 @@ const AdminProducts = () => {
       neck_type: product.neck_type || '',
       collection: product.collection || '',
     });
-    setSizesInput((product.sizes || []).join(', '));
     setColorsInput('');
+
     setTagsInput((product.tags || []).join(', '));
     setAdditionalImagesInput((product.additional_images || []).join(', '));
     setEditingId(product.id);
