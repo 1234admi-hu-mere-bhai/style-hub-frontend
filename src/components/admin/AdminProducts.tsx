@@ -70,6 +70,8 @@ const EMPTY_PRODUCT = {
   stock_quantity: 0,
   low_stock_threshold: 10,
   sizes: [] as string[],
+  size_spec_sheets: {} as Record<string, string>,
+
   colors: [] as any[],
   tags: [] as string[],
   in_stock: true,
