@@ -228,7 +228,9 @@ const AdminProducts = () => {
       const productData = {
         ...form,
         sizes,
+        size_spec_sheets,
         colors,
+
         tags,
         additional_images,
         ...(editingId ? { id: editingId } : {}),
