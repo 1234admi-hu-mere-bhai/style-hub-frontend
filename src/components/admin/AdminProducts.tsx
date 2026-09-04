@@ -175,7 +175,11 @@ const AdminProducts = () => {
       additional_images: product.additional_images || [],
       stock_quantity: product.stock_quantity,
       low_stock_threshold: product.low_stock_threshold,
-      sizes: product.sizes || [],
+      sizes: sortSizes(product.sizes || []),
+      size_spec_sheets: (product.size_spec_sheets && typeof product.size_spec_sheets === 'object'
+        ? product.size_spec_sheets
+        : {}) as Record<string, string>,
+
       colors: product.colors || [],
       tags: product.tags || [],
       in_stock: product.in_stock,
