@@ -64,7 +64,9 @@ export interface StoreProduct {
   collection?: string;
   inStock?: boolean;
   stockQuantity?: number | null;
+  sizeSpecSheets?: Record<string, string>;
 }
+
 
 
 interface ActiveFlashSale {
