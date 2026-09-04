@@ -30,6 +30,8 @@ export interface DbProduct {
   sleeve_type?: string | null;
   neck_type?: string | null;
   collection?: string | null;
+  size_spec_sheets?: Record<string, string> | null;
+
 }
 
 // Convert DB product to the format used by ProductCard & ProductDetail
