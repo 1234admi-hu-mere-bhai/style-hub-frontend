@@ -109,7 +109,11 @@ export const dbToStoreProduct = (p: DbProduct): StoreProduct => {
     collection: p.collection || undefined,
     inStock: p.in_stock !== false,
     stockQuantity: p.stock_quantity ?? null,
+    sizeSpecSheets: (p.size_spec_sheets && typeof p.size_spec_sheets === 'object'
+      ? (p.size_spec_sheets as Record<string, string>)
+      : {}),
   };
+
 };
 
 const applyFlashSale = (product: StoreProduct, flashSale: ActiveFlashSale | null): StoreProduct => {
