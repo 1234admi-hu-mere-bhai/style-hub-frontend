@@ -9,9 +9,13 @@ interface SizeChartModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   category?: 'men';
+  /** Spec sheet image for the currently selected size, if the product has one. */
+  specImage?: string;
+  selectedSize?: string;
 }
 
-const SizeChartModal = ({ open, onOpenChange }: SizeChartModalProps) => {
+const SizeChartModal = ({ open, onOpenChange, specImage, selectedSize }: SizeChartModalProps) => {
+
   const menSizes = [
     { size: 'M', chest: '38-40', waist: '32-34', hip: '38-40', inchChest: '97-102', inchWaist: '81-86', inchHip: '97-102' },
     { size: 'L', chest: '40-42', waist: '34-36', hip: '40-42', inchChest: '102-107', inchWaist: '86-91', inchHip: '102-107' },
