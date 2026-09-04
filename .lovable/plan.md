@@ -30,5 +30,6 @@ In Fabric Studio, the existing per-size generated spec images get a "Save spec s
 - `src/hooks/useDbProducts.ts`: map to `sizeSpecSheets: Record<string, string>` on `StoreProduct` (and the raw row type).
 - `src/pages/ProductDetail.tsx`: derive `specSheetUrl = product.sizeSpecSheets?.[selectedSize]`; render the block below the size chips, reusing `ImageZoomDialog`.
 - `src/components/SizeChartModal.tsx`: accept optional `specImage` + `size` props and render it above the table.
-- `src/components/admin/AdminProducts.tsx`: add `size_spec_sheets` to the form state and reuse the existing `product-images` storage upload helper (`uploadingField` pattern) per-size.
+- `src/components/admin/AdminProducts.tsx`: drop `sizesInput` string state in favour of `form.sizes: string[]` plus a `size_spec_sheets` map; ordered size list added to `src/lib/product-attributes.ts` (`SIZE_OPTIONS` with a sort index) and reused for sorting; per-size upload reuses the existing `uploadToStorage` + `uploadingField` pattern.
 - `src/components/admin/FabricToShirtStudio.tsx`: extend `saveToProduct` (or add a sibling action) to merge `specBySize` into `size_spec_sheets` instead of pushing into `additional_images`.
+
