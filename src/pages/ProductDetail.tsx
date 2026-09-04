@@ -438,7 +438,34 @@ const ProductDetail = () => {
                   <button key={size} onClick={() => setSelectedSize(size)} className={`min-w-[48px] px-4 py-2 border rounded-md font-medium transition-colors ${selectedSize === size ? 'border-primary bg-primary text-primary-foreground' : 'border-border hover:border-primary'}`}>{size}</button>
                 ))}
               </div>
+
+              {selectedSize && product.sizeSpecSheets?.[selectedSize] && (
+                <div className="mt-4 rounded-2xl border border-border bg-card overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
+                    <p className="text-sm font-semibold">Size {selectedSize} spec sheet</p>
+                    <button
+                      onClick={() => setZoomSrc(product.sizeSpecSheets![selectedSize])}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Tap to zoom
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setZoomSrc(product.sizeSpecSheets![selectedSize])}
+                    className="block w-full bg-secondary/30"
+                  >
+                    <img
+                      src={product.sizeSpecSheets[selectedSize]}
+                      alt={`${product.name} size ${selectedSize} measurement spec sheet`}
+                      className="w-full max-h-80 object-contain"
+                      loading="lazy"
+                    />
+                  </button>
+                </div>
+              )}
             </div>
+
 
             <div>
               <h3 className="font-semibold mb-3">Quantity</h3>
@@ -557,7 +584,13 @@ const ProductDetail = () => {
         )}
       </main>
       <Footer />
-      <SizeChartModal open={sizeChartOpen} onOpenChange={setSizeChartOpen} category={product.category} />
+      <SizeChartModal
+        open={sizeChartOpen}
+        onOpenChange={setSizeChartOpen}
+        category={product.category}
+        selectedSize={selectedSize}
+        specImage={selectedSize ? product.sizeSpecSheets?.[selectedSize] : undefined}
+      />
       <ImageZoomDialog open={!!zoomSrc} onOpenChange={(o) => !o && setZoomSrc(null)} src={zoomSrc || ''} alt={product.name} />
     </div>
   );

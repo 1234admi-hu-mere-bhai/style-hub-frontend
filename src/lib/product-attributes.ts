@@ -3,6 +3,19 @@
 
 export const FIT_OPTIONS = ['Oversized', 'Regular', 'Slim'] as const;
 
+// Standard apparel sizes, smallest to largest. Used by the admin size picker
+// and to keep a product's sizes sorted regardless of the order they were added.
+export const SIZE_OPTIONS = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL', '6XL'] as const;
+
+export const sortSizes = (sizes: string[]): string[] => {
+  const idx = (s: string) => {
+    const i = (SIZE_OPTIONS as readonly string[]).indexOf(s.toUpperCase());
+    return i === -1 ? SIZE_OPTIONS.length : i;
+  };
+  return [...sizes].sort((a, b) => idx(a) - idx(b) || a.localeCompare(b));
+};
+
+
 export const FABRIC_OPTIONS = [
   'Cotton',
   'Cotton Blend',

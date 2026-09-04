@@ -9,9 +9,13 @@ interface SizeChartModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   category?: 'men';
+  /** Spec sheet image for the currently selected size, if the product has one. */
+  specImage?: string;
+  selectedSize?: string;
 }
 
-const SizeChartModal = ({ open, onOpenChange }: SizeChartModalProps) => {
+const SizeChartModal = ({ open, onOpenChange, specImage, selectedSize }: SizeChartModalProps) => {
+
   const menSizes = [
     { size: 'M', chest: '38-40', waist: '32-34', hip: '38-40', inchChest: '97-102', inchWaist: '81-86', inchHip: '97-102' },
     { size: 'L', chest: '40-42', waist: '34-36', hip: '40-42', inchChest: '102-107', inchWaist: '86-91', inchHip: '102-107' },
@@ -26,10 +30,25 @@ const SizeChartModal = ({ open, onOpenChange }: SizeChartModalProps) => {
           <DialogTitle className="font-serif text-2xl">Men's Size Guide</DialogTitle>
         </DialogHeader>
 
+        {specImage && (
+          <div className="mt-4 rounded-xl border border-border overflow-hidden bg-secondary/30">
+            <div className="px-4 py-2 text-sm font-medium border-b border-border">
+              Spec sheet{selectedSize ? ` — Size ${selectedSize}` : ''}
+            </div>
+            <img
+              src={specImage}
+              alt={`Size ${selectedSize || ''} spec sheet`}
+              className="w-full max-h-[45vh] object-contain bg-background"
+              loading="lazy"
+            />
+          </div>
+        )}
+
         <div className="mt-4 overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-secondary">
+
                 <th className="border border-border px-4 py-3 text-left">Size</th>
                 <th className="border border-border px-4 py-3 text-left">Chest (in)</th>
                 <th className="border border-border px-4 py-3 text-left">Waist (in)</th>

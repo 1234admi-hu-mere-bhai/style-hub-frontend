@@ -576,6 +576,37 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
     }
   };
 
+  const [savingSpecs, setSavingSpecs] = useState(false);
+
+  /** Write every generated per-size spec sheet into the product's size_spec_sheets map. */
+  const saveSpecSheetsToProduct = async () => {
+    if (!productId) return;
+    const filled = Object.entries(specBySize).filter(([, url]) => !!url);
+    if (!filled.length) { toast({ title: 'Generate a spec sheet first', variant: 'destructive' }); return; }
+    setSavingSpecs(true);
+    try {
+      const { data: prod, error: fetchErr } = await supabase
+        .from('products').select('size_spec_sheets, sizes').eq('id', productId).maybeSingle();
+      if (fetchErr) throw fetchErr;
+      const existing = (prod?.size_spec_sheets && typeof prod.size_spec_sheets === 'object'
+        ? prod.size_spec_sheets as Record<string, string> : {});
+      const merged = { ...existing, ...Object.fromEntries(filled) };
+      const existingSizes: string[] = (prod?.sizes as any) || [];
+      const sizes = Array.from(new Set([...existingSizes, ...filled.map(([sz]) => sz)]));
+      const { error } = await supabase.functions.invoke('admin-products', {
+        body: { action: 'update', product: { id: productId, size_spec_sheets: merged, sizes } },
+      });
+      if (error) throw error;
+      toast({ title: `Saved ${filled.length} spec sheet${filled.length > 1 ? 's' : ''} to product` });
+    } catch (e: any) {
+      toast({ title: 'Save failed', description: e.message, variant: 'destructive' });
+    } finally {
+      setSavingSpecs(false);
+    }
+  };
+
+
+
   return (
     <div className="space-y-4">
       {/* Inputs row */}
@@ -995,6 +1026,14 @@ export default function FabricToShirtStudio({ productId, onGenerated }: Props) {
           <ImageIcon className="h-4 w-4 mr-2" /> Save to this product's images
         </Button>
       )}
+
+      {productId && Object.values(specBySize).some(Boolean) && (
+        <Button type="button" variant="outline" onClick={saveSpecSheetsToProduct} disabled={savingSpecs} className="w-full h-12">
+          {savingSpecs ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ImageIcon className="h-4 w-4 mr-2" />}
+          Save per-size spec sheets to product
+        </Button>
+      )}
+
     </div>
   );
 }

@@ -30,6 +30,8 @@ export interface DbProduct {
   sleeve_type?: string | null;
   neck_type?: string | null;
   collection?: string | null;
+  size_spec_sheets?: Record<string, string> | null;
+
 }
 
 // Convert DB product to the format used by ProductCard & ProductDetail
@@ -62,7 +64,9 @@ export interface StoreProduct {
   collection?: string;
   inStock?: boolean;
   stockQuantity?: number | null;
+  sizeSpecSheets?: Record<string, string>;
 }
+
 
 
 interface ActiveFlashSale {
@@ -105,7 +109,11 @@ export const dbToStoreProduct = (p: DbProduct): StoreProduct => {
     collection: p.collection || undefined,
     inStock: p.in_stock !== false,
     stockQuantity: p.stock_quantity ?? null,
+    sizeSpecSheets: (p.size_spec_sheets && typeof p.size_spec_sheets === 'object'
+      ? (p.size_spec_sheets as Record<string, string>)
+      : {}),
   };
+
 };
 
 const applyFlashSale = (product: StoreProduct, flashSale: ActiveFlashSale | null): StoreProduct => {

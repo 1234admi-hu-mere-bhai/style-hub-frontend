@@ -20,6 +20,8 @@ import {
   COLOR_FAMILY_OPTIONS,
   SLEEVE_TYPE_OPTIONS,
   NECK_TYPE_OPTIONS,
+  SIZE_OPTIONS,
+  sortSizes,
 } from '@/lib/product-attributes';
 
 interface Product {
@@ -36,6 +38,8 @@ interface Product {
   stock_quantity: number;
   low_stock_threshold: number;
   sizes: string[];
+  size_spec_sheets?: Record<string, string> | null;
+
   colors: any[];
   tags: string[];
   in_stock: boolean;
@@ -66,6 +70,8 @@ const EMPTY_PRODUCT = {
   stock_quantity: 0,
   low_stock_threshold: 10,
   sizes: [] as string[],
+  size_spec_sheets: {} as Record<string, string>,
+
   colors: [] as any[],
   tags: [] as string[],
   in_stock: true,
@@ -89,7 +95,7 @@ interface Draft {
   showForm: boolean;
   editingId: string | null;
   form: typeof EMPTY_PRODUCT;
-  sizesInput: string;
+  
   tagsInput: string;
   additionalImagesInput: string;
 }
@@ -112,7 +118,7 @@ const AdminProducts = () => {
 
   // Form state — restored from sessionStorage so switching tabs doesn't wipe in-progress edits
   const [form, setForm] = useState(draft?.form ?? EMPTY_PRODUCT);
-  const [sizesInput, setSizesInput] = useState(draft?.sizesInput ?? '');
+  const [customSize, setCustomSize] = useState('');
   const [colorsInput, setColorsInput] = useState('');
   const [tagsInput, setTagsInput] = useState(draft?.tagsInput ?? '');
   const [additionalImagesInput, setAdditionalImagesInput] = useState(draft?.additionalImagesInput ?? '');
@@ -122,10 +128,11 @@ const AdminProducts = () => {
   useEffect(() => {
     try {
       sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
-        showForm, editingId, form, sizesInput, tagsInput, additionalImagesInput,
+        showForm, editingId, form, tagsInput, additionalImagesInput,
       }));
     } catch {}
-  }, [showForm, editingId, form, sizesInput, tagsInput, additionalImagesInput]);
+  }, [showForm, editingId, form, tagsInput, additionalImagesInput]);
+
 
   useEffect(() => {
     fetchProducts();
@@ -148,7 +155,7 @@ const AdminProducts = () => {
 
   const openAddForm = () => {
     setForm(EMPTY_PRODUCT);
-    setSizesInput('');
+
     setColorsInput('');
     setTagsInput('');
     setAdditionalImagesInput('');
@@ -169,7 +176,11 @@ const AdminProducts = () => {
       additional_images: product.additional_images || [],
       stock_quantity: product.stock_quantity,
       low_stock_threshold: product.low_stock_threshold,
-      sizes: product.sizes || [],
+      sizes: sortSizes(product.sizes || []),
+      size_spec_sheets: (product.size_spec_sheets && typeof product.size_spec_sheets === 'object'
+        ? product.size_spec_sheets
+        : {}) as Record<string, string>,
+
       colors: product.colors || [],
       tags: product.tags || [],
       in_stock: product.in_stock,
@@ -185,8 +196,8 @@ const AdminProducts = () => {
       neck_type: product.neck_type || '',
       collection: product.collection || '',
     });
-    setSizesInput((product.sizes || []).join(', '));
     setColorsInput('');
+
     setTagsInput((product.tags || []).join(', '));
     setAdditionalImagesInput((product.additional_images || []).join(', '));
     setEditingId(product.id);
@@ -203,7 +214,12 @@ const AdminProducts = () => {
 
     setSaving(true);
     try {
-      const sizes = sizesInput.split(',').map(s => s.trim()).filter(Boolean);
+      const sizes = sortSizes(form.sizes || []);
+      // Keep only spec sheets whose size is still selected
+      const size_spec_sheets = Object.fromEntries(
+        Object.entries(form.size_spec_sheets || {}).filter(([sz, url]) => url && sizes.includes(sz)),
+      );
+
       // Colors managed by ColorVariantsEditor; keep only filled slots
       const colors = (form.colors as ColorVariant[]).filter(c => c && (c.image || c.name));
       const tags = tagsInput.split(',').map(t => t.trim()).filter(Boolean);
@@ -212,7 +228,9 @@ const AdminProducts = () => {
       const productData = {
         ...form,
         sizes,
+        size_spec_sheets,
         colors,
+
         tags,
         additional_images,
         ...(editingId ? { id: editingId } : {}),
@@ -771,10 +789,136 @@ const AdminProducts = () => {
                 <span className="h-5 w-1 rounded-full bg-primary" />
                 <h4 className="text-sm font-bold uppercase tracking-wider text-foreground">4. Sizes & Color Variants</h4>
               </div>
-              <div>
-                <Label>Sizes (comma-separated) *</Label>
-                <Input value={sizesInput} onChange={e => setSizesInput(e.target.value)} placeholder="S, M, L, XL" />
+              <div className="space-y-3">
+                <Label>Sizes & spec sheets *</Label>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <Select
+                    value=""
+                    onValueChange={(sz) => {
+                      if (!sz || form.sizes.includes(sz)) return;
+                      setForm(f => ({ ...f, sizes: sortSizes([...f.sizes, sz]) }));
+                    }}
+                  >
+                    <SelectTrigger className="h-11 w-[190px]">
+                      <SelectValue placeholder="Add a size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SIZE_OPTIONS.filter(sz => !form.sizes.includes(sz)).map(sz => (
+                        <SelectItem key={sz} value={sz}>{sz}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  <div className="flex items-center gap-1.5">
+                    <Input
+                      value={customSize}
+                      onChange={e => setCustomSize(e.target.value)}
+                      placeholder="Custom size"
+                      className="h-11 w-[140px]"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="h-11"
+                      onClick={() => {
+                        const sz = customSize.trim().toUpperCase();
+                        if (!sz || form.sizes.includes(sz)) { setCustomSize(''); return; }
+                        setForm(f => ({ ...f, sizes: sortSizes([...f.sizes, sz]) }));
+                        setCustomSize('');
+                      }}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {form.sizes.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No sizes yet — pick one from the dropdown.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {form.sizes.map((sz) => {
+                      const specUrl = form.size_spec_sheets?.[sz];
+                      const busy = uploadingField === `spec-${sz}`;
+                      return (
+                        <div key={sz} className="flex items-center gap-3 rounded-xl border border-border bg-secondary/30 p-2.5">
+                          <span className="w-14 shrink-0 text-center font-semibold">{sz}</span>
+
+                          {specUrl ? (
+                            <img src={specUrl} alt={`Spec sheet ${sz}`} className="h-14 w-14 rounded-md object-cover border border-border bg-background" />
+                          ) : (
+                            <div className="h-14 w-14 rounded-md border border-dashed border-border flex items-center justify-center text-[10px] text-muted-foreground text-center leading-tight">
+                              No spec
+                            </div>
+                          )}
+
+                          <div className="flex-1 flex flex-wrap gap-2">
+                            <Button type="button" size="sm" variant="outline" disabled={busy} asChild>
+                              <label className="cursor-pointer">
+                                {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                                <span className="ml-1.5">{specUrl ? 'Replace image' : 'Upload image'}</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    e.target.value = '';
+                                    if (!file) return;
+                                    setUploadingField(`spec-${sz}`);
+                                    try {
+                                      const url = await uploadToStorage(file, 'spec-sheets');
+                                      setForm(f => ({ ...f, size_spec_sheets: { ...(f.size_spec_sheets || {}), [sz]: url } }));
+                                      toast({ title: `Spec sheet set for ${sz}` });
+                                    } catch (err: any) {
+                                      toast({ title: 'Upload failed', description: err.message, variant: 'destructive' });
+                                    } finally {
+                                      setUploadingField(null);
+                                    }
+                                  }}
+                                />
+                              </label>
+                            </Button>
+
+                            {specUrl && (
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setForm(f => {
+                                  const next = { ...(f.size_spec_sheets || {}) };
+                                  delete next[sz];
+                                  return { ...f, size_spec_sheets: next };
+                                })}
+                              >
+                                Clear image
+                              </Button>
+                            )}
+                          </div>
+
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            aria-label={`Remove size ${sz}`}
+                            onClick={() => setForm(f => {
+                              const next = { ...(f.size_spec_sheets || {}) };
+                              delete next[sz];
+                              return { ...f, sizes: f.sizes.filter(s => s !== sz), size_spec_sheets: next };
+                            })}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Shoppers see the spec sheet of whichever size they select on the product page.
+                </p>
               </div>
+
               <ColorVariantsEditor
                 value={(form.colors as ColorVariant[]) || []}
                 onChange={(next) => setForm(f => ({ ...f, colors: next }))}
