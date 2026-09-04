@@ -38,6 +38,8 @@ interface Product {
   stock_quantity: number;
   low_stock_threshold: number;
   sizes: string[];
+  size_spec_sheets?: Record<string, string> | null;
+
   colors: any[];
   tags: string[];
   in_stock: boolean;
