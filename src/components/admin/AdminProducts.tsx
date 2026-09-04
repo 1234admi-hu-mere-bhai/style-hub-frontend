@@ -95,7 +95,7 @@ interface Draft {
   showForm: boolean;
   editingId: string | null;
   form: typeof EMPTY_PRODUCT;
-  sizesInput: string;
+  
   tagsInput: string;
   additionalImagesInput: string;
 }
