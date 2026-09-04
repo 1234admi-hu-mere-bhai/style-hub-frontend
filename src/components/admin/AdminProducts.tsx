@@ -20,6 +20,8 @@ import {
   COLOR_FAMILY_OPTIONS,
   SLEEVE_TYPE_OPTIONS,
   NECK_TYPE_OPTIONS,
+  SIZE_OPTIONS,
+  sortSizes,
 } from '@/lib/product-attributes';
 
 interface Product {
