@@ -118,7 +118,7 @@ const AdminProducts = () => {
 
   // Form state — restored from sessionStorage so switching tabs doesn't wipe in-progress edits
   const [form, setForm] = useState(draft?.form ?? EMPTY_PRODUCT);
-  const [sizesInput, setSizesInput] = useState(draft?.sizesInput ?? '');
+  const [customSize, setCustomSize] = useState('');
   const [colorsInput, setColorsInput] = useState('');
   const [tagsInput, setTagsInput] = useState(draft?.tagsInput ?? '');
   const [additionalImagesInput, setAdditionalImagesInput] = useState(draft?.additionalImagesInput ?? '');
