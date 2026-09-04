@@ -752,6 +752,7 @@ export type Database = {
           original_price: number | null
           price: number
           rotation_frames: string[] | null
+          size_spec_sheets: Json
           sizes: string[] | null
           sleeve_type: string | null
           stock_quantity: number | null
@@ -784,6 +785,7 @@ export type Database = {
           original_price?: number | null
           price: number
           rotation_frames?: string[] | null
+          size_spec_sheets?: Json
           sizes?: string[] | null
           sleeve_type?: string | null
           stock_quantity?: number | null
@@ -816,6 +818,7 @@ export type Database = {
           original_price?: number | null
           price?: number
           rotation_frames?: string[] | null
+          size_spec_sheets?: Json
           sizes?: string[] | null
           sleeve_type?: string | null
           stock_quantity?: number | null
