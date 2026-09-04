@@ -128,10 +128,11 @@ const AdminProducts = () => {
   useEffect(() => {
     try {
       sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
-        showForm, editingId, form, sizesInput, tagsInput, additionalImagesInput,
+        showForm, editingId, form, tagsInput, additionalImagesInput,
       }));
     } catch {}
-  }, [showForm, editingId, form, sizesInput, tagsInput, additionalImagesInput]);
+  }, [showForm, editingId, form, tagsInput, additionalImagesInput]);
+
 
   useEffect(() => {
     fetchProducts();
