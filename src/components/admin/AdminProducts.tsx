@@ -154,7 +154,7 @@ const AdminProducts = () => {
 
   const openAddForm = () => {
     setForm(EMPTY_PRODUCT);
-    setSizesInput('');
+
     setColorsInput('');
     setTagsInput('');
     setAdditionalImagesInput('');
