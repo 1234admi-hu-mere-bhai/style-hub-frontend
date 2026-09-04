@@ -584,7 +584,13 @@ const ProductDetail = () => {
         )}
       </main>
       <Footer />
-      <SizeChartModal open={sizeChartOpen} onOpenChange={setSizeChartOpen} category={product.category} />
+      <SizeChartModal
+        open={sizeChartOpen}
+        onOpenChange={setSizeChartOpen}
+        category={product.category}
+        selectedSize={selectedSize}
+        specImage={selectedSize ? product.sizeSpecSheets?.[selectedSize] : undefined}
+      />
       <ImageZoomDialog open={!!zoomSrc} onOpenChange={(o) => !o && setZoomSrc(null)} src={zoomSrc || ''} alt={product.name} />
     </div>
   );
